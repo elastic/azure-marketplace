@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json# ",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "computerName" : {
+          "type" : "string"
+        },
+        "adminUsername": {
+          "type" : "securestring"
+        },
+        "password": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "password_osProfile": {
+          "computername": "[parameters('computerName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('password').password]"
+        },
+        "sshPublicKey_osProfile": {
+          "computername": "[parameters('computerName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "linuxConfiguration": {
+                "disablePasswordAuthentication": "true",
+                "ssh": {
+                    "publicKeys": [
+                        {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('password').sshPublicKey]"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "resources": [],
+    "outputs" : {
+        "osProfile": {
+            "value": "[variables(concat(parameters('password').authenticationType, '_osProfile'))]",
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+{
+  "versions": [
+    "2.0.0",
+    "2.0.1"
+  ],
+  "vmSizes": [
+    "Standard_A0",
+    "Standard_A1",
+    "Standard_A2",
+    "Standard_A3",
+    "Standard_A4",
+    "Standard_A7",
+    "Standard_D1",
+    "Standard_D2",
+    "Standard_D3",
+    "Standard_D4",
+    "Standard_DS1",
+    "Standard_DS2",
+    "Standard_DS3",
+    "Standard_DS4",
+    "Standard_DS13"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+	"esVersion":{"value":"2.0.0"},
+	"esClusterName":{"value":"my-azure-cluster"},
+	"loadBalancerType":{"value":"internal"},
+	"kibana":{"value":"Yes"},
+	"jumpbox":{"value":"No"},
+	"vmSizeDataNodes":{"value":"Standard_D1"},
+	"vmDataNodeCount":{"value":3},
+	"dataNodesAreMasterEligible":{"value":"Yes"},
+	"vmSizeMasterNodes":{"value":"Standard_D1"},
+	"vmSizeClientNodes":{"value":"Standard_D1"},
+	"password":{"value":{"password":null,"sshPublicKey":"ssh-rsa <redacted>","authenticationType":"sshPublicKey"}},
+	"adminUsername":{"value":"os-level-username"},
+	"shieldAdminPassword":{"value":"example-password"},
+	"shieldReadPassword":{"value":"example-password"},
+	"shieldKibanaPassword":{"value":"example-password"}
+}

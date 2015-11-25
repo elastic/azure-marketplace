@@ -1,0 +1,447 @@
+{
+  "handler": "Microsoft.Compute.MultiVm",
+  "version": "0.0.1-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "adminUsername",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "User name",
+        "defaultValue": "",
+        "toolTip": "Specify a user for accessing the virtual machines within your cluster.",
+        "constraints": {
+          "required": true
+        },
+        "osPlatform": "Linux"
+      },
+      {
+        "name": "password",
+        "type": "Microsoft.Compute.CredentialsCombo",
+        "label": {
+          "authenticationType": "Authentication type",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "sshPublicKey": "SSH public key"
+        },
+        "toolTip": {
+          "authenticationType": "Choose Authentication type Password or PublicKey(SSH).",
+          "password": "Enter the password for the specified user name.",
+          "sshPublicKey": "Copy Public key into field."
+        },
+        "constraints": {
+          "required": true
+        },
+        "options": {
+          "hideConfirmation": false
+        },
+        "osPlatform": "Linux"
+      }
+    ],
+    "steps": [
+      {
+        "name": "clusterSettingsStep",
+        "label": "Cluster Settings",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Cluster Settings",
+        "elements": [
+          {
+            "name": "esVersion",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Elasticsearch version",
+            "defaultValue": "v2.0.0",
+            "toolTip": "Choose a version of Elasticsearch.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "v2.0.0",
+                  "value": "2.0.0"
+                },
+                {
+                  "label": "v2.0.1",
+                  "value": "2.0.1"
+                }
+              ]
+            }
+          },
+          {
+            "name": "esClusterName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Cluster name",
+            "defaultValue": "",
+            "toolTip": "Name your Elasticsearch cluster.",
+            "constraints": {
+              "required": true,
+              "validationMessage": "TODO"
+            }
+          }
+        ]
+      },
+      {
+        "name": "nodesStep",
+        "label": "Nodes Configuration",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Nodes Configuration",
+        "elements": [
+          {
+            "name": "vmSizeMasterNodes",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Master node VM size",
+            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+            "defaultValue": "Standard_D1",
+            "recommendedSizes": [
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
+            ],
+            "constraints": {
+              "allowedSizes": [],
+              "excludedSizes": []
+            },
+            "osPlatform": "Linux",
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "UbuntuServer",
+              "sku": "14.04.2-LTS",
+              "version": "latest"
+            },
+            "count": "3"
+          },
+          {
+            "name": "vmDataNodeCount",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Number of data nodes",
+            "defaultValue": "3",
+            "toolTip": "Specify the number of data nodes for this cluster.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "1",
+                  "value": 1
+                },
+                {
+                  "label": "3",
+                  "value": 3
+                },
+                {
+                  "label": "5",
+                  "value": 5
+                },
+                {
+                  "label": "7",
+                  "value": 5
+                },
+                {
+                  "label": "9",
+                  "value": 5
+                },
+                {
+                  "label": "10",
+                  "value": 10
+                },
+                {
+                  "label": "15",
+                  "value": 10
+                },
+                {
+                  "label": "20",
+                  "value": 20
+                },
+                {
+                  "label": "25",
+                  "value": 25
+                },
+                {
+                  "label": "30",
+                  "value": 30
+                },
+                {
+                  "label": "40",
+                  "value": 40
+                },
+                {
+                  "label": "50",
+                  "value": 50
+                },
+                {
+                  "label": "100",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          {
+            "name": "vmSizeDataNodes",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Data node VM size",
+            "defaultValue": "Standard_D1",
+            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+            "recommendedSizes": [
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
+            ],
+            "constraints": {
+              "allowedSizes": [],
+              "excludedSizes": []
+            },
+            "osPlatform": "Linux",
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "UbuntuServer",
+              "sku": "14.04.2-LTS",
+              "version": "latest"
+            },
+            "count": "[steps('nodesStep').vmDataNodeCount]"
+          },
+          {
+            "name": "dataNodesAreMasterEligible",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Data nodes are master eligible",
+            "defaultValue": "no",
+            "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes",
+                  "value": "yes"
+                },
+                {
+                  "label": "No",
+                  "value": "no"
+                }
+              ]
+            }
+          },
+          {
+            "name": "vmClientNodeCount",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Number of client nodes",
+            "defaultValue": "0",
+            "toolTip": "Specify the number of client nodes for this cluster (optional).",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "0",
+                  "value": 0
+                },
+                {
+                  "label": "3",
+                  "value": 3
+                },
+                {
+                  "label": "5",
+                  "value": 5
+                },
+                {
+                  "label": "10",
+                  "value": 10
+                },
+                {
+                  "label": "20",
+                  "value": 20
+                },
+                {
+                  "label": "50",
+                  "value": 50
+                }
+              ]
+            }
+          },
+          {
+            "name": "vmSizeClientNodes",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Client node VM size",
+            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+            "recommendedSizes": [
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
+            ],
+            "constraints": {
+              "allowedSizes": [],
+              "excludedSizes": []
+            },
+            "osPlatform": "Linux",
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "UbuntuServer",
+              "sku": "14.04.2-LTS",
+              "version": "latest"
+            },
+            "count": "[steps('nodesStep').vmClientNodeCount]"
+          }
+        ]
+      },
+      {
+        "name": "shieldStep",
+        "label": "Shield Users",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Shield Users",
+        "elements": [
+          {
+            "name": "es_admin",
+            "type": "Microsoft.Common.Section",
+            "label": "es_admin",
+            "elements": [
+              {
+                "name": "shieldAdminPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "es_admin Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the es_admin Shield user.",
+                "constraints": {
+                  "required": true
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_read",
+            "type": "Microsoft.Common.Section",
+            "label": "es_read",
+            "elements": [
+              {
+                "name": "shieldReadPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "es_read Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the es_read Shield user.",
+                "constraints": {
+                  "required": true
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_kibana",
+            "type": "Microsoft.Common.Section",
+            "label": "es_kibana",
+            "elements": [
+              {
+                "name": "shieldKibanaPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "es_kibana Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the es_kibana Shield user.",
+                "constraints": {
+                  "required": true
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "externalAccessStep",
+        "label": "External Access",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "External Access Control",
+        "elements": [
+          {
+            "name": "kibana",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Install Kibana?",
+            "defaultValue": "yes",
+            "toolTip": "Yes, to provision a single Kibana instance.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes",
+                  "value": "yes"
+                },
+                {
+                  "label": "No",
+                  "value": "no"
+                }
+              ]
+            }
+          },
+          {
+            "name": "jumpbox",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use a jump box?",
+            "defaultValue": "no",
+            "toolTip": "A jump box allows you to connect to your cluster from a public access point like SSH. This is usually not necessary if Kibana is installed, since Kibana itself acts as a jump box.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes",
+                  "value": "yes"
+                },
+                {
+                  "label": "No",
+                  "value": "no"
+                }
+              ]
+            }
+          },
+          {
+            "name": "loadBalancerType",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Load balancer type",
+            "defaultValue": "internal",
+            "toolTip": "Choose whether the load balancer should be public facing or internal.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Internal",
+                  "value": "internal"
+                },
+                {
+                  "label": "External",
+                  "value": "external"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "esVersion": "[steps('clusterSettingsStep').esVersion]",
+      "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
+      "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
+      "kibana": "[steps('externalAccessStep').kibana]",
+      "jumpbox": "[steps('externalAccessStep').jumpbox]",
+      "vmSizeDataNodes": "[steps('nodesStep').vmSizeDataNodes]",
+      "vmDataNodeCount": "[steps('nodesStep').vmDataNodeCount]",
+      "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodesAreMasterEligible]",
+      "vmSizeMasterNodes": "[steps('nodesStep').vmSizeMasterNodes]",
+      "vmClientNodeCount": "[steps('nodesStep').vmClientNodeCount]",
+      "vmSizeClientNodes": "[steps('nodesStep').vmSizeClientNodes]",
+      "password": "[basics('password')]",
+      "adminUsername": "[basics('adminUsername')]",
+      "shieldAdminPassword": "[steps('shieldStep').es_admin.shieldAdminPassword]",
+      "shieldReadPassword": "[steps('shieldStep').es_read.shieldReadPassword]",
+      "shieldKibanaPassword": "[steps('shieldStep').es_kibana.shieldKibanaPassword]",
+      "location": "[location()]"
+    }
+  }
+}
