@@ -207,17 +207,17 @@
             "name": "dataNodesAreMasterEligible",
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Data nodes are master eligible",
-            "defaultValue": "no",
+            "defaultValue": "No",
             "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
             "constraints": {
               "allowedValues": [
                 {
                   "label": "Yes",
-                  "value": "yes"
+                  "value": "Yes"
                 },
                 {
                   "label": "No",
-                  "value": "no"
+                  "value": "No"
                 }
               ]
             }
@@ -372,17 +372,17 @@
             "name": "kibana",
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Install Kibana?",
-            "defaultValue": "yes",
+            "defaultValue": "Yes",
             "toolTip": "Yes, to provision a single Kibana instance.",
             "constraints": {
               "allowedValues": [
                 {
                   "label": "Yes",
-                  "value": "yes"
+                  "value": "Yes"
                 },
                 {
                   "label": "No",
-                  "value": "no"
+                  "value": "No"
                 }
               ]
             }
@@ -391,17 +391,17 @@
             "name": "jumpbox",
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Use a jump box?",
-            "defaultValue": "no",
+            "defaultValue": "No",
             "toolTip": "A jump box allows you to connect to your cluster from a public access point like SSH. This is usually not necessary if Kibana is installed, since Kibana itself acts as a jump box.",
             "constraints": {
               "allowedValues": [
                 {
                   "label": "Yes",
-                  "value": "yes"
+                  "value": "Yes"
                 },
                 {
                   "label": "No",
-                  "value": "no"
+                  "value": "No"
                 }
               ]
             }
