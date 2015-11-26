@@ -332,9 +332,9 @@ echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
 log "Plugin install set to ${INSTALL_PLUGINS}"
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     log "Installing Plugins Shield, Marvel, Watcher"
-    sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/license/latest
-    sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/shield/latest
-    sudo /usr/share/elasticsearch/bin/plugin install elasticsearch/watcher/latest
+    sudo /usr/share/elasticsearch/bin/plugin install license
+    sudo /usr/share/elasticsearch/bin/plugin install shield
+    sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
 
     log " Start adding es_admin"
