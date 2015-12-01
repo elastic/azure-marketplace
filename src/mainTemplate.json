@@ -2,6 +2,13 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "artifactsBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base URL of the Publisher Template gallery package"
+      }
+    },
     "esVersion": {
       "type": "string",
       "defaultValue": "2.0.0",
@@ -248,23 +255,22 @@
       "authenticationType" : "[parameters('authenticationType')]",
       "sshPublicKey" : "[parameters('sshPublicKey')]"
     },
-    "templateBaseUrl": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
-    "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
+    "sharedTemplateUrl": "[concat(parameters('artifactsBaseUrl'), '/partials/shared-resources.json')]",
     "masterTemplates": {
       "No": "machines/master-nodes-resources.json",
       "Yes": "empty/empty-master-nodes-resources.json"
     },
-    "masterTemplateUrl": "[concat(variables('templateBaseUrl'), variables('masterTemplates')[parameters('dataNodesAreMasterEligible')])]",
+    "masterTemplateUrl": "[concat(parameters('artifactsBaseUrl'), variables('masterTemplates')[parameters('dataNodesAreMasterEligible')])]",
     "jumpboxTemplates": {
       "No": "empty/empty-resources.json",
       "Yes": "machines/jumpbox-resources.json"
     },
-    "jumpboxTemplateUrl": "[concat(variables('templateBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
+    "jumpboxTemplateUrl": "[concat(parameters('artifactsBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
     "kibanaTemplates": {
       "No": "empty/empty-resources.json",
       "Yes": "machines/kibana-resources.json"
     },
-    "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
+    "kibanaTemplateUrl": "[concat(parameters('artifactsBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
     "clientTemplates": {
       "n0": "empty/empty-resources.json",
       "n1": "machines/client-nodes-resources.json",
@@ -278,7 +284,7 @@
       "n9": "machines/client-nodes-resources.json"
     },
     "clientPre": "[split(string(parameters('vmClientNodeCount')), '')[0]]",
-    "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[concat('n',variables('clientPre'))])]",
+    "clientTemplateUrl": "[concat(parameters('artifactsBaseUrl'), variables('clientTemplates')[concat('n',variables('clientPre'))])]",
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
       "version": "[parameters('esVersion')]",
@@ -306,8 +312,8 @@
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), 'n ')]",
     "commonInstallParams": "[concat(variables('esSettings').clusterName, ' -v ', variables('esSettings').version, ' -A ', variables('esSettings').shieldAdminPwd, ' -R ', variables('esSettings').shieldReadPwd, ' -K ', variables('esSettings').shieldKibanaPwd, ' -S ', variables('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('vmDataNodeCount'))]",
     "ubuntuScripts": [
-      "[concat(variables('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
-      "[concat(variables('templateBaseUrl'), 'scripts/kibana-install.sh')]",
+      "[concat(parameters('artifactsBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
+      "[concat(parameters('artifactsBaseUrl'), 'scripts/kibana-install.sh')]",
       "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/shared_scripts/ubuntu/vm-disk-utils-0.1.sh"
     ],
     "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
@@ -545,7 +551,7 @@
       "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
       "prefix": "[concat(variables('storageAccountPrefix'), 'd', uniqueString(resourceGroup().id, deployment().name))]"
     },
-    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-nodes-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]"
+    "dataTemplateUrl": "[concat(parameters('artifactsBaseUrl'), 'datanodes/data-nodes-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]"
   },
   "resources": [
     {
