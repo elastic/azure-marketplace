@@ -1,4 +1,5 @@
 {
+	"artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"},
 	"esVersion":{"value":"2.0.0"},
 	"esClusterName":{"value":"my-azure-cluster"},
 	"loadBalancerType":{"value":"internal"},
@@ -9,9 +10,10 @@
 	"dataNodesAreMasterEligible":{"value":"Yes"},
 	"vmSizeMasterNodes":{"value":"Standard_D1"},
 	"vmSizeClientNodes":{"value":"Standard_D1"},
-	"authenticationType":"sshPublicKey",
-	"sshPublicKey":"ssh-rsa <redacted>",
+	"authenticationType":{"value":"sshPublicKey"},
+	"sshPublicKey":{"value":"ssh-rsa <redacted>"},
 	"adminUsername":{"value":"os-level-username"},
+	"adminPassword":{"value":"example-password"},
 	"shieldAdminPassword":{"value":"example-password"},
 	"shieldReadPassword":{"value":"example-password"},
 	"shieldKibanaPassword":{"value":"example-password"}
