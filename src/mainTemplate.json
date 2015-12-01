@@ -175,10 +175,9 @@
         "description": "Admin username used when provisioning virtual machines"
       }
     },
-
     "authenticationType": {
       "type": "string",
-      "defaultValue" : "password",
+      "defaultValue": "password",
       "allowedValues": [
         "password",
         "sshPublicKey"
@@ -199,7 +198,6 @@
         "description": ""
       }
     },
-
     "shieldAdminPassword": {
       "type": "securestring",
       "defaultValue": "changeME",
@@ -250,10 +248,10 @@
     }
   },
   "variables": {
-    "password" : {
-      "password" : "[parameters('adminPassword')]",
-      "authenticationType" : "[parameters('authenticationType')]",
-      "sshPublicKey" : "[parameters('sshPublicKey')]"
+    "password": {
+      "password": "[parameters('adminPassword')]",
+      "authenticationType": "[parameters('authenticationType')]",
+      "sshPublicKey": "[parameters('sshPublicKey')]"
     },
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
