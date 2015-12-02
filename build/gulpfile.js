@@ -19,6 +19,7 @@ gulp.task("patch", function(cb) {
 
     jsonfile.readFile(mainTemplate, function(err, obj) {
       obj.parameters.esVersion.allowedValues = versions;
+      obj.parameters.esVersion.defaultValue = _.last(versions);
       obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
       obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
       obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
