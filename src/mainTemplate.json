@@ -11,7 +11,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.0.1",
+      "defaultValue": "2.1.0",
       "allowedValues": [
         "2.0.0",
         "2.0.1",
