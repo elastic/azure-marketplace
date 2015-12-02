@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "The home for the elasticsearch arm template and market place ui",
   "main": "index.js",
-  "private" : true,
+  "private": true,
   "scripts": {
     "build": "./node_modules/gulp/bin/gulp.js --gulpfile build/gulpfile.js"
   },
@@ -30,6 +30,7 @@
     "gulp-zip": "^3.0.2",
     "dateformat": "^1.0.12",
     "lodash": "^3.10.1",
-    "jsonfile": "^2.2.3"
+    "jsonfile": "^2.2.3",
+    "gulp-add-src": "^0.2.0"
   }
 }

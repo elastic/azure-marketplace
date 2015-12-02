@@ -5,6 +5,7 @@ var zip = require("gulp-zip");
 var dateFormat = require("dateformat");
 var jsonfile = require('jsonfile');
 var _ = require('lodash');
+var addsrc = require('gulp-add-src');
 
 jsonfile.spaces = 2;
 
@@ -56,6 +57,7 @@ gulp.task("default", ["patch"], function() {
             }
         }))
         .pipe(jsonlint.failAfterError())
+        .pipe(addsrc.append(["../src/**/*.sh"]))
         .pipe(zip("elasticsearch-marketplace" + dateFormat(new Date(), "-yyyymmdd-hhMMss-Z").replace("+","-") +".zip"))
         .pipe(gulp.dest("../dist"));
         ;
