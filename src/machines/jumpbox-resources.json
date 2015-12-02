@@ -2,6 +2,13 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
     "namespace": {
       "type": "string",
       "defaultValue": "jumpbox",
@@ -47,7 +54,6 @@
     }
   },
   "variables": {
-    "templateBaseUrl": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
     "vmStorageAccountContainerName": "vhd",
     "vmSize": "Standard_A0",
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
@@ -126,7 +132,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('templateBaseUrl'), '/partials/osProfile-resources.json')]",
+          "uri": "[concat(parameters('templateBaseUrl'), '/partials/osProfile-resources.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {

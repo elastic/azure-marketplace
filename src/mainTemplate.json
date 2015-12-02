@@ -569,6 +569,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
@@ -639,6 +642,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
@@ -683,6 +689,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
@@ -730,6 +739,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
@@ -765,6 +777,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
