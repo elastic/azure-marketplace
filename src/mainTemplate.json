@@ -188,12 +188,14 @@
     },
     "adminPassword": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": ""
       }
     },
     "sshPublicKey": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
         "description": ""
       }

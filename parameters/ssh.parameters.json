@@ -8,13 +8,14 @@
 	"vmSizeDataNodes":{"value":"Standard_D1"},
 	"vmDataNodeCount":{"value":3},
 	"dataNodesAreMasterEligible":{"value":"Yes"},
-	"vmSizeMasterNodes":{"value":"Standard_D1"},
+	"vmSizeMasterNodes":{"value":"Standard_DS2"},
+	"vmClientNodeCount":{"value":0},
 	"vmSizeClientNodes":{"value":"Standard_D1"},
+	"adminUsername":{"value":"<os-level-username>"},
 	"authenticationType":{"value":"sshPublicKey"},
 	"sshPublicKey":{"value":"ssh-rsa <redacted>"},
-	"adminUsername":{"value":"os-level-username"},
-	"adminPassword":{"value":"example-password"},
-	"shieldAdminPassword":{"value":"example-password"},
-	"shieldReadPassword":{"value":"example-password"},
-	"shieldKibanaPassword":{"value":"example-password"}
+	"adminPassword":{"value":"<value-ignored>"},
+	"shieldAdminPassword":{"value":""},
+	"shieldReadPassword":{"value":""},
+	"shieldKibanaPassword":{"value":""}
 }
