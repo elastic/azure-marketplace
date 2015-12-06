@@ -11,13 +11,17 @@ jsonfile.spaces = 2;
 
 gulp.task("patch", function(cb) {
   jsonfile.readFile("../src/allowedValues.json", function(err, obj) {
-    var versions = obj.versions;
+    var versions = _.keys(obj.versions);
+    var esToKibanaMapping = _.mapValues(obj.versions, function(v) {
+      return v.kibana;
+    });
     var vmSizes = obj.vmSizes;
 
     var mainTemplate = "../src/mainTemplate.json";
     var uiTemplate = "../src/createUiDefinition.json";
 
     jsonfile.readFile(mainTemplate, function(err, obj) {
+      obj.variables.esToKibanaMapping = esToKibanaMapping;
       obj.parameters.esVersion.allowedValues = versions;
       obj.parameters.esVersion.defaultValue = _.last(versions);
       obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;

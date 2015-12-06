@@ -29,7 +29,7 @@ help()
     echo "This script installs kibana on a dedicated VM in the elasticsearch ARM template cluster"
     echo "Parameters:"
     echo "-n elasticsearch cluster name"
-    echo "-v elasticsearch version 1.5.0"
+    echo "-v kibana version e.g 4.2.1"
 
     echo "-l install plugins true/false"
     echo "-S kibana server password"
@@ -41,7 +41,7 @@ help()
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-ES_VERSION="2.0.0"
+KIBANA_VERSION="2.0.0"
 INSTALL_PLUGINS=0
 HOSTMODE="internal"
 
@@ -55,7 +55,7 @@ while getopts :n:v:S:m:lh optname; do
       CLUSTER_NAME=${OPTARG}
       ;;
     v) #elasticsearch version number
-      ES_VERSION=${OPTARG}
+      KIBANA_VERSION=${OPTARG}
       ;;
     S) #shield kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
@@ -81,7 +81,7 @@ done
 #hit the loadbalancers internal IP
 ELASTICSEARCH_URL="http://10.0.0.100:9200"
 
-echo "installing kibana for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
+echo "installing kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
 echo "installing kibana plugins is set to: $INSTALL_PLUGINS"
 echo "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 
@@ -89,7 +89,7 @@ sudo groupadd -g 999 kibana
 sudo useradd -u 999 -g 999 kibana
 
 sudo mkdir -p /opt/kibana
-curl -o kibana.tar.gz https://download.elastic.co/kibana/kibana/kibana-4.2.0-linux-x64.tar.gz
+curl -o kibana.tar.gz https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x64.tar.gz
 tar xvf kibana.tar.gz -C /opt/kibana/ --strip-components=1
 
 sudo chown -R kibana: /opt/kibana

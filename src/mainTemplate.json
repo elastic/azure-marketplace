@@ -286,6 +286,11 @@
     },
     "clientPre": "[split(string(parameters('vmClientNodeCount')), '')[0]]",
     "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[concat('n',variables('clientPre'))])]",
+    "esToKibanaMapping": {
+      "2.0.0": "4.2.1",
+      "2.0.1": "4.2.1",
+      "2.1.0": "4.3.0"
+    },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
       "version": "[parameters('esVersion')]",
@@ -293,7 +298,8 @@
       "shieldAdminPwd": "[parameters('shieldAdminPassword')]",
       "shieldReadPwd": "[parameters('shieldReadPassword')]",
       "shieldKibanaPwd": "[parameters('shieldKibanaPassword')]",
-      "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name)]"
+      "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name)]",
+      "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
     "dataNodeShortOpts": {
       "No": "z",
@@ -365,7 +371,7 @@
           "typeHandlerVersion": "1.2",
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]",
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').version, ' -S ', variables('esSettings').shieldKibanaServerPwd)]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').kibanaVersion, ' -S ', variables('esSettings').shieldKibanaServerPwd)]"
           }
         }
       }
