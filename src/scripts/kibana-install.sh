@@ -41,21 +41,25 @@ help()
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="2.0.0"
+KIBANA_VERSION="4.2.1"
+ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
 HOSTMODE="internal"
 
 USER_KIBANA4_SERVER_PWD="changeME"
 
 #Loop through options passed
-while getopts :n:v:S:m:lh optname; do
+while getopts :n:v:e:S:m:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
       CLUSTER_NAME=${OPTARG}
       ;;
-    v) #elasticsearch version number
+    v) #kibana version number
       KIBANA_VERSION=${OPTARG}
+      ;;
+    e) #elasticsearch version number
+      ES_VERSION=${OPTARG}
       ;;
     S) #shield kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
@@ -81,7 +85,7 @@ done
 #hit the loadbalancers internal IP
 ELASTICSEARCH_URL="http://10.0.0.100:9200"
 
-echo "installing kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
+echo "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
 echo "installing kibana plugins is set to: $INSTALL_PLUGINS"
 echo "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 
@@ -105,7 +109,7 @@ fi
 # install the marvel plugin
 # install the sense plugin (but only if the template user also chose to install shield)
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-    /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/latest
+    /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
     /opt/kibana/bin/kibana plugin --install elastic/sense
 fi
 
