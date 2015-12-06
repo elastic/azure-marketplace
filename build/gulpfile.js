@@ -21,6 +21,15 @@ gulp.task("patch", function(cb) {
     var uiTemplate = "../src/createUiDefinition.json";
 
     jsonfile.readFile(mainTemplate, function(err, obj) {
+
+      var dataSkus = _.keys(obj.variables.dataSkuSettings);
+      var difference = _.difference(vmSizes, dataSkus);
+
+      if (difference.length > 0) {
+        console.error("Not all vm sizes are property mapped as dataSku's: [" + difference.join(",") + "]");
+        process.exit(1);
+      }
+
       obj.variables.esToKibanaMapping = esToKibanaMapping;
       obj.parameters.esVersion.allowedValues = versions;
       obj.parameters.esVersion.defaultValue = _.last(versions);
