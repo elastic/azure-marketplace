@@ -130,11 +130,11 @@ $ azure group create <name> <location>
 
 Next we can either use our published template directly using `--template-uri`
 
-> $ azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
+> $ azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
 
 or if your are executing commands from a clone of this repo using `--template-file`
 
-> $ azure group deployment create --template-file src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
+> $ azure group deployment create --template-file src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
 
 `<name>` in these last two examples refers to the resource group you just created.
 
