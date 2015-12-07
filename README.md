@@ -85,8 +85,16 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td>Admin username used when provisioning virtual machines
     </td></tr>
 
-  <tr><td>password</td><td>object</td>
-    <td>Password is a complex object parameter, we support both authenticating through username/pass or ssh keys. See the <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json"> parameters example folder</a> for an example of what to pass for either option.
+  <tr><td>authenticationType</td><td>object</td>
+    <td>Either <em>password</em> or <em>sshPublicKey</em>  
+    </td></tr>
+
+  <tr><td>adminPassword</td><td>object</td>
+    <td>When <em>authenticationType</em> is <em>password</em> this sets the OS level user's password
+    </td></tr>
+
+  <tr><td>sshPublicKey</td><td>object</td>
+    <td>When <em>authenticationType</em> is <em>sshPublicKey</em> this sets the OS level sshKey that can be used to login.
     </td></tr>
 
   <tr><td>shieldAdminPassword</td><td>securestring</td>
