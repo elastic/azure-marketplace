@@ -89,15 +89,15 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>authenticationType</td><td>object</td>
-    <td>Either <em>password</em> or <em>sshPublicKey</em>  
+    <td>Either <code>password</code> or <code>sshPublicKey</code>  
     </td></tr>
 
   <tr><td>adminPassword</td><td>object</td>
-    <td>When <em>authenticationType</em> is <em>password</em> this sets the OS level user's password
+    <td>When <code>authenticationType</code> is <code>password</code> this sets the OS level user's password
     </td></tr>
 
   <tr><td>sshPublicKey</td><td>object</td>
-    <td>When <em>authenticationType</em> is <em>sshPublicKey</em> this sets the OS level sshKey that can be used to login.
+    <td>When <code>authenticationType</code> is <code>sshPublicKey</code> this sets the OS level sshKey that can be used to login.
     </td></tr>
 
   <tr><td>shieldAdminPassword</td><td>securestring</td>
