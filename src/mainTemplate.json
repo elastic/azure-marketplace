@@ -272,20 +272,12 @@
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
-    "clientTemplates": {
-      "n0": "empty/empty-resources.json",
-      "n1": "machines/client-nodes-resources.json",
-      "n2": "machines/client-nodes-resources.json",
-      "n3": "machines/client-nodes-resources.json",
-      "n4": "machines/client-nodes-resources.json",
-      "n5": "machines/client-nodes-resources.json",
-      "n6": "machines/client-nodes-resources.json",
-      "n7": "machines/client-nodes-resources.json",
-      "n8": "machines/client-nodes-resources.json",
-      "n9": "machines/client-nodes-resources.json"
-    },
-    "clientPre": "[split(string(parameters('vmClientNodeCount')), '')[0]]",
-    "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[concat('n',variables('clientPre'))])]",
+    "clientTemplates": [
+      "empty/empty-resources.json",
+      "machines/client-nodes-resources.json",
+    ],
+    "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
+    "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
     "esToKibanaMapping": {
       "2.0.0": "4.2.1",
       "2.0.1": "4.2.1",
