@@ -413,17 +413,11 @@
     "lbBackendPoolsRemoved": {
       "backendPools": []
     },
-    "dataLBSettings0": "[variables('lbBackEndPoolsAdded')]",
-    "dataLBSettings1": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings2": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings3": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings4": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings5": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings6": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings7": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings8": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings9": "[variables('lbBackendPoolsRemoved')]",
-    "dataLBSettings": "[variables(concat('dataLBSettings', variables('clientPre')))]",
+    "dataLBOptions": [
+      "lbBackendPoolsRemoved",
+      "lbBackEndPoolsAdded"
+    ],
+    "dataLBSettings": "[variables(variables('dataLBOptions')[variables('clientResourceIndex')])]",
     "dataSkuSettings": {
       "Standard_D1": {
         "dataDisks": 2,
