@@ -414,8 +414,8 @@
       "backendPools": []
     },
     "dataLBOptions": [
-      "lbBackendPoolsRemoved",
-      "lbBackEndPoolsAdded"
+      "[variables('lbBackEndPoolsAdded')]",
+      "[variables('lbBackEndPoolsRemoved')]"
     ],
     "dataLBSettings": "[variables(variables('dataLBOptions')[variables('clientResourceIndex')])]",
     "dataSkuSettings": {
