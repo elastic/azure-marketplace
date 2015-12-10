@@ -411,7 +411,7 @@
       ]
     },
     "lbBackendPoolsRemoved": {
-      "backendPools": [ ]
+      "backendPools": []
     },
     "dataLBOptions": [
       "[variables('lbBackEndPoolsAdded')]",
