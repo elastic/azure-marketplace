@@ -38,16 +38,29 @@ gulp.task("patch", function(cb) {
       obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
       jsonfile.writeFile(mainTemplate, obj, function (err) {
         jsonfile.readFile(uiTemplate, function(err, obj) {
+
+          //patch allowed versions on the cluster step
           var clusterStep = _.find(obj.parameters.steps, function (step) {
             return step.name == "clusterSettingsStep";
           });
           var versionControl = _.find(clusterStep.elements, function (el) {
             return el.name == "esVersion";
           });
-          versionControl.constraints.allowedValues = _.map(versions, function(v)
-          {
+          versionControl.constraints.allowedValues = _.map(versions, function(v) {
             return { label: "v" + v, value : v};
           });
+
+          //patch allowedVMSizes on the nodesStep
+          var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
+
+          var masterSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
+          var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
+          var clientSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeClientNodes"; });
+          var patchVmSizes = function(control) { control.constraints.allowedValues = vmSizes; }
+          patchVmSizes(masterSizeControl);
+          patchVmSizes(dataSizeControl);
+          patchVmSizes(clientSizeControl);
+
           jsonfile.writeFile(uiTemplate, obj, function (err) {
             cb();
           });
