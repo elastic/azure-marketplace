@@ -52,7 +52,7 @@
     },
     "kibana": {
       "type": "string",
-      "defaultValue": "No",
+      "defaultValue": "Yes",
       "allowedValues": [
         "Yes",
         "No"
@@ -63,7 +63,7 @@
     },
     "jumpbox": {
       "type": "string",
-      "defaultValue": "Yes",
+      "defaultValue": "No",
       "allowedValues": [
         "Yes",
         "No"
@@ -74,7 +74,7 @@
     },
     "vmSizeDataNodes": {
       "type": "string",
-      "defaultValue": "Standard_A2",
+      "defaultValue": "Standard_D1",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -116,7 +116,7 @@
     },
     "vmSizeMasterNodes": {
       "type": "string",
-      "defaultValue": "Standard_A1",
+      "defaultValue": "Standard_D1",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -147,7 +147,7 @@
     },
     "vmSizeClientNodes": {
       "type": "string",
-      "defaultValue": "Standard_A2",
+      "defaultValue": "Standard_D1",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -177,7 +177,6 @@
     },
     "authenticationType": {
       "type": "string",
-      "defaultValue": "password",
       "allowedValues": [
         "password",
         "sshPublicKey"
@@ -190,33 +189,30 @@
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": ""
+        "description": "When authenticationType is password this needs to passed as the password for access to the machines"
       }
     },
     "sshPublicKey": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": ""
+        "description": "When authenticationType is sshPublicKey this needs to be set to the ssh key you'd like to connect to the machines with"
       }
     },
     "shieldAdminPassword": {
       "type": "securestring",
-      "defaultValue": "changeME",
       "metadata": {
         "description": "Shield password for the 'es_admin' user with admin role, must be > 6 characters"
       }
     },
     "shieldReadPassword": {
       "type": "securestring",
-      "defaultValue": "changeME",
       "metadata": {
         "description": "Shield password for the 'es_read' user with user (read-only) role, must be > 6 characters"
       }
     },
     "shieldKibanaPassword": {
       "type": "securestring",
-      "defaultValue": "changeME",
       "metadata": {
         "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
