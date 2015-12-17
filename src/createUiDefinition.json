@@ -260,6 +260,7 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Client node VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+            "defaultValue": "Standard_D1",
             "recommendedSizes": [
               "Standard_D1",
               "Standard_D2",
