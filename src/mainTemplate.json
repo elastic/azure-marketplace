@@ -177,6 +177,7 @@
     },
     "authenticationType": {
       "type": "string",
+      "defaultValue": "password",
       "allowedValues": [
         "password",
         "sshPublicKey"
@@ -189,30 +190,33 @@
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "When authenticationType is password this needs to passed as the password for access to the machines"
+        "description": ""
       }
     },
     "sshPublicKey": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "When authenticationType is sshPublicKey this needs to be set to the ssh key you'd like to connect to the machines with"
+        "description": ""
       }
     },
     "shieldAdminPassword": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the 'es_admin' user with admin role, must be > 6 characters"
       }
     },
     "shieldReadPassword": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the 'es_read' user with user (read-only) role, must be > 6 characters"
       }
     },
     "shieldKibanaPassword": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
