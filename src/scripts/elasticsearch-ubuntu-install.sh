@@ -190,8 +190,10 @@ log "Cluster install script is set to $INSTALL_PLUGIN"
 # Format data disks (Find data disks then partition, format, and mount them as seperate drives)
 format_data_disks()
 {
+    log "starting to RAID0 the attached disks"
     # using the -s paramater causing disks under /datadisks/* to be raid0'ed
     bash vm-disk-utils-0.1.sh -s
+    log "finished RAID0'ing the attached disks"
 }
 
 # Configure Elasticsearch Data Disk Folder and Permissions
