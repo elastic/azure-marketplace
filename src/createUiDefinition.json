@@ -121,7 +121,8 @@
                 "Standard_DS2",
                 "Standard_DS3",
                 "Standard_DS4",
-                "Standard_DS13"
+                "Standard_DS13",
+                "Standard_DS14"
               ]
             },
             "osPlatform": "Linux",
@@ -193,7 +194,8 @@
                 "Standard_DS2",
                 "Standard_DS3",
                 "Standard_DS4",
-                "Standard_DS13"
+                "Standard_DS13",
+                "Standard_DS14"
               ]
             },
             "osPlatform": "Linux",
@@ -284,7 +286,8 @@
                 "Standard_DS2",
                 "Standard_DS3",
                 "Standard_DS4",
-                "Standard_DS13"
+                "Standard_DS13",
+                "Standard_DS14"
               ]
             },
             "osPlatform": "Linux",
