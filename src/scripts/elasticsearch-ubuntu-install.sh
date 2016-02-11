@@ -2,7 +2,8 @@
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2015 Microsoft Azure
+# Portions Copyright (c) 2015 Microsoft Azure
+# Portions Copyright (c) 2015 Elastic, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +24,13 @@
 # SOFTWARE.
 #
 # Trent Swanson (Full Scale 180 Inc)
+# Martijn Laarman (Elastic)
 #
+
+#########################
+# HELP
+#########################
+
 help()
 {
     echo "This script installs Elasticsearch cluster on Ubuntu"
@@ -49,15 +56,17 @@ help()
     echo "-h view this help content"
 }
 
-# Log method to control/redirect log output
+# log() does an echo prefixed with time
 log()
 {
-    # If you want to enable this logging add a un-comment the line below and add your account id
-    #curl -X POST -H "content-type:text/plain" --data-binary "${HOSTNAME} - $1" https://logs-01.loggly.com/inputs/<key>/tag/es-extension,${HOSTNAME}
-    echo "$1"
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
 }
 
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
+
+#########################
+# Preconditions
+#########################
 
 if [ "${UID}" -ne 0 ];
 then
@@ -71,15 +80,18 @@ fi
 grep -q "${HOSTNAME}" /etc/hosts
 if [ $? == 0 ]
 then
-  echo "${HOSTNAME}found in /etc/hosts"
+  log "${HOSTNAME}found in /etc/hosts"
 else
-  echo "${HOSTNAME} not found in /etc/hosts"
+  log "${HOSTNAME} not found in /etc/hosts"
   # Append it to the hsots file if not there
   echo "127.0.0.1 ${HOSTNAME}" >> /etc/hosts
   log "hostname ${HOSTNAME} added to /etchosts"
 fi
 
-#Script Parameters
+#########################
+# Paramater handling
+#########################
+
 CLUSTER_NAME="elasticsearch"
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
@@ -150,6 +162,10 @@ while getopts :n:v:A:R:K:S:Z:xyzldh optname; do
   esac
 done
 
+#########################
+# Parameter state changes
+#########################
+
 if [ ${CLUSTER_USES_DEDICATED_MASTERS} -ne 0 ]; then
     MINIMUM_MASTER_NODES=2
     UNICAST_HOSTS='["masterVm0:9300","masterVm1:9300","masterVm2:9300"]'
@@ -166,18 +182,26 @@ log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' wi
 log "Cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
 log "Cluster install script is set to $INSTALL_PLUGIN"
 
-# Base path for data disk mount points
-# The script assume format /datadisks/disk1 /datadisks/disk2
-DATA_BASE="/datadisks"
+
+#########################
+# Installation steps as functions
+#########################
+
+# Format data disks (Find data disks then partition, format, and mount them as seperate drives)
+format_data_disks()
+{
+    # using the -s paramater causing disks under /datadisks/* to be raid0'ed
+    bash vm-disk-utils-0.1.sh -s
+}
 
 # Configure Elasticsearch Data Disk Folder and Permissions
 setup_data_disk()
 {
-    log "Configuring disk $1/elasticsearch/data"
-
-    mkdir -p "$1/elasticsearch/data"
-    chown -R elasticsearch:elasticsearch "$1/elasticsearch"
-    chmod 755 "$1/elasticsearch"
+    local RAIDDISK="/datadisks/disk1"
+    log "Configuring disk $RAIDDISK/elasticsearch/data"
+    mkdir -p "$RAIDDISK/elasticsearch/data"
+    chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
+    chmod 755 "$RAIDDISK/elasticsearch"
 }
 
 # Install Oracle Java
@@ -189,7 +213,6 @@ install_java()
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     apt-get -y install oracle-java8-installer
-
     log "Installed Java"
 }
 
@@ -206,131 +229,13 @@ install_es()
     log "Installing Elaticsearch Version - $ES_VERSION"
     log "Download location - $DOWNLOAD_URL"
     sudo wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    log "Downloaded elasticsearch $ES_VERSION"
     sudo dpkg -i elasticsearch.deb
+    log "Installing Elaticsearch Version - $ES_VERSION"
 }
 
-install_ntp()
+install_plugins()
 {
-    log "installing ntp deamon"
-    apt-get -y install ntp
-    ntpdate pool.ntp.org
-    log "installed ntp deamon and ntpdate"
-}
-
-# Primary Install Tasks
-#########################
-
-install_ntp
-
-#Format data disks (Find data disks then partition, format, and mount them as seperate drives)
-# using the -s paramater causing disks under /datadisks/* to be raid0'ed
-#------------------------
-bash vm-disk-utils-0.1.sh -s
-
-#Install Oracle Java
-#------------------------
-install_java
-
-#
-#Install Elasticsearch
-#-----------------------
-install_es
-
-# Prepare configuration information
-# Configure permissions on data disks for elasticsearch user:group
-#--------------------------
-RAIDDISK="/datadisks/disk1"
-DATAPATH_CONFIG="/datadisks/disk1/elasticsearch/data"
-
-setup_data_disk ${RAIDDISK}
-
-#if [ -d "${DATA_BASE}" ]; then
-#    for D in `find /datadisks/ -mindepth 1 -maxdepth 1 -type d`
-#    do
-#        #Configure disk permissions and folder for storage
-#        setup_data_disk ${D}
-#        # Add to list for elasticsearch configuration
-#        DATAPATH_CONFIG+="$D/elasticsearch/data,"
-#    done
-#    #Remove the extra trailing comma
-#    DATAPATH_CONFIG="${DATAPATH_CONFIG%?}"
-#else
-#    #If we do not find folders/disks in our data disk mount directory then use the defaults
-#    log "Configured data directory does not exist for ${HOSTNAME} using defaults"
-#fi
-
-#Configure Elasticsearch settings
-#---------------------------
-#Backup the current Elasticsearch configuration file
-mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak
-
-# Set cluster and machine names - just use hostname for our node.name
-echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
-echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
-
-# Configure paths - if we have data disks attached then use them
-if [ -n "$DATAPATH_CONFIG" ]; then
-    log "Update configuration with data path list of $DATAPATH_CONFIG"
-    echo "path.data: $DATAPATH_CONFIG" >> /etc/elasticsearch/elasticsearch.yml
-fi
-
-# Configure discovery
-log "Update configuration with hosts configuration of $UNICAST_HOSTS"
-echo "discovery.zen.ping.multicast.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> /etc/elasticsearch/elasticsearch.yml
-
-
-# Configure Elasticsearch node type
-log "Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_NODE"
-
-if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
-    log "Configure node as master only"
-    echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
-    echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
-    # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-elif [ ${DATA_NODE} -ne 0 ]; then
-    log "Configure node as data only"
-    echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
-    echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
-    # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
-    log "Configure node as data only"
-    echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
-    echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
-    # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-else
-    log "Configure node for master and data"
-    echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
-    echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
-fi
-
-echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
-echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
-#echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
-
-# DNS Retry
-echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
-resolvconf -u
-
-# Increase maximum mmap count
-echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
-
-#"action.disable_delete_all_indices: ${DISABLE_DELETE_ALL}" >> /etc/elasticsearch/elasticsearch.yml
-#"action.auto_create_index: ${AUTOCREATE_INDEX}" >> /etc/elasticsearch/elasticsearch.yml
-
-# Configure Environment
-#----------------------
-#/etc/default/elasticseach
-#Update HEAP Size in this configuration or in upstart service
-#Set Elasticsearch heap size to 50% of system memory
-#TODO: Move this to an init.d script so we can handle instance size increases
-ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
-log "Configure elasticsearch heap size - $ES_HEAP"
-echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
-
-#Optionally Install Marvel
-log "Plugin install set to ${INSTALL_PLUGINS}"
-if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     log "Installing Plugins Shield, Marvel, Watcher"
     sudo /usr/share/elasticsearch/bin/plugin install license
     sudo /usr/share/elasticsearch/bin/plugin install shield
@@ -354,53 +259,150 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     log " Finished adding es_kibana_server"
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
+}
+
+configure_elasticsearch_yaml()
+{
+    # Backup the current Elasticsearch configuration file
+    mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak
+
+    # Set cluster and machine names - just use hostname for our node.name
+    echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
+    echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
+
+    log "Update configuration with data path list of $DATAPATH_CONFIG"
+    echo "path.data: /datadisks/disk1/elasticsearch/data" >> /etc/elasticsearch/elasticsearch.yml
+
+    # Configure discovery
+    log "Update configuration with hosts configuration of $UNICAST_HOSTS"
+    echo "discovery.zen.ping.multicast.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+    echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> /etc/elasticsearch/elasticsearch.yml
+
+    # Configure Elasticsearch node type
+    log "Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_NODE"
+
+    if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
+        log "Configure node as master only"
+        echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
+        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+    elif [ ${DATA_NODE} -ne 0 ]; then
+        log "Configure node as data only"
+        echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+    elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
+        log "Configure node as data only"
+        echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
+        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+    else
+        log "Configure node for master and data"
+        echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+    fi
+
+    echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
+    echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
+
+    # Swap is disabled by default in Ubuntu Azure VMs
+    # echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+}
+
+install_ntp()
+{
+    log "installing ntp deamon"
+    apt-get -y install ntp
+    ntpdate pool.ntp.org
+    log "installed ntp deamon and ntpdate"
+}
+
+install_monit()
+{
+    log "installing monit"
+    apt-get -y install monit
+    echo "set daemon 30" >> /etc/monit/monitrc
+    echo "set httpd port 2812 and" >> /etc/monit/monitrc
+    echo "    use address localhost" >> /etc/monit/monitrc
+    echo "    allow localhost" >> /etc/monit/monitrc
+    sudo touch /etc/monit/conf.d/elasticsearch.conf
+    echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
+    echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
+    echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
+    echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
+    log "installed monit"
+}
+
+start_monit()
+{
+    log "starting monit"
+    sudo /etc/init.d/monit start
+    sudo monit start all
+    log "started monit"
+}
+
+start_elasticsearch()
+{
+    #and... start the service
+    log "Starting Elasticsearch on ${HOSTNAME}"
+    update-rc.d elasticsearch defaults 95 10
+    sudo service elasticsearch start
+    log "complete elasticsearch setup and started"
+}
+
+configure_os_properties()
+{
+    log "configuring operating system level configuration"
+    # DNS Retry
+    echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
+    resolvconf -u
+
+    # Increase maximum mmap count
+    echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
+
+    #TODO: Move this to an init.d script so we can handle instance size increases
+    ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
+    log "Configure elasticsearch heap size - $ES_HEAP"
+    echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
+
+    # Verify this is necessary on azure
+    # ML: 80% certain i verified this but will do so again
+    #echo "elasticsearch    -    nofile    65536" >> /etc/security/limits.conf
+    #echo "elasticsearch     -    memlock   unlimited" >> /etc/security/limits.conf
+    #echo "session    required    pam_limits.so" >> /etc/pam.d/su
+    #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session
+    #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session-noninteractive
+    #echo "session    required    pam_limits.so" >> /etc/pam.d/sudo
+    log "configured operating system level configuration"
+
+}
+
+#########################
+# Instalation sequence
+#########################
+
+install_ntp
+
+format_data_disks
+
+install_java
+
+install_es
+
+if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    install_plugins
 fi
 
+setup_data_disk
 
-#Install Monit
-#TODO - Install Monit to monitor the process (Although load balancer probes can accomplish this)
-apt-get -y install monit
-echo "set daemon 30" >> /etc/monit/monitrc
-echo "set httpd port 2812 and" >> /etc/monit/monitrc
-echo "    use address localhost" >> /etc/monit/monitrc
-echo "    allow localhost" >> /etc/monit/monitrc
-sudo touch /etc/monit/conf.d/elasticsearch.conf
-echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
-echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
-echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
-echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
+configure_elasticsearch_yaml
 
-sudo /etc/init.d/monit start
-sudo monit start all
+configure_os_properties
 
-#and... start the service
-log "Starting Elasticsearch on ${HOSTNAME}"
-update-rc.d elasticsearch defaults 95 10
-sudo service elasticsearch start
-log "complete elasticsearch setup and started"
+install_monit
+
+start_monit
+
+start_elasticsearch
+
 exit 0
-
-#Script Extras
-
-#Configure open file and memory limits
-#Swap is disabled by default in Ubuntu Azure VMs
-#echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
-
-# Verify this is necessary on azure
-#echo "elasticsearch    -    nofile    65536" >> /etc/security/limits.conf
-#echo "elasticsearch     -    memlock   unlimited" >> /etc/security/limits.conf
-#echo "session    required    pam_limits.so" >> /etc/pam.d/su
-#echo "session    required    pam_limits.so" >> /etc/pam.d/common-session
-#echo "session    required    pam_limits.so" >> /etc/pam.d/common-session-noninteractive
-#echo "session    required    pam_limits.so" >> /etc/pam.d/sudo
-
-#--------------- TEMP (We will use this for the update path yet) ---------------
-#Updating the properties in the existing configuraiton has been a bit sensitve and requires more testing
-#sed -i -e "/cluster\.name/s/^#//g;s/^\(cluster\.name\s*:\s*\).*\$/\1${CLUSTER_NAME}/" /etc/elasticsearch/elasticsearch.yml
-#sed -i -e "/bootstrap\.mlockall/s/^#//g;s/^\(bootstrap\.mlockall\s*:\s*\).*\$/\1true/" /etc/elasticsearch/elasticsearch.yml
-#sed -i -e "/path\.data/s/^#//g;s/^\(path\.data\s*:\s*\).*\$/\1${DATAPATH_CONFIG}/" /etc/elasticsearch/elasticsearch.yml
-
-# Minimum master nodes nodes/2+1 (These can be configured via API as well - (_cluster/settings))
-# gateway.expected_nodes: 10
-# gateway.recover_after_time: 5m
-#----------------------
