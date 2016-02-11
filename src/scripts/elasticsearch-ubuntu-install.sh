@@ -209,11 +209,14 @@ setup_data_disk()
 # Install Oracle Java
 install_java()
 {
-    log "Installing Java"
+    log "Adding apt repository for java 8"
     add-apt-repository -y ppa:webupd8team/java
+    log "updating apt-get"
     apt-get -y update  > /dev/null
+    log "updated apt-get"
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+    log "Installing Java"
     apt-get -y install oracle-java8-installer
     log "Installed Java"
 }
