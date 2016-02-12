@@ -11,11 +11,11 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.1.0",
+      "defaultValue": "2.2.0",
       "allowedValues": [
-        "2.0.0",
-        "2.0.1",
-        "2.1.0"
+        "2.0.2",
+        "2.1.2",
+        "2.2.0"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -283,9 +283,9 @@
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
     "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
     "esToKibanaMapping": {
-      "2.0.0": "4.2.1",
-      "2.0.1": "4.2.1",
-      "2.1.0": "4.3.0"
+      "2.0.2": "4.2.2",
+      "2.1.2": "4.3.1",
+      "2.2.0": "4.4.0"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
@@ -403,12 +403,18 @@
       }
     },
     "backendPoolConfigurations": {
-      "internal" : [
-        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]" }
+      "internal": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+        }
       ],
-      "external" : [
-        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]" },
-        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]" }
+      "external": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+        },
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
+        }
       ]
     },
     "lbBackEndPoolsAdded": {
@@ -422,7 +428,6 @@
       "[variables('lbBackEndPoolsRemoved')]"
     ],
     "dataLBSettings": "[variables('dataLBOptions')[variables('clientResourceIndex')]]",
-
     "dataSkuSettings": {
       "Standard_D1": {
         "dataDisks": 2,

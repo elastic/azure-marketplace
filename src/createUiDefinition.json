@@ -56,16 +56,16 @@
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v2.0.0",
-                  "value": "2.0.0"
+                  "label": "v2.0.2",
+                  "value": "2.0.2"
                 },
                 {
-                  "label": "v2.0.1",
-                  "value": "2.0.1"
+                  "label": "v2.1.2",
+                  "value": "2.1.2"
                 },
                 {
-                  "label": "v2.1.0",
-                  "value": "2.1.0"
+                  "label": "v2.2.0",
+                  "value": "2.2.0"
                 }
               ]
             }
