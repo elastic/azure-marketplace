@@ -247,9 +247,9 @@ install_plugins()
     sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
 
-    log " [install_plugins] Start adding es_admin"
+    log "[install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
-    log " [install_plugins] Finished adding es_admin"
+    log "[install_plugins] Finished adding es_admin"
 
     log "[install_plugins]  Start adding es_read"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_read" -p "${USER_READ_PWD}" -r user
@@ -390,18 +390,28 @@ port_forward()
     sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
     sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 }
+install_parallel()
+{
+    log "[install_parallel] start installing parallel"
+    apt-get -y install parallel
+    log "[install_parallel] finished installing parallel"
+
+}
 
 #########################
 # Instalation sequence
 #########################
 
-export -f install_ntp
+install_ntp
+
+install_parallel
+
 export -f install_java
 export -f format_data_disks
 export -f install_es
 export -f install_monit
 
-parallel ::: install_ntp install_java format_data_disks install_es install_monit
+parallel ::: install_java format_data_disks install_es install_monit
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
