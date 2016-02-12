@@ -41,7 +41,7 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "es",
+            "name": "es-http-internal",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -55,12 +55,12 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/probes/esProbe')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/probes/es-probe-internal-http')]"
               }
             }
           },
           {
-            "name": "estransport",
+            "name": "es-transport-internal",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -78,7 +78,7 @@
         ],
         "probes": [
           {
-            "name": "esProbe",
+            "name": "es-probe-internal-http",
             "properties": {
               "protocol": "tcp",
               "port": 9200,

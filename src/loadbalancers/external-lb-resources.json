@@ -55,7 +55,7 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/probes/esProbe')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/probes/es-probe-internal-http')]"
               }
             }
           },
@@ -138,7 +138,7 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/esProbe')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/es-http-external-probe')]"
               }
             }
           }
