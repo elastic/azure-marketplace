@@ -260,6 +260,7 @@
     },
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
+    "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/',parameters('loadBalancerType'),'-lb-resources.json')]",
     "masterTemplates": {
       "No": "machines/master-nodes-resources.json",
       "Yes": "empty/empty-master-nodes-resources.json"
@@ -319,11 +320,6 @@
       "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/shared_scripts/ubuntu/vm-disk-utils-0.1.sh"
     ],
     "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
-    "kibanaClientNodeInstallScripts": {
-      "internal": "echo",
-      "external": "[variables('clientInstallScript')]"
-    },
-    "kibanaClientNodeInstallScript": "[variables('kibanaClientNodeInstallScripts')[parameters('loadBalancerType')]]",
     "ubuntuSettings": {
       "imageReference": {
         "publisher": "Canonical",
@@ -406,12 +402,17 @@
         }
       }
     },
-    "lbBackEndPoolsAdded": {
-      "backendPools": [
-        {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/backendAddressPools/LBBE')]"
-        }
+    "backendPoolConfigurations": {
+      "internal" : [
+        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]" }
+      ],
+      "external" : [
+        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]" },
+        { "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]" }
       ]
+    },
+    "lbBackEndPoolsAdded": {
+      "backendPools": "[variables('backendPoolConfigurations')[parameters('loadBalancerType')]]"
     },
     "lbBackendPoolsRemoved": {
       "backendPools": []
@@ -421,6 +422,7 @@
       "[variables('lbBackEndPoolsRemoved')]"
     ],
     "dataLBSettings": "[variables('dataLBOptions')[variables('clientResourceIndex')]]",
+
     "dataSkuSettings": {
       "Standard_D1": {
         "dataDisks": 2,
@@ -566,6 +568,52 @@
   },
   "resources": [
     {
+      "name": "shared",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('sharedTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[variables('location')]"
+          },
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
+          },
+          "storageAccountName": {
+            "value": "[variables('storageAccountNameShared')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "loadbalancer",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('loadBalancerTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[variables('location')]"
+          },
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
+          }
+        }
+      }
+    },
+    {
       "name": "master-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
@@ -605,35 +653,6 @@
           },
           "osSettings": {
             "value": "[variables('osSettings')]"
-          }
-        }
-      }
-    },
-    {
-      "name": "shared",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2015-01-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('sharedTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "networkSettings": {
-            "value": "[variables('networkSettings')]"
-          },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "loadBalancerType": {
-            "value": "[parameters('loadBalancerType')]"
-          },
-          "ilbIpAddress": {
-            "value": "10.0.0.100"
           }
         }
       }
@@ -777,9 +796,6 @@
       "name": "kibana",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'data-nodes')]"
-      ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {

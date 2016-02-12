@@ -2,7 +2,9 @@
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2015 Microsoft Azure
+# Portions Copyright (c) 2015 Microsoft Azure
+# Portions Copyright (c) 2015 Elastic, Inc.
+#
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,13 @@
 # SOFTWARE.
 #
 # Trent Swanson (Full Scale 180 Inc)
+# Martijn Laarman (Elastic)
 #
+
+#########################
+# HELP
+#########################
+
 help()
 {
     echo "This script installs kibana on a dedicated VM in the elasticsearch ARM template cluster"
@@ -38,6 +46,17 @@ help()
     echo "-h view this help content"
 }
 
+# log() does an echo prefixed with time
+log()
+{
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
+}
+
+log "Begin execution of Kibana script extension on ${HOSTNAME}"
+
+#########################
+# Paramater handling
+#########################
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
@@ -82,12 +101,20 @@ while getopts :n:v:e:S:m:lh optname; do
   esac
 done
 
+#########################
+# Parameter state changes
+#########################
+
 #hit the loadbalancers internal IP
 ELASTICSEARCH_URL="http://10.0.0.100:9200"
 
 echo "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
 echo "installing kibana plugins is set to: $INSTALL_PLUGINS"
 echo "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
+
+#########################
+# Installation
+#########################
 
 sudo groupadd -g 999 kibana
 sudo useradd -u 999 -g 999 kibana
@@ -106,8 +133,6 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
 fi
 
-# install the marvel plugin
-# install the sense plugin (but only if the template user also chose to install shield)
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
     /opt/kibana/bin/kibana plugin --install elastic/sense
