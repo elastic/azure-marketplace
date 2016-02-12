@@ -190,17 +190,17 @@ log "Cluster install script is set to $INSTALL_PLUGIN"
 # Format data disks (Find data disks then partition, format, and mount them as seperate drives)
 format_data_disks()
 {
-    log "starting to RAID0 the attached disks"
+    log "[format_data_disks] starting to RAID0 the attached disks"
     # using the -s paramater causing disks under /datadisks/* to be raid0'ed
     bash vm-disk-utils-0.1.sh -s
-    log "finished RAID0'ing the attached disks"
+    log "[format_data_disks] finished RAID0'ing the attached disks"
 }
 
 # Configure Elasticsearch Data Disk Folder and Permissions
 setup_data_disk()
 {
     local RAIDDISK="/datadisks/disk1"
-    log "Configuring disk $RAIDDISK/elasticsearch/data"
+    log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
     mkdir -p "$RAIDDISK/elasticsearch/data"
     chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
     chmod 755 "$RAIDDISK/elasticsearch"
@@ -209,16 +209,16 @@ setup_data_disk()
 # Install Oracle Java
 install_java()
 {
-    log "Adding apt repository for java 8"
+    log "[install_java] Adding apt repository for java 8"
     add-apt-repository -y ppa:webupd8team/java
-    log "updating apt-get"
+    log "[install_java] updating apt-get"
     apt-get -y update  > /dev/null
-    log "updated apt-get"
+    log "[install_java] updated apt-get"
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-    log "Installing Java"
+    log "[install_java] Installing Java"
     apt-get -y install oracle-java8-installer
-    log "Installed Java"
+    log "[install_java] Installed Java"
 }
 
 # Install Elasticsearch
@@ -231,37 +231,37 @@ install_es()
         DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ES_VERSION.deb"
     fi
 
-    log "Installing Elaticsearch Version - $ES_VERSION"
-    log "Download location - $DOWNLOAD_URL"
+    log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
+    log "[install_es] Download location - $DOWNLOAD_URL"
     sudo wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
-    log "Downloaded elasticsearch $ES_VERSION"
+    log "[install_es] Downloaded elasticsearch $ES_VERSION"
     sudo dpkg -i elasticsearch.deb
-    log "Installing Elaticsearch Version - $ES_VERSION"
+    log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
 }
 
 install_plugins()
 {
-    log "Installing Plugins Shield, Marvel, Watcher"
+    log "[install_plugins] Installing Plugins Shield, Marvel, Watcher"
     sudo /usr/share/elasticsearch/bin/plugin install license
     sudo /usr/share/elasticsearch/bin/plugin install shield
     sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
 
-    log " Start adding es_admin"
+    log " [install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
-    log " Finished adding es_admin"
+    log " [install_plugins] Finished adding es_admin"
 
-    log " Start adding es_read"
+    log "[install_plugins]  Start adding es_read"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_read" -p "${USER_READ_PWD}" -r user
-    log " Finished adding es_read"
+    log "[install_plugins]  Finished adding es_read"
 
-    log " Start adding es_kibana"
+    log "[install_plugins]  Start adding es_kibana"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4
-    log " Finished adding es_kibina"
+    log "[install_plugins]  Finished adding es_kibina"
 
-    log " Start adding es_kibana_server"
+    log "[install_plugins]  Start adding es_kibana_server"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
-    log " Finished adding es_kibana_server"
+    log "[install_plugins]  Finished adding es_kibana_server"
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 }
@@ -275,34 +275,34 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
     echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
 
-    log "Update configuration with data path list of $DATAPATH_CONFIG"
+    log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
     echo "path.data: /datadisks/disk1/elasticsearch/data" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure discovery
-    log "Update configuration with hosts configuration of $UNICAST_HOSTS"
+    log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
     echo "discovery.zen.ping.multicast.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure Elasticsearch node type
-    log "Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_NODE"
+    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_NODE"
 
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
-        log "Configure node as master only"
+        log "[configure_elasticsearch_yaml] Configure node as master only"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${DATA_NODE} -ne 0 ]; then
-        log "Configure node as data only"
+        log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
-        log "Configure node as data only"
+        log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     else
-        log "Configure node for master and data"
+        log "[configure_elasticsearch_yaml] Configure node for master and data"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
     fi
@@ -316,15 +316,15 @@ configure_elasticsearch_yaml()
 
 install_ntp()
 {
-    log "installing ntp deamon"
+    log "[install_ntp] installing ntp deamon"
     apt-get -y install ntp
     ntpdate pool.ntp.org
-    log "installed ntp deamon and ntpdate"
+    log "[install_ntp] installed ntp deamon and ntpdate"
 }
 
 install_monit()
 {
-    log "installing monit"
+    log "[install_monit] installing monit"
     apt-get -y install monit
     echo "set daemon 30" >> /etc/monit/monitrc
     echo "set httpd port 2812 and" >> /etc/monit/monitrc
@@ -335,29 +335,29 @@ install_monit()
     echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
-    log "installed monit"
+    log "[install_monit] installed monit"
 }
 
 start_monit()
 {
-    log "starting monit"
+    log "[start_monit] starting monit"
     sudo /etc/init.d/monit start
     sudo monit start all
-    log "started monit"
+    log "[start_monit] started monit"
 }
 
 start_elasticsearch()
 {
     #and... start the service
-    log "Starting Elasticsearch on ${HOSTNAME}"
+    log "[start_elasticsearch] Starting Elasticsearch on ${HOSTNAME}"
     update-rc.d elasticsearch defaults 95 10
     sudo service elasticsearch start
-    log "complete elasticsearch setup and started"
+    log "[start_elasticsearch] complete elasticsearch setup and started"
 }
 
 configure_os_properties()
 {
-    log "configuring operating system level configuration"
+    log "[configure_os_properties] configuring operating system level configuration"
     # DNS Retry
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
     resolvconf -u
@@ -367,7 +367,7 @@ configure_os_properties()
 
     #TODO: Move this to an init.d script so we can handle instance size increases
     ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
-    log "Configure elasticsearch heap size - $ES_HEAP"
+    log "[configure_os_properties] Configure elasticsearch heap size - $ES_HEAP"
     echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
 
     # Verify this is necessary on azure
@@ -378,29 +378,30 @@ configure_os_properties()
     #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session
     #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session-noninteractive
     #echo "session    required    pam_limits.so" >> /etc/pam.d/sudo
-    log "configured operating system level configuration"
+    log "[configure_os_properties] configured operating system level configuration"
 
 }
 
 port_forward()
 {
-  #redirects 9201 > 9200 locally
-  #this to overcome a limitation in ARM where to vm loadbalancers can route on the same backed ports
-  sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
-  sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
+    log "[port_forward] setting up port forwarding from 9201 to 9200"
+    #redirects 9201 > 9200 locally
+    #this to overcome a limitation in ARM where to vm loadbalancers can route on the same backed ports
+    sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
+    sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 }
 
 #########################
 # Instalation sequence
 #########################
 
-install_ntp
+export -f install_ntp
+export -f install_java
+export -f format_data_disks
+export -f install_es
+export -f install_monit
 
-format_data_disks
-
-install_java
-
-install_es
+parallel ::: install_ntp install_java format_data_disks install_es install_monit
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
@@ -411,8 +412,6 @@ setup_data_disk
 configure_elasticsearch_yaml
 
 configure_os_properties
-
-install_monit
 
 start_monit
 
