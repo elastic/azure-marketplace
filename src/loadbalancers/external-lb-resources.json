@@ -41,7 +41,7 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "es",
+            "name": "es-http-internal",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -60,7 +60,7 @@
             }
           },
           {
-            "name": "estransport",
+            "name": "es-transport-internal",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -78,7 +78,7 @@
         ],
         "probes": [
           {
-            "name": "esProbe",
+            "name": "es-probe-internal-http",
             "properties": {
               "protocol": "tcp",
               "port": 9200,
@@ -124,7 +124,7 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "es-http",
+            "name": "es-http-external",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -134,37 +134,21 @@
               },
               "protocol": "tcp",
               "frontendPort": 9200,
-              "backendPort": 9200,
+              "backendPort": 9201,
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/esProbe')]"
               }
             }
-          },
-          {
-            "name": "es-transport",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/frontendIPConfigurations/LBFE')]"
-              },
-              "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 9300,
-              "backendPort": 9300,
-              "enableFloatingIP": false,
-              "idleTimeoutInMinutes": 5
-            }
           }
         ],
         "probes": [
           {
-            "name": "esProbe",
+            "name": "es-http-external-probe",
             "properties": {
               "protocol": "tcp",
-              "port": 9200,
+              "port": 9201,
               "intervalInSeconds": 30,
               "numberOfProbes": 3
             }

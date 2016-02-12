@@ -382,6 +382,14 @@ configure_os_properties()
 
 }
 
+port_forward()
+{
+  #redirects 9201 > 9200 locally
+  #this to overcome a limitation in ARM where to vm loadbalancers can route on the same backed ports
+  sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
+  sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
+}
+
 #########################
 # Instalation sequence
 #########################
@@ -409,5 +417,7 @@ install_monit
 start_monit
 
 start_elasticsearch
+
+port_forward
 
 exit 0
