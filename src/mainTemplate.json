@@ -618,7 +618,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -662,7 +663,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -709,7 +711,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -759,7 +762,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -796,6 +800,10 @@
       "name": "kibana",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
+      ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
