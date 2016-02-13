@@ -411,7 +411,7 @@ export -f format_data_disks
 export -f install_es
 export -f install_monit
 
-SHELL="/bin/bash"
+export SHELL=/bin/bash
 parallel ::: install_java format_data_disks install_es install_monit
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
