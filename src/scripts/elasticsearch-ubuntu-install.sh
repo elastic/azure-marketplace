@@ -390,13 +390,6 @@ port_forward()
     sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
     sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 }
-install_parallel()
-{
-    log "[install_parallel] start installing parallel"
-    apt-get -y install parallel
-    log "[install_parallel] finished installing parallel"
-
-}
 
 #########################
 # Instalation sequence
@@ -404,20 +397,17 @@ install_parallel()
 
 install_ntp
 
-install_parallel
+install_java
 
-export -f log
-export -f install_java
-export -f format_data_disks
-export -f install_es
-export -f install_monit
+format_data_disks
 
-export SHELL=/bin/bash
-parallel ::: install_java format_data_disks install_es install_monit
+install_es
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
 fi
+
+install_monit
 
 setup_data_disk
 
