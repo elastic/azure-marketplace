@@ -406,6 +406,7 @@ install_ntp
 
 install_parallel
 
+export -f log
 export -f install_java
 export -f format_data_disks
 export -f install_es
