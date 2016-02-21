@@ -5,6 +5,7 @@
 	"loadBalancerType":{"value":"internal"},
 	"kibana":{"value":"Yes"},
 	"jumpbox":{"value":"No"},
+	"vmSizeKibana":{"value":"Standard_D1"},
 	"vmSizeDataNodes":{"value":"Standard_D1"},
 	"vmDataNodeCount":{"value":3},
 	"dataNodesAreMasterEligible":{"value":"Yes"},
