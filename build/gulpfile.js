@@ -49,7 +49,8 @@ gulp.task("patch", function(cb) {
           versionControl.constraints.allowedValues = _.map(versions, function(v) {
             return { label: "v" + v, value : v};
           });
-
+          versionControl.constraints.defaultValue = _.last(versions);
+          
           //patch allowedVMSizes on the nodesStep
           var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
 
