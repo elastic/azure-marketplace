@@ -104,7 +104,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [
+              "includedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",
@@ -176,7 +176,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [
+              "includedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",
@@ -267,7 +267,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [
+              "includedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",

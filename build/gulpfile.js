@@ -56,10 +56,7 @@ gulp.task("patch", function(cb) {
           var masterSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
           var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
           var clientSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-          var patchVmSizes = function(control) {
-            control.constraints.allowedSizes = vmSizes;
-            control.constraints.allowedValues = null; 
-          }
+          var patchVmSizes = function(control) { control.constraints.includedSizes = vmSizes; }
           patchVmSizes(masterSizeControl);
           patchVmSizes(dataSizeControl);
           patchVmSizes(clientSizeControl);
