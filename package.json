@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "build": "./node_modules/gulp/bin/gulp.js --gulpfile build/gulpfile.js"
+    "build": "gulp --gulpfile build/gulpfile.js"
   },
   "repository": {
     "type": "git",

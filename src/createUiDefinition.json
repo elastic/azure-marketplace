@@ -104,9 +104,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [],
-              "excludedSizes": [],
-              "allowedValues": [
+              "allowedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",
@@ -123,7 +121,8 @@
                 "Standard_DS4",
                 "Standard_DS13",
                 "Standard_DS14"
-              ]
+              ],
+              "excludedSizes": []
             },
             "osPlatform": "Linux",
             "imageReference": {
@@ -177,9 +176,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [],
-              "excludedSizes": [],
-              "allowedValues": [
+              "allowedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",
@@ -196,7 +193,8 @@
                 "Standard_DS4",
                 "Standard_DS13",
                 "Standard_DS14"
-              ]
+              ],
+              "excludedSizes": []
             },
             "osPlatform": "Linux",
             "imageReference": {
@@ -269,9 +267,7 @@
               "Standard_D3"
             ],
             "constraints": {
-              "allowedSizes": [],
-              "excludedSizes": [],
-              "allowedValues": [
+              "allowedSizes": [
                 "Standard_A0",
                 "Standard_A1",
                 "Standard_A2",
@@ -288,7 +284,8 @@
                 "Standard_DS4",
                 "Standard_DS13",
                 "Standard_DS14"
-              ]
+              ],
+              "excludedSizes": []
             },
             "osPlatform": "Linux",
             "imageReference": {
