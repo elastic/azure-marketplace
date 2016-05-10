@@ -97,7 +97,7 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[concat('lb-'uniqueString(resourceGroup().id))]"
+          "domainNameLabel": "[concat('lb-, 'uniqueString(resourceGroup().id))]"
         }
       }
     },
