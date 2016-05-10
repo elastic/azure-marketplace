@@ -136,7 +136,7 @@
           {
             "name": "vmDataNodeCount",
             "type": "Microsoft.Common.DropDown",
-            "label": "Number of data nodes",
+            "label": "Number of data nodes (if not using dedicated masters use >= 3)",
             "defaultValue": "3",
             "toolTip": "Specify the number of data nodes for this cluster.",
             "constraints": {
