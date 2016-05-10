@@ -51,11 +51,17 @@
       "metadata": {
         "description": "Platform and OS settings"
       }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A1",
+      "metadata": {
+        "description": "Size of the Elasticsearch master nodes"
+      }
     }
   },
   "variables": {
     "vmStorageAccountContainerName": "vhd",
-    "vmSize": "Standard_A1",
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "vmName": "[concat(parameters('namespace'), '-vm')]",
     "publicIpName": "[concat(parameters('namespace'), '-pip')]",
@@ -165,7 +171,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
+      "name": "[parameters('vmName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
@@ -209,5 +215,6 @@
       ]
     }
   ],
-  "outputs": {}
+  "outputs": {
+  }
 }

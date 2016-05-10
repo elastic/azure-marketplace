@@ -36,6 +36,7 @@ gulp.task("patch", function(cb) {
       obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
       obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
       obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
+      obj.parameters.vmSizeKibana.allowedValues = vmSizes;
       jsonfile.writeFile(mainTemplate, obj, function (err) {
         jsonfile.readFile(uiTemplate, function(err, obj) {
 
@@ -53,14 +54,17 @@ gulp.task("patch", function(cb) {
 
           //patch allowedVMSizes on the nodesStep
           var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
+          var externalAccessStep = _.find(obj.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
 
           var masterSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
           var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
           var clientSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-          var patchVmSizes = function(control) { control.constraints.allowedSizes = vmSizes; }
+          var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+          var patchVmSizes = function(control) { control.constraints.allowedValues = vmSizes; }
           patchVmSizes(masterSizeControl);
           patchVmSizes(dataSizeControl);
           patchVmSizes(clientSizeControl);
+          patchVmSizes(kibanaSizeControl);
 
           jsonfile.writeFile(uiTemplate, obj, function (err) {
             cb();
