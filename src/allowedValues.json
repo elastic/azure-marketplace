@@ -10,6 +10,8 @@
       "kibana": "4.4.1"
     }
   },
+  "numberOfDataNodes" : 50,
+  "numberOfClientNodes" : 20,
   "vmSizes": [
     "Standard_A0",
     "Standard_A1",
