@@ -911,5 +911,11 @@
         }
       }
     }
-  ]
+  ],
+  "outputs" : {
+    "loadbalancer": {
+      "value": "[reference('loadbalancer').outputs.fqdn.value]",
+      "type": "string"
+    }
+  }
 }

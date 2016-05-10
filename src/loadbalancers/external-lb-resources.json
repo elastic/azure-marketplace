@@ -95,7 +95,10 @@
       "name": "es-external-lb-ip",
       "location": "[parameters('location')]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat('lb-'uniqueString(resourceGroup().id))]"
+        }
       }
     },
     {
@@ -156,5 +159,11 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs" : {
+    "fqdn": {
+      "value": "[concat('http://',reference(resourceId('Microsoft.Network/publicIPAddresses','es-external-lb-ip'),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn, ':9200')]",
+      "type": "string"
+    }
+  }
 }

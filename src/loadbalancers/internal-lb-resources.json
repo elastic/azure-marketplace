@@ -89,5 +89,11 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs" : {
+    "fqdn": {
+      "value": "N/A",
+      "type": "string"
+    }
+  }
 }
