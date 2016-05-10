@@ -37,6 +37,7 @@ help()
     echo "Parameters:"
     echo "-n elasticsearch cluster name"
     echo "-v elasticsearch version 1.5.0"
+    echo "-p namespace prefix of nodes for unicast discovery"
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
@@ -95,6 +96,7 @@ fi
 #########################
 
 CLUSTER_NAME="elasticsearch"
+NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
 CLIENT_ONLY_NODE=0
@@ -105,7 +107,7 @@ CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
-UNICAST_HOSTS='["master-node-0:9300","master-node-1:9300","master-node-2:9300"]'
+UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-node-0:9300","'"$NAMESPACE_PREFIX"'master-node-1:9300","'"$NAMESPACE_PREFIX"'master-node-2:9300"]'
 
 USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
@@ -113,7 +115,7 @@ USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -152,6 +154,9 @@ while getopts :n:v:A:R:K:S:Z:xyzldh optname; do
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
       ;;
+    p) #namespace prefix for nodes
+      NAMESPACE_PREFIX="${OPTARG}-"
+      ;;
     h) #show help
       help
       exit 2
@@ -170,12 +175,12 @@ done
 
 if [ ${CLUSTER_USES_DEDICATED_MASTERS} -ne 0 ]; then
     MINIMUM_MASTER_NODES=2
-    UNICAST_HOSTS='["master-node-0:9300","master-node-1:9300","master-node-2:9300"]'
+    UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-node-0:9300","'"$NAMESPACE_PREFIX"'master-node-1:9300","'"$NAMESPACE_PREFIX"'master-node-2:9300"]'
 else
     MINIMUM_MASTER_NODES=$(((DATANODE_COUNT/2)+1))
     UNICAST_HOSTS='['
     for i in $(seq 0 $((DATANODE_COUNT-1))); do
-        UNICAST_HOSTS="$UNICAST_HOSTS\"data-node-$i:9300\","
+        UNICAST_HOSTS="$UNICAST_HOSTS\"${NAMESPACE_PREFIX}data-node-$i:9300\","
     done
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi

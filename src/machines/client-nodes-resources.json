@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -25,6 +25,12 @@
       "type": "string",
       "metadata": {
         "description": "Unique namespace for the Storage Account where the Virtual Machine's disks will be placed"
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for client nodes"
       }
     },
     "location": {
@@ -66,8 +72,8 @@
     }
   },
   "variables": {
-    "namespace" : "client-node-",
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
+    "namespace": "[parameters('namespace')]",
+    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "storageAccountName": "[parameters('storageAccountName')]"
   },
   "resources": [

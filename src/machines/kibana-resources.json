@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -50,13 +50,13 @@
       "defaultValue": "Standard_A1",
       "metadata": {
         "description": "Size of the Elasticsearch master nodes"
-      }
+    }
     }
   },
   "variables": {
     "vmName": "kibana",
     "namespace": "[concat(variables('vmName'), '-')]",
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
+    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "publicIpName": "[concat(variables('namespace'), 'ip')]",
     "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
     "nicName": "[concat(variables('namespace'), 'nic')]"
@@ -109,7 +109,7 @@
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
           "domainNameLabel": "[concat('kb-', uniqueString(resourceGroup().id))]"
-        }
+      }
       }
     },
     {

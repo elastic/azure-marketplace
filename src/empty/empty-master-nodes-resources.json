@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -29,7 +29,7 @@
       "type": "object",
       "defaultValue": {}
     },
-    "masterNodesIpPrefix": {
+    "namespace": {
       "type": "string",
       "defaultValue": ""
     },

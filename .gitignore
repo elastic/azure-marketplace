@@ -42,3 +42,7 @@ ui-tests-config.json
 # Test parameters file
 parameters/test.parameters.json
 parameters/test*.parameters.json
+
+#jetbrains tools
+.idea/
+

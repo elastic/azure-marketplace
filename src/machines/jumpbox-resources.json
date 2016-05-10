@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -13,6 +13,12 @@
       "type": "string",
       "metadata": {
         "description": "Location where resources will be provisioned"
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for jumpbox nodes"
       }
     },
     "subnet": {
@@ -47,10 +53,9 @@
     }
   },
   "variables": {
-    "vmName": "jumpbox",
-    "namespace": "[concat(variables('vmName'), '-')]",
+    "namespace": "[parameters('namespace')]",
     "vmSize": "Standard_A0",
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
+    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "publicIpName": "[concat(variables('namespace'), 'ip')]",
     "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
     "nicName": "[concat(variables('namespace'), 'nic')]"
@@ -139,7 +144,7 @@
             "value": "[parameters('password')]"
           },
           "computerName": {
-            "value": "[variables('vmName')]"
+            "value": "[concat(variables('namespace'), '0')]"
           }
         }
       }
@@ -147,7 +152,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
+      "name": "[concat(variables('namespace'), '0')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
@@ -163,7 +168,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('vmName'), '-osdisk.vhd')]"
+              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', concat(variables('namespace'), '0'), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"

@@ -39,6 +39,65 @@
     ],
     "steps": [
       {
+        "name": "virtualNetworkSettingsStep",
+        "label": "Virtual Network Settings",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Virtual Network Settings",
+        "elements": [
+          {
+            "name": "virtualNetwork",
+            "type": "Microsoft.Network.VirtualNetworkCombo",
+            "label": {
+              "virtualNetwork": "Virtual network",
+              "subnets": "Subnets"
+            },
+            "toolTip": {
+              "virtualNetwork": "Create a new Virtual Network or use an existing one",
+              "subnets": "Choose the Subnets for the Virtual Network for master and data nodes. If choosing an existing Virtual Network, the Subnets need to exist beforehand; Creating new subnets in an existing virtual network is not supported"
+            },
+            "defaultValue": {
+              "name": "es-vnet",
+              "addressPrefixSize": "/16"
+            },
+            "constraints": {
+              "minAddressPrefixSize": "/16"
+            },
+            "options": {
+              "hideExisting": false
+            },
+            "subnets": {
+              "subnet1": {
+                "label": "Master node subnet",
+                "defaultValue": {
+                  "name": "master",
+                  "addressPrefixSize": "/24"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/24",
+                  "minAddressCount": 12,
+                  "requireContiguousAddresses": true
+                }
+              },
+              "subnet2": {
+                "label": "Data node subnet",
+                "defaultValue": {
+                  "name": "data",
+                  "addressPrefixSize": "/26"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/26",
+                  "minAddressCount": 8,
+                  "requireContiguousAddresses": true
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
         "name": "clusterSettingsStep",
         "label": "Cluster Settings",
         "subLabel": {
@@ -82,8 +141,8 @@
             "toolTip": "Name your Elasticsearch cluster.",
             "constraints": {
               "required": true,
-              "regex" : "[^\\s]+$",
-              "validationMessage" : "Cluster has trailing whitespace"
+              "regex": "[^\\s]+$",
+              "validationMessage": "Cluster has trailing whitespace"
             }
           }
         ]
@@ -425,8 +484,8 @@
                 "toolTip": "Password to use for the es_admin Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -449,8 +508,8 @@
                 "toolTip": "Password to use for the es_read Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -473,8 +532,8 @@
                 "toolTip": "Password to use for the es_kibana Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -596,7 +655,7 @@
             "name": "loadBalancerType",
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Load balancer type",
-            "defaultValue": "Internal",
+            "defaultValue": "internal",
             "toolTip": "Choose whether the load balancer should be public facing or internal.",
             "constraints": {
               "allowedValues": [
@@ -615,6 +674,15 @@
       }
     ],
     "outputs": {
+      "vNetName": "[steps('virtualNetworkSettingsStep').virtualNetwork.name]",
+      "vNetResourceGroup": "[steps('virtualNetworkSettingsStep').virtualNetwork.resourceGroup]",
+      "vNetAddressPrefix": "[steps('virtualNetworkSettingsStep').virtualNetwork.addressPrefix]",
+      "vNetNewOrExisting": "[steps('virtualNetworkSettingsStep').virtualNetwork.newOrExisting]",
+      "vNetMasterSubnetName": "[steps('virtualNetworkSettingsStep').virtualNetwork.subnets.subnet1.name]",
+      "vNetMasterSubnetAddressPrefix": "[steps('virtualNetworkSettingsStep').virtualNetwork.subnets.subnet1.addressPrefix]",
+      "vNetMasterSubnetStartAddress": "[steps('virtualNetworkSettingsStep').virtualNetwork.subnets.subnet1.startAddress]",
+      "vNetDataSubnetName": "[steps('virtualNetworkSettingsStep').virtualNetwork.subnets.subnet2.name]",
+      "vNetDataSubnetAddressPrefix": "[steps('virtualNetworkSettingsStep').virtualNetwork.subnets.subnet2.addressPrefix]",
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",

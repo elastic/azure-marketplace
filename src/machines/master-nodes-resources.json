@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -40,10 +40,10 @@
         "description": "The VNET and Subnet to deploy the nodes in to"
       }
     },
-    "masterNodesIpPrefix": {
+    "namespace": {
       "type": "string",
       "metadata": {
-        "description": "IP Prefix used to append index for static addresses"
+        "description": "The unique namespace used to name master nodes"
       }
     },
     "vmSize": {
@@ -61,8 +61,8 @@
     }
   },
   "variables": {
-    "namespace" : "master-node-",
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
+    "namespace": "[parameters('namespace')]",
+    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "storageAccountName": "[parameters('storageAccountName')]"
   },
   "resources": [
@@ -90,8 +90,7 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[concat(parameters('masterNodesIpPrefix'),copyindex())]",
+              "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }

@@ -8,12 +8,6 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "networkSettings": {
-      "type": "object",
-      "metadata": {
-        "description": "Network settings object"
-      }
-    },
     "storageAccountName": {
       "type": "string",
       "metadata": {
@@ -29,33 +23,6 @@
       "location": "[parameters('location')]",
       "properties": {
         "accountType": "Standard_LRS"
-      }
-    },
-    {
-      "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[parameters('networkSettings').virtualNetworkName]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[parameters('networkSettings').addressPrefix]"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[parameters('networkSettings').subnet.master.name]",
-            "properties": {
-              "addressPrefix": "[parameters('networkSettings').subnet.master.prefix]"
-            }
-          },
-          {
-            "name": "[parameters('networkSettings').subnet.data.name]",
-            "properties": {
-              "addressPrefix": "[parameters('networkSettings').subnet.data.prefix]"
-            }
-          }
-        ]
       }
     }
   ]

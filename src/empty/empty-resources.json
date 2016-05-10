@@ -4,12 +4,16 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
     },
     "location": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "namespace": {
       "type": "string",
       "defaultValue": ""
     },
@@ -48,5 +52,10 @@
   },
   "variables": {},
   "resources": [],
-  "outputs": {}
+  "outputs": {
+    "fqdn": {
+      "value": "N/A",
+      "type": "string"
+    }
+  }
 }

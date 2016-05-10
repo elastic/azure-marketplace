@@ -13,6 +13,10 @@
       "type": "string",
       "defaultValue": ""
     },
+    "namespace": {
+      "type": "string",
+      "defaultValue": ""
+    },
     "subnet": {
       "type": "object",
       "defaultValue": {}

@@ -6,7 +6,7 @@ var bladePath = "#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/interna
 var bladeUrl = bladeLoadHost
   + bladePath
   + "%7B%22initialData%22:%7B%7D,%22providerConfig%22:%7B%22createUiDefinition%22:%22"
-  + "https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json%22%7D%7D"
+  + "https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fhackfest%2Fsrc%2FcreateUiDefinition.json%22%7D%7D"
 
 exports.loadDevelopmentUI = function ()
 {
