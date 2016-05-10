@@ -5,7 +5,8 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "build": "gulp --gulpfile build/gulpfile.js"
+    "build": "gulp --gulpfile build/gulpfile.js",
+    "headless": "gulp --gulpfile build/gulpfile.js headless"
   },
   "repository": {
     "type": "git",
@@ -24,13 +25,17 @@
   },
   "homepage": "https://github.com/elastic/azure-marketplace",
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "eclint": "^1.1.5",
-    "gulp-jsonlint": "^1.1.1",
-    "gulp-zip": "^3.0.2",
+    "casperjs": "^1.1.1",
     "dateformat": "^1.0.12",
-    "lodash": "^3.10.1",
+    "eclint": "^1.1.5",
+    "gulp": "^3.9.0",
+    "gulp-add-src": "^0.2.0",
+    "gulp-casperjs": "0.0.5",
+    "gulp-jsonlint": "^1.1.1",
+    "gulp-util": "^3.0.7",
+    "gulp-zip": "^3.0.2",
     "jsonfile": "^2.2.3",
-    "gulp-add-src": "^0.2.0"
+    "lodash": "^3.10.1",
+    "phantomjs-prebuilt": "^2.1.7"
   }
 }

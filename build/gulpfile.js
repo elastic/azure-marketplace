@@ -7,7 +7,12 @@ var jsonfile = require('jsonfile');
 var _ = require('lodash');
 var addsrc = require('gulp-add-src');
 
+var phantomjs = require('phantomjs-prebuilt')
+var casperJs = require('gulp-casperjs');
+
 jsonfile.spaces = 2;
+process.env["PHANTOMJS_EXECUTABLE"] = phantomjs.path;
+console.log(process.env["PHANTOMJS_EXECUTABLE"])
 
 gulp.task("patch", function(cb) {
   jsonfile.readFile("../src/allowedValues.json", function(err, obj) {
@@ -74,6 +79,28 @@ gulp.task("patch", function(cb) {
     });
   });
 });
+
+var spawn = require('child_process').spawn;
+var gutil = require('gulp-util');
+
+gulp.task("headless", function () {
+    var tests = ['../build/ui-tests/runner.js'];
+    var casperChild = spawn('../node_modules/casperjs/bin/casperjs.exe', tests);
+
+    casperChild.stderr.on('data', function (data) {
+      gutil.log('CasperJS:', data.toString().slice(0, -1));
+    });
+    casperChild.stdout.on('data', function (data) {
+      gutil.log('CasperJS:', data.toString().slice(0, -1));
+    });
+
+    casperChild.on('close', function (code) {
+      var success = code === 0; // Will be 1 in the event of failure
+
+      // Do something with success here
+    });
+});
+
 
 
 gulp.task("default", ["patch"], function() {
