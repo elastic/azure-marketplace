@@ -80,7 +80,11 @@
         "Standard_DS3",
         "Standard_DS4",
         "Standard_DS13",
-        "Standard_DS14"
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -116,7 +120,11 @@
         "Standard_DS3",
         "Standard_DS4",
         "Standard_DS13",
-        "Standard_DS14"
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -159,7 +167,11 @@
         "Standard_DS3",
         "Standard_DS4",
         "Standard_DS13",
-        "Standard_DS14"
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible 3 of these will be provisioned"
@@ -191,7 +203,11 @@
         "Standard_DS3",
         "Standard_DS4",
         "Standard_DS13",
-        "Standard_DS14"
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch cluster client nodes"
@@ -454,6 +470,31 @@
     ],
     "dataLBSettings": "[variables('dataLBOptions')[variables('clientResourceIndex')]]",
     "dataSkuSettings": {
+      "Standard_D1_v2": {
+        "dataDisks": 2,
+        "nodesPerStorageAccount": 6,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D2_v2": {
+        "dataDisks": 4,
+        "nodesPerStorageAccount": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D3_v2": {
+        "dataDisks": 8,
+        "nodesPerStorageAccount": 3,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D4_v2": {
+        "dataDisks": 16,
+        "nodesPerStorageAccount": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D12_v2": {
+        "dataDisks": 8,
+        "nodesPerStorageAccount": 3,
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D1": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 6,
@@ -577,6 +618,8 @@
       "[div(sub(add(38, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
       "[div(sub(add(39, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
       "[div(sub(add(40, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
+      "[div(sub(add(45, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
+      "[div(sub(add(50, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
       "[div(sub(add(51, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
       "[div(sub(add(52, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
       "[div(sub(add(53, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
