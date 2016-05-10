@@ -222,7 +222,7 @@
       }
     },
     "sshPublicKey": {
-      "type": "string",
+      "type": "securestring",
       "defaultValue": "",
       "metadata": {
         "description": ""
