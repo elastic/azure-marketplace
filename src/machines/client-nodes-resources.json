@@ -124,7 +124,7 @@
             "value": "[parameters('password')]"
           },
           "computerName": {
-            "value": "[concat(variable('namespace'), copyindex())]"
+            "value": "[concat(variables('namespace'), copyindex())]"
           }
         }
       }
