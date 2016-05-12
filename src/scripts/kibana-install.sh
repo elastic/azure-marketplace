@@ -38,6 +38,7 @@ help()
     echo "Parameters:"
     echo "-n elasticsearch cluster name"
     echo "-v kibana version e.g 4.2.1"
+    echo "-e elasticsearch version e.g 2.3.1"
 
     echo "-l install plugins true/false"
     echo "-S kibana server password"
@@ -139,6 +140,9 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
 fi
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    if [[ dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0" ]]; then
+      /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
+    fi
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
     /opt/kibana/bin/kibana plugin --install elastic/sense
 fi

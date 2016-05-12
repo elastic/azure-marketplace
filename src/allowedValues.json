@@ -8,6 +8,9 @@
     },
     "2.2.0": {
       "kibana": "4.4.1"
+    },
+    "2.3.2": {
+      "kibana": "4.5.0"
     }
   },
   "numberOfDataNodes" : 50,

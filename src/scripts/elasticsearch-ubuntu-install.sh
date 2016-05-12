@@ -246,6 +246,9 @@ install_plugins()
     sudo /usr/share/elasticsearch/bin/plugin install shield
     sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
+    if [[ dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0" ]]; then
+      sudo /usr/share/elasticsearch/bin/plugin install graph
+    fi
 
     log "[install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin

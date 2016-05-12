@@ -38,3 +38,4 @@ dist/
 
 # Test parameters file
 parameters/test.parameters.json
+parameters/test*.parameters.json

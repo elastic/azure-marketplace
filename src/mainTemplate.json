@@ -11,11 +11,12 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.2.0",
+      "defaultValue": "2.3.2",
       "allowedValues": [
         "2.0.2",
         "2.1.2",
-        "2.2.0"
+        "2.2.0",
+        "2.3.2"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -306,7 +307,8 @@
     "esToKibanaMapping": {
       "2.0.2": "4.2.2",
       "2.1.2": "4.3.2",
-      "2.2.0": "4.4.1"
+      "2.2.0": "4.4.1",
+      "2.3.2": "4.5.0"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
@@ -879,7 +881,7 @@
       }
     }
   ],
-  "outputs" : {
+  "outputs": {
     "loadbalancer": {
       "value": "[reference('loadbalancer').outputs.fqdn.value]",
       "type": "string"
