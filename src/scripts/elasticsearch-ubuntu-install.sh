@@ -246,7 +246,7 @@ install_plugins()
     sudo /usr/share/elasticsearch/bin/plugin install shield
     sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
-    if [[ dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0" ]]; then
+    if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
       sudo /usr/share/elasticsearch/bin/plugin install graph
     fi
 

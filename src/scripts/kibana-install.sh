@@ -140,7 +140,7 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
 fi
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-    if [[ dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0" ]]; then
+    if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
       /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
     fi
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
