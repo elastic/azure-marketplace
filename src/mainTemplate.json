@@ -265,26 +265,6 @@
         "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
     },
-    "location": {
-      "type": "string",
-      "allowedValues": [
-        "ResourceGroup",
-        "westus",
-        "eastus",
-        "eastus2",
-        "centralus",
-        "southcentralus",
-        "northcentralus",
-        "eastasia",
-        "southeastasia",
-        "westeurope",
-        "northeurope"
-      ],
-      "defaultValue": "ResourceGroup",
-      "metadata": {
-        "description": "Location where resources will be provisioned.  A value of 'ResourceGroup' will deploy the resource to the same location of the resource group the resources are provisioned into"
-      }
-    },
     "virtualNetworkName": {
       "type": "string",
       "defaultValue": "esvnet",
@@ -410,20 +390,7 @@
     },
     "OS": "ubuntu",
     "osSettings": "[variables(concat(variables('OS'), 'Settings'))]",
-    "locationMap": {
-      "ResourceGroup": "[resourceGroup().location]",
-      "westus": "[parameters('location')]",
-      "eastus": "[parameters('location')]",
-      "eastus2": "[parameters('location')]",
-      "centralus": "[parameters('location')]",
-      "southcentralus": "[parameters('location')]",
-      "northcentralus": "[parameters('location')]",
-      "eastasia": "[parameters('location')]",
-      "southeastasia": "[parameters('location')]",
-      "westeurope": "[parameters('location')]",
-      "northeurope": "[parameters('location')]"
-    },
-    "location": "[variables('locationMap')[parameters('location')]]",
+    "location": "[resourceGroup().location]",
     "storageAccountPrefix": "elastic",
     "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
     "masterNodesIpPrefix": "10.0.0.1",
