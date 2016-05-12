@@ -54,6 +54,11 @@ log()
 
 log "Begin execution of Kibana script extension on ${HOSTNAME}"
 
+if service --status-all | grep -Fq 'kibana'; then
+  log "Kibana already installed"
+  exit 0
+fi
+
 #########################
 # Paramater handling
 #########################

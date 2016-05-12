@@ -395,6 +395,16 @@ port_forward()
 # Instalation sequence
 #########################
 
+
+if service --status-all | grep -Fq 'elasticsearch'; then
+  sudo service elasticsearch stop
+
+  configure_elasticsearch_yaml
+
+  sudo service elasticsearch start
+  exit 0
+fi
+
 install_ntp
 
 install_java
