@@ -139,7 +139,7 @@
         "count": "[parameters('vmCount')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), copyindex(). '-nic')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), copyindex(), '-nic')]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
         "[concat('Microsoft.Resources/deployments/', variables('namespace'), copyindex(), '-os-profile')]"
       ],
