@@ -13,26 +13,24 @@
         }
     },
     "variables": {
-        "password_osProfile": {
-          "computername": "[parameters('computerName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('password').password]"
-        },
-        "sshPublicKey_osProfile": {
-          "computername": "[parameters('computerName')]",
-            "adminUsername": "[parameters('adminUsername')]",
-            "linuxConfiguration": {
-                "disablePasswordAuthentication": "true",
-                "ssh": {
-                    "publicKeys": [
-                        {
-                          "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                          "keyData": "[parameters('password').sshPublicKey]"
-                        }
-                    ]
-                }
-            }
+      "password_osProfile": {
+        "computername": "[parameters('computerName')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('password').password]"
+      },
+      "sshPublicKey_osProfile": {
+        "computername": "[parameters('computerName')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "linuxConfiguration": {
+          "disablePasswordAuthentication": "true",
+          "ssh": {
+            "publicKeys": [ {
+              "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+              "keyData": "[parameters('password').sshPublicKey]"
+            } ]
+          }
         }
+      }
     },
     "resources": [],
     "outputs" : {
