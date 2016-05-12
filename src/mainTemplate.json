@@ -247,21 +247,18 @@
     },
     "shieldAdminPassword": {
       "type": "securestring",
-      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the 'es_admin' user with admin role, must be > 6 characters"
       }
     },
     "shieldReadPassword": {
       "type": "securestring",
-      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the 'es_read' user with user (read-only) role, must be > 6 characters"
       }
     },
     "shieldKibanaPassword": {
       "type": "securestring",
-      "defaultValue": "",
       "metadata": {
         "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
