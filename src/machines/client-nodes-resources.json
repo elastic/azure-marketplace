@@ -66,27 +66,25 @@
     }
   },
   "variables": {
-    "vmStorageAccountContainerName": "vhd",
+    "namespace" : "client-node-",
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "storageAccountName": "[parameters('storageAccountName')]",
-    "vmName": "clientVm",
-    "nicName": "clientNic"
+    "storageAccountName": "[parameters('storageAccountName')]"
   },
   "resources": [
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "elasticsearchClient",
+      "name": "[concat(variables('namespace'), 'av-set')]",
       "location": "[parameters('location')]",
       "properties": {}
     },
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('nicName'), copyindex())]",
+      "name": "[concat(variables('namespace'), copyindex(), '-nic')]",
       "location": "[parameters('location')]",
       "copy": {
-        "name": "clientNodesNicLoop",
+        "name": "[concat(variables('namespace'), 'nic-loop')]",
         "count": "[parameters('vmCount')]"
       },
       "properties": {
@@ -105,11 +103,11 @@
       }
     },
     {
-      "name": "[concat('osProfileClient', copyindex())]",
+      "name": "[concat(variables('namespace'), copyindex(), '-os-profile')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "copy": {
-        "name": "osProfileLoop",
+        "name": "[concat(variables('namespace'), 'os-profile-loop')]",
         "count": "[parameters('vmCount')]"
       },
       "properties": {
@@ -126,7 +124,7 @@
             "value": "[parameters('password')]"
           },
           "computerName": {
-            "value": "[concat('clientVm', copyindex())]"
+            "value": "[concat(variable('namespace'), copyindex())]"
           }
         }
       }
@@ -134,31 +132,31 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat('clientVm', copyindex())]",
+      "name": "[concat(variables('namespace'), copyindex())]",
       "location": "[parameters('location')]",
       "copy": {
-        "name": "clientVmLoop",
+        "name": "[concat(variables('namespace'), 'vm-loop')]",
         "count": "[parameters('vmCount')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), copyindex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', 'elasticsearchClient')]",
-        "[concat('Microsoft.Resources/deployments/', 'osProfileClient', copyindex())]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), copyindex(). '-nic')]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
+        "[concat('Microsoft.Resources/deployments/', variables('namespace'), copyindex(), '-os-profile')]"
       ],
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', 'elasticsearchClient')]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set')]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
-        "osProfile": "[reference(concat('Microsoft.Resources/deployments/osProfileClient', copyindex()), '2015-01-01').outputs.osProfile.value]",
+        "osProfile": "[reference(concat('Microsoft.Resources/deployments/', variables('namespace'), copyindex(), '-os-profile'), '2015-01-01').outputs.osProfile.value]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/', variables('vmName'), copyindex(), '-osdisk.vhd')]"
+              "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/', variables('namespace'), copyindex(), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -167,7 +165,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), copyindex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('namespace'), copyindex(), '-nic'))]"
             }
           ]
         }
@@ -175,11 +173,11 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat('clientVm', copyindex(), '/installelasticsearch')]",
+          "name": "[concat(variables('namespace'), copyindex(), '-script')]",
           "apiVersion": "2015-06-15",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', 'clientVm', copyindex())]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), copyindex())]"
           ],
           "properties": "[parameters('osSettings').extentionSettings.client]"
         }

@@ -9,13 +9,6 @@
         "description": "Base uri of resources"
       }
     },
-    "namespace": {
-      "type": "string",
-      "defaultValue": "jumpbox",
-      "metadata": {
-        "description": "The namespace prefix for resources created by this template"
-      }
-    },
     "location": {
       "type": "string",
       "metadata": {
@@ -54,13 +47,13 @@
     }
   },
   "variables": {
-    "vmStorageAccountContainerName": "vhd",
+    "vmName": "jumpbox",
+    "namespace": "[concat(variables('vmName'), '-')]",
     "vmSize": "Standard_A0",
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "vmName": "[concat(parameters('namespace'), '-vm')]",
-    "publicIpName": "[concat(parameters('namespace'), '-pip')]",
-    "securityGroupName": "[concat(parameters('namespace'), '-nsg')]",
-    "nicName": "[concat(parameters('namespace'), '-nic')]"
+    "publicIpName": "[concat(variables('namespace'), 'ip')]",
+    "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
+    "nicName": "[concat(variables('namespace'), 'nic')]"
   },
   "resources": [
     {
@@ -126,7 +119,7 @@
       }
     },
     {
-      "name": "osProfileJumpbox",
+      "name": "[concat(variables('namespace'), 'os-profile')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "properties": {
@@ -155,13 +148,13 @@
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[concat('Microsoft.Resources/deployments/', 'osProfileJumpbox')]"
+        "[concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile')]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
-        "osProfile": "[reference('Microsoft.Resources/deployments/osProfileJumpbox', '2015-01-01').outputs.osProfile.value]",
+        "osProfile": "[reference(concat('Microsoft.Resources/deployments/, variables('namespace'), 'os-profile'), '2015-01-01').outputs.osProfile.value]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {

@@ -9,13 +9,6 @@
         "description": "Base uri of resources"
       }
     },
-    "namespace": {
-      "type": "string",
-      "defaultValue": "kibana",
-      "metadata": {
-        "description": "The namespace prefix for resources created by this template"
-      }
-    },
     "location": {
       "type": "string",
       "metadata": {
@@ -61,12 +54,12 @@
     }
   },
   "variables": {
-    "vmStorageAccountContainerName": "vhd",
+    "vmName": "kibana",
+    "namespace": "[concat(variables('vmName'), '-')]",
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "vmName": "[concat(parameters('namespace'), '-vm')]",
-    "publicIpName": "[concat(parameters('namespace'), '-pip')]",
-    "securityGroupName": "[concat(parameters('namespace'), '-nsg')]",
-    "nicName": "[concat(parameters('namespace'), '-nic')]"
+    "publicIpName": "[concat(variables('namespace'), 'ip')]",
+    "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
+    "nicName": "[concat(variables('namespace'), 'nic')]"
   },
   "resources": [
     {
@@ -113,7 +106,10 @@
       "name": "[variables('publicIpName')]",
       "location": "[parameters('location')]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat('kb-', uniqueString(resourceGroup().id))]"
+        }
       }
     },
     {
@@ -146,7 +142,7 @@
       }
     },
     {
-      "name": "osProfileKibana",
+      "name": "[concat(variables('namespace'), 'os-profile')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "properties": {
@@ -175,13 +171,13 @@
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[concat('Microsoft.Resources/deployments/', 'osProfileKibana')]"
+        "[concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile')]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
-        "osProfile": "[reference('Microsoft.Resources/deployments/osProfileKibana', '2015-01-01').outputs.osProfile.value]",
+        "osProfile": "[reference(concat('Microsoft.Resources/deployments/',variables('namespace'),'os-profile'), '2015-01-01').outputs.osProfile.value]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
@@ -204,7 +200,7 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('vmName'), '/installkibana')]",
+          "name": "[concat(variables('vmName'), '-script')]",
           "apiVersion": "2015-06-15",
           "location": "[parameters('location')]",
           "dependsOn": [
@@ -216,5 +212,9 @@
     }
   ],
   "outputs": {
+    "fqdn": {
+      "value": "[concat('http://',reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn, ':5601')]",
+      "type": "string"
+    }
   }
 }

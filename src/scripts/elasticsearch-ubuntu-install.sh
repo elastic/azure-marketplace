@@ -103,7 +103,7 @@ CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
-UNICAST_HOSTS='["masterVm0:9300","masterVm1:9300","masterVm2:9300"]'
+UNICAST_HOSTS='["master-node-0:9300","master-node-1:9300","master-node-2:9300"]'
 
 USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
@@ -168,12 +168,12 @@ done
 
 if [ ${CLUSTER_USES_DEDICATED_MASTERS} -ne 0 ]; then
     MINIMUM_MASTER_NODES=2
-    UNICAST_HOSTS='["masterVm0:9300","masterVm1:9300","masterVm2:9300"]'
+    UNICAST_HOSTS='["master-node-0:9300","master-node-1:9300","master-node-2:9300"]'
 else
     MINIMUM_MASTER_NODES=$(((DATANODE_COUNT/2)+1))
     UNICAST_HOSTS='['
     for i in $(seq 0 $((DATANODE_COUNT-1))); do
-        UNICAST_HOSTS="$UNICAST_HOSTS\"esdatavm$i:9300\","
+        UNICAST_HOSTS="$UNICAST_HOSTS\"data-node-$i:9300\","
     done
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi

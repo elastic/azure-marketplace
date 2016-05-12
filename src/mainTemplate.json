@@ -819,7 +819,7 @@
             "value": "[parameters('vmDataNodeCount')]"
           },
           "namespace": {
-            "value": "esdata"
+            "value": "data-node-"
           },
           "osSettings": {
             "value": "[variables('osSettings')]"
@@ -915,6 +915,10 @@
   "outputs" : {
     "loadbalancer": {
       "value": "[reference('loadbalancer').outputs.fqdn.value]",
+      "type": "string"
+    },
+    "kibana": {
+      "value": "[reference('kibana').outputs.fqdn.value]",
       "type": "string"
     }
   }
