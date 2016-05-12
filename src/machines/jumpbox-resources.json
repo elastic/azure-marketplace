@@ -86,7 +86,10 @@
       "name": "[variables('publicIpName')]",
       "location": "[parameters('location')]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id))]"
+        }
       }
     },
     {
@@ -176,5 +179,10 @@
       }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "ssh": {
+      "value": "[concat(parameters('adminUsername'), '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
+      "type": "string"
+    }
+  }
 }

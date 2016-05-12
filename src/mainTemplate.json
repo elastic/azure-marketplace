@@ -308,7 +308,7 @@
     },
     "masterTemplateUrl": "[concat(variables('templateBaseUrl'), variables('masterTemplates')[parameters('dataNodesAreMasterEligible')])]",
     "jumpboxTemplates": {
-      "No": "empty/empty-resources.json",
+      "No": "empty/empty-jumpbox-resources.json",
       "Yes": "machines/jumpbox-resources.json"
     },
     "jumpboxTemplateUrl": "[concat(variables('templateBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
@@ -919,6 +919,10 @@
     },
     "kibana": {
       "value": "[reference('kibana').outputs.fqdn.value]",
+      "type": "string"
+    },
+    "jumpbox-shh": {
+      "value": "[reference('jumpbox').outputs.ssh.value]",
       "type": "string"
     }
   }
