@@ -245,7 +245,7 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(parameters('namespace'), copyindex(), '-script')]",
+          "name": "[concat(parameters('namespace'), copyindex(), '/script')]",
           "apiVersion": "2015-06-15",
           "location": "[parameters('location')]",
           "dependsOn": [
