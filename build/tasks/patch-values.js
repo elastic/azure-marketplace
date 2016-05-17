@@ -76,14 +76,17 @@ gulp.task("patch", ['bash-patch'], function(cb) {
         var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
         var clientSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeClientNodes"; });
         var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
-        var patchVmSizes = function(control) {
+        var patchVmSizes = function(control, patchRecommended) {
           delete control.constraints.allowedValues;
           control.constraints.allowedSizes = vmSizes;
-          control.recommendedSizes = recommendedSizes;
-          control.defaultValue = _(recommendedSizes).first();
+          if (patchRecommended)
+          {
+            control.recommendedSizes = recommendedSizes;
+            control.defaultValue = _(recommendedSizes).first();
+          }
         }
         patchVmSizes(masterSizeControl);
-        patchVmSizes(dataSizeControl);
+        patchVmSizes(dataSizeControl, true);
         patchVmSizes(clientSizeControl);
         patchVmSizes(kibanaSizeControl);
 

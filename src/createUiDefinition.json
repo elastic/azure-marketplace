@@ -101,13 +101,11 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Master node VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "defaultValue": "Standard_DS1_v2",
+            "defaultValue": "Standard_D1",
             "recommendedSizes": [
-              "Standard_DS1_v2",
-              "Standard_DS2_v2",
-              "Standard_DS3_v2",
-              "Standard_DS11_v2",
-              "Standard_DS12_v2"
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
             ],
             "constraints": {
               "excludedSizes": [],
@@ -344,13 +342,11 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Client node VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "defaultValue": "Standard_DS1_v2",
+            "defaultValue": "Standard_D1",
             "recommendedSizes": [
-              "Standard_DS1_v2",
-              "Standard_DS2_v2",
-              "Standard_DS3_v2",
-              "Standard_DS11_v2",
-              "Standard_DS12_v2"
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
             ],
             "constraints": {
               "excludedSizes": [],
@@ -514,13 +510,11 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Kibana VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "defaultValue": "Standard_DS1_v2",
+            "defaultValue": "Standard_D1",
             "recommendedSizes": [
-              "Standard_DS1_v2",
-              "Standard_DS2_v2",
-              "Standard_DS3_v2",
-              "Standard_DS11_v2",
-              "Standard_DS12_v2"
+              "Standard_D1",
+              "Standard_D2",
+              "Standard_D3"
             ],
             "constraints": {
               "allowedSizes": [
