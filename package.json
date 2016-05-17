@@ -32,10 +32,12 @@
     "gulp-add-src": "^0.2.0",
     "gulp-casperjs": "0.0.5",
     "gulp-jsonlint": "^1.1.1",
+    "gulp-replace": "^0.5.4",
     "gulp-util": "^3.0.7",
     "gulp-zip": "^3.0.2",
     "jsonfile": "^2.2.3",
     "lodash": "^3.10.1",
-    "phantomjs-prebuilt": "^2.1.7"
+    "phantomjs-prebuilt": "^2.1.7",
+    "requiredir": "^1.0.7"
   }
 }

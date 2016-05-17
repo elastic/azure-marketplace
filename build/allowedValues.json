@@ -1,16 +1,20 @@
 {
   "versions": {
     "2.0.2": {
-      "kibana": "4.2.2"
+      "kibana": "4.2.2",
+      "downloadUrl" : "http://go.es.io/1Tl9scH"
     },
     "2.1.2": {
-      "kibana": "4.3.2"
+      "kibana": "4.3.2",
+      "downloadUrl" : "http://go.es.io/1qq9uWl"
     },
     "2.2.0": {
-      "kibana": "4.4.1"
+      "kibana": "4.4.1",
+      "downloadUrl" : "http://go.es.io/1TUNrhW"
     },
     "2.3.2": {
-      "kibana": "4.5.0"
+      "kibana": "4.5.0",
+      "downloadUrl" : "http://go.es.io/1slGFM1"
     }
   },
   "numberOfDataNodes" : 50,
