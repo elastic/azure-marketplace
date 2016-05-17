@@ -1,14 +1,9 @@
 var gulp = require("gulp");
 var gutil = require('gulp-util');
-var jsonfile = require('jsonfile');
 var _ = require('lodash');
 var replace = require('gulp-replace');
 var request = require('request');
 
-jsonfile.spaces = 2;
-
-var mainTemplate = "../src/mainTemplate.json";
-var uiTemplate = "../src/createUiDefinition.json";
 var installElasticsearchBash = "../src/scripts/elasticsearch-ubuntu-install.sh";
 
 var allowedValues = require('../allowedValues.json');

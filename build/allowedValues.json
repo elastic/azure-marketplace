@@ -20,25 +20,52 @@
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
   "vmSizes": [
-    "Standard_A0",
-    "Standard_A1",
-    "Standard_A2",
-    "Standard_A3",
-    "Standard_A4",
-    "Standard_A7",
-    "Standard_D1",
-    "Standard_D2",
-    "Standard_D3",
-    "Standard_D4",
-    "Standard_DS1",
-    "Standard_DS2",
-    "Standard_DS3",
-    "Standard_DS4",
-    "Standard_DS13",
-    "Standard_DS14",
-    "Standard_D1_v2",
-    "Standard_D2_v2",
-    "Standard_D3_v2",
-    "Standard_D4_v2"
+    ["Standard_A0", 1, "Standard", false],
+    ["Standard_A1", 2, "Standard", false],
+    ["Standard_A2", 4, "Standard", false],
+    ["Standard_A3", 8, "Standard", false],
+    ["Standard_A4", 16, "Standard", false],
+    ["Standard_A5", 4, "Standard", false],
+    ["Standard_A6", 8, "Standard", false],
+    ["Standard_A7", 16, "Standard", false],
+
+    ["Standard_D1", 2, "Standard", false],
+    ["Standard_D2", 4, "Standard", false],
+    ["Standard_D3", 8, "Standard", false],
+    ["Standard_D4", 16, "Standard", false],
+    ["Standard_D11", 4, "Standard", false],
+    ["Standard_D12", 8, "Standard", false],
+    ["Standard_D13", 16, "Standard", false],
+
+    ["Standard_D1_v2", 2, "Standard", false],
+    ["Standard_D2_v2", 4, "Standard", false],
+    ["Standard_D3_v2", 8, "Standard", false],
+    ["Standard_D4_v2", 16, "Standard", false],
+    ["Standard_D11_v2", 4, "Standard", false],
+    ["Standard_D12_v2", 8, "Standard", false],
+    ["Standard_D13_v2", 16, "Standard", false],
+
+    ["Standard_DS1", 2, "Premium", false],
+    ["Standard_DS2", 4, "Premium", false],
+    ["Standard_DS3", 8, "Premium", false],
+    ["Standard_DS4", 16, "Premium", false],
+    ["Standard_DS11", 4, "Premium", false],
+    ["Standard_DS12", 8, "Premium", false],
+    ["Standard_DS13", 16, "Premium", false], 
+
+    ["Standard_DS1_v2", 2, "Premium", true],
+    ["Standard_DS2_v2", 4, "Premium", true],
+    ["Standard_DS3_v2", 8, "Premium", true],
+    ["Standard_DS4_v2", 16, "Premium", false],
+    ["Standard_DS11_v2", 4, "Premium", true],
+    ["Standard_DS12_v2", 8, "Premium", true],
+    ["Standard_DS13_v2", 16, "Premium", false]
+  ],
+  "ignoredVmsBecauseWeHaveNo32DisksResouce" : [
+    "D14", "D5_v2", "D14_v2", "DS14", "DS5_v2", "DS14_v2"
+  ],
+  "ignoredVmsBecauseWeHaveNo40DisksResouce" : [
+    "D15_v2", "DS15_v2"
   ]
+
 }
