@@ -512,7 +512,7 @@
           {
             "name": "vmSizeKibana",
             "type": "Microsoft.Compute.SizeSelector",
-            "label": "Client node VM size",
+            "label": "Kibana VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
             "defaultValue": "Standard_DS1_v2",
             "recommendedSizes": [
