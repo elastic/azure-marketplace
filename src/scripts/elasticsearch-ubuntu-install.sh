@@ -224,14 +224,14 @@ install_java()
 # Install Elasticsearch
 install_es()
 {
-    #begin telemetry downloads 
-    if [[ "${ES_VERSION}" == "2.0.2"]]; then
+    #begin telemetry downloads
+    if [[ "${ES_VERSION}" == "2.0.2" ]]; then
       DOWNLOAD_URL="http://go.es.io/1Tl9scH"
-    elif [[ "${ES_VERSION}" == "2.1.2"]]; then
+    elif [[ "${ES_VERSION}" == "2.1.2" ]]; then
       DOWNLOAD_URL="http://go.es.io/1qq9uWl"
-    elif [[ "${ES_VERSION}" == "2.2.0"]]; then
+    elif [[ "${ES_VERSION}" == "2.2.0" ]]; then
       DOWNLOAD_URL="http://go.es.io/1TUNrhW"
-    elif [[ "${ES_VERSION}" == "2.3.2"]]; then
+    elif [[ "${ES_VERSION}" == "2.3.2" ]]; then
       DOWNLOAD_URL="http://go.es.io/1slGFM1"
     #end telemetry downloads
     elif [[ "${ES_VERSION}" == \2* ]]; then

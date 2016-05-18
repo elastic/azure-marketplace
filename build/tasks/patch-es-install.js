@@ -63,7 +63,7 @@ gulp.task('bash-patch', [ "link-checker" ], function(cb){
       var v = allowedValues.versions[k];
       var command = (elifs == 0) ? "if" : "elif";
       elifs++;
-      return  "    " + command +" [[ \"${ES_VERSION}\" == \"" + k + "\"]]; then\r\n      DOWNLOAD_URL=\"" +v.downloadUrl+ "\"\r\n";
+      return  "    " + command +" [[ \"${ES_VERSION}\" == \"" + k + "\" ]]; then\r\n      DOWNLOAD_URL=\"" +v.downloadUrl+ "\"\r\n";
     });
   var ifStatements = branches.join("")
 
