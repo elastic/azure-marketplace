@@ -36,6 +36,9 @@ node_modules
 # Build output directory
 dist/
 
+#headless test config
+ui-tests-config.json
+
 # Test parameters file
 parameters/test.parameters.json
 parameters/test*.parameters.json

@@ -1,5 +1,4 @@
-var azureUser = "";
-var azurePassword = "";
+var config = require('./ui-tests-config.json');
 
 var azureLogin = require('./lib/azure-login');
 var uiBlade = require('./lib/ui-definition-blade');
@@ -22,7 +21,7 @@ casper.test.on("fail", function(failure) {
 });
 
 casper.test.begin('Can login to azure portal', 2, function suite(test) {
-    azureLogin.login(azureUser, azurePassword)
+    azureLogin.login(config.azure.username, config.azure.password)
 
     casper.run(function() {
       test.assertTitle("Dashboard - Microsoft Azure");
