@@ -18,7 +18,7 @@ gulp.task("default", ["patch"], function() {
     .pipe(jsonlint.failAfterError())
     .pipe(addsrc.append(["../src/**/*.sh"]))
     .pipe(zip("elasticsearch-marketplace" + dateFormat(new Date(), "-yyyymmdd-HHMMss-Z").replace("+","-") +".zip"))
-    .pipe(gulp.dest("../dist"))
+    .pipe(gulp.dest("../dist/releases"))
 
   stream.on("finish", function() {});
 

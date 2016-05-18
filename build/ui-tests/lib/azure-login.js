@@ -8,7 +8,7 @@ exports.login = function (username, password) {
   casper.waitForUrl(/https:\/\/login.microsoftonline.com\/common\/oauth2\/authorize/);
   casper.waitForSelector('#cred_userid_inputtext');
   casper.then(function() {
-      casper.sendKeys("#cred_userid_inputtext", azureUser);
+      casper.sendKeys("#cred_userid_inputtext", username);
       casper.thenClick("#cred_password_inputtext");
       casper.waitUntilVisible("#redirect_dots_animation", function()
       {
@@ -17,7 +17,7 @@ exports.login = function (username, password) {
           casper.waitForUrl(/login\.srf/, function ()
           {
             casper.waitForSelector('[name=passwd]');
-            casper.sendKeys("[name=passwd]", azurePassword);
+            casper.sendKeys("[name=passwd]", password);
           });
         }, function() { }, 20000);
       });

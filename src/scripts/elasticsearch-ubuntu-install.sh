@@ -210,14 +210,15 @@ setup_data_disk()
 install_java()
 {
     log "[install_java] Adding apt repository for java 8"
-    add-apt-repository -y ppa:webupd8team/java
+    (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
     log "[install_java] updating apt-get"
-    apt-get -y update  > /dev/null
+
+    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
     log "[install_java] updated apt-get"
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     log "[install_java] Installing Java"
-    apt-get -y install oracle-java8-installer
+    (apt-get -y install oracle-java8-installer || (sleep 15; apt-get -y install oracle-java8-installer))
     log "[install_java] Installed Java"
 }
 
