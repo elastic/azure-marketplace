@@ -43,7 +43,7 @@ gulp.task("patch", ['bash-patch'], function(cb) {
         tier: v[0],
         dataDisks: v[1],
         nodesPerStorageAccount: nodesPerStorageAccount,
-        storageAccountName: v[2] + "_LRS"
+        storageAccountType: v[2] + "_LRS"
       }
     })).indexBy(function (v) {
       var tier = v.tier;

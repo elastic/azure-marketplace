@@ -503,182 +503,182 @@
       "Standard_A0": {
         "dataDisks": 1,
         "nodesPerStorageAccount": 10,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A1": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A3": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A4": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A5": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A6": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_A7": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D1": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D3": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D4": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D11": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D12": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D13": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D1_v2": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D2_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D3_v2": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D4_v2": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D11_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D12_v2": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_D13_v2": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Standard_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_DS1": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS3": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS4": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS11": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS12": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS13": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS1_v2": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS2_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS3_v2": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS4_v2": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS11_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS12_v2": {
         "dataDisks": 8,
         "nodesPerStorageAccount": 4,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       },
       "Standard_DS13_v2": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
-        "storageAccountName": "Premium_LRS"
+        "storageAccountType": "Premium_LRS"
       }
     },
     "nodesPerStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].nodesPerStorageAccount]",
