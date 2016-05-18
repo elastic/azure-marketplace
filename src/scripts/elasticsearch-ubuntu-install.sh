@@ -218,7 +218,7 @@ install_java()
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     log "[install_java] Installing Java"
-    (apt-get -y install oracle-java8-installer || (sleep 15; apt-get -y install oracle-java8-installer))
+    (apt-get -y install oracle-java8-installer || (sleep 15; apt-get -y install oracle-java8-installer)) || (sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install)
     log "[install_java] Installed Java"
 }
 
