@@ -401,7 +401,7 @@
     "ubuntuScripts": [
       "[concat(variables('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(variables('templateBaseUrl'), 'scripts/kibana-install.sh')]",
-      "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/shared_scripts/ubuntu/vm-disk-utils-0.1.sh"
+      "[concat(variables('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
     ],
     "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
     "ubuntuSettings": {

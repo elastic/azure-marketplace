@@ -60,6 +60,7 @@ help()
 log()
 {
     echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1" >> /var/log/arm-install.log
 }
 
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
@@ -418,11 +419,13 @@ if service --status-all | grep -Fq 'elasticsearch'; then
   exit 0
 fi
 
+format_data_disks
+
+setup_data_disk
+
 install_ntp
 
 install_java
-
-format_data_disks
 
 install_es
 
@@ -432,7 +435,6 @@ fi
 
 install_monit
 
-setup_data_disk
 
 configure_elasticsearch_yaml
 
