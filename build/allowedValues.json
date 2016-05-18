@@ -51,7 +51,7 @@
     ["Standard_DS4", 16, "Premium", false],
     ["Standard_DS11", 4, "Premium", false],
     ["Standard_DS12", 8, "Premium", false],
-    ["Standard_DS13", 16, "Premium", false], 
+    ["Standard_DS13", 16, "Premium", false],
 
     ["Standard_DS1_v2", 2, "Premium", true],
     ["Standard_DS2_v2", 4, "Premium", true],

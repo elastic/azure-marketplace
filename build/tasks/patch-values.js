@@ -20,9 +20,14 @@ var recommendedSizes = _(allowedValues.vmSizes)
 var dataNodeValues = _.range(1, allowedValues.numberOfDataNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
+
 var clientNodeValues = _.range(1, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
+
+//generate binPackMap of max data nodes but leave a minimum of 60 intact because thats what we shipped the ARM template with
+var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNodes, allowedValues.numberOfClientNodes) + 1))
+  .map(function (i) { return "[div(sub(add(" + i + ", variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]" });
 
 gulp.task("patch", ['bash-patch'], function(cb) {
 
@@ -46,6 +51,7 @@ gulp.task("patch", ['bash-patch'], function(cb) {
       return tier;
     });
 
+    obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
