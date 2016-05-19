@@ -64,6 +64,7 @@ log()
 }
 
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
+START_TIME=$SECONDS
 
 #########################
 # Preconditions
@@ -395,6 +396,12 @@ port_forward()
     sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 }
 
+start_walinuxagent()
+{
+    log "[start_walinuxagent] making sure the walinuxagent is running"
+    sudo service walinuxagent start
+}
+
 #########################
 # Instalation sequence
 #########################
@@ -413,9 +420,13 @@ format_data_disks
 
 setup_data_disk
 
+start_walinuxagent
+
 install_ntp
 
 install_java
+
+start_walinuxagent
 
 install_es
 
@@ -424,7 +435,6 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
 fi
 
 install_monit
-
 
 configure_elasticsearch_yaml
 
@@ -436,4 +446,10 @@ start_elasticsearch
 
 port_forward
 
+start_walinuxagent
+
+ELAPSED_TIME=$(($SECONDS - $START_TIME))
+PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))
+
+log "End execution of Elasticsearch script extension on ${HOSTNAME} in ${PRETTY}"
 exit 0
