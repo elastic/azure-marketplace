@@ -274,7 +274,9 @@ create_striped_volume()
 
     MDDEVICE=$(get_next_md_device)
 
+  sudo udevadm control --stop-exec-queue
 	mdadm --create ${MDDEVICE} --level 0 --raid-devices ${#PARTITIONS[@]} ${PARTITIONS[*]}
+  sudo udevadm control --start-exec-queue
 
 	MOUNTPOINT=$(get_next_mountpoint)
 	log "Next mount point appears to be ${MOUNTPOINT}"
