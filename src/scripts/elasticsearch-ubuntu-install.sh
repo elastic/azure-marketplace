@@ -418,8 +418,6 @@ fi
 
 format_data_disks
 
-setup_data_disk
-
 start_walinuxagent
 
 install_ntp
@@ -429,6 +427,8 @@ install_java
 start_walinuxagent
 
 install_es
+
+setup_data_disk
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
