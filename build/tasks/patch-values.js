@@ -29,7 +29,7 @@ var clientNodeValues = _.range(1, allowedValues.numberOfClientNodes + 1)
 var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNodes, allowedValues.numberOfClientNodes) + 1))
   .map(function (i) { return "[div(sub(add(" + i + ", variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]" });
 
-gulp.task("patch", ['bash-patch'], function(cb) {
+gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
     obj.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
