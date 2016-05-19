@@ -163,10 +163,11 @@ get_next_mountpoint() {
 add_to_fstab() {
     UUID=${1}
     MOUNTPOINT=${2}
+    log "calling fstab with UUID: ${UUID} and mount point: ${MOUNTPOINT}"
     grep "${UUID}" /etc/fstab >/dev/null 2>&1
     if [ ${?} -eq 0 ];
     then
-        echo "Not adding ${UUID} to fstab again (it's already there!)"
+        log "Not adding ${UUID} to fstab again (it's already there!)"
     else
         LINE="UUID=\"${UUID}\"\t${MOUNTPOINT}\text4\tnoatime,nodiratime,nodev,noexec,nosuid\t1 2"
         echo -e "${LINE}" >> /etc/fstab
@@ -214,31 +215,31 @@ scan_partition_format()
 	    log "No unpartitioned disks without filesystems detected"
 	    return
 	fi
-	echo "Disks are ${DISKS[@]}"
+	log "Disks are ${DISKS[@]}"
 	for DISK in "${DISKS[@]}";
 	do
-	    echo "Working on ${DISK}"
+	    log "Working on ${DISK}"
 	    is_partitioned ${DISK}
 	    if [ ${?} -ne 0 ];
 	    then
-	        echo "${DISK} is not partitioned, partitioning"
+	        log "${DISK} is not partitioned, partitioning"
 	        do_partition ${DISK}
 	    fi
 	    PARTITION=$(fdisk -l ${DISK}|grep -A 1 Device|tail -n 1|awk '{print $1}')
 	    has_filesystem ${PARTITION}
 	    if [ ${?} -ne 0 ];
 	    then
-	        echo "Creating filesystem on ${PARTITION}."
+	        log "Creating filesystem on ${PARTITION}."
 	#        echo "Press Ctrl-C if you don't want to destroy all data on ${PARTITION}"
 	#        sleep 10
 	        mkfs -j -t ext4 ${PARTITION}
 	    fi
 	    MOUNTPOINT=$(get_next_mountpoint)
-	    echo "Next mount point appears to be ${MOUNTPOINT}"
+	    log "Next mount point appears to be ${MOUNTPOINT}"
 	    [ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 	    read UUID FS_TYPE < <(blkid -u filesystem ${PARTITION}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
 	    add_to_fstab "${UUID}" "${MOUNTPOINT}"
-	    echo "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
+	    log "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
 	    mount "${MOUNTPOINT}"
 	done
 }
@@ -253,17 +254,17 @@ create_striped_volume()
 	    return
 	fi
 
-	echo "Disks are ${DISKS[@]}"
+	log "Disks are ${DISKS[@]}"
 
 	declare -a PARTITIONS
 
 	for DISK in "${DISKS[@]}";
 	do
-	    echo "Working on ${DISK}"
+	    log "Working on ${DISK}"
 	    is_partitioned ${DISK}
 	    if [ ${?} -ne 0 ];
 	    then
-	        echo "${DISK} is not partitioned, partitioning"
+	        log "${DISK} is not partitioned, partitioning"
 	        do_partition ${DISK} fd
 	    fi
 
@@ -276,7 +277,7 @@ create_striped_volume()
 	mdadm --create ${MDDEVICE} --level 0 --raid-devices ${#PARTITIONS[@]} ${PARTITIONS[*]}
 
 	MOUNTPOINT=$(get_next_mountpoint)
-	echo "Next mount point appears to be ${MOUNTPOINT}"
+	log "Next mount point appears to be ${MOUNTPOINT}"
 	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 
 	#Make a file system on the new device
@@ -286,6 +287,7 @@ create_striped_volume()
 
 	mkfs.ext4 -b 4096 -E stride=${STRIDE},stripe-width=${STRIPEWIDTH},nodiscard "${MDDEVICE}"
 
+	log "attempting to get UUID from ${MDDEVICE}"
 	read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
 
 	add_to_fstab "${UUID}" "${MOUNTPOINT}"
@@ -302,7 +304,7 @@ check_mdadm() {
     log "[check_mdadm] apt-get updated installing mdadm now"
     DEBIAN_FRONTEND=noninteractive sudo apt-get -y install mdadm --fix-missing
     dpkg -s mdadm >/dev/null 2>&1
-    log "[check_mdadm] apt-get installed mdadm and can be found is: ${?}"
+    log "[check_mdadm] apt-get installed mdadm and can be found returns: ${?}"
   fi
   log "[check_mdadm] end"
 }
