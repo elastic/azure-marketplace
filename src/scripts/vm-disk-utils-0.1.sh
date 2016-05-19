@@ -294,11 +294,17 @@ create_striped_volume()
 }
 
 check_mdadm() {
+  log "[check_mdadm] begin"
+  dpkg -s mdadm >/dev/null 2>&1
+  if [ ${?} -ne 0 ]; then
+    log "[check_mdadm] mdadm not found updating apt-get"
+    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
+    log "[check_mdadm] apt-get updated installing mdadm now"
+    DEBIAN_FRONTEND=noninteractive sudo apt-get -y install mdadm --fix-missing
     dpkg -s mdadm >/dev/null 2>&1
-    if [ ${?} -ne 0 ]; then
-        apt-get -y update
-        DEBIAN_FRONTEND=noninteractive apt-get -y install mdadm --fix-missing
-    fi
+    log "[check_mdadm] apt-get installed mdadm and can be found is: ${?}"
+  fi
+  log "[check_mdadm] end"
 }
 
 # Create Partitions
