@@ -10,9 +10,7 @@
         "defaultValue": "",
         "toolTip": "Specify a user for accessing the virtual machines within your cluster.",
         "constraints": {
-          "required": true,
-          "regex" : "[^\\s]+$",
-          "validationMessage" : "Cluster name must not have trailing whitespace"
+          "required": true
         },
         "osPlatform": "Linux"
       },
@@ -84,7 +82,8 @@
             "toolTip": "Name your Elasticsearch cluster.",
             "constraints": {
               "required": true,
-              "validationMessage": "TODO"
+              "regex" : "[^\\s]+$",
+              "validationMessage" : "Cluster has trailing whitespace"
             }
           }
         ]
