@@ -29,6 +29,8 @@ var clientNodeValues = _.range(1, allowedValues.numberOfClientNodes + 1)
 var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNodes, allowedValues.numberOfClientNodes) + 1))
   .map(function (i) { return "[div(sub(add(" + i + ", variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]" });
 
+var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations)
+
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
@@ -53,12 +55,19 @@ gulp.task("patch", function(cb) {
 
     obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
+
+    obj.parameters.location.allowedValues = allowedLocations;
+    obj.variables.locationMap = _(allowedLocations)
+      .indexBy(function(location) { return location; })
+      .mapValues(function(k) { return (k === "ResourceGroup") ? "[resourceGroup().location]" : "[resourceGroup().location]"; });
+
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeKibana.allowedValues = vmSizes;
+
     jsonfile.writeFile(mainTemplate, obj, function (err) {
       jsonfile.readFile(uiTemplate, function(err, obj) {
 

@@ -626,7 +626,8 @@
       "sshPublicKey": "[basics('password').sshPublicKey]",
       "shieldAdminPassword": "[steps('shieldStep').es_admin.shieldAdminPassword]",
       "shieldReadPassword": "[steps('shieldStep').es_read.shieldReadPassword]",
-      "shieldKibanaPassword": "[steps('shieldStep').es_kibana.shieldKibanaPassword]"
+      "shieldKibanaPassword": "[steps('shieldStep').es_kibana.shieldKibanaPassword]",
+      "location": "[location()]"
     }
   }
 }

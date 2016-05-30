@@ -240,7 +240,6 @@ install_es()
     sudo dpkg -i elasticsearch.deb
     log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
 }
-
 install_plugins()
 {
     log "[install_plugins] Installing Plugins Shield, Marvel, Watcher"

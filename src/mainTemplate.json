@@ -327,6 +327,36 @@
         "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
     },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "ResourceGroup",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast"
+      ],
+      "defaultValue": "ResourceGroup",
+      "metadata": {
+        "description": "Location where resources will be provisioned.  A value of 'ResourceGroup' will deploy the resource to the same location of the resource group the resources are provisioned into"
+      }
+    },
     "virtualNetworkName": {
       "type": "string",
       "defaultValue": "esvnet",
@@ -453,7 +483,30 @@
     },
     "OS": "ubuntu",
     "osSettings": "[variables(concat(variables('OS'), 'Settings'))]",
-    "location": "[resourceGroup().location]",
+    "locationMap": {
+      "ResourceGroup": "[resourceGroup().location]",
+      "eastasia": "[resourceGroup().location]",
+      "southeastasia": "[resourceGroup().location]",
+      "centralus": "[resourceGroup().location]",
+      "eastus": "[resourceGroup().location]",
+      "eastus2": "[resourceGroup().location]",
+      "westus": "[resourceGroup().location]",
+      "northcentralus": "[resourceGroup().location]",
+      "southcentralus": "[resourceGroup().location]",
+      "northeurope": "[resourceGroup().location]",
+      "westeurope": "[resourceGroup().location]",
+      "japanwest": "[resourceGroup().location]",
+      "japaneast": "[resourceGroup().location]",
+      "brazilsouth": "[resourceGroup().location]",
+      "australiaeast": "[resourceGroup().location]",
+      "australiasoutheast": "[resourceGroup().location]",
+      "southindia": "[resourceGroup().location]",
+      "centralindia": "[resourceGroup().location]",
+      "westindia": "[resourceGroup().location]",
+      "canadacentral": "[resourceGroup().location]",
+      "canadaeast": "[resourceGroup().location]"
+    },
+    "location": "[variables('locationMap')[parameters('location')]]",
     "storageAccountPrefix": "elastic",
     "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
     "masterNodesIpPrefix": "10.0.0.1",
