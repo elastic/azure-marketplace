@@ -10,7 +10,9 @@
         "defaultValue": "",
         "toolTip": "Specify a user for accessing the virtual machines within your cluster.",
         "constraints": {
-          "required": true
+          "required": true,
+          "regex" : "[^\\s]+$",
+          "validationMessage" : "Cluster name must not have trailing whitespace"
         },
         "osPlatform": "Linux"
       },
@@ -424,7 +426,8 @@
                 "toolTip": "Password to use for the es_admin Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}"
+                  "regex" : "^.{6,}",
+                  "validationMessage" : "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -447,7 +450,8 @@
                 "toolTip": "Password to use for the es_read Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}"
+                  "regex" : "^.{6,}",
+                  "validationMessage" : "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -470,7 +474,8 @@
                 "toolTip": "Password to use for the es_kibana Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}"
+                  "regex" : "^.{6,}",
+                  "validationMessage" : "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
