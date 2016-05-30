@@ -446,7 +446,8 @@
         "master": {
           "publisher": "Microsoft.OSTCExtensions",
           "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.2",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]",
             "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
@@ -455,7 +456,8 @@
         "client": {
           "publisher": "Microsoft.OSTCExtensions",
           "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.2",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]",
             "commandToExecute": "[variables('clientInstallScript')]"
@@ -464,7 +466,8 @@
         "data": {
           "publisher": "Microsoft.OSTCExtensions",
           "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.2",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]",
             "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
@@ -473,7 +476,8 @@
         "kibana": {
           "publisher": "Microsoft.OSTCExtensions",
           "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.2",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]",
             "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').kibanaVersion, ' -e ', variables('esSettings').version, ' -S ', variables('esSettings').shieldKibanaServerPwd)]"
