@@ -449,7 +449,9 @@
           "typeHandlerVersion": "1.5",
           "autoUpgradeMinorVersion": true,
           "settings": {
-            "fileUris": "[variables('ubuntuScripts')]",
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings" : {
             "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
@@ -459,7 +461,9 @@
           "typeHandlerVersion": "1.5",
           "autoUpgradeMinorVersion": true,
           "settings": {
-            "fileUris": "[variables('ubuntuScripts')]",
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings" : {
             "commandToExecute": "[variables('clientInstallScript')]"
           }
         },
@@ -469,7 +473,9 @@
           "typeHandlerVersion": "1.5",
           "autoUpgradeMinorVersion": true,
           "settings": {
-            "fileUris": "[variables('ubuntuScripts')]",
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings" : {
             "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
@@ -479,7 +485,9 @@
           "typeHandlerVersion": "1.5",
           "autoUpgradeMinorVersion": true,
           "settings": {
-            "fileUris": "[variables('ubuntuScripts')]",
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings" : {
             "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').kibanaVersion, ' -e ', variables('esSettings').version, ' -S ', variables('esSettings').shieldKibanaServerPwd)]"
           }
         }
