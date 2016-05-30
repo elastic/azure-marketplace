@@ -423,7 +423,8 @@
                 },
                 "toolTip": "Password to use for the es_admin Shield user.",
                 "constraints": {
-                  "required": true
+                  "required": true,
+                  "regex" : "^.{6,}"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -445,7 +446,8 @@
                 },
                 "toolTip": "Password to use for the es_read Shield user.",
                 "constraints": {
-                  "required": true
+                  "required": true,
+                  "regex" : "^.{6,}"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -467,7 +469,8 @@
                 },
                 "toolTip": "Password to use for the es_kibana Shield user.",
                 "constraints": {
-                  "required": true
+                  "required": true,
+                  "regex" : "^.{6,}"
                 },
                 "options": {
                   "hideConfirmation": false
