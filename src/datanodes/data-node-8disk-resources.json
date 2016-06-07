@@ -137,7 +137,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "copy": {
-        "name": "[concat(parameters('namespace'),'vm-loop')]",
+        "name": "[concat(parameters('namespace'),'os-profile-loop')]",
         "count": "[parameters('vmCount')]"
       },
       "properties": {
@@ -277,7 +277,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('namespace'), copyindex(),'-nic'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('namespace'), copyindex(), '-nic'))]"
             }
           ]
         }

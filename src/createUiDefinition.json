@@ -82,8 +82,8 @@
             "toolTip": "Name your Elasticsearch cluster.",
             "constraints": {
               "required": true,
-              "regex" : "[^\\s]+$",
-              "validationMessage" : "Cluster has trailing whitespace"
+              "regex": "[^\\s]+$",
+              "validationMessage": "Cluster has trailing whitespace"
             }
           }
         ]
@@ -126,13 +126,17 @@
                 "Standard_D11",
                 "Standard_D12",
                 "Standard_D13",
+                "Standard_D14",
                 "Standard_D1_v2",
                 "Standard_D2_v2",
                 "Standard_D3_v2",
                 "Standard_D4_v2",
+                "Standard_D5_v2",
                 "Standard_D11_v2",
                 "Standard_D12_v2",
                 "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
                 "Standard_DS1",
                 "Standard_DS2",
                 "Standard_DS3",
@@ -140,13 +144,17 @@
                 "Standard_DS11",
                 "Standard_DS12",
                 "Standard_DS13",
+                "Standard_DS14",
                 "Standard_DS1_v2",
                 "Standard_DS2_v2",
                 "Standard_DS3_v2",
                 "Standard_DS4_v2",
+                "Standard_DS5_v2",
                 "Standard_DS11_v2",
                 "Standard_DS12_v2",
-                "Standard_DS13_v2"
+                "Standard_DS13_v2",
+                "Standard_DS14_v2",
+                "Standard_DS15_v2"
               ]
             },
             "osPlatform": "Linux",
@@ -256,13 +264,17 @@
                 "Standard_D11",
                 "Standard_D12",
                 "Standard_D13",
+                "Standard_D14",
                 "Standard_D1_v2",
                 "Standard_D2_v2",
                 "Standard_D3_v2",
                 "Standard_D4_v2",
+                "Standard_D5_v2",
                 "Standard_D11_v2",
                 "Standard_D12_v2",
                 "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
                 "Standard_DS1",
                 "Standard_DS2",
                 "Standard_DS3",
@@ -270,13 +282,17 @@
                 "Standard_DS11",
                 "Standard_DS12",
                 "Standard_DS13",
+                "Standard_DS14",
                 "Standard_DS1_v2",
                 "Standard_DS2_v2",
                 "Standard_DS3_v2",
                 "Standard_DS4_v2",
+                "Standard_DS5_v2",
                 "Standard_DS11_v2",
                 "Standard_DS12_v2",
-                "Standard_DS13_v2"
+                "Standard_DS13_v2",
+                "Standard_DS14_v2",
+                "Standard_DS15_v2"
               ]
             },
             "osPlatform": "Linux",
@@ -367,13 +383,17 @@
                 "Standard_D11",
                 "Standard_D12",
                 "Standard_D13",
+                "Standard_D14",
                 "Standard_D1_v2",
                 "Standard_D2_v2",
                 "Standard_D3_v2",
                 "Standard_D4_v2",
+                "Standard_D5_v2",
                 "Standard_D11_v2",
                 "Standard_D12_v2",
                 "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
                 "Standard_DS1",
                 "Standard_DS2",
                 "Standard_DS3",
@@ -381,13 +401,17 @@
                 "Standard_DS11",
                 "Standard_DS12",
                 "Standard_DS13",
+                "Standard_DS14",
                 "Standard_DS1_v2",
                 "Standard_DS2_v2",
                 "Standard_DS3_v2",
                 "Standard_DS4_v2",
+                "Standard_DS5_v2",
                 "Standard_DS11_v2",
                 "Standard_DS12_v2",
-                "Standard_DS13_v2"
+                "Standard_DS13_v2",
+                "Standard_DS14_v2",
+                "Standard_DS15_v2"
               ]
             },
             "osPlatform": "Linux",
@@ -425,8 +449,8 @@
                 "toolTip": "Password to use for the es_admin Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -449,8 +473,8 @@
                 "toolTip": "Password to use for the es_read Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -473,8 +497,8 @@
                 "toolTip": "Password to use for the es_kibana Shield user.",
                 "constraints": {
                   "required": true,
-                  "regex" : "^.{6,}",
-                  "validationMessage" : "Shield password must be atleast 6 characters long"
+                  "regex": "^.{6,}",
+                  "validationMessage": "Shield password must be atleast 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -540,13 +564,17 @@
                 "Standard_D11",
                 "Standard_D12",
                 "Standard_D13",
+                "Standard_D14",
                 "Standard_D1_v2",
                 "Standard_D2_v2",
                 "Standard_D3_v2",
                 "Standard_D4_v2",
+                "Standard_D5_v2",
                 "Standard_D11_v2",
                 "Standard_D12_v2",
                 "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
                 "Standard_DS1",
                 "Standard_DS2",
                 "Standard_DS3",
@@ -554,13 +582,17 @@
                 "Standard_DS11",
                 "Standard_DS12",
                 "Standard_DS13",
+                "Standard_DS14",
                 "Standard_DS1_v2",
                 "Standard_DS2_v2",
                 "Standard_DS3_v2",
                 "Standard_DS4_v2",
+                "Standard_DS5_v2",
                 "Standard_DS11_v2",
                 "Standard_DS12_v2",
-                "Standard_DS13_v2"
+                "Standard_DS13_v2",
+                "Standard_DS14_v2",
+                "Standard_DS15_v2"
               ],
               "excludedSizes": []
             },
