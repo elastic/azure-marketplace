@@ -1,0 +1,11 @@
+{
+  "azure" : {
+    "username" : "",
+    "password" : ""
+  },
+  "arm" :{
+    "tenantId" : "",
+    "clientId" : "",
+    "clientSecret" : ""
+  }
+}

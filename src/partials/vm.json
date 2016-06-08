@@ -1,0 +1,139 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "Location where resources will be provisioned"
+      }
+    },
+    "index": {
+      "type": "int",
+      "metadata": {
+        "description": "the outer loop index"
+      }
+    },
+    "dataDisks": {
+      "type": "object",
+      "defaultValue" : [],
+      "metadata": {
+        "description": "additional data disks to attach"
+      }
+    }
+  },
+  "variables": {
+    "namespace" : "[parameters('vm').namespace]",
+    "computername": "[concat(parameters('vm').namespace, parameters('index'))]",
+    "password_osProfile": {
+      "computername": "[variables('computername')]",
+      "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+      "adminPassword": "[parameters('vm').shared.credentials.password]"
+    },
+    "sshPublicKey_osProfile": {
+      "computername": "[variables('computername')]",
+      "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [ {
+            "path": "[concat('/home/', parameters('vm').shared.credentials.adminUsername, '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('vm').shared.credentials.sshPublicKey]"
+          } ]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]"
+  },
+  "resources": [
+
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('namespace'), parameters('index'), '-nic')]",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'), 'nic-loop')]",
+        "count": 3
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('vm').shared.subnetId]"
+              },
+              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+            }
+          }
+        ]
+      }
+    },
+
+
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('namespace'), parameters('index'))]",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'), 'vm-loop')]",
+        "count": 3
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), parameters('index'), '-nic')]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vm').size]"
+        },
+        "osProfile": "[variables('osProfile')]",
+        "storageProfile": {
+          "imageReference": "[parameters('vm').shared.osSettings.imageReference]",
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat('http://',parameters('vm').shared.storageAccountName,'.blob.core.windows.net/vhds/', variables('namespace'), parameters('index'), '-osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('namespace'), parameters('index'), '-nic'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(variables('namespace'), parameters('index'), '/script')]",
+          "apiVersion": "2015-06-15",
+          "location": "[parameters('vm').shared.location]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
+          ],
+          "properties": "[parameters('vm').installScript]"
+        }
+      ]
+    }
+  ],
+  "outputs": {
+  }
+}

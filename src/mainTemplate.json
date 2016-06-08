@@ -398,12 +398,6 @@
     }
   },
   "variables": {
-    "credentials": {
-      "username": "[parameters('adminUsername')]",
-      "password": "[parameters('adminPassword')]",
-      "authenticationType": "[parameters('authenticationType')]",
-      "sshPublicKey": "[parameters('sshPublicKey')]"
-    },
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
     "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/',parameters('loadBalancerType'),'-lb-resources.json')]",
@@ -428,6 +422,12 @@
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
     "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
+    "credentials": {
+      "username": "[parameters('adminUsername')]",
+      "password": "[parameters('adminPassword')]",
+      "authenticationType": "[parameters('authenticationType')]",
+      "sshPublicKey": "[parameters('sshPublicKey')]"
+    },
     "esToKibanaMapping": {
       "2.0.2": "4.2.2",
       "2.1.2": "4.3.2",
@@ -554,7 +554,6 @@
     "location": "[variables('locationMap')[parameters('location')]]",
     "storageAccountPrefix": "elastic",
     "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
-    "masterNodesIpPrefix": "10.0.0.1",
     "networkSettings": {
       "virtualNetworkName": "[parameters('virtualNetworkName')]",
       "addressPrefix": "10.0.0.0/16",
@@ -888,7 +887,15 @@
       "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
       "prefix": "[concat(variables('storageAccountPrefix'), 'd', uniqueString(resourceGroup().id, deployment().name))]"
     },
-    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-node-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]"
+    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-node-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]",
+    "sharedVmConfig": {
+      "storageAccountName": "[variables('storageAccountNameShared')]",
+      "location": "[variables('location')]",
+      "subnet": "[variables('networkSettings').subnet.data]",
+      "subnetId": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').subnet.data.vnet), '/subnets/', variables('networkSettings').subnet.data.name)]",
+      "credentials": "[variables('credentials')]",
+      "osSettings": "[variables('osSettings')]"
+    }
   },
   "resources": [
     {
@@ -955,26 +962,17 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "credentials": {
-            "value": "[variables('credentials')]"
-          },
-          "masterNodesIpPrefix": {
-            "value": "[variables('masterNodesIpPrefix')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeMasterNodes')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.master]"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "master-node-",
+              "installScript": "[variables('osSettings').extentionSettings.master]",
+              "size": "[parameters('vmSizeMasterNodes')]",
+              "count": 3,
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "No",
+              "backendPools": []
+            }
           }
         }
       }
@@ -997,29 +995,17 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "credentials": {
-            "value": "[variables('credentials')]"
-          },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeClientNodes')]"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
-          },
-          "vmCount": {
-            "value": "[parameters('vmClientNodeCount')]"
-          },
-          "lbBackendPools": {
-            "value": "[variables('lbBackEndPoolsAdded')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "client-node-",
+              "installScript": "[variables('osSettings').extentionSettings.client]",
+              "size": "[parameters('vmSizeClientNodes')]",
+              "count": "[parameters('vmClientNodeCount')]",
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "Yes",
+              "backendPools": "[variables('lbBackEndPoolsAdded')]"
+            }
           }
         }
       }
@@ -1042,32 +1028,20 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "credentials": {
-            "value": "[variables('credentials')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "data-node-",
+              "installScript": "[variables('osSettings').extentionSettings.data]",
+              "size": "[parameters('vmSizeDataNodes')]",
+              "count": "[parameters('vmDataNodeCount')]",
+              "useSharedStorageAccount": "No",
+              "useBackendPools": "Yes",
+              "backendPools": "[variables('dataLBSettings')]"
+            }
           },
           "storageSettings": {
             "value": "[variables('dataNodeStorageSettings')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeDataNodes')]"
-          },
-          "vmCount": {
-            "value": "[parameters('vmDataNodeCount')]"
-          },
-          "namespace": {
-            "value": "data-node-"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
-          },
-          "lbBackendPools": {
-            "value": "[variables('dataLBSettings')]"
           }
         }
       }

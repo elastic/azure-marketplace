@@ -37,7 +37,11 @@ node_modules
 dist/
 
 #headless test config
+.test.json
+
+
 ui-tests-config.json
+arm-tests-config.json
 
 # Test parameters file
 parameters/test.parameters.json
