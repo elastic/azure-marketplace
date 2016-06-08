@@ -398,7 +398,8 @@
     }
   },
   "variables": {
-    "password": {
+    "credentials": {
+      "username": "[parameters('adminUsername')]",
       "password": "[parameters('adminPassword')]",
       "authenticationType": "[parameters('authenticationType')]",
       "sshPublicKey": "[parameters('sshPublicKey')]"
@@ -957,11 +958,8 @@
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "masterNodesIpPrefix": {
             "value": "[variables('masterNodesIpPrefix')]"
@@ -999,11 +997,8 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
@@ -1047,11 +1042,8 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "location": {
             "value": "[variables('location')]"
@@ -1101,11 +1093,8 @@
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "location": {
             "value": "[variables('location')]"
@@ -1140,11 +1129,8 @@
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "location": {
             "value": "[variables('location')]"

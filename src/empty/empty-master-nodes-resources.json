@@ -9,11 +9,7 @@
         "description": "Base uri of resources"
       }
     },
-    "adminUsername": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "password": {
+    "credentials": {
       "type": "object",
       "defaultValue": ""
     },

@@ -5,27 +5,24 @@
         "computerName" : {
           "type" : "string"
         },
-        "adminUsername": {
-          "type" : "securestring"
-        },
-        "password": {
+        "credentials": {
             "type": "object"
         }
     },
     "variables": {
       "password_osProfile": {
         "computername": "[parameters('computerName')]",
-        "adminUsername": "[parameters('adminUsername')]",
-        "adminPassword": "[parameters('password').password]"
+        "adminUsername": "[parameters('credentials').adminUsername]",
+        "adminPassword": "[parameters('credentials').password]"
       },
       "sshPublicKey_osProfile": {
         "computername": "[parameters('computerName')]",
-        "adminUsername": "[parameters('adminUsername')]",
+        "adminUsername": "[parameters('credentials').adminUsername]",
         "linuxConfiguration": {
           "disablePasswordAuthentication": "true",
           "ssh": {
             "publicKeys": [ {
-              "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+              "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
               "keyData": "[parameters('password').sshPublicKey]"
             } ]
           }

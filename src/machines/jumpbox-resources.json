@@ -27,16 +27,10 @@
         "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
       }
     },
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Administrator user name used when provisioning virtual machines"
-      }
-    },
-    "password": {
+    "credentials": {
       "type": "object",
       "metadata": {
-        "description": "Administrator password used when provisioning virtual machines"
+        "description": "Credential information block"
       }
     },
     "osSettings": {
@@ -56,23 +50,23 @@
     "nicName": "[concat(variables('namespace'), 'nic')]",
     "password_osProfile": {
       "computername": "[variable('vmName')]",
-      "adminUsername": "[parameters('adminUsername')]",
-      "adminPassword": "[parameters('password').password]"
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "adminPassword": "[parameters('credentials').password]"
     },
     "sshPublicKey_osProfile": {
       "computername": "[variable('vmName')]",
-      "adminUsername": "[parameters('adminUsername')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
         "ssh": {
           "publicKeys": [ {
-            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-            "keyData": "[parameters('password').sshPublicKey]"
+            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('credentials').sshPublicKey]"
           } ]
         }
       }
     },
-    "osProfile": "[variables(concat(parameters('password').authenticationType, '_osProfile'))]"
+    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
   },
   "resources": [
     {
@@ -146,8 +140,7 @@
       "name": "[variables('vmName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile')]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "properties": {
         "hardwareProfile": {
@@ -177,7 +170,7 @@
   ],
   "outputs": {
     "ssh": {
-      "value": "[concat(parameters('adminUsername'), '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
+      "value": "[concat(parameters('credentials').adminUsername, '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
       "type": "string"
     }
   }

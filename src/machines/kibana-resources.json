@@ -27,16 +27,10 @@
         "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
       }
     },
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Administrator user name used when provisioning virtual machines"
-      }
-    },
-    "password": {
+    "credentials": {
       "type": "object",
       "metadata": {
-        "description": "Administrator password used when provisioning virtual machines"
+        "description": "Credentials information block"
       }
     },
     "osSettings": {
@@ -59,7 +53,26 @@
     "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "publicIpName": "[concat(variables('namespace'), 'ip')]",
     "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
-    "nicName": "[concat(variables('namespace'), 'nic')]"
+    "nicName": "[concat(variables('namespace'), 'nic')]",
+    "password_osProfile": {
+      "computername": "[variable('vmName')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "adminPassword": "[parameters('credentials').password]"
+    },
+    "sshPublicKey_osProfile": {
+      "computername": "[variable('vmName')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [ {
+            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('credentials').sshPublicKey]"
+          } ]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
   },
   "resources": [
     {
@@ -142,42 +155,18 @@
       }
     },
     {
-      "name": "[concat(variables('namespace'), 'os-profile')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2015-01-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), '/partials/osProfile-resources.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "adminUserName": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[parameters('password')]"
-          },
-          "computerName": {
-            "value": "[variables('vmName')]"
-          }
-        }
-      }
-    },
-    {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile')]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
-        "osProfile": "[reference(concat('Microsoft.Resources/deployments/',variables('namespace'),'os-profile'), '2015-01-01').outputs.osProfile.value]",
+        "osProfile": "[variables('osProfile')]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
