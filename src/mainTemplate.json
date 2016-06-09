@@ -1037,7 +1037,7 @@
               "count": "[parameters('vmDataNodeCount')]",
               "useSharedStorageAccount": "No",
               "useBackendPools": "Yes",
-              "backendPools": "[variables('dataLBSettings')].backendPools"
+              "backendPools": "[variables('dataLBSettings').backendPools]"
             }
           },
           "storageSettings": {
