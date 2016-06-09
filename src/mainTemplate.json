@@ -971,7 +971,7 @@
               "count": 3,
               "useSharedStorageAccount": "Yes",
               "useBackendPools": "No",
-              "backendPools": []
+              "backendPools": "[variables('lbBackEndPoolsRemoved')]"
             }
           }
         }
