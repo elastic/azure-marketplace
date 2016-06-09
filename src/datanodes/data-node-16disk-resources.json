@@ -77,168 +77,170 @@
           "index": {
             "value": "[copyindex()]"
           },
-          "dataDisks": [
-            {
-              "name": "datadisk1",
-              "diskSizeGB": 1023,
-              "lun": 0,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+          "dataDisks": {
+            "value": [
+              {
+                "name": "datadisk1",
+                "diskSizeGB": 1023,
+                "lun": 0,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk2",
-              "diskSizeGB": 1023,
-              "lun": 1,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
+              {
+                "name": "datadisk2",
+                "diskSizeGB": 1023,
+                "lun": 1,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk3",
-              "diskSizeGB": 1023,
-              "lun": 2,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk3' ,'.vhd')]"
+              {
+                "name": "datadisk3",
+                "diskSizeGB": 1023,
+                "lun": 2,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk3' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk4",
-              "diskSizeGB": 1023,
-              "lun": 3,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk4' ,'.vhd')]"
+              {
+                "name": "datadisk4",
+                "diskSizeGB": 1023,
+                "lun": 3,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk4' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk5",
-              "diskSizeGB": 1023,
-              "lun": 4,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk5' ,'.vhd')]"
+              {
+                "name": "datadisk5",
+                "diskSizeGB": 1023,
+                "lun": 4,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk5' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk6",
-              "diskSizeGB": 1023,
-              "lun": 5,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk6' ,'.vhd')]"
+              {
+                "name": "datadisk6",
+                "diskSizeGB": 1023,
+                "lun": 5,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk6' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk7",
-              "diskSizeGB": 1023,
-              "lun": 6,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk7' ,'.vhd')]"
+              {
+                "name": "datadisk7",
+                "diskSizeGB": 1023,
+                "lun": 6,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk7' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk8",
-              "diskSizeGB": 1023,
-              "lun": 7,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk8' ,'.vhd')]"
+              {
+                "name": "datadisk8",
+                "diskSizeGB": 1023,
+                "lun": 7,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk8' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk9",
-              "diskSizeGB": 1023,
-              "lun": 8,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk9' ,'.vhd')]"
+              {
+                "name": "datadisk9",
+                "diskSizeGB": 1023,
+                "lun": 8,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk9' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk10",
-              "diskSizeGB": 1023,
-              "lun": 9,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk10' ,'.vhd')]"
+              {
+                "name": "datadisk10",
+                "diskSizeGB": 1023,
+                "lun": 9,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk10' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk11",
-              "diskSizeGB": 1023,
-              "lun": 10,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk11' ,'.vhd')]"
+              {
+                "name": "datadisk11",
+                "diskSizeGB": 1023,
+                "lun": 10,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk11' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk12",
-              "diskSizeGB": 1023,
-              "lun": 11,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk12' ,'.vhd')]"
+              {
+                "name": "datadisk12",
+                "diskSizeGB": 1023,
+                "lun": 11,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk12' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk13",
-              "diskSizeGB": 1023,
-              "lun": 12,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk13' ,'.vhd')]"
+              {
+                "name": "datadisk13",
+                "diskSizeGB": 1023,
+                "lun": 12,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk13' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk14",
-              "diskSizeGB": 1023,
-              "lun": 13,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk14' ,'.vhd')]"
+              {
+                "name": "datadisk14",
+                "diskSizeGB": 1023,
+                "lun": 13,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk14' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk15",
-              "diskSizeGB": 1023,
-              "lun": 14,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk15' ,'.vhd')]"
+              {
+                "name": "datadisk15",
+                "diskSizeGB": 1023,
+                "lun": 14,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk15' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
               },
-              "caching": "None",
-              "createOption": "Empty"
-            },
-            {
-              "name": "datadisk16",
-              "diskSizeGB": 1023,
-              "lun": 15,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk16' ,'.vhd')]"
-              },
-              "caching": "None",
-              "createOption": "Empty"
-            }
-          ]
+              {
+                "name": "datadisk16",
+                "diskSizeGB": 1023,
+                "lun": 15,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk16' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
+              }
+            ]
+          }
         }
       }
     }

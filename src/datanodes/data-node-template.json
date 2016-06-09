@@ -77,18 +77,20 @@
           "index": {
             "value": "[copyindex()]"
           },
-          "dataDisks": [
-            {
-              "name": "datadisk_INDEX_",
-              "diskSizeGB": 1023,
-              "lun": 0,
-              "vhd": {
-                "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk_INDEX_' ,'.vhd')]"
-              },
-              "caching": "None",
-              "createOption": "Empty"
-            }
-          ]
+          "dataDisks": {
+            "value" : [
+              {
+                "name": "datadisk_INDEX_",
+                "diskSizeGB": 1023,
+                "lun": 0,
+                "vhd": {
+                  "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk_INDEX_' ,'.vhd')]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
+              }
+            ]
+          }
         }
       }
     }
