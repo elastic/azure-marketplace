@@ -417,7 +417,7 @@
     },
     "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
     "clientTemplates": [
-      "empty/empty-client-resources.json",
+      "empty/empty-client-nodes-resources.json",
       "machines/client-nodes-resources.json"
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",

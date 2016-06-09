@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "vm configuration"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [],
+  "outputs": {}
+}
