@@ -61,10 +61,6 @@
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('namespace'), parameters('index'), '-nic')]",
       "location": "[parameters('vm').shared.location]",
-      "copy": {
-        "name": "[concat(variables('namespace'), 'nic-loop')]",
-        "count": 3
-      },
       "properties": {
         "ipConfigurations": [
           {
@@ -81,19 +77,13 @@
       }
     },
 
-
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('namespace'), parameters('index'))]",
       "location": "[parameters('vm').shared.location]",
-      "copy": {
-        "name": "[concat(variables('namespace'), 'vm-loop')]",
-        "count": 3
-      },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), parameters('index'), '-nic')]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), parameters('index'), '-nic')]"
       ],
       "properties": {
         "availabilitySet": {

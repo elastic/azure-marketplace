@@ -55,6 +55,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn" : [
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()])]"
       ],
       "copy": {
