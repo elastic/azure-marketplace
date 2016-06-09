@@ -971,7 +971,7 @@
               "count": 3,
               "useSharedStorageAccount": "Yes",
               "useBackendPools": "No",
-              "backendPools": "[variables('lbBackEndPoolsRemoved')]"
+              "backendPools": []
             }
           }
         }
@@ -1004,7 +1004,7 @@
               "count": "[parameters('vmClientNodeCount')]",
               "useSharedStorageAccount": "Yes",
               "useBackendPools": "Yes",
-              "backendPools": "[variables('lbBackEndPoolsAdded')]"
+              "backendPools": "[variables('lbBackEndPoolsAdded').backendPools]"
             }
           }
         }
@@ -1037,7 +1037,7 @@
               "count": "[parameters('vmDataNodeCount')]",
               "useSharedStorageAccount": "No",
               "useBackendPools": "Yes",
-              "backendPools": "[variables('dataLBSettings')]"
+              "backendPools": "[variables('dataLBSettings')].backendPools"
             }
           },
           "storageSettings": {
