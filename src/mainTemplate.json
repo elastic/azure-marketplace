@@ -423,7 +423,7 @@
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
     "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
     "credentials": {
-      "username": "[parameters('adminUsername')]",
+      "adminUsername": "[parameters('adminUsername')]",
       "password": "[parameters('adminPassword')]",
       "authenticationType": "[parameters('authenticationType')]",
       "sshPublicKey": "[parameters('sshPublicKey')]"
