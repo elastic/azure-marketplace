@@ -412,12 +412,12 @@
     },
     "jumpboxTemplateUrl": "[concat(variables('templateBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
     "kibanaTemplates": {
-      "No": "empty/empty-resources.json",
+      "No": "empty/empty-kibana-resources.json",
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
     "clientTemplates": [
-      "empty/empty-resources.json",
+      "empty/empty-client-resources.json",
       "machines/client-nodes-resources.json"
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",

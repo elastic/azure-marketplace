@@ -55,12 +55,12 @@
     "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
     "nicName": "[concat(variables('namespace'), 'nic')]",
     "password_osProfile": {
-      "computername": "[variable('vmName')]",
+      "computername": "[variables('vmName')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "adminPassword": "[parameters('credentials').password]"
     },
     "sshPublicKey_osProfile": {
-      "computername": "[variable('vmName')]",
+      "computername": "[variables('vmName')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",

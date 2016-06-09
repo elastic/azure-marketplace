@@ -11,35 +11,33 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": ""
+      "metadata": {
+        "description": "Location where resources will be provisioned"
+      }
     },
     "subnet": {
       "type": "object",
-      "defaultValue": {}
+      "metadata": {
+        "description": "Subnet object for provisioning resources in (expects properties name as the subnet name, and vnet as the virtual network name on the object)"
+      }
     },
     "storageAccountName": {
       "type": "string",
-      "defaultValue": ""
+      "metadata": {
+        "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
+      }
     },
     "credentials": {
       "type": "object",
-      "defaultValue": ""
+      "metadata": {
+        "description": "Credential information block"
+      }
     },
     "osSettings": {
       "type": "object",
-      "defaultValue": {}
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "vmCount": {
-      "type": "int",
-      "defaultValue": 0
-    },
-    "lbBackendPools": {
-      "type": "object",
-      "defaultValue": {}
+      "metadata": {
+        "description": "Elasticsearch deployment platform settings"
+      }
     }
   },
   "variables": {},

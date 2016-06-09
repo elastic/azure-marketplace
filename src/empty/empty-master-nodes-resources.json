@@ -9,33 +9,11 @@
         "description": "Base uri of resources"
       }
     },
-    "credentials": {
+    "vm": {
       "type": "object",
-      "defaultValue": ""
-    },
-    "storageAccountName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "subnet": {
-      "type": "object",
-      "defaultValue": {}
-    },
-    "masterNodesIpPrefix": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "osSettings": {
-      "type": "object",
-      "defaultValue": {}
+      "metadata": {
+        "description": "vm configuration"
+      }
     }
   },
   "variables": {},
