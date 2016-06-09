@@ -8,7 +8,7 @@ jsonfile.spaces = 2;
 var resourceTemplate = require("../../src/datanodes/data-node-template.json");
 var allowedValues = require('../allowedValues.json');
 var resource = _(resourceTemplate.resources).find(function(r) { return r.type == "Microsoft.Resources/deployments"});
-var dataDiskTemplate = resource.properties.parameters.dataDisks.value[0];
+var dataDiskTemplate = resource.properties.parameters.dataDisks.value.disks[0];
 var nthDisk = function(i) {
   var d = _.cloneDeep(dataDiskTemplate);
   d.lun = i;
@@ -27,7 +27,7 @@ gulp.task("generate-data-nodes-resource", function(cb) {
   allowedValues.dataDisks.forEach(function (size) {
     var t = _.cloneDeep(resourceTemplate);
     var rr = _(t.resources).find(function(r) { return r.type == "Microsoft.Resources/deployments"});
-    rr.properties.parameters.dataDisks.value = _.range(size).map(nthDisk);
+    rr.properties.parameters.dataDisks.value,disks = _.range(size).map(nthDisk);
     var resource = "../src/datanodes/data-node-" + size + "disk-resources.json";
     jsonfile.writeFile(resource, t, { flag: 'w' },function (err) {
       done();

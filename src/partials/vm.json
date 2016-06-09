@@ -23,7 +23,9 @@
     },
     "dataDisks": {
       "type": "object",
-      "defaultValue" : [],
+      "defaultValue" : {
+        "disks" : []
+      },
       "metadata": {
         "description": "additional data disks to attach"
       }
