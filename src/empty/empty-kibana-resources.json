@@ -49,5 +49,10 @@
   },
   "variables": {},
   "resources": [],
-  "outputs": {}
+  "outputs": {
+    "fqdn": {
+      "value": "N/A",
+      "type": "string"
+    }
+  }
 }

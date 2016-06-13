@@ -5,7 +5,7 @@ var zip = require("gulp-zip");
 var dateFormat = require("dateformat");
 var addsrc = require('gulp-add-src');
 
-gulp.task("default", ["patch", "generate-data-nodes-resource"], function() {
+gulp.task("default", ["sanity-checks", "patch", "generate-data-nodes-resource"], function() {
   var stream = gulp.src(["../src/**/*.json"])
     .pipe(jsonlint())
     .pipe(jsonlint.reporter())

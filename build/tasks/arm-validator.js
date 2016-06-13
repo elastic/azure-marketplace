@@ -8,6 +8,7 @@ var git = require('git-rev')
 var merge = require('merge');
 var mkdirp = require('mkdirp')
 var del = require('del')
+var request = require('request');
 
 var azureCli = "..\\node_modules\\.bin\\azure.cmd"; //TODO *nix
 var artifactsBaseUrl = "";
@@ -227,6 +228,41 @@ var showOperationList = (test, cb) => {
   });
 }
 
+var sanityCheckOutput = (test, stdout, cb) => {
+  if (!stdout) return cb();
+  var outputs = JSON.parse(stdout).properties.outputs;
+  var checks = [];
+  var checked = 0;
+  var allChecked = () => { if (++checked == checks.length) cb(); };
+  if (outputs.loadbalancer.value !== "N/A")
+    checks.push(()=> sanityCheckExternalLoadBalancer(test, outputs.loadbalancer.value, allChecked));
+  if (outputs.kibana.value !== "N/A")
+    checks.push(()=> sanityCheckKibana(outputs.kibana.value, allChecked));
+  if (checks.length > 0) checks.forEach(check => check());
+  else cb();
+}
+
+var sanityCheckExternalLoadBalancer = (test, url, cb) => {
+  log("checking external loadbalancer "+ url +" in resource group: " + rg);
+  request(url, {
+    json: true,
+    auth: {
+      username: "es_admin",
+      password: config.deployments.shieldPassword
+    }
+  }, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      log(test, "loadBalancerResponse" + JSON.stringify(body, null, 2));
+    }
+    log(test, "loadBalancerResponse:" + response.statusCode + " error: " + error);
+  })
+}
+
+var sanityCheckKibana = (url, cb) => {
+  log("checking kibana at "+ url +" in resource group: " + rg);
+  cb();
+}
+
 var deployTemplate = (test, cb) => {
   var t = armTests[test];
   if (!t.isValid) return;
@@ -259,7 +295,8 @@ gulp.task("test", ["clean"], function(cb) {
 });
 
 gulp.task("deploy-all", ["clean"], function(cb) {
-  login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  //login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  login(() => validateTemplates(() => deployTemplates(() => logout(cb))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
