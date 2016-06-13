@@ -12,6 +12,7 @@
 		"vmSizeMasterNodes":{"value":"Standard_DS2"},
 		"vmClientNodeCount":{"value":0},
 		"vmSizeClientNodes":{"value":"Standard_D1"},
-		"authenticationType":{"value":"password"}
+		"authenticationType":{"value":"password"},
+		"location":{"value":"northeurope"}
 	}
 }

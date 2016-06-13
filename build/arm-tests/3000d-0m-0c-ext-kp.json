@@ -1,5 +1,6 @@
 {
-	"isValid" : true,
+	"isValid" : false,
+	"why" : "we are creating way too many (3000) nodes",
 	"location" : "westeurope",
 	"parameters" : {
 		"loadBalancerType":{"value":"external"},
@@ -7,11 +8,12 @@
 		"jumpbox":{"value":"No"},
 		"vmSizeKibana":{"value":"Standard_D1"},
 		"vmSizeDataNodes":{"value":"Standard_D1"},
-		"vmDataNodeCount":{"value":3},
+		"vmDataNodeCount":{"value":3000},
 		"dataNodesAreMasterEligible":{"value":"Yes"},
 		"vmSizeMasterNodes":{"value":"Standard_DS2"},
 		"vmClientNodeCount":{"value":0},
 		"vmSizeClientNodes":{"value":"Standard_D1"},
-		"authenticationType":{"value":"password"}
+		"authenticationType":{"value":"password"},
+		"location":{"value":"northeurope"}
 	}
 }

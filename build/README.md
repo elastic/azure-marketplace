@@ -20,22 +20,39 @@ The result will be a distribution zip under `dist/elasticsearch-marketplace-DATE
 
 # Test
 
+For this you need to create a [Create a Service Principal - Azure CLI](https://github.com/cloudfoundry-incubator/bosh-azure-cpi-release/blob/master/docs/get-started/create-service-principal.md).
+
+Then copy the `.test.example.json` file and enter your details
+
+```bash
+$ cp build/.test.example.json build/.test.json
+```
+
+`.test.json` is git ignored but always take extra care not to commit this file or a copy of it.
+
+
 ```bash
 $ npm test
 ```
-Will do a live validation of the ARM template by calling `azure template validate`, it won't actually start the deploys. For this you need to create a [Create a Service Principal - Azure CLI](https://github.com/cloudfoundry-incubator/bosh-azure-cpi-release/blob/master/docs/get-started/create-service-principal.md).
 
+Will login to azure create resource group in the form of `test-[scenario]-[date]` and do an online validation of the template using the scenario's parameters.
+When done (failures or not) this command will clean up the resource groups and logout of azure.
 
+```bash
+$ npm run deploy-all
+```
+
+Same as `npm test` but will try and deploy all scenarios expected to be valid once all the scenarios have been validated.
+It will do some post install checks on the deployed cluster if it can.
+
+```bash
+$ npm run azure-cleanup
+```
+Will remove all resource-groups starting with `test-*`
 
 # Automated ui tests
 
-The automated ui tests are not (yet) part of the main test command to run them please
-
-```bash
-$ cp build\ui-tests-config.example.json ui-tests-config.json
-```
-
-and alter it with your details **IMPORTANT** this file is ignored in git **NEVER** check this file in to source control
+The automated ui tests are not (yet) part of the main test command to run them:
 
 ```bash
 $ npm run headless
