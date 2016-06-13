@@ -39,9 +39,9 @@ dist/
 #headless test config
 .test.json
 
-
 ui-tests-config.json
 arm-tests-config.json
+temp/*.json
 
 # Test parameters file
 parameters/test.parameters.json

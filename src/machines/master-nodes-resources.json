@@ -55,7 +55,7 @@
             "value": "[parameters('vm')]"
           },
           "index": {
-            "value": "[copyindex())]"
+            "value": "[copyindex()]"
           }
         }
       }

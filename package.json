@@ -7,7 +7,8 @@
   "scripts": {
     "build": "gulp --gulpfile build/gulpfile.js",
     "test": "gulp --gulpfile build/gulpfile.js test",
-    "headless": "gulp --gulpfile build/gulpfile.js headless"
+    "headless": "gulp --gulpfile build/gulpfile.js headless",
+    "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,7 @@
   },
   "homepage": "https://github.com/elastic/azure-marketplace",
   "devDependencies": {
-    "azure": "^0.10.6",
+    "azure-cli": "^0.10.1",
     "casperjs": "^1.1.1",
     "dateformat": "^1.0.12",
     "eclint": "^1.1.5",
@@ -39,7 +40,6 @@
     "gulp-zip": "^3.0.2",
     "jsonfile": "^2.2.3",
     "lodash": "^3.10.1",
-    "ms-rest-azure": "^1.14.2",
     "phantomjs-prebuilt": "^2.1.7",
     "requiredir": "^1.0.7"
   }
