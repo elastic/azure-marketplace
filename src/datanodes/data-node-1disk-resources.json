@@ -24,7 +24,47 @@
   },
   "variables": {
     "namespace": "[parameters('vm').namespace]",
-    "storageAccountName": "[concat(parameters('storageSettings').prefix)]"
+    "nodesPerStorageAccount": "[concat(parameters('storageSettings').nodesPerStorageAccount)]",
+    "storageAccountPrefix": [
+      "0",
+      "6",
+      "c",
+      "i",
+      "o",
+      "u",
+      "1",
+      "7",
+      "d",
+      "j",
+      "p",
+      "v",
+      "2",
+      "8",
+      "e",
+      "k",
+      "q",
+      "w",
+      "3",
+      "9",
+      "f",
+      "l",
+      "r",
+      "x",
+      "4",
+      "a",
+      "g",
+      "m",
+      "s",
+      "y",
+      "5",
+      "b",
+      "h",
+      "n",
+      "t",
+      "z"
+    ],
+    "storageAccountPrefixCount": "[length(variables('storageAccountPrefix'))]",
+    "newStorageAccountNamePrefix": "[uniqueString(resourceGroup().id, deployment().name)]"
   },
   "resources": [
     {
@@ -39,7 +79,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[concat(variables('storageAccountName'), copyindex(1))]",
+      "name": "[concat(variables('storageAccountPrefix')[mod(copyIndex(),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(copyIndex(),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),copyIndex(1))]",
       "apiVersion": "2015-06-15",
       "location": "[parameters('vm').shared.location]",
       "copy": {
@@ -56,7 +96,7 @@
       "apiVersion": "2015-01-01",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
-        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()])]"
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))]"
       ],
       "copy": {
         "name": "[concat(variables('namespace'),'vm-creation-loop')]",
@@ -86,7 +126,7 @@
                   "diskSizeGB": 1023,
                   "lun": 0,
                   "vhd": {
-                    "Uri": "[concat('http://', variables('storageAccountName'), parameters('storageSettings').mapping[copyindex()],'.blob.core.windows.net/','vhd','/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
                   },
                   "caching": "None",
                   "createOption": "Empty"

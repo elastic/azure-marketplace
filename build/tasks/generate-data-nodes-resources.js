@@ -13,7 +13,7 @@ var nthDisk = function(i) {
   var d = _.cloneDeep(dataDiskTemplate);
   d.lun = i;
   d.name = d.name.replace(/_INDEX_/, i + 1);
-  d.vhd.Uri = d.vhd.Uri.replace(/_INDEX_/, i + 1);
+  d.vhd.uri = d.vhd.uri.replace(/_INDEX_/, i + 1);
   return d;
 }
 
