@@ -1,5 +1,6 @@
 {
 	"isValid" : true,
+	"why" : "",
 	"location" : "westeurope",
 	"parameters" : {
 		"loadBalancerType":{"value":"internal"},
