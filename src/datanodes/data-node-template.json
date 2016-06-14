@@ -24,7 +24,7 @@
   },
   "variables": {
     "namespace" : "[parameters('vm').namespace]",
-    "nodesPerStorageAccount": "[concat(parameters('storageSettings').nodesPerStorageAccount)]",
+    "nodesPerStorageAccount": "10",
     "storageAccountPrefix": [
       "0","6","c","i","o","u","1","7","d","j","p","v",
       "2","8","e","k","q","w","3","9","f","l","r","x",
