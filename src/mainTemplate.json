@@ -819,7 +819,7 @@
       }
     },
     "nodesPerStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].nodesPerStorageAccount]",
-    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
+    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
     "dataNodeStorageSettings": {
       "count": "[variables('storageAccountsCount')]",
       "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
