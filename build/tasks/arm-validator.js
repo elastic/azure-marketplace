@@ -270,18 +270,17 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
         }
         else {
           log("cluster is NOT up and running in resource group: " + rg);
-          var m = "clusterHealthResponse: " + response.statuscode + " status: " + status + " error: " + error;
+          var m = "clusterHealthResponse: status: " + status + " error: " + error;
           log(test, m);
-          bailout(error || new error(m));
+          //bailout(error || new error(m));
         }
       });
-
     }
     else
     {
-      var m = "loadbalancerResponse: " + response.statuscode + " error: " + error;
+      var m = "loadbalancerResponse:  error: " + error;
       log(test, m);
-      bailout(error || new error(m));
+      //bailout(error || new error(m));
     }
   })
 }
