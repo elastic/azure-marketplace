@@ -98,8 +98,9 @@ var bailOut = (error)  => {
   var cb = () => logout(() => { throw error; })
 
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  if (groups.length > 0) deleteGroups(groups, cb);
-  else cb();
+  //if (groups.length > 0) deleteGroups(groups, cb);
+  //else
+    cb();
 }
 
 var deleteGroups = function (groups, cb) {
