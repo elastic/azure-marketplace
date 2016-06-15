@@ -52,7 +52,7 @@
             "value": "[parameters('vm')]"
           },
           "availabilitySet": {
-            "value": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
+            "value": "[concat(variables('namespace'), 'av-set')]"
           },
           "index": {
             "value": "[copyindex()]"

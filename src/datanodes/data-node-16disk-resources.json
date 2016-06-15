@@ -124,7 +124,7 @@
             "value": "[copyindex()]"
           },
           "availabilitySet": {
-            "value": "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+            "value": "[concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
           },
           "dataDisks": {
             "value": {
