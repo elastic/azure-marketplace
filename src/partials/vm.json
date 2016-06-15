@@ -89,7 +89,6 @@
       "name": "[concat(variables('namespace'), parameters('index'))]",
       "location": "[parameters('vm').shared.location]",
       "dependsOn": [
-        "[parameters('availabilitySet')]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), parameters('index'), '-nic')]"
       ],
       "properties": {
