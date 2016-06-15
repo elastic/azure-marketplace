@@ -21,6 +21,12 @@
         "description": "the outer loop index"
       }
     },
+    "availabilitySet": {
+      "type": "string",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
     "dataDisks": {
       "type": "object",
       "defaultValue" : {
@@ -87,7 +93,7 @@
       ],
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
+          "id": "[parameters('availabilitySet')]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('vm').size]"

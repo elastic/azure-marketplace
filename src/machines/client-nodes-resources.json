@@ -51,6 +51,9 @@
           "vm": {
             "value": "[parameters('vm')]"
           },
+          "availabilitySet": {
+            "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
+          },
           "index": {
             "value": "[copyindex()]"
           }
