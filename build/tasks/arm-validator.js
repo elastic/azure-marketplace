@@ -40,7 +40,6 @@ var bootstrapTest = (t, defaultVersion) =>
   log(t, "parameters: " + JSON.stringify(test.parameters, null, 2));
   var testParameters = merge.recursive(true, exampleParameters, test.parameters);
   testParameters.artifactsBaseUrl.value = artifactsBaseUrl;
-  testParameters.authenticationType.value = config.deployments.authenticationType;
   testParameters.adminUsername.value = config.deployments.username;
   testParameters.adminPassword.value = config.deployments.password;
   testParameters.sshPublicKey.value = config.deployments.ssh;
