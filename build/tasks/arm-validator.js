@@ -40,12 +40,13 @@ var bootstrapTest = (t, defaultVersion) =>
   log(t, "parameters: " + JSON.stringify(test.parameters, null, 2));
   var testParameters = merge.recursive(true, exampleParameters, test.parameters);
   testParameters.artifactsBaseUrl.value = artifactsBaseUrl;
+  testParameters.authenticationType.value = config.deployments.authenticationType;
   testParameters.adminUsername.value = config.deployments.username;
   testParameters.adminPassword.value = config.deployments.password;
+  testParameters.sshPublicKey.value = config.deployments.ssh;
   testParameters.shieldAdminPassword.value = config.deployments.shieldPassword;
   testParameters.shieldReadPassword.value = config.deployments.shieldPassword;
   testParameters.shieldKibanaPassword.value = config.deployments.shieldPassword;
-  testParameters.sshPublicKey.value = config.deployments.ssh;
   testParameters.esVersion.value = defaultVersion;
 
   return {
@@ -98,9 +99,8 @@ var bailOut = (error)  => {
   var cb = () => logout(() => { throw error; })
 
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  //if (groups.length > 0) deleteGroups(groups, cb);
-  //else
-    cb();
+  if (groups.length > 0) deleteGroups(groups, cb);
+  else cb();
 }
 
 var deleteGroups = function (groups, cb) {
@@ -274,6 +274,7 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
           var m = "clusterHealthResponse: status: " + status + " error: " + error;
           log(test, m);
           //bailout(error || new error(m));
+          cb();
         }
       });
     }
@@ -282,6 +283,7 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
       var m = "loadbalancerResponse:  error: " + error;
       log(test, m);
       //bailout(error || new error(m));
+      cb();
     }
   })
 }
@@ -332,8 +334,8 @@ gulp.task("test", ["clean"], function(cb) {
 });
 
 gulp.task("deploy-all", ["clean"], function(cb) {
-  //login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
-  login(() => validateTemplates(() => deployTemplates(() => logout(cb))));
+  login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  //login(() => validateTemplates(() => deployTemplates(() => logout(cb))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
