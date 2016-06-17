@@ -52,6 +52,7 @@ var bootstrapTest = (t, defaultVersion) =>
     resourceGroup: "test-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
     location: test.location,
     isValid: test.isValid,
+    deploy: test.deploy,
     params: testParameters
   }
 }
@@ -191,7 +192,7 @@ var validateTemplate = (test, cb) => {
 
 var deployTemplates = function(cb) {
   var deployed = 0;
-  var validGroups = _.valuesIn(armTests).filter(a=>a.isValid).map(a=>a.resourceGroup);
+  var validGroups = _.valuesIn(armTests).filter(a=>a.isValid && a.deploy).map(a=>a.resourceGroup);
   var allDeployed = () => {
     if (++deployed == validGroups.length)
     {
