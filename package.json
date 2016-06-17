@@ -5,8 +5,9 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "build": "gulp --gulpfile build/gulpfile.js",
     "test": "gulp --gulpfile build/gulpfile.js test",
+    "build": "gulp --gulpfile build/gulpfile.js",
+    "release": "gulp --gulpfile build/gulpfile.js release",
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
     "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all"
