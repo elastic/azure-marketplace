@@ -303,7 +303,7 @@ var sanityCheckKibana = (test, url, cb) => {
 
 var deployTemplate = (test, cb) => {
   var t = armTests[test];
-  if (!t.isValid) return;
+  if (!t.isValid || !t.deploy) return;
   var p = JSON.stringify(t.params)
   var rg = t.resourceGroup;
   var deployGroup = [ 'group', 'deployment', 'create',
