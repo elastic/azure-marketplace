@@ -33,16 +33,10 @@
         "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
       }
     },
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Administrator user name used when provisioning virtual machines"
-      }
-    },
-    "password": {
+    "credentials": {
       "type": "object",
       "metadata": {
-        "description": "Administrator password used when provisioning virtual machines"
+        "description": "Credential information block"
       }
     },
     "osSettings": {
@@ -54,11 +48,31 @@
   },
   "variables": {
     "namespace": "[parameters('namespace')]",
+    "vmName": "jumpbox",
     "vmSize": "Standard_A0",
     "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
     "publicIpName": "[concat(variables('namespace'), 'ip')]",
     "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
-    "nicName": "[concat(variables('namespace'), 'nic')]"
+    "nicName": "[concat(variables('namespace'), 'nic')]",
+    "password_osProfile": {
+      "computername": "[variables('vmName')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "adminPassword": "[parameters('credentials').password]"
+  },
+    "sshPublicKey_osProfile": {
+      "computername": "[variables('vmName')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [ {
+            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('credentials').sshPublicKey]"
+          } ]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
   },
   "resources": [
     {
@@ -127,42 +141,18 @@
       }
     },
     {
-      "name": "[concat(variables('namespace'), 'os-profile')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2015-01-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), '/partials/osProfile-resources.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "adminUserName": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[parameters('password')]"
-          },
-          "computerName": {
-            "value": "[concat(variables('namespace'), '0')]"
-          }
-        }
-      }
-    },
-    {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('namespace'), '0')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
-        "[concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile')]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
-        "osProfile": "[reference(concat('Microsoft.Resources/deployments/', variables('namespace'), 'os-profile'), '2015-01-01').outputs.osProfile.value]",
+        "osProfile": "[variables('osProfile')]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
@@ -186,7 +176,7 @@
   ],
   "outputs": {
     "ssh": {
-      "value": "[concat(parameters('adminUsername'), '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
+      "value": "[concat(parameters('credentials').adminUsername, '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
       "type": "string"
     }
   }

@@ -2,10 +2,10 @@ var gulp = require("gulp");
 var eclint = require("eclint");
 var jsonlint = require("gulp-jsonlint");
 var zip = require("gulp-zip");
-var dateFormat = require("dateformat");
 var addsrc = require('gulp-add-src');
+var timestamp = require("./lib/timestamp");
 
-gulp.task("default", ["patch"], function() {
+gulp.task("default", ["sanity-checks", "patch", "generate-data-nodes-resource"], function() {
   var stream = gulp.src(["../src/**/*.json"])
     .pipe(jsonlint())
     .pipe(jsonlint.reporter())
@@ -17,7 +17,17 @@ gulp.task("default", ["patch"], function() {
       }))
     .pipe(jsonlint.failAfterError())
     .pipe(addsrc.append(["../src/**/*.sh"]))
-    .pipe(zip("elasticsearch-marketplace" + dateFormat(new Date(), "-yyyymmdd-HHMMss-Z").replace("+","-") +".zip"))
+    .pipe(zip("elasticsearch-marketplace" + timestamp +".zip"))
+    .pipe(gulp.dest("../dist/releases"))
+
+  stream.on("finish", function() {});
+
+  return stream;
+});
+
+gulp.task("release", ["default", "deploy-all"], function() {
+  var stream = gulp.src(["../dist/test-runs/tmp/*.log"])
+    .pipe(zip("test-results" + timestamp +".zip"))
     .pipe(gulp.dest("../dist/releases"))
 
   stream.on("finish", function() {});

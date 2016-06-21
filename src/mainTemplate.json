@@ -11,12 +11,13 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.3.2",
+      "defaultValue": "2.3.3",
       "allowedValues": [
         "2.0.2",
         "2.1.2",
         "2.2.0",
-        "2.3.2"
+        "2.3.2",
+        "2.3.3"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -81,13 +82,17 @@
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
+        "Standard_D14",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
         "Standard_D4_v2",
+        "Standard_D5_v2",
         "Standard_D11_v2",
         "Standard_D12_v2",
         "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -95,13 +100,17 @@
         "Standard_DS11",
         "Standard_DS12",
         "Standard_DS13",
+        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
         "Standard_DS4_v2",
+        "Standard_DS5_v2",
         "Standard_DS11_v2",
         "Standard_DS12_v2",
-        "Standard_DS13_v2"
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -137,13 +146,17 @@
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
+        "Standard_D14",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
         "Standard_D4_v2",
+        "Standard_D5_v2",
         "Standard_D11_v2",
         "Standard_D12_v2",
         "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -151,13 +164,17 @@
         "Standard_DS11",
         "Standard_DS12",
         "Standard_DS13",
+        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
         "Standard_DS4_v2",
+        "Standard_DS5_v2",
         "Standard_DS11_v2",
         "Standard_DS12_v2",
-        "Standard_DS13_v2"
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -200,13 +217,17 @@
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
+        "Standard_D14",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
         "Standard_D4_v2",
+        "Standard_D5_v2",
         "Standard_D11_v2",
         "Standard_D12_v2",
         "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -214,13 +235,17 @@
         "Standard_DS11",
         "Standard_DS12",
         "Standard_DS13",
+        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
         "Standard_DS4_v2",
+        "Standard_DS5_v2",
         "Standard_DS11_v2",
         "Standard_DS12_v2",
-        "Standard_DS13_v2"
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible 3 of these will be provisioned"
@@ -252,13 +277,17 @@
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
+        "Standard_D14",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
         "Standard_D4_v2",
+        "Standard_D5_v2",
         "Standard_D11_v2",
         "Standard_D12_v2",
         "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -266,13 +295,17 @@
         "Standard_DS11",
         "Standard_DS12",
         "Standard_DS13",
+        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
         "Standard_DS4_v2",
+        "Standard_DS5_v2",
         "Standard_DS11_v2",
         "Standard_DS12_v2",
-        "Standard_DS13_v2"
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch cluster client nodes"
@@ -366,6 +399,7 @@
     },
     "vNetNewOrExisting": {
       "type": "string",
+      "defaultValue": "new",
       "allowedValues": [
         "new",
         "existing"
@@ -425,11 +459,6 @@
     }
   },
   "variables": {
-    "password": {
-      "password": "[parameters('adminPassword')]",
-      "authenticationType": "[parameters('authenticationType')]",
-      "sshPublicKey": "[parameters('sshPublicKey')]"
-    },
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
     "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/',parameters('loadBalancerType'),'-lb-resources.json')]",
@@ -444,21 +473,28 @@
     },
     "jumpboxTemplateUrl": "[concat(variables('templateBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
     "kibanaTemplates": {
-      "No": "empty/empty-resources.json",
+      "No": "empty/empty-kibana-resources.json",
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
     "clientTemplates": [
-      "empty/empty-resources.json",
+      "empty/empty-client-nodes-resources.json",
       "machines/client-nodes-resources.json"
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
     "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
+    "credentials": {
+      "adminUsername": "[parameters('adminUsername')]",
+      "password": "[parameters('adminPassword')]",
+      "authenticationType": "[parameters('authenticationType')]",
+      "sshPublicKey": "[parameters('sshPublicKey')]"
+    },
     "esToKibanaMapping": {
       "2.0.2": "4.2.2",
       "2.1.2": "4.3.2",
       "2.2.0": "4.4.1",
-      "2.3.2": "4.5.0"
+      "2.3.2": "4.5.1",
+      "2.3.3": "4.5.1"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
@@ -583,8 +619,8 @@
     "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
     "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', parameters('vNetNewOrExisting'), '-virtual-network.json')]",
     "networkResourceGroupMap": {
-      "new": "[resourceGroup().name]",
-      "existing": "[parameters('vNetResourceGroup')]"
+      "New": "[resourceGroup().name]",
+      "Existing": "[parameters('vNetResourceGroup')]"
     },
     "networkSettings": {
       "virtualNetworkName": "[parameters('vNetName')]",
@@ -709,6 +745,11 @@
         "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D14": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D1_v2": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
@@ -729,6 +770,11 @@
         "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D5_v2": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_D11_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
@@ -742,6 +788,16 @@
       "Standard_D13_v2": {
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D14_v2": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D15_v2": {
+        "dataDisks": 40,
+        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_DS1": {
@@ -779,6 +835,11 @@
         "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS14": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS1_v2": {
         "dataDisks": 2,
         "nodesPerStorageAccount": 8,
@@ -799,6 +860,11 @@
         "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_DS5_v2": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_DS11_v2": {
         "dataDisks": 4,
         "nodesPerStorageAccount": 6,
@@ -813,78 +879,34 @@
         "dataDisks": 16,
         "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS14_v2": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS15_v2": {
+        "dataDisks": 40,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Premium_LRS"
       }
     },
     "nodesPerStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].nodesPerStorageAccount]",
-    "storageBinPackMap": [
-      "[div(sub(add(1, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(2, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(3, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(4, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(5, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(6, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(7, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(8, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(9, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(10, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(11, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(12, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(13, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(14, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(15, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(16, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(17, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(18, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(19, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(20, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(21, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(22, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(23, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(24, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(25, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(26, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(27, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(28, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(29, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(30, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(31, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(32, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(33, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(34, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(35, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(36, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(37, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(38, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(39, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(40, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(41, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(42, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(43, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(44, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(45, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(46, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(47, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(48, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(49, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(50, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(51, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(52, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(53, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(54, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(55, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(56, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(57, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(58, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(59, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "[div(sub(add(60, variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]"
-    ],
+    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
     "dataNodeStorageSettings": {
-      "count": "[div(sub(add(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]",
-      "mapping": "[variables('storageBinPackMap')]",
-      "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
-      "prefix": "[concat(variables('storageAccountPrefix'), 'd', uniqueString(resourceGroup().id, deployment().name))]"
+      "count": "[variables('storageAccountsCount')]",
+      "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
+      "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]"
     },
-    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-nodes-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]"
+    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-node-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]",
+    "sharedVmConfig": {
+      "storageAccountName": "[variables('storageAccountNameShared')]",
+      "location": "[variables('location')]",
+      "subnet": "[variables('networkSettings').subnet.data]",
+      "subnetId": "[concat(resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', variables('networkSettings').subnet.data.vnet), '/subnets/', variables('networkSettings').subnet.data.name)]",
+      "credentials": "[variables('credentials')]",
+      "osSettings": "[variables('osSettings')]"
+    }
   },
   "resources": [
     {
@@ -962,31 +984,19 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
-          },
-          "namespace": {
-            "value": "[concat(variables('namespacePrefix'), '-master-node-')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeMasterNodes')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.master]"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "[concat(variables('namespacePrefix'), '-master-node-')]",
+              "installScript": "[variables('osSettings').extentionSettings.master]",
+              "size": "[parameters('vmSizeMasterNodes')]",
+              "count": 3,
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "No",
+              "backendPools": []
           }
         }
+      }
       }
     },
     {
@@ -1006,37 +1016,19 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
-          },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "namespace": {
-            "value": "[concat(variables('namespacePrefix'), '-client-node-')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeClientNodes')]"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
-          },
-          "vmCount": {
-            "value": "[parameters('vmClientNodeCount')]"
-          },
-          "lbBackendPools": {
-            "value": "[variables('lbBackEndPoolsAdded')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "[concat(variables('namespacePrefix'), '-client-node-')]",
+              "installScript": "[variables('osSettings').extentionSettings.client]",
+              "size": "[parameters('vmSizeClientNodes')]",
+              "count": "[parameters('vmClientNodeCount')]",
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "Yes",
+              "backendPools": "[variables('lbBackEndPoolsAdded').backendPools]"
           }
         }
+      }
       }
     },
     {
@@ -1056,35 +1048,20 @@
           "templateBaseUrl": {
             "value": "[variables('templateBaseUrl')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
+          "vm": {
+            "value": {
+              "shared": "[variables('sharedVmConfig')]",
+              "namespace": "[concat(variables('namespacePrefix'), '-data-node-')]",
+              "installScript": "[variables('osSettings').extentionSettings.data]",
+              "size": "[parameters('vmSizeDataNodes')]",
+              "count": "[parameters('vmDataNodeCount')]",
+              "useSharedStorageAccount": "No",
+              "useBackendPools": "Yes",
+              "backendPools": "[variables('dataLBSettings').backendPools]"
+            }
           },
           "storageSettings": {
             "value": "[variables('dataNodeStorageSettings')]"
-          },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeDataNodes')]"
-          },
-          "vmCount": {
-            "value": "[parameters('vmDataNodeCount')]"
-          },
-          "namespace": {
-            "value": "[concat(variables('namespacePrefix'), '-data-node-')]"
-          },
-          "osSettings": {
-            "value": "[variables('osSettings')]"
-          },
-          "lbBackendPools": {
-            "value": "[variables('dataLBSettings')]"
           }
         }
       }
@@ -1109,11 +1086,8 @@
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "location": {
             "value": "[variables('location')]"
@@ -1150,11 +1124,8 @@
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
           },
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "password": {
-            "value": "[variables('password')]"
+          "credentials": {
+            "value": "[variables('credentials')]"
           },
           "location": {
             "value": "[variables('location')]"

@@ -1,0 +1,20 @@
+{
+	"isValid" : true,
+	"deploy" : true,
+	"why" : "",
+	"location" : "westeurope",
+	"parameters" : {
+		"loadBalancerType":{"value":"external"},
+		"kibana":{"value":"Yes"},
+		"jumpbox":{"value":"No"},
+		"vmSizeKibana":{"value":"Standard_D1"},
+		"vmSizeDataNodes":{"value":"Standard_D1"},
+		"vmDataNodeCount":{"value":3},
+		"dataNodesAreMasterEligible":{"value":"Yes"},
+		"vmSizeMasterNodes":{"value":"Standard_DS2"},
+		"vmClientNodeCount":{"value":3},
+		"vmSizeClientNodes":{"value":"Standard_D1"},
+		"authenticationType":{"value":"password"},
+		"location":{"value":"northeurope"}
+	}
+}

@@ -15,10 +15,6 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "namespace": {
-      "type": "string",
-      "defaultValue": ""
-    },
     "subnet": {
       "type": "object",
       "metadata": {
@@ -34,20 +30,27 @@
     "credentials": {
       "type": "object",
       "metadata": {
-        "description": "Credential information block"
+        "description": "Credentials information block"
       }
     },
     "osSettings": {
       "type": "object",
       "metadata": {
-        "description": "Elasticsearch deployment platform settings"
+        "description": "Platform and OS settings"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A1",
+      "metadata": {
+        "description": "Size of the Elasticsearch master nodes"
       }
     }
   },
   "variables": {},
   "resources": [],
   "outputs": {
-    "ssh": {
+    "fqdn": {
       "value": "N/A",
       "type": "string"
     }

@@ -10,7 +10,10 @@
       "kibana": "4.4.1"
     },
     "2.3.2": {
-      "kibana": "4.5.0"
+      "kibana": "4.5.1"
+    },
+    "2.3.3": {
+      "kibana": "4.5.1"
     }
   },
   "locations" : [
@@ -37,6 +40,7 @@
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
+  "dataDisks" : [1, 2, 4, 8, 16, 32, 40],
   "vmSizes": [
     ["Standard_A0", 1, "Standard", false],
     ["Standard_A1", 2, "Standard", false],
@@ -54,14 +58,18 @@
     ["Standard_D11", 4, "Standard", false],
     ["Standard_D12", 8, "Standard", false],
     ["Standard_D13", 16, "Standard", false],
+    ["Standard_D14", 32, "Standard", false],
 
     ["Standard_D1_v2", 2, "Standard", false],
     ["Standard_D2_v2", 4, "Standard", false],
     ["Standard_D3_v2", 8, "Standard", false],
     ["Standard_D4_v2", 16, "Standard", false],
+    ["Standard_D5_v2", 32, "Standard", false],
     ["Standard_D11_v2", 4, "Standard", false],
     ["Standard_D12_v2", 8, "Standard", false],
     ["Standard_D13_v2", 16, "Standard", false],
+    ["Standard_D14_v2", 32, "Standard", false],
+    ["Standard_D15_v2", 40, "Standard", false],
 
     ["Standard_DS1", 2, "Premium", false],
     ["Standard_DS2", 4, "Premium", false],
@@ -70,14 +78,19 @@
     ["Standard_DS11", 4, "Premium", false],
     ["Standard_DS12", 8, "Premium", false],
     ["Standard_DS13", 16, "Premium", false],
+    ["Standard_DS14", 32, "Premium", false],
 
     ["Standard_DS1_v2", 2, "Premium", true],
     ["Standard_DS2_v2", 4, "Premium", true],
     ["Standard_DS3_v2", 8, "Premium", true],
     ["Standard_DS4_v2", 16, "Premium", false],
+    ["Standard_DS5_v2", 32, "Premium", false],
     ["Standard_DS11_v2", 4, "Premium", true],
     ["Standard_DS12_v2", 8, "Premium", true],
-    ["Standard_DS13_v2", 16, "Premium", false]
+    ["Standard_DS13_v2", 16, "Premium", false],
+    ["Standard_DS14_v2", 32, "Premium", false],
+    ["Standard_DS15_v2", 40, "Premium", false]
+
   ],
   "ignoredVmsBecauseWeHaveNo32DisksResouce" : [
     "D14", "D5_v2", "D14_v2", "DS14", "DS5_v2", "DS14_v2"

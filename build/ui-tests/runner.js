@@ -1,4 +1,4 @@
-var config = require('./ui-tests-config.json');
+var config = require('../.test.json');
 
 var azureLogin = require('./lib/azure-login');
 var uiBlade = require('./lib/ui-definition-blade');

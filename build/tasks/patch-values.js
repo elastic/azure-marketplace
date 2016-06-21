@@ -53,7 +53,7 @@ gulp.task("patch", function(cb) {
       return tier;
     });
 
-    obj.variables.storageBinPackMap = binPackMap;
+    //obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
 
     obj.parameters.location.allowedValues = allowedLocations;

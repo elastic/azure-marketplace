@@ -9,185 +9,56 @@
         "description": "Base uri of resources"
       }
     },
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Admin username used when provisioning virtual machines"
-      }
-    },
-    "password": {
+    "vm": {
       "type": "object",
       "metadata": {
-        "description": "Admin password used when provisioning virtual machines"
+        "description": "vm configuration"
+      }
       }
     },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Unique namespace for the Storage Account where the Virtual Machine's disks will be placed"
-      }
-    },
-    "namespace": {
-      "type": "string",
-      "metadata": {
-        "description": "The unique namespace for client nodes"
-      }
-    },
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "Location where resources will be provisioned"
-      }
-    },
-    "subnet": {
-      "type": "object",
-      "metadata": {
-        "description": "Reference to the VNET Subnet to deploy the nodes in to"
-      }
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_A0",
-      "metadata": {
-        "description": "Size of the Elasticsearch master nodes"
-      }
-    },
-    "osSettings": {
-      "type": "object",
-      "metadata": {
-        "description": "Elasticsearch deployment platform settings"
-      }
-    },
-    "vmCount": {
-      "type": "int",
-      "metadata": {
-        "description": "Number of instances to create"
-      }
-    },
-    "lbBackendPools": {
-      "type": "object",
-      "metadata": {
-        "description": "loadBalancerBackendAddressPools config object"
-      }
-    }
-  },
   "variables": {
-    "namespace": "[parameters('namespace')]",
-    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "storageAccountName": "[parameters('storageAccountName')]"
+    "namespace" : "[parameters('vm').namespace]"
   },
   "resources": [
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), 'av-set')]",
-      "location": "[parameters('location')]",
-      "properties": {}
+      "location": "[parameters('vm').shared.location]",
+      "properties": { }
     },
     {
-      "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('namespace'), copyindex(), '-nic')]",
-      "location": "[parameters('location')]",
-      "copy": {
-        "name": "[concat(variables('namespace'), 'nic-loop')]",
-        "count": "[parameters('vmCount')]"
-      },
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('subnetRef')]"
-              },
-              "loadBalancerBackendAddressPools": "[parameters('lbBackendPools').backendPools]"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "[concat(variables('namespace'), copyindex(), '-os-profile')]",
+      "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
+      "dependsOn" : [
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
+      ],
       "copy": {
-        "name": "[concat(variables('namespace'), 'os-profile-loop')]",
-        "count": "[parameters('vmCount')]"
+        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
+        "count": "[parameters('vm').count]"
       },
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), '/partials/osProfile-resources.json')]",
+          "uri": "[concat(parameters('templateBaseUrl'), '/partials/vm.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "adminUserName": {
-            "value": "[parameters('adminUsername')]"
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
           },
-          "password": {
-            "value": "[parameters('password')]"
+          "vm": {
+            "value": "[parameters('vm')]"
           },
-          "computerName": {
-            "value": "[concat(variables('namespace'), copyindex())]"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "2015-06-15",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('namespace'), copyindex())]",
-      "location": "[parameters('location')]",
-      "copy": {
-        "name": "[concat(variables('namespace'), 'vm-loop')]",
-        "count": "[parameters('vmCount')]"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), copyindex(), '-nic')]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
-        "[concat('Microsoft.Resources/deployments/', variables('namespace'), copyindex(), '-os-profile')]"
-      ],
-      "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
+            "value": "[concat(variables('namespace'), 'av-set')]"
         },
-        "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
-        },
-        "osProfile": "[reference(concat('Microsoft.Resources/deployments/', variables('namespace'), copyindex(), '-os-profile'), '2015-01-01').outputs.osProfile.value]",
-        "storageProfile": {
-          "imageReference": "[parameters('osSettings').imageReference]",
-          "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/', variables('namespace'), copyindex(), '-osdisk.vhd')]"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
+          "index": {
+            "value": "[copyindex()]"
           }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('namespace'), copyindex(), '-nic'))]"
             }
-          ]
         }
-      },
-      "resources": [
-        {
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('namespace'), copyindex(), '/script')]",
-          "apiVersion": "2015-06-15",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), copyindex())]"
-          ],
-          "properties": "[parameters('osSettings').extentionSettings.client]"
         }
       ]
     }
-  ]
-}

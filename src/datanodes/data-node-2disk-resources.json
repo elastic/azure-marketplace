@@ -1,0 +1,159 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "vm configuration"
+      }
+    },
+    "storageSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Storage Account Settings"
+      }
+    }
+  },
+  "variables": {
+    "namespace": "[parameters('vm').namespace]",
+    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
+    "nodesPerStorageAccount": 10,
+    "storageAccountPrefix": [
+      "0",
+      "6",
+      "c",
+      "i",
+      "o",
+      "u",
+      "1",
+      "7",
+      "d",
+      "j",
+      "p",
+      "v",
+      "2",
+      "8",
+      "e",
+      "k",
+      "q",
+      "w",
+      "3",
+      "9",
+      "f",
+      "l",
+      "r",
+      "x",
+      "4",
+      "a",
+      "g",
+      "m",
+      "s",
+      "y",
+      "5",
+      "b",
+      "h",
+      "n",
+      "t",
+      "z"
+    ],
+    "storageAccountPrefixCount": "[length(variables('storageAccountPrefix'))]",
+    "newStorageAccountNamePrefix": "[uniqueString(resourceGroup().id, deployment().name)]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'),'av-loop')]",
+        "count": "[variables('avSetCount')]"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 20,
+        "platformFaultDomainCount": 3
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(variables('storageAccountPrefix')[mod(copyIndex(),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(copyIndex(),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),copyIndex(1))]",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'),'storage-loop')]",
+        "count": "[parameters('storageSettings').count]"
+      },
+      "properties": {
+        "accountType": "[parameters('storageSettings').accountType]"
+      }
+    },
+    {
+      "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))]"
+      ],
+      "copy": {
+        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
+        "count": "[parameters('vm').count]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUrl'), '/partials/vm.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "vm": {
+            "value": "[parameters('vm')]"
+          },
+          "index": {
+            "value": "[copyindex()]"
+          },
+          "availabilitySet": {
+            "value": "[concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+          },
+          "dataDisks": {
+            "value": {
+              "disks": [
+                {
+                  "name": "datadisk1",
+                  "diskSizeGB": 1023,
+                  "lun": 0,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk2",
+                  "diskSizeGB": 1023,
+                  "lun": 1,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

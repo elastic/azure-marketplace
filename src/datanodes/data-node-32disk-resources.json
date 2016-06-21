@@ -1,0 +1,459 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "vm configuration"
+      }
+    },
+    "storageSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Storage Account Settings"
+      }
+    }
+  },
+  "variables": {
+    "namespace": "[parameters('vm').namespace]",
+    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
+    "nodesPerStorageAccount": 10,
+    "storageAccountPrefix": [
+      "0",
+      "6",
+      "c",
+      "i",
+      "o",
+      "u",
+      "1",
+      "7",
+      "d",
+      "j",
+      "p",
+      "v",
+      "2",
+      "8",
+      "e",
+      "k",
+      "q",
+      "w",
+      "3",
+      "9",
+      "f",
+      "l",
+      "r",
+      "x",
+      "4",
+      "a",
+      "g",
+      "m",
+      "s",
+      "y",
+      "5",
+      "b",
+      "h",
+      "n",
+      "t",
+      "z"
+    ],
+    "storageAccountPrefixCount": "[length(variables('storageAccountPrefix'))]",
+    "newStorageAccountNamePrefix": "[uniqueString(resourceGroup().id, deployment().name)]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'),'av-loop')]",
+        "count": "[variables('avSetCount')]"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 20,
+        "platformFaultDomainCount": 3
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(variables('storageAccountPrefix')[mod(copyIndex(),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(copyIndex(),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),copyIndex(1))]",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('vm').shared.location]",
+      "copy": {
+        "name": "[concat(variables('namespace'),'storage-loop')]",
+        "count": "[parameters('storageSettings').count]"
+      },
+      "properties": {
+        "accountType": "[parameters('storageSettings').accountType]"
+      }
+    },
+    {
+      "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))]"
+      ],
+      "copy": {
+        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
+        "count": "[parameters('vm').count]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUrl'), '/partials/vm.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "vm": {
+            "value": "[parameters('vm')]"
+          },
+          "index": {
+            "value": "[copyindex()]"
+          },
+          "availabilitySet": {
+            "value": "[concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+          },
+          "dataDisks": {
+            "value": {
+              "disks": [
+                {
+                  "name": "datadisk1",
+                  "diskSizeGB": 1023,
+                  "lun": 0,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk2",
+                  "diskSizeGB": 1023,
+                  "lun": 1,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk3",
+                  "diskSizeGB": 1023,
+                  "lun": 2,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk3' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk4",
+                  "diskSizeGB": 1023,
+                  "lun": 3,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk4' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk5",
+                  "diskSizeGB": 1023,
+                  "lun": 4,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk5' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk6",
+                  "diskSizeGB": 1023,
+                  "lun": 5,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk6' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk7",
+                  "diskSizeGB": 1023,
+                  "lun": 6,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk7' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk8",
+                  "diskSizeGB": 1023,
+                  "lun": 7,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk8' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk9",
+                  "diskSizeGB": 1023,
+                  "lun": 8,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk9' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk10",
+                  "diskSizeGB": 1023,
+                  "lun": 9,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk10' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk11",
+                  "diskSizeGB": 1023,
+                  "lun": 10,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk11' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk12",
+                  "diskSizeGB": 1023,
+                  "lun": 11,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk12' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk13",
+                  "diskSizeGB": 1023,
+                  "lun": 12,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk13' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk14",
+                  "diskSizeGB": 1023,
+                  "lun": 13,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk14' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk15",
+                  "diskSizeGB": 1023,
+                  "lun": 14,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk15' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk16",
+                  "diskSizeGB": 1023,
+                  "lun": 15,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk16' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk17",
+                  "diskSizeGB": 1023,
+                  "lun": 16,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk17' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk18",
+                  "diskSizeGB": 1023,
+                  "lun": 17,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk18' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk19",
+                  "diskSizeGB": 1023,
+                  "lun": 18,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk19' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk20",
+                  "diskSizeGB": 1023,
+                  "lun": 19,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk20' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk21",
+                  "diskSizeGB": 1023,
+                  "lun": 20,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk21' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk22",
+                  "diskSizeGB": 1023,
+                  "lun": 21,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk22' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk23",
+                  "diskSizeGB": 1023,
+                  "lun": 22,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk23' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk24",
+                  "diskSizeGB": 1023,
+                  "lun": 23,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk24' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk25",
+                  "diskSizeGB": 1023,
+                  "lun": 24,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk25' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk26",
+                  "diskSizeGB": 1023,
+                  "lun": 25,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk26' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk27",
+                  "diskSizeGB": 1023,
+                  "lun": 26,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk27' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk28",
+                  "diskSizeGB": 1023,
+                  "lun": 27,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk28' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk29",
+                  "diskSizeGB": 1023,
+                  "lun": 28,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk29' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk30",
+                  "diskSizeGB": 1023,
+                  "lun": 29,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk30' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk31",
+                  "diskSizeGB": 1023,
+                  "lun": 30,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk31' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                },
+                {
+                  "name": "datadisk32",
+                  "diskSizeGB": 1023,
+                  "lun": 31,
+                  "vhd": {
+                    "uri": "[concat('http://',variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))), '.blob.core.windows.net/vhd/', variables('namespace'), copyindex(),'-data-disk32' ,'.vhd')]"
+                  },
+                  "caching": "None",
+                  "createOption": "Empty"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
