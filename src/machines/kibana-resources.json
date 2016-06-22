@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -15,10 +15,16 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "subnet": {
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for kibana nodes"
+      }
+    },
+    "networkSettings": {
       "type": "object",
       "metadata": {
-        "description": "Subnet object for provisioning resources in (expects properties name as the subnet name, and vnet as the virtual network name on the object)"
+        "description": "Network settings"
       }
     },
     "storageAccountName": {
@@ -48,19 +54,18 @@
     }
   },
   "variables": {
-    "vmName": "kibana",
-    "namespace": "[concat(variables('vmName'), '-')]",
-    "subnetRef": "[concat(resourceId(parameters('subnet').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "publicIpName": "[concat(variables('namespace'), 'ip')]",
-    "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
-    "nicName": "[concat(variables('namespace'), 'nic')]",
+    "namespace": "[parameters('namespace')]",
+    "subnetId": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]",
+    "publicIpName": "[concat(variables('namespace'), '-ip')]",
+    "securityGroupName": "[concat(variables('namespace'), '-nsg')]",
+    "nicName": "[concat(variables('namespace'), '-nic')]",
     "password_osProfile": {
-      "computername": "[variables('vmName')]",
+      "computername": "[parameters('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "adminPassword": "[parameters('credentials').password]"
     },
     "sshPublicKey_osProfile": {
-      "computername": "[variables('vmName')]",
+      "computername": "[parameters('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
@@ -144,7 +149,7 @@
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName'))]"
               },
               "subnet": {
-                "id": "[variables('subnetRef')]"
+                "id": "[variables('subnetId')]"
               },
               "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
@@ -157,7 +162,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
+      "name": "[parameters('namespace')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
@@ -172,7 +177,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('vmName'), '-osdisk.vhd')]"
+              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', parameters('namespace'), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -189,13 +194,13 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('vmName'), '/script')]",
+          "name": "[concat(variables('namespace'), '/script')]",
           "apiVersion": "2015-06-15",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('namespace'))]"
           ],
-          "properties": "[parameters('osSettings').extentionSettings.kibana]"
+          "properties": "[parameters('osSettings').extensionSettings.kibana]"
         }
       ]
     }

@@ -37,7 +37,7 @@ help()
     echo "Parameters:"
     echo "-n elasticsearch cluster name"
     echo "-v elasticsearch version 1.5.0"
-    echo "-p namespace prefix of nodes for unicast discovery"
+    echo "-p hostname prefix of nodes for unicast discovery"
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
@@ -107,7 +107,7 @@ CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
-UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-node-0:9300","'"$NAMESPACE_PREFIX"'master-node-1:9300","'"$NAMESPACE_PREFIX"'master-node-2:9300"]'
+UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
 
 USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
@@ -155,7 +155,7 @@ while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
       CLUSTER_USES_DEDICATED_MASTERS=1
       ;;
     p) #namespace prefix for nodes
-      NAMESPACE_PREFIX="${OPTARG}-"
+      NAMESPACE_PREFIX="${OPTARG}"
       ;;
     h) #show help
       help
@@ -175,12 +175,12 @@ done
 
 if [ ${CLUSTER_USES_DEDICATED_MASTERS} -ne 0 ]; then
     MINIMUM_MASTER_NODES=2
-    UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-node-0:9300","'"$NAMESPACE_PREFIX"'master-node-1:9300","'"$NAMESPACE_PREFIX"'master-node-2:9300"]'
+    UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
 else
     MINIMUM_MASTER_NODES=$(((DATANODE_COUNT/2)+1))
     UNICAST_HOSTS='['
     for i in $(seq 0 $((DATANODE_COUNT-1))); do
-        UNICAST_HOSTS="$UNICAST_HOSTS\"${NAMESPACE_PREFIX}data-node-$i:9300\","
+        UNICAST_HOSTS="$UNICAST_HOSTS\"${NAMESPACE_PREFIX}data-$i:9300\","
     done
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi

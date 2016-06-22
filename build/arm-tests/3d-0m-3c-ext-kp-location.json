@@ -15,6 +15,13 @@
 		"vmClientNodeCount":{"value":3},
 		"vmSizeClientNodes":{"value":"Standard_D1"},
 		"authenticationType":{"value":"password"},
-		"location":{"value":"northeurope"}
+		"location":{"value":"northeurope"},
+		"vNetName": {"value": "es-net"},
+		"vNetSubnetName": {"value": "es-subnet"},
+		"vNetLoadBalancerIp": {"value": "10.0.0.4"},
+		"vNetNewOrExisting": {"value":"new"},
+		"vNetExistingResourceGroup": {"value": ""},
+		"vNetNewAddressPrefix": {"value": "10.0.0.0/16"},   
+		"vNetNewSubnetAddressPrefix": {"value": "10.0.0.0/24"}	
 	}
 }

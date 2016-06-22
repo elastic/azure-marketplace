@@ -19,7 +19,7 @@ The market place Elasticsearch offering offers a simplified UI over the full pow
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fhackfest%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fhackfest%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -35,7 +35,7 @@ The output from the market place UI is fed directly to the ARM template. You can
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th></tr>
   <tr><td>esVersion</td><td>enum</td>
-    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/hackfest/src/mainTemplate.json#L8">this list for supported versions</a>
+    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L8">this list for supported versions</a>
     </td></tr>
   <tr><td>esClusterName</td><td>string</td>
     <td> The name of the Elasticsearch cluster
@@ -43,11 +43,7 @@ The output from the market place UI is fed directly to the ARM template. You can
 
   <tr><td>loadBalancerType</td><td>string</td>
     <td>Whether the loadbalancer should be <code>internal</code> or <code>external</code>
-    If you run <code>external</code> you should also install the shield plugin and look into setting up SSL on your endpoint
-    </td></tr>
-
-  <tr><td>vNetName</td><td>string</td>
-    <td>The name of the Virtual Network
+    If you run <code>external</code>, it is highly recommended to also install the shield plugin and look into setting up SSL on your endpoint. Defaults to <code>internal</code>
     </td></tr>
 
   <tr><td>vNetNewOrExisting</td><td>string</td>
@@ -55,37 +51,30 @@ The output from the market place UI is fed directly to the ARM template. You can
     another Resource Group in the same Location can be used. Defaults to <code>new</code>
     </td></tr>
 
-  <tr><td>vNetResourceGroup</td><td>string</td>
-    <td>The name of the Resource Group in which the Virtual Network resides when using an <code>existing</code> Virtual Network.
-    Leave blank when creating a new Virtual Network
+  <tr><td>vNetName</td><td>string</td>
+    <td>The name of the Virtual Network. Defaults to <code>es-net</code>
     </td></tr>
 
-  <tr><td>vNetAddressPrefix</td><td>string</td>
-    <td>The address prefix when creating a new Virtual Network. Defaults to <code>10.0.0.0/16<code>. Ignored when using
-    an existing Virtual Network
+  <tr><td>vNetSubnetName</td><td>string</td>
+    <td>The name of the subnet to which Elasticsearch nodes will be attached. Defaults to <code>es-subnet</code>
     </td></tr>
 
-  <tr><td>vNetMasterSubnetName</td><td>string</td>
-    <td>The name of the subnet to which master nodes will be attached. Defaults to <code>master</code>
+  <tr><td>vNetLoadBalancerIp</td><td>string</td>
+    <td>The internal static IP address to use when configuring the internal load balancer. Must be an available
+    IP address on the provided subnet name. Defaults to <code>10.0.0.4</code>. 
     </td></tr>
 
-  <tr><td>vNetMasterSubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the master node Subnet. Defaults to <code>10.0.0.0/24</code>. Ignored when using
-    an existing Virtual Network
+  <tr><td>vNetExistingResourceGroup</td><td>string</td>
+    <td>The name of the Resource Group in which the Virtual Network resides when using an existing Virtual Network.
+    <strong>Required when using an existing Virtual Network</strong>
     </td></tr>
 
-  <tr><td>vNetMasterSubnetStartAddress</td><td>string</td>
-    <td>The start IP address available in the master subnet. This will be used as the static IP address when configuring
-    the internal load balancer. Defaults to <code>10.0.0.4</code>. 
+  <tr><td>vNetNewAddressPrefix</td><td>string</td>
+    <td>The address prefix when creating a new Virtual Network. Defaults to <code>10.0.0.0/16</code>. <strong>Required when creating a new Virtual Network</strong>
     </td></tr>
 
-  <tr><td>vNetDataSubnetName</td><td>string</td>
-    <td>The name of the subnet to which data nodes will be attached. Defaults to <code>data</code>
-    </td></tr>
-
-  <tr><td>vNetDataSubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the data node Subnet. Defaults to <code>10.0.1.0/24</code>. Ignored when using
-    an existing Virtual Network
+  <tr><td>vNetNewSubnetAddressPrefix</td><td>string</td>
+    <td>The address space of the subnet. Defaults to <code>10.0.0.0/24</code>. <strong>Required when creating a new Virtual Network</strong>
     </td></tr>
 
   <tr><td>esPlugins</td><td>string</td>
@@ -102,8 +91,12 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td>Either <code>Yes</code> or <code>No</code> Optionally add a virtual machine to the deployment which you can use to connect and manage virtual machines on the internal network.
     </td></tr>
 
+  <tr><td>vmHostNamePrefix</td><td>string</td>
+    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric, underscore and hyphen characters.
+    </td></tr>
+
   <tr><td>vmSizeDataNodes</td><td>string</td>
-    <td>Azure VM size of the data nodes see <a href="https://github.com/elastic/azure-marketplace/blob/hackfest/src/allowedValues.json">this list for supported sizes</a>
+    <td>Azure VM size of the data nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
@@ -115,7 +108,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeMasterNodes</td><td>string</td>
-    <td>Azure VM size of the master nodes see <a href="https://github.com/elastic/azure-marketplace/blob/hackfest/src/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
+    <td>Azure VM size of the master nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
     </td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
@@ -123,7 +116,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
-    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/hackfest/src/allowedValues.json">this list for supported sizes</a>.
+    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>.
     </td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
@@ -156,7 +149,7 @@ The output from the market place UI is fed directly to the ARM template. You can
 
   <tr><td>location</td><td>string</td>
     <td>The location where to provision all the items in this template. Defaults to the special <code>ResourceGroup</code> value which means it will inherit the location
-    from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/hackfest/src/allowedValues.json">this list for supported locations</a>.
+    from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported locations</a>.
     </td></tr>
 
 </table>
@@ -183,7 +176,7 @@ $ azure group create <name> <location>
 
 Next we can either use our published template directly using `--template-uri`
 
-> $ azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/hackfest/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+> $ azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
 
 or if your are executing commands from a clone of this repo using `--template-file`
 
@@ -197,7 +190,7 @@ The `--parameters-file` can specify a different location for the items that get 
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fhackfest%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -209,4 +202,4 @@ It should be pretty self explanatory except for password which only accepts a js
 
 # License
 
-This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/hackfest/LICENSE.txt) and is based heavily on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)
+This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based heavily on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)

@@ -15,10 +15,16 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "subnet": {
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for kibana nodes"
+      }
+    },
+    "networkSettings": {
       "type": "object",
       "metadata": {
-        "description": "Subnet object for provisioning resources in (expects properties name as the subnet name, and vnet as the virtual network name on the object)"
+        "description": "Network settings"
       }
     },
     "storageAccountName": {

@@ -19,10 +19,10 @@
       "type": "string",
       "defaultValue": ""
     },
-    "subnet": {
+    "networkSettings": {
       "type": "object",
       "metadata": {
-        "description": "Subnet object for provisioning resources in (expects properties name as the subnet name, and vnet as the virtual network name on the object)"
+        "description": "Network settings"
       }
     },
     "storageAccountName": {

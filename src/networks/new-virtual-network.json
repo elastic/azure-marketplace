@@ -13,7 +13,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[parameters('networkSettings').virtualNetworkName]",
+      "name": "[parameters('networkSettings').name]",
       "location": "[parameters('networkSettings').location]",
       "properties": {
         "addressSpace": {
@@ -23,15 +23,9 @@
         },
         "subnets": [
           {
-            "name": "[parameters('networkSettings').subnet.master.name]",
+            "name": "[parameters('networkSettings').subnet.name]",
             "properties": {
-              "addressPrefix": "[parameters('networkSettings').subnet.master.prefix]"
-            }
-          },
-          {
-            "name": "[parameters('networkSettings').subnet.data.name]",
-            "properties": {
-              "addressPrefix": "[parameters('networkSettings').subnet.data.prefix]"
+              "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
             }
           }
         ]
