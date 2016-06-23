@@ -32,6 +32,7 @@
     "azure-cli": "^0.10.1",
     "casperjs": "^1.1.1",
     "dateformat": "^1.0.12",
+    "del": "^2.2.1",
     "eclint": "^1.1.5",
     "git-rev": "^0.2.1",
     "gulp": "^3.9.0",
@@ -44,7 +45,9 @@
     "jsonfile": "^2.2.3",
     "lodash": "^3.10.1",
     "merge": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "phantomjs-prebuilt": "^2.1.7",
+    "request": "^2.72.0",
     "requiredir": "^1.0.7"
   }
 }
