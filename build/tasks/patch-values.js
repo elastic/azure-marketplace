@@ -21,7 +21,7 @@ var dataNodeValues = _.range(1, allowedValues.numberOfDataNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
-var clientNodeValues = _.range(1, allowedValues.numberOfClientNodes + 1)
+var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
@@ -107,7 +107,7 @@ gulp.task("patch", function(cb) {
 
         var dataNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmDataNodeCount"; });
         dataNodeCountControl.constraints.allowedValues = dataNodeValues;
-        var clientNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmDataNodeCount"; });
+        var clientNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmClientNodeCount"; });
         clientNodeCountControl.constraints.allowedValues = clientNodeValues;
 
         jsonfile.writeFile(uiTemplate, obj, function (err) {
