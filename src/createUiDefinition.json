@@ -89,6 +89,42 @@
               "regex": "[^\\s]+$",
               "validationMessage": "Cluster has trailing whitespace"
             }
+          },
+          {
+            "name": "virtualNetwork",
+            "type": "Microsoft.Network.VirtualNetworkCombo",
+            "label": {
+              "virtualNetwork": "Virtual network",
+              "subnets": "Subnet"
+            },
+            "toolTip": {
+              "virtualNetwork": "Create a new Virtual Network or use an existing one",
+              "subnets": "Choose the Subnet for the Virtual Network for Elasticsearch nodes. If choosing an existing Virtual Network, the Subnet to use will need to exist beforehand; Creating a new subnet in an existing Virtual Network is not supported"
+            },
+            "defaultValue": {
+              "name": "es-net",
+              "addressPrefixSize": "/16"
+            },
+            "constraints": {
+              "minAddressPrefixSize": "/16"
+            },
+            "options": {
+              "hideExisting": false
+            },
+            "subnets": {
+              "subnet1": {
+                "label": "subnet",
+                "defaultValue": {
+                  "name": "es-subnet",
+                  "addressPrefixSize": "/24"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/24",
+                  "minAddressCount": 12,
+                  "requireContiguousAddresses": true
+                }
+              }
+            }
           }
         ]
       },
@@ -101,6 +137,18 @@
         },
         "bladeTitle": "Nodes Configuration",
         "elements": [
+          {
+            "name": "vmHostNamePrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Hostname prefix",
+            "defaultValue": "",
+            "toolTip": "The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster",
+            "constraints": {
+              "required": false,
+              "regex": "^[0-9a-zA-Z][0-9a-zA-Z\\-_]{0,4}$",
+              "validationMessage": "Host name prefix must start with an alphanumeric character and can contain alphanumeric, underscore or hyphen characters, up to 5 characters in length"
+            }
+          },
           {
             "name": "vmSizeMasterNodes",
             "type": "Microsoft.Compute.SizeSelector",
@@ -654,11 +702,19 @@
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
+      "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
+      "vNetName": "[steps('clusterSettingsStep').virtualNetwork.name]",
+      "vNetSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.name]",
+      "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.startAddress]",
+      "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
+      "vNetNewAddressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
+      "vNetNewSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.addressPrefix]",
       "kibana": "[steps('externalAccessStep').kibana]",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').vmSizeDataNodes]",
       "vmDataNodeCount": "[steps('nodesStep').vmDataNodeCount]",
       "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodesAreMasterEligible]",
+      "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
       "vmSizeMasterNodes": "[steps('nodesStep').vmSizeMasterNodes]",
       "vmClientNodeCount": "[steps('nodesStep').vmClientNodeCount]",
       "vmSizeClientNodes": "[steps('nodesStep').vmSizeClientNodes]",

@@ -39,7 +39,7 @@ help()
     echo "-n elasticsearch cluster name"
     echo "-v kibana version e.g 4.2.1"
     echo "-e elasticsearch version e.g 2.3.1"
-
+    echo "-u elasticsearch url e.g. http://10.0.0.4:9200"
     echo "-l install plugins true/false"
     echo "-S kibana server password"
     echo "-m <internal/external> hints whether to use the internal loadbalancer or internal client node (when external loadbalancing)"
@@ -68,13 +68,15 @@ fi
 CLUSTER_NAME="elasticsearch"
 KIBANA_VERSION="4.2.1"
 ES_VERSION="2.0.0"
+#Default internal load balancer ip
+ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_PLUGINS=0
 HOSTMODE="internal"
 
 USER_KIBANA4_SERVER_PWD="changeME"
 
 #Loop through options passed
-while getopts :n:v:e:S:m:lh optname; do
+while getopts :n:v:e:u:S:m:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -85,6 +87,9 @@ while getopts :n:v:e:S:m:lh optname; do
       ;;
     e) #elasticsearch version number
       ES_VERSION=${OPTARG}
+      ;;
+    u) #elasticsearch url
+      ELASTICSEARCH_URL=${OPTARG}
       ;;
     S) #shield kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
@@ -110,9 +115,6 @@ done
 #########################
 # Parameter state changes
 #########################
-
-#hit the loadbalancers internal IP
-ELASTICSEARCH_URL="http://10.0.0.100:9200"
 
 echo "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
 echo "installing kibana plugins is set to: $INSTALL_PLUGINS"
@@ -145,6 +147,9 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     fi
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
     /opt/kibana/bin/kibana plugin --install elastic/sense
+
+    # sense default url to point at Elasticsearch on first load
+    echo "sense.defaultServerUrl: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
 fi
 
 # Add upstart task and start kibana service

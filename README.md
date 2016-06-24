@@ -43,7 +43,38 @@ The output from the market place UI is fed directly to the ARM template. You can
 
   <tr><td>loadBalancerType</td><td>string</td>
     <td>Whether the loadbalancer should be <code>internal</code> or <code>external</code>
-    If you run <code>external</code> you should also install the shield plugin and look into setting up SSL on your endpoint
+    If you run <code>external</code>, it is highly recommended to also install the shield plugin and look into setting up SSL on your endpoint. Defaults to <code>internal</code>
+    </td></tr>
+
+  <tr><td>vNetNewOrExisting</td><td>string</td>
+    <td>Whether the Virtual Network is <code>new</code> or <code>existing</code>. An <code>existing</code> Virtual Network in
+    another Resource Group in the same Location can be used. Defaults to <code>new</code>
+    </td></tr>
+
+  <tr><td>vNetName</td><td>string</td>
+    <td>The name of the Virtual Network. Defaults to <code>es-net</code>
+    </td></tr>
+
+  <tr><td>vNetSubnetName</td><td>string</td>
+    <td>The name of the subnet to which Elasticsearch nodes will be attached. Defaults to <code>es-subnet</code>
+    </td></tr>
+
+  <tr><td>vNetLoadBalancerIp</td><td>string</td>
+    <td>The internal static IP address to use when configuring the internal load balancer. Must be an available
+    IP address on the provided subnet name. Defaults to <code>10.0.0.4</code>. 
+    </td></tr>
+
+  <tr><td>vNetExistingResourceGroup</td><td>string</td>
+    <td>The name of the Resource Group in which the Virtual Network resides when using an existing Virtual Network.
+    <strong>Required when using an existing Virtual Network</strong>
+    </td></tr>
+
+  <tr><td>vNetNewAddressPrefix</td><td>string</td>
+    <td>The address prefix when creating a new Virtual Network. Defaults to <code>10.0.0.0/16</code>. <strong>Required when creating a new Virtual Network</strong>
+    </td></tr>
+
+  <tr><td>vNetNewSubnetAddressPrefix</td><td>string</td>
+    <td>The address space of the subnet. Defaults to <code>10.0.0.0/24</code>. <strong>Required when creating a new Virtual Network</strong>
     </td></tr>
 
   <tr><td>esPlugins</td><td>string</td>
@@ -58,6 +89,10 @@ The output from the market place UI is fed directly to the ARM template. You can
 
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> Optionally add a virtual machine to the deployment which you can use to connect and manage virtual machines on the internal network.
+    </td></tr>
+
+  <tr><td>vmHostNamePrefix</td><td>string</td>
+    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric, underscore and hyphen characters.
     </td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>

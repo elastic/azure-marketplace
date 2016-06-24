@@ -61,7 +61,6 @@
     "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]"
   },
   "resources": [
-
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkInterfaces",
@@ -82,7 +81,6 @@
         ]
       }
     },
-
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",

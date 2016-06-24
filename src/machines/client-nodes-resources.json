@@ -14,8 +14,8 @@
       "metadata": {
         "description": "vm configuration"
       }
-    }
-  },
+      }
+    },
   "variables": {
     "namespace" : "[parameters('vm').namespace]"
   },
@@ -51,14 +51,14 @@
           "vm": {
             "value": "[parameters('vm')]"
           },
-          "availabilitySet": {
+        "availabilitySet": {
             "value": "[concat(variables('namespace'), 'av-set')]"
-          },
+        },
           "index": {
             "value": "[copyindex()]"
           }
+            }
         }
-      }
+        }
+      ]
     }
-  ]
-}

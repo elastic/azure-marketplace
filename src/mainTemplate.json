@@ -63,6 +63,14 @@
         "description": "Provision a machine with Kibana on it"
       }
     },
+    "vmHostNamePrefix": {
+      "type": "string",
+      "defaultValue": "",
+      "maxLength": 5,
+      "metadata": {
+        "description": "The prefix to use for hostnames when naming virtual machines in the cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric, underscore and hyphen characters. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix to differentiate the hostnames of this cluster from an existing cluster"
+      }
+    },
     "vmSizeKibana": {
       "type": "string",
       "defaultValue": "Standard_A1",
@@ -390,18 +398,64 @@
         "description": "Location where resources will be provisioned.  A value of 'ResourceGroup' will deploy the resource to the same location of the resource group the resources are provisioned into"
       }
     },
-    "virtualNetworkName": {
+    "vNetNewOrExisting": {
       "type": "string",
-      "defaultValue": "esvnet",
+      "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
       "metadata": {
-        "description": "Virtual Network"
+        "description": "Choose to create a new Virtual Network or use an existing one. If choosing an existing network, the subnet also needs to exist."
+      }
+    },
+    "vNetName": {
+      "type": "string",
+      "defaultValue": "es-net",
+      "metadata": {
+        "description": "Virtual Network Name"
+      }
+    },
+    "vNetSubnetName": {
+      "type": "string",
+      "defaultValue": "es-subnet",
+      "metadata": {
+        "description": "Subnet name to use for Elasticsearch nodes"
+      }
+    },
+    "vNetLoadBalancerIp": {
+      "type": "string",
+      "defaultValue": "10.0.0.4",
+      "metadata": {
+        "description": "The static IP address for the internal load balancer. This must be an available IP address in the specified subnet"
+      }
+    },
+    "vNetExistingResourceGroup": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the resource group of the Existing Virtual Network. Required when using an existing Virtual Network"
+      }
+    },
+    "vNetNewAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The address prefix size to use for a New Virtual Network. Required when creating a new Virtual Network"
+      }
+    },
+    "vNetNewSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "The address space of the subnet. Required when creating a new Virtual Network"
       }
     }
   },
   "variables": {
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
-    "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/',parameters('loadBalancerType'),'-lb-resources.json')]",
+    "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/', parameters('loadBalancerType') ,'-lb-resources.json')]",
     "masterTemplates": {
       "No": "machines/master-nodes-resources.json",
       "Yes": "empty/empty-master-nodes-resources.json"
@@ -446,6 +500,7 @@
       "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name)]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
+    "namespacePrefix": "[parameters('vmHostNamePrefix')]",
     "dataNodeShortOpts": {
       "No": "z",
       "Yes": ""
@@ -462,7 +517,7 @@
     },
     "installPluginsShortOpt": "[variables('installPluginsShortOpts')[variables('esSettings').installPlugins]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), 'n ')]",
-    "commonInstallParams": "[concat(variables('esSettings').clusterName, ' -v ', variables('esSettings').version, ' -A ', variables('esSettings').shieldAdminPwd, ' -R ', variables('esSettings').shieldReadPwd, ' -K ', variables('esSettings').shieldKibanaPwd, ' -S ', variables('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('vmDataNodeCount'))]",
+    "commonInstallParams": "[concat(variables('esSettings').clusterName, ' -v ', variables('esSettings').version, ' -A ', variables('esSettings').shieldAdminPwd, ' -R ', variables('esSettings').shieldReadPwd, ' -K ', variables('esSettings').shieldKibanaPwd, ' -S ', variables('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('vmDataNodeCount'), ' -p ', variables('namespacePrefix'))]",
     "ubuntuScripts": [
       "[concat(variables('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(variables('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -477,7 +532,7 @@
         "version": "latest"
       },
       "managementPort": "22",
-      "extentionSettings": {
+      "extensionSettings": {
         "master": {
           "publisher": "Microsoft.OSTCExtensions",
           "type": "CustomScriptForLinux",
@@ -523,7 +578,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').kibanaVersion, ' -e ', variables('esSettings').version, ' -S ', variables('esSettings').shieldKibanaServerPwd)]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', variables('esSettings').clusterName, ' -v ', variables('esSettings').kibanaVersion, ' -e ', variables('esSettings').version, ' -u ', concat('http://', parameters('vNetLoadBalancerIp'), ':9200') ,' -S ', variables('esSettings').shieldKibanaServerPwd)]"
           }
         }
       }
@@ -556,20 +611,20 @@
     "location": "[variables('locationMap')[parameters('location')]]",
     "storageAccountPrefix": "elastic",
     "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
+    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', parameters('vNetNewOrExisting'), '-virtual-network.json')]",
+    "networkResourceGroupMap": {
+      "new": "[resourceGroup().name]",
+      "existing": "[parameters('vNetExistingResourceGroup')]"
+    },
     "networkSettings": {
-      "virtualNetworkName": "[parameters('virtualNetworkName')]",
-      "addressPrefix": "10.0.0.0/16",
+      "name": "[parameters('vNetName')]",
+      "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
+      "location": "[variables('location')]",
+      "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
       "subnet": {
-        "master": {
-          "name": "master",
-          "prefix": "10.0.0.0/24",
-          "vnet": "[parameters('virtualNetworkName')]"
-        },
-        "data": {
-          "name": "data",
-          "prefix": "10.0.1.0/24",
-          "vnet": "[parameters('virtualNetworkName')]"
-        }
+        "name": "[parameters('vNetSubnetName')]",
+        "addressPrefix": "[parameters('vNetNewSubnetAddressPrefix')]",
+        "loadbalancerIp": "[parameters('vNetLoadBalancerIp')]"
       }
     },
     "backendPoolConfigurations": {
@@ -831,8 +886,8 @@
     "sharedVmConfig": {
       "storageAccountName": "[variables('storageAccountNameShared')]",
       "location": "[variables('location')]",
-      "subnet": "[variables('networkSettings').subnet.data]",
-      "subnetId": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('networkSettings').subnet.data.vnet), '/subnets/', variables('networkSettings').subnet.data.name)]",
+      "subnet": "[variables('networkSettings').subnet]",
+      "subnetId": "[concat(resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', variables('networkSettings').name), '/subnets/', variables('networkSettings').subnet.name)]",
       "credentials": "[variables('credentials')]",
       "osSettings": "[variables('osSettings')]"
     }
@@ -852,11 +907,25 @@
           "location": {
             "value": "[variables('location')]"
           },
-          "networkSettings": {
-            "value": "[variables('networkSettings')]"
-          },
           "storageAccountName": {
             "value": "[variables('storageAccountNameShared')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "network",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('networkTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
           }
         }
       }
@@ -866,7 +935,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]"
+        "[concat('Microsoft.Resources/deployments/', 'shared')]",
+        "[concat('Microsoft.Resources/deployments/', 'network')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -875,9 +945,6 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "location": {
-            "value": "[variables('location')]"
-          },
           "networkSettings": {
             "value": "[variables('networkSettings')]"
           }
@@ -889,7 +956,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
@@ -905,8 +971,8 @@
           "vm": {
             "value": {
               "shared": "[variables('sharedVmConfig')]",
-              "namespace": "master-node-",
-              "installScript": "[variables('osSettings').extentionSettings.master]",
+              "namespace": "[concat(variables('namespacePrefix'), 'master-')]",
+              "installScript": "[variables('osSettings').extensionSettings.master]",
               "size": "[parameters('vmSizeMasterNodes')]",
               "count": 3,
               "useSharedStorageAccount": "Yes",
@@ -922,7 +988,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
@@ -938,8 +1003,8 @@
           "vm": {
             "value": {
               "shared": "[variables('sharedVmConfig')]",
-              "namespace": "client-node-",
-              "installScript": "[variables('osSettings').extentionSettings.client]",
+              "namespace": "[concat(variables('namespacePrefix'), 'client-')]",
+              "installScript": "[variables('osSettings').extensionSettings.client]",
               "size": "[parameters('vmSizeClientNodes')]",
               "count": "[parameters('vmClientNodeCount')]",
               "useSharedStorageAccount": "Yes",
@@ -955,7 +1020,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
@@ -971,8 +1035,8 @@
           "vm": {
             "value": {
               "shared": "[variables('sharedVmConfig')]",
-              "namespace": "data-node-",
-              "installScript": "[variables('osSettings').extentionSettings.data]",
+              "namespace": "[concat(variables('namespacePrefix'), 'data-')]",
+              "installScript": "[variables('osSettings').extensionSettings.data]",
               "size": "[parameters('vmSizeDataNodes')]",
               "count": "[parameters('vmDataNodeCount')]",
               "useSharedStorageAccount": "No",
@@ -991,7 +1055,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
@@ -1013,8 +1076,11 @@
           "location": {
             "value": "[variables('location')]"
           },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
+          "namespace": {
+            "value": "[concat(variables('namespacePrefix'), 'jumpbox')]"
+          },
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
           },
           "osSettings": {
             "value": "[variables('osSettings')]"
@@ -1027,7 +1093,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2015-01-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
@@ -1049,8 +1114,11 @@
           "location": {
             "value": "[variables('location')]"
           },
-          "subnet": {
-            "value": "[variables('networkSettings').subnet.data]"
+          "namespace": {
+            "value": "[concat(variables('namespacePrefix'), 'kibana')]"
+          },
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
           },
           "osSettings": {
             "value": "[variables('osSettings')]"
@@ -1071,7 +1139,7 @@
       "value": "[reference('kibana').outputs.fqdn.value]",
       "type": "string"
     },
-    "jumpbox-shh": {
+    "jumpbox-ssh": {
       "value": "[reference('jumpbox').outputs.ssh.value]",
       "type": "string"
     }

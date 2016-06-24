@@ -15,10 +15,16 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "subnet": {
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for jumpbox nodes"
+      }
+    },
+    "networkSettings": {
       "type": "object",
       "metadata": {
-        "description": "Subnet object for provisioning resources in (expects properties name as the subnet name, and vnet as the virtual network name on the object)"
+        "description": "Network settings"
       }
     },
     "storageAccountName": {
@@ -41,20 +47,19 @@
     }
   },
   "variables": {
-    "vmName": "jumpbox",
-    "namespace": "[concat(variables('vmName'), '-')]",
+    "namespace": "[parameters('namespace')]",
     "vmSize": "Standard_A0",
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('subnet').vnet), '/subnets/', parameters('subnet').name)]",
-    "publicIpName": "[concat(variables('namespace'), 'ip')]",
-    "securityGroupName": "[concat(variables('namespace'), 'nsg')]",
-    "nicName": "[concat(variables('namespace'), 'nic')]",
+    "subnetRef": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]",
+    "publicIpName": "[concat(variables('namespace'), '-ip')]",
+    "securityGroupName": "[concat(variables('namespace'), '-nsg')]",
+    "nicName": "[concat(variables('namespace'), '-nic')]",
     "password_osProfile": {
-      "computername": "[variables('vmName')]",
+      "computername": "[variables('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "adminPassword": "[parameters('credentials').password]"
-    },
+  },
     "sshPublicKey_osProfile": {
-      "computername": "[variables('vmName')]",
+      "computername": "[variables('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
@@ -137,7 +142,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
+      "name": "[concat(variables('namespace'), '-0')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
@@ -152,7 +157,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('vmName'), '-osdisk.vhd')]"
+              "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', concat(variables('namespace'), '-0'), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"

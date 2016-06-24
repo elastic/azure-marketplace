@@ -6,8 +6,8 @@ var _ = require('lodash');
 var dateFormat = require("dateformat");
 var git = require('git-rev')
 var merge = require('merge');
-var mkdirp = require('mkdirp')
-var del = require('del')
+var mkdirp = require('mkdirp');
+var del = require('del');
 var request = require('request');
 
 var azureCli = "..\\node_modules\\.bin\\azure.cmd"; //TODO *nix

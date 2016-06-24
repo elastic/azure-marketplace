@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "Location where resources will be provisioned"
-      }
-    },
     "networkSettings": {
       "type": "object",
       "metadata": {
@@ -20,16 +14,16 @@
       "apiVersion": "2015-06-15",
       "name": "es-internal-lb",
       "type": "Microsoft.Network/loadBalancers",
-      "location": "[parameters('location')]",
+      "location": "[parameters('networkSettings').location]",
       "properties": {
         "frontendIPConfigurations": [
           {
             "name": "LBFE",
             "properties": {
               "subnet": {
-                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks',parameters('networkSettings').virtualNetworkName), '/subnets/', parameters('networkSettings').subnet.master.name)]"
+                "id": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks',parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]"
               },
-              "privateIPAddress": "10.0.0.100",
+              "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
               "privateIPAllocationMethod": "Static"
             }
           }
@@ -49,7 +43,7 @@
               "backendAddressPool": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 9200,
               "backendPort": 9200,
               "enableFloatingIP": false,
@@ -68,7 +62,7 @@
               "backendAddressPool": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 9300,
               "backendPort": 9300,
               "enableFloatingIP": false,
@@ -80,7 +74,7 @@
           {
             "name": "es-probe-internal-http",
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": 9200,
               "intervalInSeconds": 30,
               "numberOfProbes": 3
@@ -93,7 +87,7 @@
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "es-external-lb-ip",
-      "location": "[parameters('location')]",
+      "location": "[parameters('networkSettings').location]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
@@ -105,7 +99,7 @@
       "apiVersion": "2015-06-15",
       "name": "es-external-lb",
       "type": "Microsoft.Network/loadBalancers",
-      "location": "[parameters('location')]",
+      "location": "[parameters('networkSettings').location]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', 'es-external-lb-ip')]"
       ],
@@ -135,7 +129,7 @@
               "backendAddressPool": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 9200,
               "backendPort": 9201,
               "enableFloatingIP": false,
@@ -150,7 +144,7 @@
           {
             "name": "es-http-external-probe",
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": 9201,
               "intervalInSeconds": 30,
               "numberOfProbes": 3
