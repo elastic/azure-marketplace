@@ -760,6 +760,124 @@
             }
           }
         ]
+      },
+      {
+        "name": "userInformationStep",
+        "label": "User Information",
+        "subLabel": {
+          "preValidation": "Provide user information",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "User Information",
+        "elements": [
+          {
+            "name": "userCompany",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Company",
+            "defaultValue": "",
+            "toolTip": "Name of your company",
+            "constraints": {
+              "required": true,
+              "regex": "^[0-9a-zA-Z]+$",
+              "validationMessage": "Company name is required"
+            }
+          },
+          {
+            "name": "userEmail",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Email address",
+            "defaultValue": "",
+            "toolTip": "Your email address",
+            "constraints": {
+              "required": true,
+              "regex": "^(.+)@(.+){2,}\\.(.+){2,}$",
+              "validationMessage": "Email address is required"
+            }
+          },
+          {
+            "name": "userFirstName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "First name",
+            "defaultValue": "",
+            "toolTip": "Your first name",
+            "constraints": {
+              "required": true,
+              "regex": "^\\w+$",
+              "validationMessage": "First name can only contain word characters"
+            }
+          },
+          {
+            "name": "userLastName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Last name",
+            "defaultValue": "",
+            "toolTip": "Your last name",
+            "constraints": {
+              "required": true,
+              "regex": "^\\w+$",
+              "validationMessage": "Last name can only contain word characters"
+            }
+          },
+          {
+            "name": "userJobTitle",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Job title",
+            "toolTip": "Your job title. Pick the nearest description that matches",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                {
+                  "label": "IT Executive (CIO, CTO, VP Engineering, etc.)",
+                  "value": "IT Executive (CIO, CTO, VP Engineering, etc.)"
+                },
+                {
+                  "label": "Business Executive (CEO, COO, CMO, etc.)",
+                  "value": "Business Executive (CEO, COO, CMO, etc.)"
+                },
+                {
+                  "label": "Architect",
+                  "value": "Architect"
+                },
+                {
+                  "label": "Business Development/Alliance Manager",
+                  "value": "Business Development/Alliance Manager"
+                },
+                {
+                  "label": "DBA",
+                  "value": "DBA"
+                },
+                {
+                  "label": "Technical Operations",
+                  "value": "Technical Operations"
+                },
+                {
+                  "label": "Director / Development Manager",
+                  "value": "Director / Development Manager"
+                },
+                {
+                  "label": "Product / Project Manager",
+                  "value": "Product / Project Manager"
+                },
+                {
+                  "label": "Software Developer / Engineer",
+                  "value": "Software Developer / Engineer"
+                },
+                {
+                  "label": "Consultant",
+                  "value": "Consultant"
+                },
+                {
+                  "label": "Student",
+                  "value": "Student"
+                },
+                {
+                  "label": "Other",
+                  "value": "Other"
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "outputs": {
@@ -790,7 +908,12 @@
       "shieldAdminPassword": "[steps('shieldStep').es_admin.shieldAdminPassword]",
       "shieldReadPassword": "[steps('shieldStep').es_read.shieldReadPassword]",
       "shieldKibanaPassword": "[steps('shieldStep').es_kibana.shieldKibanaPassword]",
-      "location": "[location()]"
+      "location": "[location()]",
+      "userCompany": "[steps('userInformationStep').userCompany]",
+      "userEmail": "[steps('userInformationStep').userEmail]",
+      "userFirstName": "[steps('userInformationStep').userFirstName]",
+      "userLastName": "[steps('userInformationStep').userLastName]",
+      "userJobTitle": "[steps('userInformationStep').userJobTitle]"
     }
   }
 }

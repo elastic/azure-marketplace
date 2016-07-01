@@ -97,5 +97,19 @@
   ],
   "ignoredVmsBecauseWeHaveNo40DisksResouce" : [
     "D15_v2", "DS15_v2"
+  ],
+  "userJobTitle": [
+    "IT Executive (CIO, CTO, VP Engineering, etc.)",
+    "Business Executive (CEO, COO, CMO, etc.)",
+    "Architect",
+    "Business Development/Alliance Manager",
+    "DBA",
+    "Technical Operations",
+    "Director / Development Manager",
+    "Product / Project Manager",
+    "Software Developer / Engineer",
+    "Consultant",
+    "Student",
+    "Other"
   ]
 }

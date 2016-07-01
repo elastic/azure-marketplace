@@ -26,5 +26,10 @@
     "vNetNewOrExisting": {"value":"new"},
     "vNetExistingResourceGroup": {"value": ""},
     "vNetNewAddressPrefix": {"value": "10.0.0.0/16"},   
-    "vNetNewSubnetAddressPrefix": {"value": "10.0.0.0/24"}	
+    "vNetNewSubnetAddressPrefix": {"value": "10.0.0.0/24"},
+	"userCompany": { "value": "" },
+	"userEmail": { "value": "" },
+	"userFirstName": { "value": "" },	
+	"userLastName": { "value": "" },
+	"userJobTitle": { "value": "" }	
 }

@@ -31,6 +31,9 @@ var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNode
 
 var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations)
 
+var userJobTitles = allowedValues.userJobTitle
+  .map(function(v) { return { "label": v, "value": v }});
+
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
@@ -52,6 +55,8 @@ gulp.task("patch", function(cb) {
       delete v.tier;
       return tier;
     });
+
+    obj.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
 
     //obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
@@ -86,6 +91,7 @@ gulp.task("patch", function(cb) {
         //patch allowedVMSizes on the nodesStep
         var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
         var externalAccessStep = _.find(obj.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
+        var userInformationStep =  _.find(obj.parameters.steps, function (step) { return step.name == "userInformationStep"; });
 
         var masterSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
         var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
@@ -109,6 +115,9 @@ gulp.task("patch", function(cb) {
         dataNodeCountControl.constraints.allowedValues = dataNodeValues;
         var clientNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmClientNodeCount"; });
         clientNodeCountControl.constraints.allowedValues = clientNodeValues;
+
+        var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
+        userJobFunctionsControl.constraints.allowedValues = userJobTitles;
 
         jsonfile.writeFile(uiTemplate, obj, function (err) {
           cb();
