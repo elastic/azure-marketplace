@@ -118,6 +118,7 @@ gulp.task("patch", function(cb) {
 
         var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
         userJobFunctionsControl.constraints.allowedValues = userJobTitles;
+        userJobFunctionsControl.defaultValue = userJobTitles[0].label;
 
         jsonfile.writeFile(uiTemplate, obj, function (err) {
           cb();
