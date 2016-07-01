@@ -11,7 +11,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[parameters('networkSettings').name]",
       "location": "[parameters('networkSettings').location]",

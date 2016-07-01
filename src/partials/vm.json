@@ -62,7 +62,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('namespace'), parameters('index'), '-nic')]",
       "location": "[parameters('vm').shared.location]",
