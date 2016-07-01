@@ -778,7 +778,6 @@
             "toolTip": "Name of your company",
             "constraints": {
               "required": true,
-              "regex": "^[0-9a-zA-Z]+$",
               "validationMessage": "Company name is required"
             }
           },
@@ -802,8 +801,7 @@
             "toolTip": "Your first name",
             "constraints": {
               "required": true,
-              "regex": "^\\w+$",
-              "validationMessage": "First name can only contain word characters"
+              "validationMessage": "First name is required"
             }
           },
           {
@@ -814,8 +812,7 @@
             "toolTip": "Your last name",
             "constraints": {
               "required": true,
-              "regex": "^\\w+$",
-              "validationMessage": "Last name can only contain word characters"
+              "validationMessage": "Last name is required"
             }
           },
           {
