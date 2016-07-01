@@ -820,10 +820,14 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Job title",
             "toolTip": "Your job title. Pick the nearest description that matches",
-            "defaultValue": "IT Executive (CIO, CTO, VP Engineering, etc.)",
+            "defaultValue": "",
             "constraints": {
               "required": true,
               "allowedValues": [
+                {
+                  "label": "",
+                  "value": ""
+                },
                 {
                   "label": "IT Executive (CIO, CTO, VP Engineering, etc.)",
                   "value": "IT Executive (CIO, CTO, VP Engineering, etc.)"
