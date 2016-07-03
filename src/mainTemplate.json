@@ -617,7 +617,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), '&& bash user-information.sh -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userCompany'), '\" -e \"', parameters('userEmail'), '\" -f \"', parameters('userFirstName'), '\" -l \"', parameters('userLastName'), '\" -t \"', parameters('userJobTitle'), '\"')]"
+            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' && bash user-information.sh -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userCompany'), '\" -e \"', parameters('userEmail'), '\" -f \"', parameters('userFirstName'), '\" -l \"', parameters('userLastName'), '\" -t \"', parameters('userJobTitle'), '\"')]"
           }
         },
         "kibana": {
