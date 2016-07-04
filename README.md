@@ -152,6 +152,26 @@ The output from the market place UI is fed directly to the ARM template. You can
     from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported locations</a>.
     </td></tr>
 
+  <tr><td>userCompany</td><td>string</td>
+    <td>The name of your company.
+    </td></tr>
+
+  <tr><td>userEmail</td><td>string</td>
+    <td>Your email address
+    </td></tr>
+
+  <tr><td>userFirstName</td><td>string</td>
+    <td>Your first name
+    </td></tr>
+
+  <tr><td>userLastName</td><td>string</td>
+    <td>Your last name
+    </td></tr>
+
+  <tr><td>userJobTitle</td><td>enum</td>
+    <td>Your job title. Pick the nearest one that matches from the list of options
+    </td></tr>
+    
 </table>
 
 ### Command line deploy
