@@ -100,13 +100,29 @@ while getopts :U:I:c:e:f:l:t:h optname; do
 done
 
 #########################
+# Preconditions
+#########################
+
+# Need the endpoint and marketing id to be able to send
+if [[ -z "$API_URL" || -z "$MARKETING_ID" ]]; then
+  log "No api url or marketing id defined."
+  exit 1
+fi
+
+# Don't try to send a lead if we don't have any details
+if [[ -z $FIRST_NAME && -z $LAST_NAME && -z $EMAIL && -z $COMPANY_NAME && -z $JOB_TITLE ]]; then
+  log "No user information supplied. No lead to send."
+  exit 0
+fi
+
+#########################
 # Installation steps as functions
 #########################
 
 post_user_information()
 {
     log "creating lead"    
-    CURL_COMMAND="curl -X POST \"$API_URL\" --data-urlencode \"formid=4026\" --data-urlencode \"munchkinId=$MARKETING_ID\" --data-urlencode \"formVid=4026\" "
+    CURL_COMMAND="curl -X POST \"$API_URL\" --data-urlencode \"Form_Source=Azure Marketplace\"  --data-urlencode \"formid=4026\" --data-urlencode \"munchkinId=$MARKETING_ID\" --data-urlencode \"formVid=4026\" "
     if [[ -n "$FIRST_NAME" ]]; then
         CURL_COMMAND=$CURL_COMMAND"--data-urlencode \"FirstName=$FIRST_NAME\"" 
     fi
@@ -136,18 +152,6 @@ post_user_information()
         log "lead successfully sent"
     fi
 }
-
-# Need the endpoint and marketing id to be able to send
-if [[ -z "$API_URL" || -z "$MARKETING_ID" ]]; then
-  log "No api url or marketing id defined."
-  exit 1
-fi
-
-# Don't try send a lead if we don't have any details
-if [[ -z $FIRST_NAME && -z $LAST_NAME && -z $EMAIL && -z $COMPANY_NAME && -z $JOB_TITLE ]]; then
-  log "No user information supplied. No lead to send."
-  exit 0
-fi
 
 post_user_information
 
