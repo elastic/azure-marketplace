@@ -120,7 +120,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
-    <td>Admin username used when provisioning virtual machines
+    <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#_ubuntu">avoid any of the following usernames for Ubuntu</a> 
     </td></tr>
 
   <tr><td>authenticationType</td><td>object</td>
@@ -169,9 +169,9 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>userJobTitle</td><td>enum</td>
-    <td>Your job title. Pick the nearest one that matches from the list of options
+    <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">the list of job titles</a>
     </td></tr>
-    
+
 </table>
 
 ### Command line deploy
