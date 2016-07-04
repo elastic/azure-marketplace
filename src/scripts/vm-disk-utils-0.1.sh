@@ -66,7 +66,7 @@ DATA_BASE="/datadisks"
 while getopts b:sh optname; do
     log "Option $optname set with value ${OPTARG}"
   case ${optname} in
-    b)  #set clsuter name
+    b)  #set cluster name
       DATA_BASE=${OPTARG}
       ;;
     s) #Partition and format data disks as raid set

@@ -572,7 +572,8 @@
       "[concat(variables('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(variables('templateBaseUrl'), 'scripts/kibana-install.sh')]",
       "[concat(variables('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
-      "[concat(variables('templateBaseUrl'), 'scripts/user-information.sh')]"
+      "[concat(variables('templateBaseUrl'), 'scripts/user-information.sh')]",
+      "[concat(variables('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
     "ubuntuSettings": {
@@ -617,7 +618,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' && bash user-information.sh -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userCompany'), '\" -e \"', parameters('userEmail'), '\" -f \"', parameters('userFirstName'), '\" -l \"', parameters('userLastName'), '\" -t \"', parameters('userJobTitle'), '\"')]"
+            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userCompany'), '\" -e \"', parameters('userEmail'), '\" -f \"', parameters('userFirstName'), '\" -n \"', parameters('userLastName'), '\" -t \"', parameters('userJobTitle'), '\"')]"
           }
         },
         "kibana": {
