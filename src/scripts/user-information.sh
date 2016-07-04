@@ -109,9 +109,9 @@ if [[ -z "$API_URL" || -z "$MARKETING_ID" ]]; then
   exit 1
 fi
 
-# Don't try to send a lead if we don't have any details
-if [[ -z $FIRST_NAME && -z $LAST_NAME && -z $EMAIL && -z $COMPANY_NAME && -z $JOB_TITLE ]]; then
-  log "No user information supplied. No lead to send."
+# Don't try to send a lead if we don't have an email address.
+if [[ -z "$EMAIL" ]]; then
+  log "No email address supplied. No lead to send."
   exit 0
 fi
 

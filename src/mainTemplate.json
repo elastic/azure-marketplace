@@ -481,7 +481,7 @@
     },
     "userJobTitle": {
       "type": "string",
-      "defaultValue": "",
+      "defaultValue": "Other",
       "allowedValues": [
         "IT Executive (CIO, CTO, VP Engineering, etc.)",
         "Business Executive (CEO, COO, CMO, etc.)",
