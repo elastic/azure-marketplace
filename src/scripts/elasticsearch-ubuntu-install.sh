@@ -145,7 +145,7 @@ while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
     y) #client node
       CLIENT_ONLY_NODE=1
       ;;
-    z) #client node
+    z) #data node
       DATA_NODE=1
       ;;
     l) #install plugins

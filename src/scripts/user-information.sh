@@ -107,23 +107,23 @@ post_user_information()
 {
     log "creating lead"    
     CURL_COMMAND="curl -X POST \"$API_URL\" --data-urlencode \"formid=4026\" --data-urlencode \"munchkinId=$MARKETING_ID\" --data-urlencode \"formVid=4026\" "
-    if [[ ! -z $FIRST_NAME ]]; then
+    if [[ -n "$FIRST_NAME" ]]; then
         CURL_COMMAND=$CURL_COMMAND"--data-urlencode \"FirstName=$FIRST_NAME\"" 
     fi
 
-    if [[ ! -z $LAST_NAME ]]; then
+    if [[ -n "$LAST_NAME" ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"LastName=$LAST_NAME\""
     fi
 
-    if [[ ! -z $EMAIL ]]; then
+    if [[ -n "$EMAIL" ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Email=$EMAIL\""
     fi
 
-    if [[ ! -z $COMPANY_NAME ]]; then
+    if [[ -n "$COMPANY_NAME" ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Company=$COMPANY_NAME\""
     fi
 
-    if [[ ! -z $JOB_TITLE ]]; then
+    if [[ -n "$JOB_TITLE" ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Title=$JOB_TITLE\""
     fi
 
@@ -138,7 +138,7 @@ post_user_information()
 }
 
 # Need the endpoint and marketing id to be able to send
-if [[ -z $API_URL || -z $MARKETING_ID ]]; then
+if [[ -z "$API_URL" || -z "$MARKETING_ID" ]]; then
   log "No api url or marketing id defined."
   exit 1
 fi

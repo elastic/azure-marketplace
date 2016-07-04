@@ -47,23 +47,26 @@ help()
     echo "-K kibana user password"
     echo "-S kibana server password"
 
-    echo "-x configure as a dedicated master node"
-    echo "-y configure as client only node (no master, no data)"
-    echo "-z configure as data node (no master)"
     echo "-l install plugins"
-
-    echo "-m marvel host , used for agent config"
 
     echo "-U api url"
     echo "-I marketing id"
     echo "-c company name"
     echo "-e email address"
     echo "-f first name"
-    echo "-n last name"
+    echo "-m last name"
     echo "-t job title"
 
     echo "-h view this help content"
 }
+
+log()
+{
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1" >> /var/log/arm-install.log
+}
+
+log "Begin execution of Data Node Install script extension"
 
 #########################
 # Paramater handling
@@ -73,15 +76,8 @@ CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
-CLIENT_ONLY_NODE=0
-DATA_NODE=0
-MASTER_ONLY_NODE=0
-
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
-
-MINIMUM_MASTER_NODES=3
-UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
 
 USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
@@ -97,7 +93,7 @@ LAST_NAME=""
 JOB_TITLE=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:l:t:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:xyzldh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -121,20 +117,20 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:l:t:xyzldh optname; do
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
       ;;
-    x) #master node
-      MASTER_ONLY_NODE=1
-      ;;
-    y) #client node
-      CLIENT_ONLY_NODE=1
-      ;;
-    z) #client node
-      DATA_NODE=1
-      ;;
     l) #install plugins
       INSTALL_PLUGINS=1
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
+      ;;
+    x) #master node
+      log "master node argument will be ignored"
+      ;;
+    y) #client node
+      log "client node argument will be ignored"
+      ;;
+    z) #data node
+      log "data node argument will be ignored"
       ;;
     p) #namespace prefix for nodes
       NAMESPACE_PREFIX="${OPTARG}"
@@ -154,7 +150,7 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:l:t:xyzldh optname; do
     f) #set first name
       FIRST_NAME=${OPTARG}
       ;;
-    n) #set last name
+    m) #set last name
       LAST_NAME=${OPTARG}
       ;;
     t) #set job title
@@ -172,11 +168,23 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:l:t:xyzldh optname; do
   esac
 done
 
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z $DATANODE_COUNT -x $MASTER_ONLY_NODE -y $CLIENT_ONLY_NODE -z $DATA_NODE -l $INSTALL_PLUGINS -d $CLUSTER_USES_DEDICATED_MASTERS -p "$NAMESPACE_PREFIX"
+INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -z -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z '"$DATANODE_COUNT"' -p "'"$NAMESPACE_PREFIX"'"'
+if [ $CLUSTER_USES_DEDICATED_MASTERS -eq 1 ]; then
+  INSTALL_COMMAND="$INSTALL_COMMAND -d "
+fi
+
+if [ $INSTALL_PLUGINS -eq 1 ]; then
+  INSTALL_COMMAND="$INSTALL_COMMAND -l "
+fi
+
+$(eval $INSTALL_COMMAND)
 
 # send user information only if elasticsearch installed successfully
 RESULT=$?
 if [ $RESULT -eq 0 ]; then
   bash user-information.sh -U "$API_URL" -I "$MARKETING_ID" -c "$COMPANY_NAME" -e "$EMAIL" -f "$FIRST_NAME" -l "$LAST_NAME" -t "$JOB_TITLE"
+  RESULT=$?
 fi
 
+log "End execution of Data Node Install script extension"
+exit $RESULT
