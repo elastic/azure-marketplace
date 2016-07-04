@@ -177,14 +177,15 @@ if [ $INSTALL_PLUGINS -eq 1 ]; then
   INSTALL_COMMAND="$INSTALL_COMMAND -l "
 fi
 
-$(eval $INSTALL_COMMAND)
-
-# send user information only if elasticsearch installed successfully
-RESULT=$?
-if [ $RESULT -eq 0 ]; then
-  bash user-information.sh -U "$API_URL" -I "$MARKETING_ID" -c "$COMPANY_NAME" -e "$EMAIL" -f "$FIRST_NAME" -l "$LAST_NAME" -t "$JOB_TITLE"
-  RESULT=$?
+# install elasticsearch
+eval $INSTALL_COMMAND
+EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+  log "installing Elasticsearch returned exit code $EXIT_CODE"
+  exit $EXIT_CODE
 fi
 
+bash user-information.sh -U "$API_URL" -I "$MARKETING_ID" -c "$COMPANY_NAME" -e "$EMAIL" -f "$FIRST_NAME" -l "$LAST_NAME" -t "$JOB_TITLE"
+EXIT_CODE=$?
 log "End execution of Data Node Install script extension"
-exit $RESULT
+exit $EXIT_CODE

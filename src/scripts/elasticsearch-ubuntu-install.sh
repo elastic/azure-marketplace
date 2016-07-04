@@ -187,7 +187,7 @@ fi
 
 log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
 log "Cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
-log "Cluster install script is set to $INSTALL_PLUGIN"
+log "Cluster install plugins is set to $INSTALL_PLUGINS"
 
 
 #########################
