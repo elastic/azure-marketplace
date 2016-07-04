@@ -476,6 +476,7 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Client node VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+            "visible": "[greater(steps('nodesStep').vmClientNodeCount, 0)]",
             "defaultValue": "Standard_D1",
             "recommendedSizes": [
               "Standard_D1",
@@ -822,14 +823,10 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Job title",
             "toolTip": "Your job title. Pick the nearest description that matches",
-            "defaultValue": "",
+            "defaultValue": "IT Executive (CIO, CTO, VP Engineering, etc.)",
             "constraints": {
               "required": true,
               "allowedValues": [
-                {
-                  "label": "",
-                  "value": ""
-                },
                 {
                   "label": "IT Executive (CIO, CTO, VP Engineering, etc.)",
                   "value": "IT Executive (CIO, CTO, VP Engineering, etc.)"

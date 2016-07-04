@@ -483,7 +483,6 @@
       "type": "string",
       "defaultValue": "",
       "allowedValues": [
-        "",
         "IT Executive (CIO, CTO, VP Engineering, etc.)",
         "Business Executive (CEO, COO, CMO, etc.)",
         "Architect",
