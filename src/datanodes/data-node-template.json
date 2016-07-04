@@ -52,15 +52,17 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[concat(variables('storageAccountPrefix')[mod(copyIndex(),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(copyIndex(),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),copyIndex(1))]",
-
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2016-01-01",
       "location": "[parameters('vm').shared.location]",
       "copy": {
         "name": "[concat(variables('namespace'),'storage-loop')]",
         "count": "[parameters('storageSettings').count]"
       },
+      "sku" : {
+        "name": "[parameters('storageSettings').accountType]"
+      },
+      "kind": "Storage",
       "properties": {
-        "accountType": "[parameters('storageSettings').accountType]"
       }
     },
     {
