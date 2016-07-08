@@ -82,7 +82,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2016-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('namespace'), parameters('index'))]",
       "location": "[parameters('vm').shared.location]",
@@ -121,7 +121,7 @@
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
           "name": "[concat(variables('namespace'), parameters('index'), '/script')]",
-          "apiVersion": "2015-06-15",
+          "apiVersion": "2016-03-30",
           "location": "[parameters('vm').shared.location]",
           "dependsOn": [
             "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
