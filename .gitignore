@@ -50,3 +50,4 @@ parameters/test*.parameters.json
 #jetbrains tools
 .idea/
 
+.vscode/
