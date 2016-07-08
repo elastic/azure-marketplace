@@ -3,13 +3,13 @@
 This repository consists of:
 
 * [src/mainTemplate.json](src/mainTemplate.json) - Entry Azure Resource Management (ARM) template.
-* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our market place offering. This file produces an output JSON that the ARM template can accept as input parameters JSON.
+* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our market place offering. This file produces an output JSON that the ARM template can accept as input parameters.
 
 ## Building
 
 After pulling call `npm install` once, this will pull in all devDependencies.
 
-You may edit [src/allowedValues.json](src/allowedValues.json) the build will use these to patch the arm template and ui definition.
+You may edit [build/allowedValues.json](build/allowedValues.json), which the build will use these to patch the arm template and ui definition.
 
 Run `npm run build`, this will validate EditorConfig settings, validate JSON files, patch the allowedValues and then create a zip in the `dist` folder.
 
@@ -96,7 +96,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>
-    <td>Azure VM size of the data nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>
+    <td>Azure VM size of the data nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
@@ -108,7 +108,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeMasterNodes</td><td>string</td>
-    <td>Azure VM size of the master nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
+    <td>Azure VM size of the master nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
     </td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
@@ -116,7 +116,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
-    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported sizes</a>.
+    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     </td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
@@ -149,7 +149,7 @@ The output from the market place UI is fed directly to the ARM template. You can
 
   <tr><td>location</td><td>string</td>
     <td>The location where to provision all the items in this template. Defaults to the special <code>ResourceGroup</code> value which means it will inherit the location
-    from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">this list for supported locations</a>.
+    from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported locations</a>.
     </td></tr>
 
   <tr><td>userCompany</td><td>string</td>
@@ -169,7 +169,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>userJobTitle</td><td>enum</td>
-    <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/src/allowedValues.json">the list of job titles</a>
+    <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">the list of job titles</a>
     </td></tr>
 
 </table>
