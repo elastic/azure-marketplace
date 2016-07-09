@@ -11,13 +11,14 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.3.3",
+      "defaultValue": "2.3.4",
       "allowedValues": [
         "2.0.2",
         "2.1.2",
         "2.2.0",
         "2.3.2",
-        "2.3.3"
+        "2.3.3",
+        "2.3.4"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -534,10 +535,11 @@
     },
     "esToKibanaMapping": {
       "2.0.2": "4.2.2",
-      "2.1.2": "4.3.2",
-      "2.2.0": "4.4.1",
-      "2.3.2": "4.5.1",
-      "2.3.3": "4.5.1"
+      "2.1.2": "4.3.3",
+      "2.2.0": "4.4.2",
+      "2.3.2": "4.5.2",
+      "2.3.3": "4.5.2",
+      "2.3.4": "4.5.2"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
@@ -546,7 +548,7 @@
       "shieldAdminPwd": "[parameters('shieldAdminPassword')]",
       "shieldReadPwd": "[parameters('shieldReadPassword')]",
       "shieldKibanaPwd": "[parameters('shieldKibanaPassword')]",
-      "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name)]",
+      "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('shieldKibanaPassword'))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
     "namespacePrefix": "[parameters('vmHostNamePrefix')]",
