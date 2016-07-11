@@ -51,6 +51,7 @@ help()
 log()
 {
     echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
+    echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1" >> /var/log/arm-install.log
 }
 
 log "Begin execution of Kibana script extension on ${HOSTNAME}"

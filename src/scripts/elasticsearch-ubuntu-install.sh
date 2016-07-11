@@ -100,7 +100,7 @@ NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
 CLIENT_ONLY_NODE=0
-DATA_NODE=0
+DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
@@ -146,7 +146,7 @@ while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
       CLIENT_ONLY_NODE=1
       ;;
     z) #data node
-      DATA_NODE=1
+      DATA_ONLY_NODE=1
       ;;
     l) #install plugins
       INSTALL_PLUGINS=1
@@ -293,25 +293,25 @@ configure_elasticsearch_yaml()
     echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure Elasticsearch node type
-    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_NODE"
+    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_ONLY_NODE"
 
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as master only"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-    elif [ ${DATA_NODE} -ne 0 ]; then
+    elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Configure node as data only"
+        log "[configure_elasticsearch_yaml] Configure node as client only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     else
-        log "[configure_elasticsearch_yaml] Configure node for master and data"
+        log "[configure_elasticsearch_yaml] Configure node as master and data"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
     fi

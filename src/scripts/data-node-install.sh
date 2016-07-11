@@ -78,6 +78,7 @@ ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
+DATA_ONLY_NODE=0
 
 USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
@@ -130,7 +131,7 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:xyzldh optname; do
       log "client node argument will be ignored"
       ;;
     z) #data node
-      log "data node argument will be ignored"
+      DATA_ONLY_NODE=1
       ;;
     p) #namespace prefix for nodes
       NAMESPACE_PREFIX="${OPTARG}"
@@ -168,9 +169,13 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:xyzldh optname; do
   esac
 done
 
-INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -z -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z '"$DATANODE_COUNT"' -p "'"$NAMESPACE_PREFIX"'"'
+INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z '"$DATANODE_COUNT"' -p "'"$NAMESPACE_PREFIX"'"'
 if [ $CLUSTER_USES_DEDICATED_MASTERS -eq 1 ]; then
   INSTALL_COMMAND="$INSTALL_COMMAND -d "
+fi
+
+if [ $DATA_ONLY_NODE -eq 1 ]; then
+  INSTALL_COMMAND="$INSTALL_COMMAND -z "
 fi
 
 if [ $INSTALL_PLUGINS -eq 1 ]; then
