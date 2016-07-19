@@ -309,12 +309,6 @@
               ]
             },
             "osPlatform": "Linux",
-            "imageReference": {
-              "publisher": "Canonical",
-              "offer": "UbuntuServer",
-              "sku": "14.04.2-LTS",
-              "version": "latest"
-            },
             "count": "[steps('nodesStep').vmDataNodeCount]"
           },
           {
@@ -398,12 +392,6 @@
               ]
             },
             "osPlatform": "Linux",
-            "imageReference": {
-              "publisher": "Canonical",
-              "offer": "UbuntuServer",
-              "sku": "14.04.2-LTS",
-              "version": "latest"
-            },
             "count": "3"
           },
           {
@@ -539,12 +527,6 @@
               ]
             },
             "osPlatform": "Linux",
-            "imageReference": {
-              "publisher": "Canonical",
-              "offer": "UbuntuServer",
-              "sku": "14.04.2-LTS",
-              "version": "latest"
-            },
             "count": "[steps('nodesStep').vmClientNodeCount]"
           }
         ]
@@ -722,12 +704,6 @@
               "excludedSizes": []
             },
             "osPlatform": "Linux",
-            "imageReference": {
-              "publisher": "Canonical",
-              "offer": "UbuntuServer",
-              "sku": "14.04.2-LTS",
-              "version": "latest"
-            },
             "count": "1"
           },
           {
