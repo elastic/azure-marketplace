@@ -140,7 +140,7 @@ post_user_information()
     fi
 
     if [[ -n "$JOB_TITLE" ]]; then
-        CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Title=$JOB_TITLE\""
+        CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Job_Function__c=$JOB_TITLE\""
     fi
 
     CURL_COMMAND=$CURL_COMMAND" --silent --write-out %{http_code} --output /dev/null"
