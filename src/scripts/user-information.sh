@@ -38,6 +38,7 @@ help()
     echo "-f first name"
     echo "-l last name"
     echo "-t job title"
+    echo "-s cluster setup"
     echo "-h view this help content"
 }
 
@@ -61,9 +62,10 @@ EMAIL=""
 FIRST_NAME=""
 LAST_NAME=""
 JOB_TITLE=""
+CLUSTER_SETUP=""
 
 #Loop through options passed
-while getopts :U:I:c:e:f:l:t:h optname; do
+while getopts :U:I:c:e:f:l:t:s:h optname; do
   log "Option $optname set"
   case $optname in
     U) #set API url
@@ -86,6 +88,9 @@ while getopts :U:I:c:e:f:l:t:h optname; do
       ;;
     t) #set job title
       JOB_TITLE=${OPTARG}
+      ;;
+    s) #set cluster setup
+      CLUSTER_SETUP=${OPTARG}
       ;;
     h) #show help
       help
@@ -141,6 +146,10 @@ post_user_information()
 
     if [[ -n "$JOB_TITLE" ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Job_Function__c=$JOB_TITLE\""
+    fi
+
+    if [[ -n "$CLUSTER_SETUP" ]]; then
+        CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Form_Message=$CLUSTER_SETUP\""
     fi
 
     CURL_COMMAND=$CURL_COMMAND" --silent --write-out %{http_code} --output /dev/null"

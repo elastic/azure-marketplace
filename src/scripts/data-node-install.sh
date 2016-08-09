@@ -56,6 +56,7 @@ help()
     echo "-f first name"
     echo "-m last name"
     echo "-t job title"
+    echo "-s cluster setup"
 
     echo "-h view this help content"
 }
@@ -92,9 +93,10 @@ EMAIL=""
 FIRST_NAME=""
 LAST_NAME=""
 JOB_TITLE=""
+CLUSTER_SETUP=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:xyzldh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -157,6 +159,9 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:xyzldh optname; do
     t) #set job title
       JOB_TITLE=${OPTARG}
       ;;
+    s) #set cluster setup
+      CLUSTER_SETUP=${OPTARG}
+      ;;
     h) #show help
       help
       exit 2
@@ -190,7 +195,7 @@ if [ $EXIT_CODE -ne 0 ]; then
   exit $EXIT_CODE
 fi
 
-bash user-information.sh -U "$API_URL" -I "$MARKETING_ID" -c "$COMPANY_NAME" -e "$EMAIL" -f "$FIRST_NAME" -l "$LAST_NAME" -t "$JOB_TITLE"
+bash user-information.sh -U "$API_URL" -I "$MARKETING_ID" -c "$COMPANY_NAME" -e "$EMAIL" -f "$FIRST_NAME" -l "$LAST_NAME" -t "$JOB_TITLE" -s "$CLUSTER_SETUP"
 EXIT_CODE=$?
 log "End execution of Data Node Install script extension"
 exit $EXIT_CODE
