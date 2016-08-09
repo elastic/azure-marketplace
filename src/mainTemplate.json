@@ -205,7 +205,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Make all datanodes master eligible, this can be useful for small elasticsearch cluster deploys"
+        "description": "Make all data nodes master-eligible, this can be useful for small elasticsearch cluster deployments"
       }
     },
     "vmSizeMasterNodes": {
@@ -561,7 +561,7 @@
       "No": "0",
       "Yes": "1"
     },
-    "clusterSetup": "[concat('m=', variables('masterNodeCount')[parameters('dataNodesAreMasterEligible')], ',d=', parameters('vmDataNodeCount'), ',c=', parameters('vmClientNodeCount'), ',k=', variables('kibanajumpboxNodeCount')[parameters('kibana')], ',j=', variables('kibanajumpboxNodeCount')[parameters('jumpbox')], ',l=', parameters('loadBalancerType'))]",
+    "clusterSetup": "[concat('m=', variables('masterNodeCount')[parameters('dataNodesAreMasterEligible')], ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', variables('kibanajumpboxNodeCount')[parameters('kibana')], ' ', parameters('vmSizeKibana'), ',j=', variables('kibanajumpboxNodeCount')[parameters('jumpbox')], ' Standard_A0', ',l=', parameters('loadBalancerType'))]",
     "namespacePrefix": "[parameters('vmHostNamePrefix')]",
     "dataNodeShortOpts": {
       "No": "z",
