@@ -95,13 +95,24 @@
     ["Standard_DS12_v2", 8, "Premium", true],
     ["Standard_DS13_v2", 16, "Premium", false],
     ["Standard_DS14_v2", 32, "Premium", false],
-    ["Standard_DS15_v2", 40, "Premium", false]
+    ["Standard_DS15_v2", 40, "Premium", false],
 
+    ["Standard_F1", 2, "Standard", false],
+    ["Standard_F2", 4, "Standard", false],
+    ["Standard_F4", 8, "Standard", false],
+    ["Standard_F8", 16, "Standard", false],
+    ["Standard_F16", 32, "Standard", false],
+
+    ["Standard_F1s", 2, "Premium", false],
+    ["Standard_F2s", 4, "Premium", false],
+    ["Standard_F4s", 8, "Premium", false],
+    ["Standard_F8s", 16, "Premium", false],
+    ["Standard_F16s", 32, "Premium", false]
   ],
-  "ignoredVmsBecauseWeHaveNo32DisksResouce" : [
+  "ignoredVmsBecauseWeHaveNo32DisksResource" : [
     "D14", "D5_v2", "D14_v2", "DS14", "DS5_v2", "DS14_v2"
   ],
-  "ignoredVmsBecauseWeHaveNo40DisksResouce" : [
+  "ignoredVmsBecauseWeHaveNo40DisksResource" : [
     "D15_v2", "DS15_v2"
   ],
   "userJobTitle": [

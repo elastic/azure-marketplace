@@ -120,7 +120,17 @@
         "Standard_DS12_v2",
         "Standard_DS13_v2",
         "Standard_DS14_v2",
-        "Standard_DS15_v2"
+        "Standard_DS15_v2",
+        "Standard_F1",
+        "Standard_F2",
+        "Standard_F4",
+        "Standard_F8",
+        "Standard_F16",
+        "Standard_F1s",
+        "Standard_F2s",
+        "Standard_F4s",
+        "Standard_F8s",
+        "Standard_F16s"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -184,7 +194,17 @@
         "Standard_DS12_v2",
         "Standard_DS13_v2",
         "Standard_DS14_v2",
-        "Standard_DS15_v2"
+        "Standard_DS15_v2",
+        "Standard_F1",
+        "Standard_F2",
+        "Standard_F4",
+        "Standard_F8",
+        "Standard_F16",
+        "Standard_F1s",
+        "Standard_F2s",
+        "Standard_F4s",
+        "Standard_F8s",
+        "Standard_F16s"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch data nodes"
@@ -255,7 +275,17 @@
         "Standard_DS12_v2",
         "Standard_DS13_v2",
         "Standard_DS14_v2",
-        "Standard_DS15_v2"
+        "Standard_DS15_v2",
+        "Standard_F1",
+        "Standard_F2",
+        "Standard_F4",
+        "Standard_F8",
+        "Standard_F16",
+        "Standard_F1s",
+        "Standard_F2s",
+        "Standard_F4s",
+        "Standard_F8s",
+        "Standard_F16s"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible 3 of these will be provisioned"
@@ -315,7 +345,17 @@
         "Standard_DS12_v2",
         "Standard_DS13_v2",
         "Standard_DS14_v2",
-        "Standard_DS15_v2"
+        "Standard_DS15_v2",
+        "Standard_F1",
+        "Standard_F2",
+        "Standard_F4",
+        "Standard_F8",
+        "Standard_F16",
+        "Standard_F1s",
+        "Standard_F2s",
+        "Standard_F4s",
+        "Standard_F8s",
+        "Standard_F16s"
       ],
       "metadata": {
         "description": "Size of the Elasticsearch cluster client nodes"
@@ -935,6 +975,56 @@
       },
       "Standard_DS15_v2": {
         "dataDisks": 40,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F1": {
+        "dataDisks": 2,
+        "nodesPerStorageAccount": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F2": {
+        "dataDisks": 4,
+        "nodesPerStorageAccount": 6,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F4": {
+        "dataDisks": 8,
+        "nodesPerStorageAccount": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F8": {
+        "dataDisks": 16,
+        "nodesPerStorageAccount": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F16": {
+        "dataDisks": 32,
+        "nodesPerStorageAccount": 1,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F1s": {
+        "dataDisks": 2,
+        "nodesPerStorageAccount": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F2s": {
+        "dataDisks": 4,
+        "nodesPerStorageAccount": 6,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F4s": {
+        "dataDisks": 8,
+        "nodesPerStorageAccount": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F8s": {
+        "dataDisks": 16,
+        "nodesPerStorageAccount": 2,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F16s": {
+        "dataDisks": 32,
         "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       }
