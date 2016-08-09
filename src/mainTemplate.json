@@ -133,7 +133,7 @@
         "Standard_F16s"
       ],
       "metadata": {
-        "description": "Size of the Elasticsearch data nodes"
+        "description": "Size of the Elasticsearch Kibana node"
       }
     },
     "jumpbox": {
@@ -358,7 +358,7 @@
         "Standard_F16s"
       ],
       "metadata": {
-        "description": "Size of the Elasticsearch cluster client nodes"
+        "description": "Size of the Elasticsearch client nodes"
       }
     },
     "adminUsername": {
