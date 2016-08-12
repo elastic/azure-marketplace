@@ -172,6 +172,10 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">the list of job titles</a>
     </td></tr>
 
+  <tr><td>userCountry</td><td>string</td>
+    <td>The country in which you are based.
+    </td></tr>
+
 </table>
 
 ### Command line deploy

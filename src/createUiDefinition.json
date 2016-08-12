@@ -903,6 +903,17 @@
                 }
               ]
             }
+          },
+          {
+            "name": "userCountry",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Country",
+            "defaultValue": "",
+            "toolTip": "The country in which you are based",
+            "constraints": {
+              "required": true,
+              "validationMessage": "Country is required"
+            }
           }
         ]
       }
@@ -940,7 +951,8 @@
       "userEmail": "[steps('userInformationStep').userEmail]",
       "userFirstName": "[steps('userInformationStep').userFirstName]",
       "userLastName": "[steps('userInformationStep').userLastName]",
-      "userJobTitle": "[steps('userInformationStep').userJobTitle]"
+      "userJobTitle": "[steps('userInformationStep').userJobTitle]",
+      "userCountry": "[steps('userInformationStep').userCountry]"
     }
   }
 }
