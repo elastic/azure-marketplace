@@ -426,11 +426,13 @@ port_forward()
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
     apt-get -y install iptables-persistent
+    #persist the rules to file
+    sudo service iptables-persistent save
+    sudo service iptables-persistent start
+    # add iptables-persistent to startup before elasticsearch
+    sudo update-rc.d iptables-persistent defaults 90 15
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
-
-    #persist the rules to file
-    sudo bash -c "iptables-save > /etc/iptables/rules.v4"
 }
 
 start_walinuxagent()
