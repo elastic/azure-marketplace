@@ -264,6 +264,30 @@ install_plugins()
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_read" -p "${USER_READ_PWD}" -r user
     log "[install_plugins]  Finished adding es_read"
 
+    log "[install_plugins]  Check that roles.yml contains kibana4 role"
+    if ! sudo grep -q "kibana4:" "/etc/elasticsearch/shield/roles.yml"; then
+        log "[install_plugins]  No kibana4 role. Adding now"
+        {
+            echo -e ""
+            echo -e "# kibana4 user role."
+            echo -e "kibana4:"
+            echo -e "  cluster:"
+            echo -e "    - monitor"
+            echo -e "  indices:"
+            echo -e "    - names: '*'"
+            echo -e "      privileges:"
+            echo -e "        - view_index_metadata"
+            echo -e "        - read"
+            echo -e "    - names: '.kibana*'" 
+            echo -e "      privileges:"
+            echo -e "        - manage"
+            echo -e "        - read"
+            echo -e "        - index"
+        } >> /etc/elasticsearch/shield/roles.yml
+        log "[install_plugins]  kibana4 role added"
+    fi
+    log "[install_plugins]  Finished checking roles.yml for kibana4 role"
+
     log "[install_plugins]  Start adding es_kibana"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4
     log "[install_plugins]  Finished adding es_kibina"
