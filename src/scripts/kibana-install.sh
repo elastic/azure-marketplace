@@ -129,7 +129,14 @@ sudo groupadd -g 999 kibana
 sudo useradd -u 999 -g 999 kibana
 
 sudo mkdir -p /opt/kibana
-curl -o kibana.tar.gz https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x64.tar.gz
+
+if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
+    DOWNLOAD_URL="https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x86_64.tar.gz"
+else
+    DOWNLOAD_URL="https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x64.tar.gz"
+fi
+
+curl -o kibana.tar.gz "$DOWNLOAD_URL"
 tar xvf kibana.tar.gz -C /opt/kibana/ --strip-components=1
 
 sudo chown -R kibana: /opt/kibana
