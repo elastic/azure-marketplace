@@ -146,6 +146,11 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
       /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
     fi
+
+    if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
+      /opt/kibana/bin/kibana plugin --install kibana/reporting/latest
+    fi
+
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
     /opt/kibana/bin/kibana plugin --install elastic/sense
 
