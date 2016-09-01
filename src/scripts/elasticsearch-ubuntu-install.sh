@@ -423,13 +423,14 @@ port_forward()
     sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
     sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 
-    #persist the rules to file
-    sudo iptables-save > /etc/iptables/rules.v4
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
     apt-get -y install iptables-persistent
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
+
+    #persist the rules to file
+    sudo bash -c "iptables-save > /etc/iptables/rules.v4"
 }
 
 start_walinuxagent()
