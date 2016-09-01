@@ -55,6 +55,7 @@ log()
 }
 
 log "Begin execution of Kibana script extension on ${HOSTNAME}"
+START_TIME=$SECONDS
 
 if service --status-all | grep -Fq 'kibana'; then
   log "Kibana already installed"
@@ -136,11 +137,12 @@ else
     DOWNLOAD_URL="https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x64.tar.gz"
 fi
 
+log "downloading kibana $KIBANA_VERSION from $DOWNLOAD_URL"
 curl -o kibana.tar.gz "$DOWNLOAD_URL"
 tar xvf kibana.tar.gz -C /opt/kibana/ --strip-components=1
+log "kibana $KIBANA_VERSION downloaded"
 
 sudo chown -R kibana: /opt/kibana
-
 
 mv /opt/kibana/config/kibana.yml /opt/kibana/config/kibana.yml.bak
 
@@ -155,16 +157,32 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
 fi
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    # install graph
     if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
+      log "installing graph plugin"
       /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
+      log "graph plugin installed"
     fi
 
+    # install reporting
     if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
+      log "installing reporting plugin"
       /opt/kibana/bin/kibana plugin --install kibana/reporting/latest
+      log "reporting plugin installed"
+
+      log "generating reporting encryption key"
+      sudo apt-get -y install pwgen
+      ENCRYPTION_KEY=$(pwgen 64 1)    
+      echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+      log "reporting encryption key generated"    
     fi
 
+    log "installing monitoring plugin"
     /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
+    log "monitoring plugin installed"
+    log "installing sense plugin"
     /opt/kibana/bin/kibana plugin --install elastic/sense
+    log "sense plugin installed"
 
     # sense default url to point at Elasticsearch on first load
     echo "sense.defaultServerUrl: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
@@ -183,3 +201,7 @@ EOF
 
 chmod +x /etc/init/kibana.conf
 sudo service kibana start
+
+ELAPSED_TIME=$(($SECONDS - $START_TIME))
+PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))
+log "End execution of Kibana script extension in ${PRETTY}"
