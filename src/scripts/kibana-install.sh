@@ -117,9 +117,9 @@ done
 # Parameter state changes
 #########################
 
-echo "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
-echo "installing kibana plugins is set to: $INSTALL_PLUGINS"
-echo "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
+log "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
+log "installing kibana plugins is set to: $INSTALL_PLUGINS"
+log "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
 # Installation
@@ -141,9 +141,14 @@ tar xvf kibana.tar.gz -C /opt/kibana/ --strip-components=1
 
 sudo chown -R kibana: /opt/kibana
 
-# set the elasticsearch URL
+
 mv /opt/kibana/config/kibana.yml /opt/kibana/config/kibana.yml.bak
+
+# set the elasticsearch URL
 echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
+# specify kibana log location
+echo "logging.dest: /var/log/kibana.log" >> /opt/kibana/config/kibana.yml
+
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
     echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
