@@ -325,10 +325,10 @@ configure_elasticsearch_yaml()
 
 install_ntp()
 {
-    log "[install_ntp] installing ntp deamon"
+    log "[install_ntp] installing ntp daemon"
     apt-get -y install ntp
     ntpdate pool.ntp.org
-    log "[install_ntp] installed ntp deamon and ntpdate"
+    log "[install_ntp] installed ntp daemon and ntpdate"
 }
 
 install_monit()
@@ -398,6 +398,14 @@ port_forward()
     #this to overcome a limitation in ARM where to vm loadbalancers can route on the same backed ports
     sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
     sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
+
+    #persist the rules to file
+    sudo iptables-save > /etc/iptables/rules.v4
+    #install iptables-persistent to restore configuration after reboot
+    log "[port_forward] installing iptables-persistent"
+    apt-get -y install iptables-persistent
+    log "[port_forward] installed iptables-persistent"
+    log "[port_forward] port forwarding configured"
 }
 
 start_walinuxagent()
@@ -407,7 +415,7 @@ start_walinuxagent()
 }
 
 #########################
-# Instalation sequence
+# Installation sequence
 #########################
 
 
