@@ -381,11 +381,27 @@ start_monit()
 
 start_elasticsearch()
 {
-    #and... start the service
+    # and... start the service
     log "[start_elasticsearch] Starting Elasticsearch on ${HOSTNAME}"
     update-rc.d elasticsearch defaults 95 10
     sudo service elasticsearch start
     log "[start_elasticsearch] complete elasticsearch setup and started"
+} 
+
+configure_elasticsearch()
+{
+    log "[configure_elasticsearch] configuring elasticsearch default configuration"
+    #TODO: Move this to an init.d script so we can handle instance size increases
+    ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
+    log "[configure_elasticsearch] Configure elasticsearch heap size - $ES_HEAP"
+    echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
+
+    # Allow dots in field names in 2.4.0+
+    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+      log "[configure_elasticsearch] Configure allow dots in field nams"
+      echo "ES_JAVA_OPTS=-Dmapper.allow_dots_in_name=true" >> /etc/default/elasticsearch
+    fi
+    log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
 
 configure_os_properties()
@@ -398,11 +414,6 @@ configure_os_properties()
     # Increase maximum mmap count
     echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
 
-    #TODO: Move this to an init.d script so we can handle instance size increases
-    ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
-    log "[configure_os_properties] Configure elasticsearch heap size - $ES_HEAP"
-    echo "ES_HEAP_SIZE=${ES_HEAP}m" >> /etc/default/elasticsearch
-
     # Verify this is necessary on azure
     # ML: 80% certain i verified this but will do so again
     #echo "elasticsearch    -    nofile    65536" >> /etc/security/limits.conf
@@ -412,7 +423,6 @@ configure_os_properties()
     #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session-noninteractive
     #echo "session    required    pam_limits.so" >> /etc/pam.d/sudo
     log "[configure_os_properties] configured operating system level configuration"
-
 }
 
 port_forward()
@@ -476,6 +486,8 @@ fi
 install_monit
 
 configure_elasticsearch_yaml
+
+configure_elasticsearch
 
 configure_os_properties
 
