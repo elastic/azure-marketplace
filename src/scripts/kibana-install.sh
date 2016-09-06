@@ -165,9 +165,9 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     fi
 
     # install reporting
-    if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
+    if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.1"; then
       log "installing reporting plugin"
-      /opt/kibana/bin/kibana plugin --install kibana/reporting/latest
+      /opt/kibana/bin/kibana plugin --install kibana/reporting/2.4.1
       log "reporting plugin installed"
 
       log "generating reporting encryption key"
