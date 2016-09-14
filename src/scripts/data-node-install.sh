@@ -179,7 +179,7 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:xyzldh optname; do
   esac
 done
 
-INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z '"$DATANODE_COUNT"' -p "'"$NAMESPACE_PREFIX"'"'
+INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z "'"$DATANODE_COUNT"'" -p "'"$NAMESPACE_PREFIX"'"'
 if [ $CLUSTER_USES_DEDICATED_MASTERS -eq 1 ]; then
   INSTALL_COMMAND="$INSTALL_COMMAND -d "
 fi
