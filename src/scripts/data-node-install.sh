@@ -96,6 +96,7 @@ LAST_NAME=""
 JOB_TITLE=""
 CLUSTER_SETUP=""
 COUNTRY=""
+INSTALL_SWITCHES=""
 
 #Loop through options passed
 while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:xyzldh optname; do
@@ -179,21 +180,20 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:xyzldh optname; do
   esac
 done
 
-INSTALL_COMMAND='bash elasticsearch-ubuntu-install.sh -n "'"$CLUSTER_NAME"'" -v "'"$ES_VERSION"'" -A "'"$USER_ADMIN_PWD"'" -R "'"$USER_READ_PWD"'" -K "'"$USER_KIBANA4_PWD"'" -S "'"$USER_KIBANA4_SERVER_PWD"'" -Z "'"$DATANODE_COUNT"'" -p "'"$NAMESPACE_PREFIX"'"'
 if [ $CLUSTER_USES_DEDICATED_MASTERS -eq 1 ]; then
-  INSTALL_COMMAND="$INSTALL_COMMAND -d "
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -d"
 fi
 
 if [ $DATA_ONLY_NODE -eq 1 ]; then
-  INSTALL_COMMAND="$INSTALL_COMMAND -z "
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -z"
 fi
 
 if [ $INSTALL_PLUGINS -eq 1 ]; then
-  INSTALL_COMMAND="$INSTALL_COMMAND -l "
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -l"
 fi
 
 # install elasticsearch
-eval $INSTALL_COMMAND
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"
