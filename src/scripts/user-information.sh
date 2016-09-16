@@ -132,9 +132,9 @@ fi
 post_user_information()
 {
     log "creating lead"    
-    CURL_COMMAND="curl -X POST \"$API_URL\" --data-urlencode \"Form_Source=Azure Marketplace\"  --data-urlencode \"formid=4026\" --data-urlencode \"munchkinId=$MARKETING_ID\" --data-urlencode \"formVid=4026\" "
+    CURL_COMMAND=""
     if [[ -n "$FIRST_NAME" ]]; then
-        CURL_COMMAND=$CURL_COMMAND"--data-urlencode \"FirstName=$FIRST_NAME\"" 
+        CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"FirstName=$FIRST_NAME\"" 
     fi
 
     if [[ -n "$LAST_NAME" ]]; then
@@ -161,8 +161,7 @@ post_user_information()
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Form_Message=$CLUSTER_SETUP\""
     fi
 
-    CURL_COMMAND=$CURL_COMMAND" --silent --write-out %{http_code} --output /dev/null"
-    STATUS_CODE=$(eval $CURL_COMMAND)
+    STATUS_CODE=$(curl -X POST "$API_URL" --data-urlencode "Form_Source=Azure Marketplace"  --data-urlencode "formid=4026" --data-urlencode "munchkinId=$MARKETING_ID" --data-urlencode "formVid=4026" $CURL_COMMAND --silent --write-out %{http_code} --output /dev/null)
 
     if test $STATUS_CODE -ne 200; then
         log "failed to send lead details. status code: $STATUS_CODE"
