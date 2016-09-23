@@ -398,7 +398,7 @@ configure_elasticsearch()
 
     # Allow dots in field names in 2.4.0+
     if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-      log "[configure_elasticsearch] Configure allow dots in field nams"
+      log "[configure_elasticsearch] Configure allow dots in field names"
       echo "ES_JAVA_OPTS=-Dmapper.allow_dots_in_name=true" >> /etc/default/elasticsearch
     fi
     log "[configure_elasticsearch] configured elasticsearch default configuration"
