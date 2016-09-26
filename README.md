@@ -86,8 +86,8 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>esPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> whether to install the elasticsearch suite of
-    plugins (Shield, Watcher, Marvel)
+    <td>Either <code>Yes</code> or <code>No</code> whether to install the X-Pack
+    plugins: Shield, Watcher, Marvel and Graph (Elasticsearch version permitting), as well as Azure Cloud.
     </td></tr>
 
   <tr><td>kibana</td><td>string</td>
