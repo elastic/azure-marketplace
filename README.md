@@ -45,7 +45,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td> The name of the storage account to use for snapshots with Cloud Azure plugin
     </td></tr>
 
-  <tr><td>storageAccountKey</td><td>string</td>
+  <tr><td>storageAccountKey</td><td>securestring</td>
     <td> The storage account key to use for the storage account with Cloud Azure plugin
     </td></tr>
 
