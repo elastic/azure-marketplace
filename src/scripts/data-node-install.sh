@@ -59,6 +59,9 @@ help()
     echo "-s cluster setup"
     echo "-o country"
 
+    echo "-a set the default storage account for azure cloud plugin"
+    echo "-k set the key for the default storage account for azure cloud plugin"
+
     echo "-h view this help content"
 }
 
@@ -78,6 +81,8 @@ CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
+STORAGE_ACCOUNT=""
+STORAGE_KEY=""
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 DATA_ONLY_NODE=0
@@ -125,6 +130,12 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:xyzldh optname; do
       ;;
     l) #install plugins
       INSTALL_PLUGINS=1
+      ;;
+    a) #azure storage account for azure cloud plugin
+      STORAGE_ACCOUNT=${OPTARG}
+      ;;
+    k) #azure storage account key for azure cloud plugin
+      STORAGE_KEY=${OPTARG}
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
@@ -193,7 +204,7 @@ if [ $INSTALL_PLUGINS -eq 1 ]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

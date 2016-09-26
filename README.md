@@ -41,6 +41,14 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td> The name of the Elasticsearch cluster
     </td></tr>
 
+  <tr><td>storageAccountName</td><td>string</td>
+    <td> The name of the storage account to use for snapshots with Cloud Azure plugin
+    </td></tr>
+
+  <tr><td>storageAccountKey</td><td>string</td>
+    <td> The storage account key to use for the storage account with Cloud Azure plugin
+    </td></tr>
+
   <tr><td>loadBalancerType</td><td>string</td>
     <td>Whether the loadbalancer should be <code>internal</code> or <code>external</code>
     If you run <code>external</code>, it is highly recommended to also install the shield plugin and look into setting up SSL on your endpoint. Defaults to <code>internal</code>

@@ -52,7 +52,8 @@ help()
     echo "-z configure as data node (no master)"
     echo "-l install plugins"
 
-    echo "-m marvel host , used for agent config"
+    echo "-a set the default storage account for azure cloud plugin"
+    echo "-k set the key for the default storage account for azure cloud plugin"
 
     echo "-h view this help content"
 }
@@ -115,7 +116,7 @@ USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -156,6 +157,12 @@ while getopts :n:v:A:R:K:S:Z:p:xyzldh optname; do
       ;;
     p) #namespace prefix for nodes
       NAMESPACE_PREFIX="${OPTARG}"
+      ;;
+    a) #azure storage account for azure cloud plugin
+      STORAGE_ACCOUNT=${OPTARG}
+      ;;
+    k) #azure storage account key for azure cloud plugin
+      STORAGE_KEY=${OPTARG}
       ;;
     h) #show help
       help
@@ -247,13 +254,26 @@ install_es()
 }
 install_plugins()
 {
-    log "[install_plugins] Installing Plugins Shield, Marvel, Watcher"
+    log "[install_plugins] Installing X-Pack plugins Shield, Marvel, Watcher"
     sudo /usr/share/elasticsearch/bin/plugin install license
     sudo /usr/share/elasticsearch/bin/plugin install shield
     sudo /usr/share/elasticsearch/bin/plugin install watcher
     sudo /usr/share/elasticsearch/bin/plugin install marvel-agent
+    log "[install_plugins] Installed X-Pack plugins Shield, Marvel, Watcher"
     if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
+      log "[install_plugins] Installing X-Pack plugin Graph"
       sudo /usr/share/elasticsearch/bin/plugin install graph
+      log "[install_plugins] Installed X-Pack plugin Graph"
+    fi
+
+    log "[install_plugins] Installing plugin Cloud-Azure"
+    sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
+    log "[install_plugins] Installed plugin Cloud-Azure"
+    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
+        log "[install_plugins] Configuring storage for Cloud Azure"
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+        log "[install_plugins] Configured storage for Cloud Azure"
     fi
 
     log "[install_plugins] Start adding es_admin"

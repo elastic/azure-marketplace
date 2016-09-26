@@ -139,6 +139,20 @@
                 }
               }
             }
+          },
+          {
+            "name": "storageAccountName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Azure Storage Account Name",
+            "defaultValue": "",
+            "toolTip": "The name of the storage account to use for snapshots with Cloud Azure plugin"
+          },
+          {
+            "name": "storageAccountKey",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": "Azure Storage Account Key",
+            "defaultValue": "",
+            "toolTip": "The storage account key to use for the storage account with Cloud Azure plugin"
           }
         ]
       },
@@ -925,6 +939,8 @@
     "outputs": {
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
+      "storageAccountName": "[steps('clusterSettingsStep').storageAccountName]",
+      "storageAccountKey": "[steps('clusterSettingsStep').storageAccountKey]",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetwork.name]",
