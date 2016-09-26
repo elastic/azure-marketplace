@@ -104,7 +104,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:xyzldh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
