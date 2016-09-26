@@ -115,6 +115,9 @@ USER_READ_PWD="changeME"
 USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
 
+STORAGE_ACCOUNT=""
+STORAGE_KEY=""
+
 #Loop through options passed
 while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
   log "Option $optname set"
@@ -269,12 +272,6 @@ install_plugins()
     log "[install_plugins] Installing plugin Cloud-Azure"
     sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
     log "[install_plugins] Installed plugin Cloud-Azure"
-    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
-        log "[install_plugins] Configuring storage for Cloud Azure"
-        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
-        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[install_plugins] Configured storage for Cloud Azure"
-    fi
 
     log "[install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
@@ -315,8 +312,6 @@ install_plugins()
     log "[install_plugins]  Start adding es_kibana_server"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
     log "[install_plugins]  Finished adding es_kibana_server"
-
-    echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 }
 
 configure_elasticsearch_yaml()
@@ -362,6 +357,16 @@ configure_elasticsearch_yaml()
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
     echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
+
+    # Configure Cloud Azure plugin
+    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
+        log "[configure_elasticsearch_yaml] Configuring storage for Cloud Azure"
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+        log "[configure_elasticsearch_yaml] Configured storage for Cloud Azure"
+    fi
+
+    echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 
     # Swap is disabled by default in Ubuntu Azure VMs
     # echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
