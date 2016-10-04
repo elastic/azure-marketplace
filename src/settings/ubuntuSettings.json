@@ -1,0 +1,132 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "esSettings": {
+          "type": "object",
+          "metadata": {
+              "description" : "The Elasticsearch settings"
+          }
+      },
+      "userDetails": {
+          "type": "object",
+          "metadata": {
+              "description": "User details"
+          }
+      },
+      "clusterSetup": {
+          "type": "object",
+          "metadata": {
+              "description": "Cluster deployment settings"
+          }
+      },
+      "templateBaseUrl": {
+          "type": "string",
+          "metadata": {
+              "description": "The base url for templates"
+          }
+      },
+      "cloudAzureStorageAccount": {
+          "type": "object",
+          "metadata": {
+              "description": "The storage settings for the Azure Cloud plugin"
+          }
+      }
+  },
+  "variables": {
+    "clusterSetup": "[parameters('clusterSetup').setup]",
+    "namespacePrefix": "[parameters('clusterSetup').vmHostNamePrefix]",
+    "dataNodeShortOpts": {
+      "No": "z",
+      "Yes": ""
+    },
+    "dataNodeShortOpt": "[variables('dataNodeShortOpts')[parameters('clusterSetup').dataNodesAreMasterEligible]]",
+    "dedicatedMasterNodesShortOpts": {
+      "No": "d",
+      "Yes": ""
+    },
+    "dedicatedMasterNodesShortOpt": "[variables('dedicatedMasterNodesShortOpts')[parameters('clusterSetup').dataNodesAreMasterEligible]]",
+    "installPluginsShortOpts": {
+      "No": "",
+      "Yes": "l"
+    },
+    "installPluginsShortOpt": "[variables('installPluginsShortOpts')[parameters('esSettings').installPlugins]]",
+    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), 'n ')]",
+    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A ', parameters('esSettings').shieldAdminPwd, ' -R ', parameters('esSettings').shieldReadPwd, ' -K ', parameters('esSettings').shieldKibanaPwd, ' -S ', parameters('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('clusterSetup').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('cloudAzureStorageAccount').name, '\" -k \"', parameters('cloudAzureStorageAccount').key, '\"')]",
+    "ubuntuScripts": [
+      "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/user-information.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
+    ],
+    "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
+    "ubuntuSettings": {
+      "imageReference": {
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "14.04.4-LTS",
+        "version": "latest"
+      },
+      "managementPort": "22",
+      "extensionSettings": {
+        "master": {
+          "publisher": "Microsoft.OSTCExtensions",
+          "type": "CustomScriptForLinux",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
+          }
+        },
+        "client": {
+          "publisher": "Microsoft.OSTCExtensions",
+          "type": "CustomScriptForLinux",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[variables('clientInstallScript')]"
+          }
+        },
+        "data": {
+          "publisher": "Microsoft.OSTCExtensions",
+          "type": "CustomScriptForLinux",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userDetails').company, '\" -e \"', parameters('userDetails').email, '\" -f \"', parameters('userDetails').firstName, '\" -m \"', parameters('userDetails').lastName, '\" -t \"', parameters('userDetails').jobTitle, '\" -s \"', variables('clusterSetup'), '\" -o \"', parameters('userDetails').country, '\"')]"
+          }
+        },
+        "kibana": {
+          "publisher": "Microsoft.OSTCExtensions",
+          "type": "CustomScriptForLinux",
+          "typeHandlerVersion": "1.5",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', parameters('esSettings').clusterName, ' -v ', parameters('esSettings').kibanaVersion, ' -e ', parameters('esSettings').version, ' -u ', concat('http://', parameters('clusterSetup').vNetLoadBalancerIp, ':9200') ,' -S ', parameters('esSettings').shieldKibanaServerPwd)]"
+          }
+        }
+      }
+    }
+  },
+  "resources": [
+  ],
+  "outputs": {
+    "settings": {
+        "value": "[variables('ubuntuSettings')]",
+        "type": "object"
+    }
+  }
+}

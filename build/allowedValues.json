@@ -31,7 +31,7 @@
     "centralus",
     "eastus",
     "eastus2",
-    "westus",
+    "westus", 
     "northcentralus",
     "southcentralus",
     "northeurope",
@@ -45,7 +45,11 @@
     "centralindia",
     "westindia",
     "canadacentral",
-    "canadaeast"
+    "canadaeast",
+    "uksouth",
+    "ukwest",
+    "westcentralus",
+    "westus2"
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,

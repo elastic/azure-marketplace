@@ -32,7 +32,7 @@
       }
     },
     "credentials": {
-      "type": "secureobject",
+      "type": "secureObject",
       "metadata": {
         "description": "Credential information block"
       }

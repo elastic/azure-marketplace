@@ -10,7 +10,8 @@
     "release": "gulp --gulpfile build/gulpfile.js release",
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
-    "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all"
+    "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all",
+    "links": "gulp --gulpfile build/gulpfile.js links"
   },
   "repository": {
     "type": "git",
@@ -48,6 +49,7 @@
     "mkdirp": "^0.5.1",
     "phantomjs-prebuilt": "^2.1.7",
     "request": "^2.72.0",
-    "requiredir": "^1.0.7"
+    "requiredir": "^1.0.7",
+    "yargs": "^6.0.0"
   }
 }
