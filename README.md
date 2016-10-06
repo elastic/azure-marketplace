@@ -13,9 +13,26 @@ You may edit [build/allowedValues.json](build/allowedValues.json), which the bui
 
 Run `npm run build`, this will validate EditorConfig settings, validate JSON files, patch the allowedValues and then create a zip in the `dist` folder.
 
+### Development
+
+New features should be developed on separate branches and merged back into `master` once complete. To aid in the development process, a gulp task is configured to update all of the github template urls to point at a specific branch so that UI definition and web based deployments can be tested. To run the task
+
+```sh
+npm run links
+```
+
+will update the links to point to the name of the current branch. Once ready to merge back into `master`, a specific branch name can be passed with
+
+```sh
+npm run links -- --branch master
+```
+
 ## Marketplace
 
-The market place Elasticsearch offering offers a simplified UI over the full power of the ARM template. It will always install a cluster complete with the elasticsearch plugins Shield, Watcher & Marvel.
+The market place Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
+It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), and for Elasticsearch 2.3.0+, [Graph](https://www.elastic.co/products/graph). 
+
+Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) is installed to support snapshot and restore.
 
 ![Example UI Flow](images/ui.gif)
 
@@ -34,24 +51,40 @@ The output from the market place UI is fed directly to the ARM template. You can
 
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th></tr>
-  <tr><td>esVersion</td><td>enum</td>
-    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L8">this list for supported versions</a>
+  <tr><td>esVersion</td><td>string</td>
+    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L16-L23">this list for supported versions</a>
     </td></tr>
+
   <tr><td>esClusterName</td><td>string</td>
     <td> The name of the Elasticsearch cluster
     </td></tr>
 
-  <tr><td>storageAccountName</td><td>string</td>
-    <td> The name of the storage account to use for snapshots with Cloud Azure plugin
+  <tr><td>cloudAzureStorageAccountName</td><td>string</td>
+    <td> The name of the storage account to use for snapshots with Azure Cloud plugin. 
+    Must be between 3 and 24 alphanumeric lowercase characters. Defaults to <code>essnapshot</code>.
     </td></tr>
 
-  <tr><td>storageAccountKey</td><td>securestring</td>
-    <td> The storage account key to use for the storage account with Cloud Azure plugin
+  <tr><td>cloudAzureStorageAccountExistingResourceGroup</td><td>string</td>
+    <td> The resource group name when using an existing storage account with Azure Cloud plugin.
+    <strong>Required when using an existing Storage account for Azure Cloud plugin</strong>
     </td></tr>
 
-  <tr><td>loadBalancerType</td><td>string</td>
-    <td>Whether the loadbalancer should be <code>internal</code> or <code>external</code>
-    If you run <code>external</code>, it is highly recommended to also install the shield plugin and look into setting up SSL on your endpoint. Defaults to <code>internal</code>
+  <tr><td>cloudAzureStorageAccountNewType</td><td>string</td>
+    <td> The type of storage account when creating a new storage account for Azure Cloud plugin. Defaults to <code>Standard_LRS</code>.
+    <strong>Required when using a new Storage Account for Azure Cloud plugin</strong>
+    </td></tr>
+
+  <tr><td>cloudAzureStorageAccountNewOrExisting</td><td>string</td>
+    <td> Whether to use an <code>existing</code> storage account or create a <code>new</code> storage account for Azure Cloud plugin.
+    Defaults to <code>new</code>.
+    </td></tr>
+
+  <tr><td>cloudAzureStorageAccountNewUnique</td><td>string</td>
+    <td> Whether the new storage account to use for snapshots has been validated to be unique. 
+    If set to <code>Yes</code> then the storage account name will be taken verbatim; if set to <code>No</code> then 
+    the first 11 characters of the storage account name provided in <code>cloudAzureStorageAccountName</code> 
+    will be taken as a prefix to a randomly generated unique storage account name.
+    <strong>Required when using a new Storage Account for Azure Cloud plugin</strong>
     </td></tr>
 
   <tr><td>vNetNewOrExisting</td><td>string</td>
@@ -176,7 +209,7 @@ The output from the market place UI is fed directly to the ARM template. You can
     <td>Your last name
     </td></tr>
 
-  <tr><td>userJobTitle</td><td>enum</td>
+  <tr><td>userJobTitle</td><td>string</td>
     <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">the list of job titles</a>
     </td></tr>
 
@@ -231,6 +264,7 @@ The above button will take you to the autogenerated web based UI based on the pa
 It should be pretty self explanatory except for password which only accepts a json object. Luckily the web UI lets you paste json in the text box. Here's an example:
 
 > {"sshPublicKey":null,"authenticationType":"password", "password":"Elastic12"}
+
 
 # License
 

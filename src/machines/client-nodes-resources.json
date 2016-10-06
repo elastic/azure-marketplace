@@ -14,8 +14,8 @@
       "metadata": {
         "description": "vm configuration"
       }
-      }
-    },
+    }
+  },
   "variables": {
     "namespace" : "[parameters('vm').namespace]"
   },
@@ -57,8 +57,7 @@
           "index": {
             "value": "[copyindex()]"
           }
-            }
         }
-        }
-      ]
-    }
+      }
+    }]
+}

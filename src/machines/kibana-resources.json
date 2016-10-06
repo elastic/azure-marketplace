@@ -34,7 +34,7 @@
       }
     },
     "credentials": {
-      "type": "secureobject",
+      "type": "secureObject",
       "metadata": {
         "description": "Credentials information block"
       }
@@ -50,7 +50,7 @@
       "defaultValue": "Standard_A1",
       "metadata": {
         "description": "Size of the Elasticsearch master nodes"
-    }
+      }
     }
   },
   "variables": {

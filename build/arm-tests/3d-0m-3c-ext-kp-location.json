@@ -27,6 +27,7 @@
 		"userEmail": { "value": "" },
 		"userFirstName": { "value": "" },	
 		"userLastName": { "value": "" },
-		"userJobTitle": { "value": "Other" }	
+		"userJobTitle": { "value": "Other" },
+		"userCountry": { "value": "" }	
 	}
 }

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "cloudAzureStorageAccount": {
+      "type": "object",
+      "metadata": {
+        "description": "Storage account used for snapshots with Azure Cloud plugin"
+      }
+    }
+  },
+  "resources": [
+  ],
+  "outputs": {
+    "name": {
+      "type": "string",
+      "value": "[parameters('cloudAzureStorageAccount').name]"
+    },
+    "key": {
+      "type": "string",
+      "value": "[listKeys(resourceId(parameters('cloudAzureStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('cloudAzureStorageAccount').name), '2016-01-01').keys[0].value]"
+    }
+  }
+}

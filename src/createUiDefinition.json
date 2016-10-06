@@ -141,18 +141,27 @@
             }
           },
           {
-            "name": "storageAccountName",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Azure Storage Account Name",
-            "defaultValue": "",
-            "toolTip": "The name of the storage account to use for snapshots with Cloud Azure plugin"
-          },
-          {
-            "name": "storageAccountKey",
-            "type": "Microsoft.Common.PasswordBox",
-            "label": "Azure Storage Account Key",
-            "defaultValue": "",
-            "toolTip": "The storage account key to use for the storage account with Cloud Azure plugin"
+            "name": "cloudAzureStorageAccount",
+            "type": "Microsoft.Storage.StorageAccountSelector",
+            "label": "Azure Plugin Storage Account",
+            "toolTip": "The storage account to use for snapshots with Azure Cloud plugin",
+            "defaultValue": {
+              "name": "essnapshot",
+              "type": "Standard_LRS"
+            },
+            "constraints": {
+              "allowedTypes": [
+                "Standard_LRS",
+                "Standard_ZRS",
+                "Standard_GRS"
+              ],
+              "excludedTypes": [],
+              "required": true
+            },
+            "options": {
+              "hideExisting": false
+            },
+            "visible": true
           }
         ]
       },
@@ -174,7 +183,7 @@
             "constraints": {
               "required": false,
               "regex": "^[0-9a-zA-Z][0-9a-zA-Z\\-]{0,4}$",
-              "validationMessage": "Host name prefix must start with an alphanumeric character and can contain alphanumeric, underscore or hyphen characters, up to 5 characters in length"
+              "validationMessage": "Host name prefix must start with an alphanumeric character and can contain alphanumeric or hyphen characters, up to 5 characters in length"
             }
           },
           {
@@ -939,8 +948,11 @@
     "outputs": {
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
-      "storageAccountName": "[steps('clusterSettingsStep').storageAccountName]",
-      "storageAccountKey": "[steps('clusterSettingsStep').storageAccountKey]",
+      "cloudAzureStorageAccountName": "[steps('clusterSettingsStep').cloudAzureStorageAccount.name]",
+      "cloudAzureStorageAccountExistingResourceGroup": "[steps('clusterSettingsStep').cloudAzureStorageAccount.resourceGroup]",
+      "cloudAzureStorageAccountNewType": "[steps('clusterSettingsStep').cloudAzureStorageAccount.type]",
+      "cloudAzureStorageAccountNewOrExisting": "[steps('clusterSettingsStep').cloudAzureStorageAccount.newOrExisting]",
+      "cloudAzureStorageAccountNewUnique": "Yes",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetwork.name]",

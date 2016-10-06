@@ -358,12 +358,12 @@ configure_elasticsearch_yaml()
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
     echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
 
-    # Configure Cloud Azure plugin
+    # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
-        log "[configure_elasticsearch_yaml] Configuring storage for Cloud Azure"
+        log "[configure_elasticsearch_yaml] Configuring storage for Azure Cloud"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[configure_elasticsearch_yaml] Configured storage for Cloud Azure"
+        log "[configure_elasticsearch_yaml] Configured storage for Azure Cloud"
     fi
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml

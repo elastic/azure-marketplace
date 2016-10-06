@@ -2,6 +2,13 @@
 	"artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"},
 	"esVersion":{"value":"2.2.0"},
 	"esClusterName":{"value":"my-azure-cluster"},
+	"location":{"value":"ResourceGroup"},
+	"esPlugins":{"value":"Yes"},
+	"cloudAzureStorageAccountName":{"value":"essnapshot"},
+	"cloudAzureStorageAccountExistingResourceGroup":{"value":""},
+	"cloudAzureStorageAccountNewType":{"value":"Standard_LRS"},
+	"cloudAzureStorageAccountNewOrExisting":{"value":"new"},
+	"cloudAzureStorageAccountNewUnique":{"value":"No"},
 	"loadBalancerType":{"value":"internal"},
 	"kibana":{"value":"Yes"},
 	"jumpbox":{"value":"No"},
@@ -31,5 +38,6 @@
 	"userEmail": { "value": "" },
 	"userFirstName": { "value": "" },	
 	"userLastName": { "value": "" },
-	"userJobTitle": { "value": "" }	
+	"userJobTitle": { "value": "" },
+	"userCountry": { "value": "" }	
 }

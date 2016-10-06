@@ -98,7 +98,7 @@
         },
         "osProfile": "[variables('osProfile')]",
         "storageProfile": {
-          "imageReference": "[parameters('vm').shared.osSettings.imageReference]",
+          "imageReference": "[parameters('vm').imageReference]",
           "osDisk": {
             "name": "osdisk",
             "vhd": {
