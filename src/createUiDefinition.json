@@ -153,7 +153,8 @@
               "allowedTypes": [
                 "Standard_LRS",
                 "Standard_ZRS",
-                "Standard_GRS"
+                "Standard_GRS",
+                "Standard_RAGRS"
               ],
               "excludedTypes": [],
               "required": true

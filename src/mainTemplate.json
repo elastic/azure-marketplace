@@ -55,7 +55,8 @@
       "allowedValues": [
         "Standard_LRS",
         "Standard_ZRS",
-        "Standard_GRS"
+        "Standard_GRS",
+        "Standard_RAGRS"
       ],
       "metadata": {
         "description": "The type of new storage account for snapshots with Azure Cloud plugin"
