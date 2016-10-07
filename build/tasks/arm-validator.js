@@ -9,6 +9,7 @@ var merge = require('merge');
 var mkdirp = require('mkdirp');
 var del = require('del');
 var request = require('request');
+var hostname = require("os").hostname();
 
 var azureCli = "..\\node_modules\\.bin\\azure.cmd"; //TODO *nix
 var artifactsBaseUrl = "";
@@ -49,9 +50,10 @@ var bootstrapTest = (t, defaultVersion) =>
   testParameters.esVersion.value = defaultVersion;
 
   return {
-    resourceGroup: "test-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
+    resourceGroup: "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
     location: test.location,
     isValid: test.isValid,
+    why: test.why,    
     deploy: test.deploy,
     params: testParameters
   }
@@ -62,7 +64,7 @@ var bootstrap = (cb) => {
   var versions = _.keys(allowedValues.versions);
   var defaultVersion = _.last(versions);
   git.branch(function (branch) {
-    artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src/";
+    artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
     log("Using template: " + templateUri, false);
     armTests = _(fs.readdirSync("arm-tests"))
@@ -184,7 +186,7 @@ var validateTemplate = (test, cb) => {
       log(test, "Expected result: " + t.isValid + " because " + t.why);
       log(test, "validateResult:" + (stdout || stderr));
       if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr));
-      else if (!t.isValid && !(error || stderr)) return bailOut(new Error("expected " + test + "to result in an error because" + t.why));
+      else if (!t.isValid && !(error || stderr)) return bailOut(new Error("expected " + test + "to result in an error because " + t.why));
       cb();
     });
   })

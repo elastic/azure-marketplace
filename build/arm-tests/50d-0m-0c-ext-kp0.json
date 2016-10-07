@@ -1,7 +1,7 @@
 {
 	"isValid" : false,
 	"deploy" : false,
-	"why" : "We expect this to hit to core limit because westus for us is using the default core limits",
+	"why" : "We expect this to hit the core limit because westus for us is using the default core limits",
 	"location" : "westus",
 	"parameters" : {
 		"loadBalancerType":{"value":"external"},

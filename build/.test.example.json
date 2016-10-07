@@ -4,8 +4,15 @@
     "password" : ""
   },
   "arm" :{
+    "subscriptionId" : "",
     "tenantId" : "",
     "clientId" : "",
     "clientSecret" : ""
+  },
+  "deployments" : {
+    "username" : "",
+    "password" : "",
+    "shieldPassword" : "",
+    "ssh" : ""
   }
 }
