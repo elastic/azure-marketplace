@@ -52,7 +52,7 @@
     },
     "installPluginsShortOpt": "[variables('installPluginsShortOpts')[parameters('esSettings').installPlugins]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), 'n ')]",
-    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A ', parameters('esSettings').shieldAdminPwd, ' -R ', parameters('esSettings').shieldReadPwd, ' -K ', parameters('esSettings').shieldKibanaPwd, ' -S ', parameters('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('clusterSetup').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('cloudAzureStorageAccount').name, '\" -k \"', parameters('cloudAzureStorageAccount').key, '\"')]",
+    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A ', parameters('esSettings').shieldAdminPwd, ' -R ', parameters('esSettings').shieldReadPwd, ' -K ', parameters('esSettings').shieldKibanaPwd, ' -S ', parameters('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('clusterSetup').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('cloudAzureStorageAccount').name, '\" -k \"', parameters('cloudAzureStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",

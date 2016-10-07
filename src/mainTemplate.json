@@ -107,6 +107,13 @@
         "description": "Install the Plugins - Marvel, Shield, Watcher, Graph* (Elasticsearch version permitting)"
       }
     },
+    "esAdditionalPlugins": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Install additional Plugins - e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0"
+      }
+    },
     "kibana": {
       "type": "string",
       "defaultValue": "Yes",
@@ -706,6 +713,7 @@
       "clusterName": "[parameters('esClusterName')]",
       "version": "[parameters('esVersion')]",
       "installPlugins": "[parameters('esPlugins')]",
+      "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "shieldAdminPwd": "[parameters('shieldAdminPassword')]",
       "shieldReadPwd": "[parameters('shieldReadPassword')]",
       "shieldKibanaPwd": "[parameters('shieldKibanaPassword')]",

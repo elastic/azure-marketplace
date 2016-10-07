@@ -4,6 +4,7 @@
 	"esClusterName":{"value":"my-azure-cluster"},
 	"location":{"value":"ResourceGroup"},
 	"esPlugins":{"value":"Yes"},
+	"esAdditionalPlugins": { "value": " " },
 	"cloudAzureStorageAccountName":{"value":"essnapshot"},
 	"cloudAzureStorageAccountExistingResourceGroup":{"value":""},
 	"cloudAzureStorageAccountNewType":{"value":"Standard_LRS"},
