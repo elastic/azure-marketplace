@@ -57,6 +57,8 @@ log()
 log "Begin execution of Kibana script extension on ${HOSTNAME}"
 START_TIME=$SECONDS
 
+export DEBIAN_FRONTEND=noninteractive
+
 if service --status-all | grep -Fq 'kibana'; then
   log "Kibana already installed"
   exit 0
@@ -154,9 +156,29 @@ echo "logging.dest: /var/log/kibana.log" >> /opt/kibana/config/kibana.yml
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
     echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
-fi
 
-if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
+    # cannot be installed on earlier versions as 
+    # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
+    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+      log "installing latest shield"
+      /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
+      log "shield plugin installed"
+
+      # NOTE: These settings allow Shield to work in Kibana without HTTPS. 
+      # This is NOT recommended for production.
+      echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
+      echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
+
+      log "generating shield encryption key"
+      if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
+      fi
+      ENCRYPTION_KEY=$(pwgen 64 1)    
+      echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+      log "shield encryption key generated"    
+    fi
+
     # install graph
     if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
       log "installing graph plugin"
@@ -171,7 +193,9 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
       log "reporting plugin installed"
 
       log "generating reporting encryption key"
-      sudo apt-get -y install pwgen
+      if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
+      fi
       ENCRYPTION_KEY=$(pwgen 64 1)    
       echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
       log "reporting encryption key generated"    

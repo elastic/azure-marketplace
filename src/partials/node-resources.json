@@ -1,0 +1,242 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "templateBaseUrl": {
+          "type": "string",
+          "metadata": {
+              "description": "The base url for templates"
+          }
+      },
+      "osSettings": {
+          "type": "object",
+          "metadata": {
+              "description" : "Operating system settings"
+          }
+      },
+      "commonVmSettings": {
+          "type": "object",
+          "metadata": {
+              "description" : "Shared VM settings"
+          }
+      },
+      "topologySettings": {
+        "type": "object",
+        "metadata": {
+          "description": "Aggregate for topology variable"
+        }
+      },
+      "networkSettings": {
+        "type": "object",
+        "metadata": {
+          "description": "Network settings"
+        }
+      }
+  },
+  "variables": {
+    "jumpboxTemplates": {
+      "No": "empty/empty-jumpbox-resources.json",
+      "Yes": "machines/jumpbox-resources.json"
+    },
+    "jumpboxTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('jumpboxTemplates')[parameters('topologySettings').jumpbox])]",
+    "kibanaTemplates": {
+      "No": "empty/empty-kibana-resources.json",
+      "Yes": "machines/kibana-resources.json"
+    },
+    "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
+    "masterTemplates": {
+      "No": "machines/master-nodes-resources.json",
+      "Yes": "empty/empty-master-nodes-resources.json"
+    },
+    "masterTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('masterTemplates')[parameters('topologySettings').dataNodesAreMasterEligible])]",
+    "clientTemplates": [
+      "empty/empty-client-nodes-resources.json",
+      "machines/client-nodes-resources.json"
+    ],
+    "clientResourceIndex": "[mod(add(parameters('topologySettings').vmClientNodeCount,2),add(parameters('topologySettings').vmClientNodeCount,1))]",
+    "clientTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
+    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-', string(parameters('topologySettings').dataNodeStorageSettings.dataDisks), 'disk-resources.json')]"
+  },
+  "resources": [
+    {
+      "name": "master-nodes",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('masterTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "vm": {
+            "value": {
+              "shared": "[parameters('commonVmSettings')]",
+              "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'master-')]",
+              "installScript": "[parameters('osSettings').extensionSettings.master]",
+              "size": "[parameters('topologySettings').vmSizeMasterNodes]",
+              "count": 3,
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "No",
+              "backendPools": [],
+              "imageReference": "[parameters('osSettings').imageReference]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "client-nodes",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('clientTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "vm": {
+            "value": {
+              "shared": "[parameters('commonVmSettings')]",
+              "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'client-')]",
+              "installScript": "[parameters('osSettings').extensionSettings.client]",
+              "size": "[parameters('topologySettings').vmSizeClientNodes]",
+              "count": "[parameters('topologySettings').vmClientNodeCount]",
+              "useSharedStorageAccount": "Yes",
+              "useBackendPools": "Yes",
+              "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
+              "imageReference": "[parameters('osSettings').imageReference]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "data-nodes",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('dataTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "vm": {
+            "value": {
+              "shared": "[parameters('commonVmSettings')]",
+              "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'data-')]",
+              "installScript": "[parameters('osSettings').extensionSettings.data]",
+              "size": "[parameters('topologySettings').vmSizeDataNodes]",
+              "count": "[parameters('topologySettings').vmDataNodeCount]",
+              "useSharedStorageAccount": "No",
+              "useBackendPools": "Yes",
+              "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
+              "imageReference": "[parameters('osSettings').imageReference]"
+            }
+          },
+          "storageSettings": {
+            "value": "[parameters('topologySettings').dataNodeStorageSettings]"
+          }
+        }
+      }
+    },
+    {
+      "name": "jumpbox",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('jumpboxTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('commonVmSettings').storageAccountName]"
+          },
+          "credentials": {
+            "value": "[parameters('commonVmSettings').credentials]"
+          },
+          "location": {
+            "value": "[parameters('commonVmSettings').location]"
+          },
+          "namespace": {
+            "value": "[concat(parameters('commonVmSettings').namespacePrefix, 'jumpbox')]"
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "kibana",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('kibanaTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('commonVmSettings').storageAccountName]"
+          },
+          "credentials": {
+            "value": "[parameters('commonVmSettings').credentials]"
+          },
+          "location": {
+            "value": "[parameters('commonVmSettings').location]"
+          },
+          "namespace": {
+            "value": "[concat(parameters('commonVmSettings').namespacePrefix, 'kibana')]"
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          },
+          "vmSize": {
+            "value": "[parameters('topologySettings').vmSizeKibana]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "kibana": {
+      "value": "[reference('kibana').outputs.fqdn.value]",
+      "type": "string"
+    },
+    "jumpboxssh": {
+      "value": "[reference('jumpbox').outputs.ssh.value]",
+      "type": "string"
+    }
+  }
+}

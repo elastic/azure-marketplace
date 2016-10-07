@@ -109,64 +109,112 @@
             }
           },
           {
-            "name": "virtualNetwork",
-            "type": "Microsoft.Network.VirtualNetworkCombo",
-            "label": {
-              "virtualNetwork": "Virtual network",
-              "subnets": "Subnet"
-            },
-            "toolTip": {
-              "virtualNetwork": "Create a new Virtual Network or use an existing one",
-              "subnets": "Choose the Subnet for the Virtual Network for Elasticsearch nodes. If choosing an existing Virtual Network, the Subnet to use will need to exist beforehand; Creating a new subnet in an existing Virtual Network is not supported"
-            },
-            "defaultValue": {
-              "name": "es-net",
-              "addressPrefixSize": "/16"
-            },
-            "constraints": {
-              "minAddressPrefixSize": "/16"
-            },
-            "options": {
-              "hideExisting": false
-            },
-            "subnets": {
-              "subnet1": {
-                "label": "subnet",
+            "name": "virtualNetworkConfiguration",
+            "type": "Microsoft.Common.Section",
+            "label": "Virtual Network Configuration",
+            "elements": [
+              {
+                "name": "virtualNetwork",
+                "type": "Microsoft.Network.VirtualNetworkCombo",
+                "label": {
+                  "virtualNetwork": "Virtual network",
+                  "subnets": "Subnet"
+                },
+                "toolTip": {
+                  "virtualNetwork": "Create a new Virtual Network or use an existing one",
+                  "subnets": "Choose the Subnet for the Virtual Network for Elasticsearch nodes. If choosing an existing Virtual Network, the Subnet to use will need to exist beforehand; Creating a new subnet in an existing Virtual Network is not supported"
+                },
                 "defaultValue": {
-                  "name": "es-subnet",
-                  "addressPrefixSize": "/24"
+                  "name": "es-net",
+                  "addressPrefixSize": "/16"
                 },
                 "constraints": {
-                  "minAddressPrefixSize": "/24",
-                  "minAddressCount": 12,
-                  "requireContiguousAddresses": true
+                  "minAddressPrefixSize": "/16"
+                },
+                "options": {
+                  "hideExisting": false
+                },
+                "subnets": {
+                  "subnet1": {
+                    "label": "subnet",
+                    "defaultValue": {
+                      "name": "es-subnet",
+                      "addressPrefixSize": "/24"
+                    },
+                    "constraints": {
+                      "minAddressPrefixSize": "/24",
+                      "minAddressCount": 12,
+                      "requireContiguousAddresses": true
+                    }
+                  }
                 }
               }
-            }
+            ]
           },
           {
-            "name": "cloudAzureStorageAccount",
-            "type": "Microsoft.Storage.StorageAccountSelector",
-            "label": "Azure Plugin Storage Account",
-            "toolTip": "The storage account to use for snapshots with Azure Cloud plugin",
-            "defaultValue": {
-              "name": "essnapshot",
-              "type": "Standard_LRS"
-            },
+            "name": "azureCloudStorageAccountConfiguration",
+            "type": "Microsoft.Common.Section",
+            "label": "Azure Cloud Plugin Configuration",
+            "elements": [
+              {
+                "name": "azureCloudPlugin",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Install Azure Cloud Plugin?",
+                "defaultValue": "No",
+                "toolTip": "Yes, to install Azure Cloud plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "azureCloudStorageAccountName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Storage Account Name",
+                "defaultValue": "",
+                "toolTip": "The name of an existing storage account to use for snapshots with Azure Cloud plugin",
+                "constraints": {
+                  "regex": "^[a-z\\d]{3,24}$",
+                  "required": true,
+                  "validationMessage": "Must be a valid Storage account name"
+                },
+                "visible": "[equals(steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin, 'Yes')]"
+              },
+              {
+                "name": "azureCloudStorageAccountKey",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Storage Account Access Key"
+                },
+                "toolTip": "The access key of an existing storage account to use for snapshots with Azure Cloud plugin",
+                "constraints": {
+                  "required": true,
+                  "validationMessage": "Storage account access key is required"
+                },
+                "options": {
+                  "hideConfirmation": true
+                },
+                "visible": "[equals(steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin, 'Yes')]"
+              }
+            ]
+          },
+          {
+            "name": "esAdditionalPlugins",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Additional Elasticsearch Plugins",
+            "defaultValue": "",
+            "toolTip": "Additional elasticsearch plugins to install. Each plugin must be separated by a semicolon.  e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0",
             "constraints": {
-              "allowedTypes": [
-                "Standard_LRS",
-                "Standard_ZRS",
-                "Standard_GRS",
-                "Standard_RAGRS"
-              ],
-              "excludedTypes": [],
-              "required": true
-            },
-            "options": {
-              "hideExisting": false
-            },
-            "visible": true
+              "required": false
+            }
           }
         ]
       },
@@ -192,424 +240,445 @@
             }
           },
           {
-            "name": "vmDataNodeCount",
-            "type": "Microsoft.Common.DropDown",
-            "label": "Number of data nodes (if not using dedicated masters use >= 3)",
-            "defaultValue": "3",
-            "toolTip": "Specify the number of data nodes for this cluster.",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "1",
-                  "value": 1
-                },
-                {
-                  "label": "2",
-                  "value": 2
-                },
-                {
-                  "label": "3",
-                  "value": 3
-                },
-                {
-                  "label": "4",
-                  "value": 4
-                },
-                {
-                  "label": "5",
-                  "value": 5
-                },
-                {
-                  "label": "6",
-                  "value": 6
-                },
-                {
-                  "label": "7",
-                  "value": 7
-                },
-                {
-                  "label": "8",
-                  "value": 8
-                },
-                {
-                  "label": "9",
-                  "value": 9
-                },
-                {
-                  "label": "10",
-                  "value": 10
-                },
-                {
-                  "label": "11",
-                  "value": 11
-                },
-                {
-                  "label": "12",
-                  "value": 12
-                },
-                {
-                  "label": "15",
-                  "value": 15
-                },
-                {
-                  "label": "20",
-                  "value": 20
-                },
-                {
-                  "label": "25",
-                  "value": 25
-                },
-                {
-                  "label": "30",
-                  "value": 30
-                },
-                {
-                  "label": "35",
-                  "value": 35
-                },
-                {
-                  "label": "40",
-                  "value": 40
-                },
-                {
-                  "label": "45",
-                  "value": 45
-                },
-                {
-                  "label": "50",
-                  "value": 50
+            "name": "dataNodes",
+            "type": "Microsoft.Common.Section",
+            "label": "Data Nodes",
+            "elements": [
+              {
+                "name": "vmDataNodeCount",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Number of data nodes (if not using dedicated masters, >= 3 data nodes)",
+                "defaultValue": "3",
+                "toolTip": "Specify the number of data nodes for this cluster. When not using dedicated master nodes, it is strongly recommended to have at least 3 data nodes in order to avoid split brain scenarios.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "1",
+                      "value": 1
+                    },
+                    {
+                      "label": "2",
+                      "value": 2
+                    },
+                    {
+                      "label": "3",
+                      "value": 3
+                    },
+                    {
+                      "label": "4",
+                      "value": 4
+                    },
+                    {
+                      "label": "5",
+                      "value": 5
+                    },
+                    {
+                      "label": "6",
+                      "value": 6
+                    },
+                    {
+                      "label": "7",
+                      "value": 7
+                    },
+                    {
+                      "label": "8",
+                      "value": 8
+                    },
+                    {
+                      "label": "9",
+                      "value": 9
+                    },
+                    {
+                      "label": "10",
+                      "value": 10
+                    },
+                    {
+                      "label": "11",
+                      "value": 11
+                    },
+                    {
+                      "label": "12",
+                      "value": 12
+                    },
+                    {
+                      "label": "15",
+                      "value": 15
+                    },
+                    {
+                      "label": "20",
+                      "value": 20
+                    },
+                    {
+                      "label": "25",
+                      "value": 25
+                    },
+                    {
+                      "label": "30",
+                      "value": 30
+                    },
+                    {
+                      "label": "35",
+                      "value": 35
+                    },
+                    {
+                      "label": "40",
+                      "value": 40
+                    },
+                    {
+                      "label": "45",
+                      "value": 45
+                    },
+                    {
+                      "label": "50",
+                      "value": 50
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          {
-            "name": "vmSizeDataNodes",
-            "type": "Microsoft.Compute.SizeSelector",
-            "label": "Data node VM size",
-            "defaultValue": "Standard_DS1_v2",
-            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "recommendedSizes": [
-              "Standard_DS1_v2",
-              "Standard_DS2_v2",
-              "Standard_DS3_v2",
-              "Standard_DS11_v2",
-              "Standard_DS12_v2"
-            ],
-            "constraints": {
-              "excludedSizes": [],
-              "allowedSizes": [
-                "Standard_A0",
-                "Standard_A1",
-                "Standard_A2",
-                "Standard_A3",
-                "Standard_A4",
-                "Standard_A5",
-                "Standard_A6",
-                "Standard_A7",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D11",
-                "Standard_D12",
-                "Standard_D13",
-                "Standard_D14",
-                "Standard_D1_v2",
-                "Standard_D2_v2",
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D11_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_DS1",
-                "Standard_DS2",
-                "Standard_DS3",
-                "Standard_DS4",
-                "Standard_DS11",
-                "Standard_DS12",
-                "Standard_DS13",
-                "Standard_DS14",
-                "Standard_DS1_v2",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_DS4_v2",
-                "Standard_DS5_v2",
-                "Standard_DS11_v2",
-                "Standard_DS12_v2",
-                "Standard_DS13_v2",
-                "Standard_DS14_v2",
-                "Standard_DS15_v2",
-                "Standard_F1",
-                "Standard_F2",
-                "Standard_F4",
-                "Standard_F8",
-                "Standard_F16",
-                "Standard_F1s",
-                "Standard_F2s",
-                "Standard_F4s",
-                "Standard_F8s",
-                "Standard_F16s"
-              ]
-            },
-            "osPlatform": "Linux",
-            "count": "[steps('nodesStep').vmDataNodeCount]"
-          },
-          {
-            "name": "dataNodesAreMasterEligible",
-            "type": "Microsoft.Common.OptionsGroup",
-            "label": "Data nodes are master eligible",
-            "defaultValue": "No",
-            "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "Yes",
-                  "value": "Yes"
+              },
+              {
+                "name": "vmSizeDataNodes",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Data node VM size",
+                "defaultValue": "Standard_DS1_v2",
+                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "recommendedSizes": [
+                  "Standard_DS1_v2",
+                  "Standard_DS2_v2",
+                  "Standard_DS3_v2",
+                  "Standard_DS11_v2",
+                  "Standard_DS12_v2"
+                ],
+                "constraints": {
+                  "excludedSizes": [],
+                  "allowedSizes": [
+                    "Standard_A0",
+                    "Standard_A1",
+                    "Standard_A2",
+                    "Standard_A3",
+                    "Standard_A4",
+                    "Standard_A5",
+                    "Standard_A6",
+                    "Standard_A7",
+                    "Standard_D1",
+                    "Standard_D2",
+                    "Standard_D3",
+                    "Standard_D4",
+                    "Standard_D11",
+                    "Standard_D12",
+                    "Standard_D13",
+                    "Standard_D14",
+                    "Standard_D1_v2",
+                    "Standard_D2_v2",
+                    "Standard_D3_v2",
+                    "Standard_D4_v2",
+                    "Standard_D5_v2",
+                    "Standard_D11_v2",
+                    "Standard_D12_v2",
+                    "Standard_D13_v2",
+                    "Standard_D14_v2",
+                    "Standard_D15_v2",
+                    "Standard_DS1",
+                    "Standard_DS2",
+                    "Standard_DS3",
+                    "Standard_DS4",
+                    "Standard_DS11",
+                    "Standard_DS12",
+                    "Standard_DS13",
+                    "Standard_DS14",
+                    "Standard_DS1_v2",
+                    "Standard_DS2_v2",
+                    "Standard_DS3_v2",
+                    "Standard_DS4_v2",
+                    "Standard_DS5_v2",
+                    "Standard_DS11_v2",
+                    "Standard_DS12_v2",
+                    "Standard_DS13_v2",
+                    "Standard_DS14_v2",
+                    "Standard_DS15_v2",
+                    "Standard_F1",
+                    "Standard_F2",
+                    "Standard_F4",
+                    "Standard_F8",
+                    "Standard_F16",
+                    "Standard_F1s",
+                    "Standard_F2s",
+                    "Standard_F4s",
+                    "Standard_F8s",
+                    "Standard_F16s"
+                  ]
                 },
-                {
-                  "label": "No",
-                  "value": "No"
+                "osPlatform": "Linux",
+                "count": "[steps('nodesStep').dataNodes.vmDataNodeCount]"
+              },
+              {
+                "name": "dataNodesAreMasterEligible",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Data nodes are master eligible",
+                "defaultValue": "No",
+                "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
                 }
-              ]
-            }
+              }
+            ]
           },
           {
-            "name": "vmSizeMasterNodes",
-            "type": "Microsoft.Compute.SizeSelector",
-            "label": "Master node VM size",
-            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "visible": "[equals(steps('nodesStep').dataNodesAreMasterEligible, 'No')]",
-            "defaultValue": "Standard_D1",
-            "recommendedSizes": [
-              "Standard_D1",
-              "Standard_D2",
-              "Standard_D3"
-            ],
-            "constraints": {
-              "excludedSizes": [],
-              "allowedSizes": [
-                "Standard_A0",
-                "Standard_A1",
-                "Standard_A2",
-                "Standard_A3",
-                "Standard_A4",
-                "Standard_A5",
-                "Standard_A6",
-                "Standard_A7",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D11",
-                "Standard_D12",
-                "Standard_D13",
-                "Standard_D14",
-                "Standard_D1_v2",
-                "Standard_D2_v2",
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D11_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_DS1",
-                "Standard_DS2",
-                "Standard_DS3",
-                "Standard_DS4",
-                "Standard_DS11",
-                "Standard_DS12",
-                "Standard_DS13",
-                "Standard_DS14",
-                "Standard_DS1_v2",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_DS4_v2",
-                "Standard_DS5_v2",
-                "Standard_DS11_v2",
-                "Standard_DS12_v2",
-                "Standard_DS13_v2",
-                "Standard_DS14_v2",
-                "Standard_DS15_v2",
-                "Standard_F1",
-                "Standard_F2",
-                "Standard_F4",
-                "Standard_F8",
-                "Standard_F16",
-                "Standard_F1s",
-                "Standard_F2s",
-                "Standard_F4s",
-                "Standard_F8s",
-                "Standard_F16s"
-              ]
-            },
-            "osPlatform": "Linux",
-            "count": "3"
+            "name": "masterNodes",
+            "type": "Microsoft.Common.Section",
+            "label": "Master Nodes",
+            "visible": "[equals(steps('nodesStep').dataNodes.dataNodesAreMasterEligible, 'No')]",
+            "elements": [
+              {
+                "name": "vmSizeMasterNodes",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Master node VM size",
+                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "defaultValue": "Standard_D1",
+                "recommendedSizes": [
+                  "Standard_D1",
+                  "Standard_D2",
+                  "Standard_D3"
+                ],
+                "constraints": {
+                  "excludedSizes": [],
+                  "allowedSizes": [
+                    "Standard_A0",
+                    "Standard_A1",
+                    "Standard_A2",
+                    "Standard_A3",
+                    "Standard_A4",
+                    "Standard_A5",
+                    "Standard_A6",
+                    "Standard_A7",
+                    "Standard_D1",
+                    "Standard_D2",
+                    "Standard_D3",
+                    "Standard_D4",
+                    "Standard_D11",
+                    "Standard_D12",
+                    "Standard_D13",
+                    "Standard_D14",
+                    "Standard_D1_v2",
+                    "Standard_D2_v2",
+                    "Standard_D3_v2",
+                    "Standard_D4_v2",
+                    "Standard_D5_v2",
+                    "Standard_D11_v2",
+                    "Standard_D12_v2",
+                    "Standard_D13_v2",
+                    "Standard_D14_v2",
+                    "Standard_D15_v2",
+                    "Standard_DS1",
+                    "Standard_DS2",
+                    "Standard_DS3",
+                    "Standard_DS4",
+                    "Standard_DS11",
+                    "Standard_DS12",
+                    "Standard_DS13",
+                    "Standard_DS14",
+                    "Standard_DS1_v2",
+                    "Standard_DS2_v2",
+                    "Standard_DS3_v2",
+                    "Standard_DS4_v2",
+                    "Standard_DS5_v2",
+                    "Standard_DS11_v2",
+                    "Standard_DS12_v2",
+                    "Standard_DS13_v2",
+                    "Standard_DS14_v2",
+                    "Standard_DS15_v2",
+                    "Standard_F1",
+                    "Standard_F2",
+                    "Standard_F4",
+                    "Standard_F8",
+                    "Standard_F16",
+                    "Standard_F1s",
+                    "Standard_F2s",
+                    "Standard_F4s",
+                    "Standard_F8s",
+                    "Standard_F16s"
+                  ]
+                },
+                "osPlatform": "Linux",
+                "count": "3"
+              }
+            ]
           },
           {
-            "name": "vmClientNodeCount",
-            "type": "Microsoft.Common.DropDown",
-            "label": "Number of client nodes",
-            "defaultValue": "0",
-            "toolTip": "Specify the number of client nodes for this cluster (optional).",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "0",
-                  "value": 0
-                },
-                {
-                  "label": "1",
-                  "value": 1
-                },
-                {
-                  "label": "2",
-                  "value": 2
-                },
-                {
-                  "label": "3",
-                  "value": 3
-                },
-                {
-                  "label": "4",
-                  "value": 4
-                },
-                {
-                  "label": "5",
-                  "value": 5
-                },
-                {
-                  "label": "6",
-                  "value": 6
-                },
-                {
-                  "label": "7",
-                  "value": 7
-                },
-                {
-                  "label": "8",
-                  "value": 8
-                },
-                {
-                  "label": "9",
-                  "value": 9
-                },
-                {
-                  "label": "10",
-                  "value": 10
-                },
-                {
-                  "label": "11",
-                  "value": 11
-                },
-                {
-                  "label": "12",
-                  "value": 12
-                },
-                {
-                  "label": "15",
-                  "value": 15
-                },
-                {
-                  "label": "20",
-                  "value": 20
+            "name": "clientNodes",
+            "type": "Microsoft.Common.Section",
+            "label": "Client Nodes",
+            "elements": [
+              {
+                "name": "vmClientNodeCount",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Number of client nodes",
+                "defaultValue": "0",
+                "toolTip": "Specify the number of client nodes for this cluster (optional).",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "0",
+                      "value": 0
+                    },
+                    {
+                      "label": "1",
+                      "value": 1
+                    },
+                    {
+                      "label": "2",
+                      "value": 2
+                    },
+                    {
+                      "label": "3",
+                      "value": 3
+                    },
+                    {
+                      "label": "4",
+                      "value": 4
+                    },
+                    {
+                      "label": "5",
+                      "value": 5
+                    },
+                    {
+                      "label": "6",
+                      "value": 6
+                    },
+                    {
+                      "label": "7",
+                      "value": 7
+                    },
+                    {
+                      "label": "8",
+                      "value": 8
+                    },
+                    {
+                      "label": "9",
+                      "value": 9
+                    },
+                    {
+                      "label": "10",
+                      "value": 10
+                    },
+                    {
+                      "label": "11",
+                      "value": 11
+                    },
+                    {
+                      "label": "12",
+                      "value": 12
+                    },
+                    {
+                      "label": "15",
+                      "value": 15
+                    },
+                    {
+                      "label": "20",
+                      "value": 20
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          {
-            "name": "vmSizeClientNodes",
-            "type": "Microsoft.Compute.SizeSelector",
-            "label": "Client node VM size",
-            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "visible": "[greater(steps('nodesStep').vmClientNodeCount, 0)]",
-            "defaultValue": "Standard_D1",
-            "recommendedSizes": [
-              "Standard_D1",
-              "Standard_D2",
-              "Standard_D3"
-            ],
-            "constraints": {
-              "excludedSizes": [],
-              "allowedSizes": [
-                "Standard_A0",
-                "Standard_A1",
-                "Standard_A2",
-                "Standard_A3",
-                "Standard_A4",
-                "Standard_A5",
-                "Standard_A6",
-                "Standard_A7",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D11",
-                "Standard_D12",
-                "Standard_D13",
-                "Standard_D14",
-                "Standard_D1_v2",
-                "Standard_D2_v2",
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D11_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_DS1",
-                "Standard_DS2",
-                "Standard_DS3",
-                "Standard_DS4",
-                "Standard_DS11",
-                "Standard_DS12",
-                "Standard_DS13",
-                "Standard_DS14",
-                "Standard_DS1_v2",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_DS4_v2",
-                "Standard_DS5_v2",
-                "Standard_DS11_v2",
-                "Standard_DS12_v2",
-                "Standard_DS13_v2",
-                "Standard_DS14_v2",
-                "Standard_DS15_v2",
-                "Standard_F1",
-                "Standard_F2",
-                "Standard_F4",
-                "Standard_F8",
-                "Standard_F16",
-                "Standard_F1s",
-                "Standard_F2s",
-                "Standard_F4s",
-                "Standard_F8s",
-                "Standard_F16s"
-              ]
-            },
-            "osPlatform": "Linux",
-            "count": "[steps('nodesStep').vmClientNodeCount]"
+              },
+              {
+                "name": "vmSizeClientNodes",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Client node VM size",
+                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "visible": "[greater(steps('nodesStep').clientNodes.vmClientNodeCount, 0)]",
+                "defaultValue": "Standard_D1",
+                "recommendedSizes": [
+                  "Standard_D1",
+                  "Standard_D2",
+                  "Standard_D3"
+                ],
+                "constraints": {
+                  "excludedSizes": [],
+                  "allowedSizes": [
+                    "Standard_A0",
+                    "Standard_A1",
+                    "Standard_A2",
+                    "Standard_A3",
+                    "Standard_A4",
+                    "Standard_A5",
+                    "Standard_A6",
+                    "Standard_A7",
+                    "Standard_D1",
+                    "Standard_D2",
+                    "Standard_D3",
+                    "Standard_D4",
+                    "Standard_D11",
+                    "Standard_D12",
+                    "Standard_D13",
+                    "Standard_D14",
+                    "Standard_D1_v2",
+                    "Standard_D2_v2",
+                    "Standard_D3_v2",
+                    "Standard_D4_v2",
+                    "Standard_D5_v2",
+                    "Standard_D11_v2",
+                    "Standard_D12_v2",
+                    "Standard_D13_v2",
+                    "Standard_D14_v2",
+                    "Standard_D15_v2",
+                    "Standard_DS1",
+                    "Standard_DS2",
+                    "Standard_DS3",
+                    "Standard_DS4",
+                    "Standard_DS11",
+                    "Standard_DS12",
+                    "Standard_DS13",
+                    "Standard_DS14",
+                    "Standard_DS1_v2",
+                    "Standard_DS2_v2",
+                    "Standard_DS3_v2",
+                    "Standard_DS4_v2",
+                    "Standard_DS5_v2",
+                    "Standard_DS11_v2",
+                    "Standard_DS12_v2",
+                    "Standard_DS13_v2",
+                    "Standard_DS14_v2",
+                    "Standard_DS15_v2",
+                    "Standard_F1",
+                    "Standard_F2",
+                    "Standard_F4",
+                    "Standard_F8",
+                    "Standard_F16",
+                    "Standard_F1s",
+                    "Standard_F2s",
+                    "Standard_F4s",
+                    "Standard_F8s",
+                    "Standard_F16s"
+                  ]
+                },
+                "osPlatform": "Linux",
+                "count": "[steps('nodesStep').clientNodes.vmClientNodeCount]"
+              }
+            ]
           }
         ]
       },
       {
         "name": "shieldStep",
-        "label": "Shield Users",
+        "label": "Shield Users Configuration",
         "subLabel": {
           "preValidation": "Required",
           "postValidation": "Done"
         },
-        "bladeTitle": "Shield Users",
+        "bladeTitle": "Shield Users Configuration",
         "elements": [
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "es_admin",
+            "label": "es_admin User",
             "elements": [
               {
                 "name": "shieldAdminPassword",
@@ -622,7 +691,7 @@
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be atleast 6 characters long"
+                  "validationMessage": "Shield password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -633,7 +702,7 @@
           {
             "name": "es_read",
             "type": "Microsoft.Common.Section",
-            "label": "es_read",
+            "label": "es_read User",
             "elements": [
               {
                 "name": "shieldReadPassword",
@@ -646,7 +715,7 @@
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be atleast 6 characters long"
+                  "validationMessage": "Shield password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -657,7 +726,7 @@
           {
             "name": "es_kibana",
             "type": "Microsoft.Common.Section",
-            "label": "es_kibana",
+            "label": "es_kibana User",
             "elements": [
               {
                 "name": "shieldKibanaPassword",
@@ -670,7 +739,7 @@
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be atleast 6 characters long"
+                  "validationMessage": "Shield password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -806,7 +875,7 @@
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Load balancer type",
             "defaultValue": "Internal",
-            "toolTip": "Choose whether the load balancer should be public facing or internal.",
+            "toolTip": "Choose whether the load balancer should be public facing (external) or internal.",
             "constraints": {
               "allowedValues": [
                 {
@@ -953,28 +1022,27 @@
     "outputs": {
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
-      "cloudAzureStorageAccountName": "[steps('clusterSettingsStep').cloudAzureStorageAccount.name]",
-      "cloudAzureStorageAccountExistingResourceGroup": "[steps('clusterSettingsStep').cloudAzureStorageAccount.resourceGroup]",
-      "cloudAzureStorageAccountNewType": "[steps('clusterSettingsStep').cloudAzureStorageAccount.type]",
-      "cloudAzureStorageAccountNewOrExisting": "[steps('clusterSettingsStep').cloudAzureStorageAccount.newOrExisting]",
-      "cloudAzureStorageAccountNewUnique": "Yes",
+      "azureCloudPlugin": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin]",
+      "azureCloudStorageAccountName": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountName]",
+      "azureCloudStorageAccountKey": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountKey]",
+      "esAdditionalPlugins": "[steps('clusterSettingsStep').esAdditionalPlugins]",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
-      "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
-      "vNetName": "[steps('clusterSettingsStep').virtualNetwork.name]",
-      "vNetSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.name]",
-      "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.startAddress]",
-      "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
-      "vNetNewAddressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
-      "vNetNewSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.subnet1.addressPrefix]",
+      "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
+      "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
+      "vNetSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
+      "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress]",
+      "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]",
+      "vNetNewAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefix]",
+      "vNetNewSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",
       "kibana": "[steps('externalAccessStep').kibana]",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
-      "vmSizeDataNodes": "[steps('nodesStep').vmSizeDataNodes]",
-      "vmDataNodeCount": "[steps('nodesStep').vmDataNodeCount]",
-      "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodesAreMasterEligible]",
+      "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
+      "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
+      "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodes.dataNodesAreMasterEligible]",
       "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
-      "vmSizeMasterNodes": "[steps('nodesStep').vmSizeMasterNodes]",
-      "vmClientNodeCount": "[steps('nodesStep').vmClientNodeCount]",
-      "vmSizeClientNodes": "[steps('nodesStep').vmSizeClientNodes]",
+      "vmSizeMasterNodes": "[steps('nodesStep').masterNodes.vmSizeMasterNodes]",
+      "vmClientNodeCount": "[steps('nodesStep').clientNodes.vmClientNodeCount]",
+      "vmSizeClientNodes": "[steps('nodesStep').clientNodes.vmSizeClientNodes]",
       "vmSizeKibana": "[steps('externalAccessStep').vmSizeKibana]",
       "adminUsername": "[basics('adminUsername')]",
       "authenticationType": "[basics('password').authenticationType]",

@@ -48,6 +48,7 @@ help()
     echo "-S kibana server password"
 
     echo "-l install plugins"
+    echo "-L <plugin;plugin> install additional plugins"
 
     echo "-U api url"
     echo "-I marketing id"
@@ -59,6 +60,7 @@ help()
     echo "-s cluster setup"
     echo "-o country"
 
+    echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
 
@@ -81,6 +83,8 @@ CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
+INSTALL_ADDITIONAL_PLUGINS=""
+INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 CLUSTER_USES_DEDICATED_MASTERS=0
@@ -104,7 +108,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -130,6 +134,12 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:xyzldh optname; do
       ;;
     l) #install plugins
       INSTALL_PLUGINS=1
+      ;;
+    L) #install additional plugins
+      INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;
+    j) #install azure cloud plugin
+      INSTALL_AZURECLOUD_PLUGIN=1
       ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT=${OPTARG}
@@ -199,8 +209,16 @@ if [ $DATA_ONLY_NODE -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -z"
 fi
 
+if [ $INSTALL_AZURECLOUD_PLUGIN -eq 1 ]; then
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -j"
+fi
+
 if [ $INSTALL_PLUGINS -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -l"
+fi
+
+if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -L $INSTALL_ADDITIONAL_PLUGINS"
 fi
 
 # install elasticsearch

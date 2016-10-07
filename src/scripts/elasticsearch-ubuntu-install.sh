@@ -51,7 +51,9 @@ help()
     echo "-y configure as client only node (no master, no data)"
     echo "-z configure as data node (no master)"
     echo "-l install plugins"
+    echo "-L <plugin;plugin> install additional plugins"
 
+    echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
 
@@ -67,6 +69,8 @@ log()
 
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
 START_TIME=$SECONDS
+
+export DEBIAN_FRONTEND=noninteractive
 
 #########################
 # Preconditions
@@ -100,6 +104,7 @@ CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
+INSTALL_ADDITIONAL_PLUGINS=""
 CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
@@ -115,11 +120,12 @@ USER_READ_PWD="changeME"
 USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
 
+INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -155,11 +161,17 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
     l) #install plugins
       INSTALL_PLUGINS=1
       ;;
+    L) #install additional plugins
+      INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
       ;;
     p) #namespace prefix for nodes
       NAMESPACE_PREFIX="${OPTARG}"
+      ;;
+    j) #install azure cloud plugin
+      INSTALL_AZURECLOUD_PLUGIN=1
       ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT=${OPTARG}
@@ -235,7 +247,7 @@ install_java()
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     log "[install_java] Installing Java"
-    (apt-get -y install oracle-java8-installer || (sleep 15; apt-get -y install oracle-java8-installer)) || (sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install)
+    (apt-get -yq install oracle-java8-installer || (sleep 15; apt-get -yq install oracle-java8-installer)) || (sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install)
     log "[install_java] Installed Java"
 }
 
@@ -269,10 +281,6 @@ install_plugins()
       log "[install_plugins] Installed X-Pack plugin Graph"
     fi
 
-    log "[install_plugins] Installing plugin Cloud-Azure"
-    sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
-    log "[install_plugins] Installed plugin Cloud-Azure"
-
     log "[install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
     log "[install_plugins] Finished adding es_admin"
@@ -295,7 +303,7 @@ install_plugins()
             echo -e "      privileges:"
             echo -e "        - view_index_metadata"
             echo -e "        - read"
-            echo -e "    - names: '.kibana*'" 
+            echo -e "    - names: '.kibana*'"
             echo -e "      privileges:"
             echo -e "        - manage"
             echo -e "        - read"
@@ -312,6 +320,32 @@ install_plugins()
     log "[install_plugins]  Start adding es_kibana_server"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
     log "[install_plugins]  Finished adding es_kibana_server"
+}
+
+install_additional_plugins()
+{
+    log "[install_additional_plugins] Installing additional plugins"
+    for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
+    do
+        log "[install_additional_plugins] Installing plugin $PLUGIN"
+        sudo /usr/share/elasticsearch/bin/plugin install $PLUGIN
+        log "[install_additional_plugins] Installed plugin $PLUGIN"        
+    done    
+}
+
+install_azure_cloud_plugin()
+{ 
+    log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
+    sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
+    log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
+
+    # Configure Azure Cloud plugin
+    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
+        log "[install_azure_cloud_plugin] Configuring storage for Azure Cloud"
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+        log "[install_azure_cloud_plugin] Configured storage for Azure Cloud"
+    fi
 }
 
 configure_elasticsearch_yaml()
@@ -358,14 +392,6 @@ configure_elasticsearch_yaml()
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
     echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
 
-    # Configure Azure Cloud plugin
-    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
-        log "[configure_elasticsearch_yaml] Configuring storage for Azure Cloud"
-        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
-        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[configure_elasticsearch_yaml] Configured storage for Azure Cloud"
-    fi
-
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 
     # Swap is disabled by default in Ubuntu Azure VMs
@@ -375,7 +401,7 @@ configure_elasticsearch_yaml()
 install_ntp()
 {
     log "[install_ntp] installing ntp daemon"
-    apt-get -y install ntp
+    (apt-get -yq install ntp || (sleep 15; apt-get -yq install ntp))
     ntpdate pool.ntp.org
     log "[install_ntp] installed ntp daemon and ntpdate"
 }
@@ -383,7 +409,7 @@ install_ntp()
 install_monit()
 {
     log "[install_monit] installing monit"
-    apt-get -y install monit
+    (apt-get -yq install monit || (sleep 15; apt-get -yq install monit))
     echo "set daemon 30" >> /etc/monit/monitrc
     echo "set httpd port 2812 and" >> /etc/monit/monitrc
     echo "    use address localhost" >> /etc/monit/monitrc
@@ -400,6 +426,7 @@ start_monit()
 {
     log "[start_monit] starting monit"
     sudo /etc/init.d/monit start
+    sudo monit reload # use the new configuration
     sudo monit start all
     log "[start_monit] started monit"
 }
@@ -411,7 +438,7 @@ start_elasticsearch()
     update-rc.d elasticsearch defaults 95 10
     sudo service elasticsearch start
     log "[start_elasticsearch] complete elasticsearch setup and started"
-} 
+}
 
 configure_elasticsearch()
 {
@@ -460,7 +487,7 @@ port_forward()
 
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
-    apt-get -y install iptables-persistent
+    (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
     #persist the rules to file
     sudo service iptables-persistent save
     sudo service iptables-persistent start
@@ -468,12 +495,6 @@ port_forward()
     sudo update-rc.d iptables-persistent defaults 90 15
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
-}
-
-start_walinuxagent()
-{
-    log "[start_walinuxagent] making sure the walinuxagent is running"
-    sudo service walinuxagent start
 }
 
 #########################
@@ -492,13 +513,9 @@ fi
 
 format_data_disks
 
-start_walinuxagent
-
 install_ntp
 
 install_java
-
-start_walinuxagent
 
 install_es
 
@@ -508,21 +525,27 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
 fi
 
+if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
+    install_additional_plugins
+fi
+
 install_monit
 
 configure_elasticsearch_yaml
+
+if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
+    install_azure_cloud_plugin
+fi
 
 configure_elasticsearch
 
 configure_os_properties
 
-start_monit
-
 start_elasticsearch
 
-port_forward
+start_monit
 
-start_walinuxagent
+port_forward
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
 PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))
