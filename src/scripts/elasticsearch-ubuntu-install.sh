@@ -517,9 +517,9 @@ configure_elasticsearch
 
 configure_os_properties
 
-start_monit
-
 start_elasticsearch
+
+start_monit
 
 port_forward
 
