@@ -400,6 +400,7 @@ start_monit()
 {
     log "[start_monit] starting monit"
     sudo /etc/init.d/monit start
+    sudo monit reload # use the new configuration
     sudo monit start all
     log "[start_monit] started monit"
 }
