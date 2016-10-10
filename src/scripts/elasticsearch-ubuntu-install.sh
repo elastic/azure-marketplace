@@ -400,6 +400,7 @@ start_monit()
 {
     log "[start_monit] starting monit"
     sudo /etc/init.d/monit start
+    sudo monit reload # use the new configuration
     sudo monit start all
     log "[start_monit] started monit"
 }
@@ -516,9 +517,9 @@ configure_elasticsearch
 
 configure_os_properties
 
-start_monit
-
 start_elasticsearch
+
+start_monit
 
 port_forward
 
