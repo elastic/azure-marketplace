@@ -68,6 +68,8 @@ log()
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
 START_TIME=$SECONDS
 
+export DEBIAN_FRONTEND=noninteractive
+
 #########################
 # Preconditions
 #########################
@@ -235,7 +237,7 @@ install_java()
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     log "[install_java] Installing Java"
-    (apt-get -y install oracle-java8-installer || (sleep 15; apt-get -y install oracle-java8-installer)) || (sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install)
+    (apt-get -yq install oracle-java8-installer || (sleep 15; apt-get -yq install oracle-java8-installer)) || (sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install)
     log "[install_java] Installed Java"
 }
 
@@ -295,7 +297,7 @@ install_plugins()
             echo -e "      privileges:"
             echo -e "        - view_index_metadata"
             echo -e "        - read"
-            echo -e "    - names: '.kibana*'" 
+            echo -e "    - names: '.kibana*'"
             echo -e "      privileges:"
             echo -e "        - manage"
             echo -e "        - read"
@@ -375,7 +377,7 @@ configure_elasticsearch_yaml()
 install_ntp()
 {
     log "[install_ntp] installing ntp daemon"
-    apt-get -y install ntp
+    (apt-get -yq install ntp || (sleep 15; apt-get -yq install ntp))
     ntpdate pool.ntp.org
     log "[install_ntp] installed ntp daemon and ntpdate"
 }
@@ -383,7 +385,7 @@ install_ntp()
 install_monit()
 {
     log "[install_monit] installing monit"
-    apt-get -y install monit
+    (apt-get -yq install monit || (sleep 15; apt-get -yq install monit))
     echo "set daemon 30" >> /etc/monit/monitrc
     echo "set httpd port 2812 and" >> /etc/monit/monitrc
     echo "    use address localhost" >> /etc/monit/monitrc
@@ -412,7 +414,7 @@ start_elasticsearch()
     update-rc.d elasticsearch defaults 95 10
     sudo service elasticsearch start
     log "[start_elasticsearch] complete elasticsearch setup and started"
-} 
+}
 
 configure_elasticsearch()
 {
@@ -461,7 +463,7 @@ port_forward()
 
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
-    apt-get -y install iptables-persistent
+    (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
     #persist the rules to file
     sudo service iptables-persistent save
     sudo service iptables-persistent start
