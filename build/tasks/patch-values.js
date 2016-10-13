@@ -93,12 +93,17 @@ gulp.task("patch", function(cb) {
 
         //patch allowedVMSizes on the nodesStep
         var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
+        
+        var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
+        var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
+        var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
+
         var externalAccessStep = _.find(obj.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
         var userInformationStep =  _.find(obj.parameters.steps, function (step) { return step.name == "userInformationStep"; });
 
-        var masterSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
-        var dataSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeDataNodes"; });
-        var clientSizeControl = _.find(nodesStep.elements, function (el) { return el.name == "vmSizeClientNodes"; });
+        var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
+        var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
+        var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
         var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
         var patchVmSizes = function(control, patchRecommended) {
           delete control.constraints.allowedValues;
@@ -114,9 +119,9 @@ gulp.task("patch", function(cb) {
         patchVmSizes(clientSizeControl);
         patchVmSizes(kibanaSizeControl);
 
-        var dataNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmDataNodeCount"; });
+        var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
         dataNodeCountControl.constraints.allowedValues = dataNodeValues;
-        var clientNodeCountControl = _.find(nodesStep.elements, function (el) { return el.name == "vmClientNodeCount"; });
+        var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
         clientNodeCountControl.constraints.allowedValues = clientNodeValues;
 
         var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });

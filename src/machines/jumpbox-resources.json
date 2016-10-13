@@ -4,7 +4,7 @@
   "parameters": {
     "templateBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/existing-storage-account/src/",
       "metadata": {
         "description": "Base uri of resources"
       }
@@ -57,7 +57,7 @@
       "computername": "[variables('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "adminPassword": "[parameters('credentials').password]"
-  },
+    },
     "sshPublicKey_osProfile": {
       "computername": "[variables('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",

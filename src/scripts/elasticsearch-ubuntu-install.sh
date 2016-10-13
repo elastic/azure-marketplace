@@ -52,6 +52,7 @@ help()
     echo "-z configure as data node (no master)"
     echo "-l install plugins"
 
+    echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
 
@@ -117,11 +118,12 @@ USER_READ_PWD="changeME"
 USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
 
+INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -162,6 +164,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldh optname; do
       ;;
     p) #namespace prefix for nodes
       NAMESPACE_PREFIX="${OPTARG}"
+      ;;
+    j) #install azure cloud plugin
+      INSTALL_AZURECLOUD_PLUGIN=1
       ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT=${OPTARG}
@@ -271,10 +276,6 @@ install_plugins()
       log "[install_plugins] Installed X-Pack plugin Graph"
     fi
 
-    log "[install_plugins] Installing plugin Cloud-Azure"
-    sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
-    log "[install_plugins] Installed plugin Cloud-Azure"
-
     log "[install_plugins] Start adding es_admin"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
     log "[install_plugins] Finished adding es_admin"
@@ -314,6 +315,21 @@ install_plugins()
     log "[install_plugins]  Start adding es_kibana_server"
     sudo /usr/share/elasticsearch/bin/shield/esusers useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
     log "[install_plugins]  Finished adding es_kibana_server"
+}
+
+install_azure_cloud_plugin()
+{ 
+    log "[install_plugins] Installing plugin Cloud-Azure"
+    sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
+    log "[install_plugins] Installed plugin Cloud-Azure"
+
+    # Configure Azure Cloud plugin
+    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
+        log "[configure_elasticsearch_yaml] Configuring storage for Azure Cloud"
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+        log "[configure_elasticsearch_yaml] Configured storage for Azure Cloud"
+    fi
 }
 
 configure_elasticsearch_yaml()
@@ -359,14 +375,6 @@ configure_elasticsearch_yaml()
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
     echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
-
-    # Configure Azure Cloud plugin
-    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
-        log "[configure_elasticsearch_yaml] Configuring storage for Azure Cloud"
-        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
-        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[configure_elasticsearch_yaml] Configured storage for Azure Cloud"
-    fi
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 
@@ -514,6 +522,10 @@ fi
 install_monit
 
 configure_elasticsearch_yaml
+
+if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
+    install_azure_cloud_plugin
+fi
 
 configure_elasticsearch
 
