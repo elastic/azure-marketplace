@@ -30,9 +30,28 @@ npm run links -- --branch master
 ## Azure Marketplace
 
 The Azure Marketplace Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
-It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), and for Elasticsearch 2.3.0+, [Graph](https://www.elastic.co/products/graph). 
+It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), [Graph](https://www.elastic.co/products/graph) (for Elasticsearch 2.3.0+) and [Reporting](https://www.elastic.co/products/reporting) (for Elasticsearch 2.4.0+). 
 
-Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) is installed to support snapshot and restore.
+Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) can be optionally installed to support snapshot and restore.
+
+---
+
+### VERY IMPORTANT
+**This template does not configure SSL/TLS for communication with Kibana, or Elasticsearch through an external load balancer. It is strongly recommended that you secure
+communication before using in production.**
+
+Additionally, for Elasticsearch 2.4.0+, when X-Pack plugins and Kibana are installed, the Shield plugin is also installed in Kibana to provide login/logout functionality as well
+as allow the Graph UI to function correctly. The Shield plugin is configured to skip checking that requests are made over HTTPS and allow session cookies to be sent
+over HTTP by setting the following options in `kibana.yml`
+
+```
+shield.useUnsafeSessions: true
+shield.skipSslCheck: true
+```
+**It is strongly recommended that you remove these settings and [secure communication to Kibana by enabling SSL](https://www.elastic.co/guide/en/kibana/4.6/production.html#enabling-ssl) before
+using in production.**
+
+---
 
 ![Example UI Flow](images/ui.gif)
 
