@@ -33,7 +33,6 @@ gulp.task("sanity-checks", function(cb) {
   outputDiff("client", "machines/client-nodes-resources.json", "empty/empty-client-nodes-resources.json");
   outputDiff("master", "machines/master-nodes-resources.json", "empty/empty-master-nodes-resources.json");
   outputDiff("networks", "networks/existing-virtual-network.json", "networks/new-virtual-network.json");
-  outputDiff("storageAccounts", "storageAccounts/existing-storage-account.json", "storageAccounts/new-storage-account.json");
   if (errors.length) throw new Error("Sanity checks failed:\n" + errors);
   cb();
 });

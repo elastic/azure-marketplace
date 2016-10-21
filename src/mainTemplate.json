@@ -34,57 +34,6 @@
         "description": "The name of the Elasticsearch cluster"
       }
     },
-    "cloudAzureStorageAccountName": {
-      "type": "string",
-      "defaultValue": "essnapshot",
-      "minLength": 3,
-      "maxLength": 24,
-      "metadata": {
-        "description": "The name of the storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase characters."
-      }
-    },
-    "cloudAzureStorageAccountExistingResourceGroup": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "The name of the resource group in which an existing storage account resides to use for snapshots with Azure Cloud plugin"
-      }
-    },
-    "cloudAzureStorageAccountNewType": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_ZRS",
-        "Standard_GRS",
-        "Standard_RAGRS"
-      ],
-      "metadata": {
-        "description": "The type of new storage account for snapshots with Azure Cloud plugin"
-      }
-    },
-    "cloudAzureStorageAccountNewOrExisting": {
-      "type": "string",
-      "defaultValue": "new",
-      "allowedValues": [
-        "new",
-        "existing"
-      ],
-      "metadata": {
-        "description": "Choose to create a new storage account or use an existing one for snapshots with Azure Cloud plugin"
-      }
-    },
-    "cloudAzureStorageAccountNewUnique": {
-      "type": "string",
-      "defaultValue": "No",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Whether the new storage account to use for snapshots has been validated to be unique. If set to Yes then the new storage account name will be taken verbatim; if set to No then the first 11 characters of the storage account name will be taken as a prefix to a randomly generated unique storage account name"
-      }
-    },
     "loadBalancerType": {
       "type": "string",
       "defaultValue": "internal",
@@ -96,6 +45,32 @@
         "description": "Setup the load balancer as internal or external. If you are setting up Elasticsearch on an external endpoint you will need to secure your nodes with a product like Elastic's Shield"
       }
     },
+    "azureCloudPlugin": {
+      "type": "string",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "defaultValue": "No",
+      "metadata": {
+        "description": "Choose whether to install Azure Cloud plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore"
+      }
+    },
+    "azureCloudStorageAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "maxLength": 24,
+      "metadata": {
+        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase characters."
+      }
+    },
+    "azureCloudStorageAccountKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The access key of an existing storage account to use for snapshots with Azure Cloud plugin"
+      }
+    },
     "esPlugins": {
       "type": "string",
       "allowedValues": [
@@ -104,7 +79,7 @@
       ],
       "defaultValue": "Yes",
       "metadata": {
-        "description": "Install the Plugins - Marvel, Shield, Watcher, Graph* (Elasticsearch version permitting)"
+        "description": "Install the Plugins - Marvel, Shield, Watcher, Graph* (Elasticsearch 2.3.0+)"
       }
     },
     "kibana": {
@@ -116,14 +91,6 @@
       ],
       "metadata": {
         "description": "Provision a machine with Kibana on it"
-      }
-    },
-    "vmHostNamePrefix": {
-      "type": "string",
-      "defaultValue": "",
-      "maxLength": 5,
-      "metadata": {
-        "description": "The prefix to use for hostnames when naming virtual machines in the cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix to differentiate the hostnames of this cluster from an existing cluster"
       }
     },
     "vmSizeKibana": {
@@ -197,7 +164,15 @@
         "No"
       ],
       "metadata": {
-        "description": "Optionally add a virtual machine to the deployment which you can use to connect and manage virtual machines on the internal network"
+        "description": "Optionally add a virtual machine to the deployment which can be used to connect and manage virtual machines within the cluster"
+      }
+    },
+    "vmHostNamePrefix": {
+      "type": "string",
+      "defaultValue": "",
+      "maxLength": 5,
+      "metadata": {
+        "description": "The prefix to use for hostnames when naming virtual machines in the cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix to differentiate the hostnames of this cluster from an existing cluster"
       }
     },
     "vmSizeDataNodes": {
@@ -278,7 +253,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Make all data nodes master-eligible, this can be useful for small elasticsearch cluster deployments"
+        "description": "Make all data nodes master-eligible, this can be useful for small elasticsearch cluster deployments, but for larger deployments, it is recommended to use dedicated master nodes"
       }
     },
     "vmSizeMasterNodes": {
@@ -341,7 +316,7 @@
         "Standard_F16s"
       ],
       "metadata": {
-        "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible 3 of these will be provisioned"
+        "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible, 3 master nodes of this size will be provisioned"
       }
     },
     "vmClientNodeCount": {
@@ -428,21 +403,21 @@
         "sshPublicKey"
       ],
       "metadata": {
-        "description": ""
+        "description": "Choose a password or ssh public key for the Admin username used to access virtual machines"
       }
     },
     "adminPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": ""
+        "description": "Admin password"
       }
     },
     "sshPublicKey": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": ""
+        "description": "Admin ssh public key"
       }
     },
     "shieldAdminPassword": {
@@ -608,6 +583,11 @@
     }
   },
   "variables": {
+    "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
+    "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'partials/shared-resources.json')]",
+    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', parameters('vNetNewOrExisting'), '-virtual-network.json')]",
+    "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), 'loadbalancers/', parameters('loadBalancerType') ,'-lb-resources.json')]",
+    "osSettingsTemplateUrl": "[concat(variables('templateBaseUrl'), 'settings/ubuntuSettings.json')]",
     "locationMap": {
       "ResourceGroup": "[resourceGroup().location]",
       "eastasia": "[resourceGroup().location]",
@@ -636,60 +616,10 @@
       "westus2": "[resourceGroup().location]"
     },
     "location": "[variables('locationMap')[parameters('location')]]",
-    "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
-    "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), '/partials/shared-resources.json')]",
-    "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), '/loadbalancers/', parameters('loadBalancerType') ,'-lb-resources.json')]",
-    "masterTemplates": {
-      "No": "machines/master-nodes-resources.json",
-      "Yes": "empty/empty-master-nodes-resources.json"
-    },
-    "masterTemplateUrl": "[concat(variables('templateBaseUrl'), variables('masterTemplates')[parameters('dataNodesAreMasterEligible')])]",
-    "jumpboxTemplates": {
-      "No": "empty/empty-jumpbox-resources.json",
-      "Yes": "machines/jumpbox-resources.json"
-    },
-    "jumpboxTemplateUrl": "[concat(variables('templateBaseUrl'), variables('jumpboxTemplates')[parameters('jumpbox')])]",
-    "kibanaTemplates": {
-      "No": "empty/empty-kibana-resources.json",
-      "Yes": "machines/kibana-resources.json"
-    },
-    "kibanaTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaTemplates')[parameters('kibana')])]",
-    "clientTemplates": [
-      "empty/empty-client-nodes-resources.json",
-      "machines/client-nodes-resources.json"
-    ],
-    "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
-    "clientTemplateUrl": "[concat(variables('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
-    "cloudAzureStorageAccountTemplates": {
-      "new": "storageAccounts/new-storage-account.json",
-      "existing": "storageAccounts/existing-storage-account.json"
-    },
-    "cloudAzureStorageAccountNameMap": {
-      "new": {
-        "Yes": "[parameters('cloudAzureStorageAccountName')]",
-        "No": "[concat(take(parameters('cloudAzureStorageAccountName'), 11), uniqueString(resourceGroup().id, subscription().id, deployment().name))]"
-      },
-      "existing": {
-        "Yes": "[parameters('cloudAzureStorageAccountName')]",
-        "No": "[parameters('cloudAzureStorageAccountName')]"
-      }
-    },
-    "cloudAzureStorageAccountResourceGroupMap": {
-      "new": "[resourceGroup().name]",
-      "existing": "[parameters('cloudAzureStorageAccountExistingResourceGroup')]"
-    },
-    "cloudAzureStorageAccountTemplateUrl": "[concat(variables('templateBaseUrl'), variables('cloudAzureStorageAccountTemplates')[parameters('cloudAzureStorageAccountNewOrExisting')])]",
-    "cloudAzureStorageAccount": {
-      "name": "[variables('cloudAzureStorageAccountNameMap')[parameters('cloudAzureStorageAccountNewOrExisting')][parameters('cloudAzureStorageAccountNewUnique')]]",
-      "type": "[parameters('cloudAzureStorageAccountNewType')]",
-      "resourceGroup": "[variables('cloudAzureStorageAccountResourceGroupMap')[parameters('cloudAzureStorageAccountNewOrExisting')]]",
-      "location": "[variables('location')]"
-    },
-    "credentials": {
-      "adminUsername": "[parameters('adminUsername')]",
-      "password": "[parameters('adminPassword')]",
-      "authenticationType": "[parameters('authenticationType')]",
-      "sshPublicKey": "[parameters('sshPublicKey')]"
+    "azureCloudStorageAccount": {
+      "name": "[parameters('azureCloudStorageAccountName')]",
+      "key": "[parameters('azureCloudStorageAccountKey')]",
+      "install": "[parameters('azureCloudPlugin')]"
     },
     "esToKibanaMapping": {
       "2.0.2": "4.2.2",
@@ -720,68 +650,19 @@
       "No": "0",
       "Yes": "1"
     },
-    "namespacePrefix": "[parameters('vmHostNamePrefix')]",
-    "clusterSetup": {
-      "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
-      "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
-      "vmHostNamePrefix": "[variables('namespacePrefix')]",
-      "vNetLoadBalancerIp": "[parameters('vNetLoadBalancerIp')]",
-      "setup": "[concat('m=', variables('masterNodeCount')[parameters('dataNodesAreMasterEligible')], ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', variables('kibanajumpboxNodeCount')[parameters('kibana')], ' ', parameters('vmSizeKibana'), ',j=', variables('kibanajumpboxNodeCount')[parameters('jumpbox')], ' Standard_A0', ',l=', parameters('loadBalancerType'))]"
-    },
-    "userDetails": {
+    "phoneHomeSettings": {
       "email": "[parameters('userEmail')]",
       "firstName": "[parameters('userFirstName')]",
       "lastName": "[parameters('userLastName')]",
       "jobTitle": "[parameters('userJobTitle')]",
       "company": "[parameters('userCompany')]",
-      "country": "[parameters('userCountry')]"
+      "country": "[parameters('userCountry')]",
+      "topology": "[concat('m=', variables('masterNodeCount')[parameters('dataNodesAreMasterEligible')], ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', variables('kibanajumpboxNodeCount')[parameters('kibana')], ' ', parameters('vmSizeKibana'), ',j=', variables('kibanajumpboxNodeCount')[parameters('jumpbox')], ' Standard_A0', ',l=', parameters('loadBalancerType'))]"
     },
-    "OS": "ubuntu",
-    "osSettingsTemplateUrl": "[concat(variables('templateBaseUrl'), 'settings/', variables('OS'), 'Settings.json')]",
-    "storageAccountPrefix": "elastic",
-    "storageAccountNameShared": "[concat(variables('storageAccountPrefix'), 's', uniqueString(resourceGroup().id, deployment().name))]",
-    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', parameters('vNetNewOrExisting'), '-virtual-network.json')]",
     "networkResourceGroupMap": {
       "new": "[resourceGroup().name]",
       "existing": "[parameters('vNetExistingResourceGroup')]"
     },
-    "networkSettings": {
-      "name": "[parameters('vNetName')]",
-      "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
-      "location": "[variables('location')]",
-      "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
-      "subnet": {
-        "name": "[parameters('vNetSubnetName')]",
-        "addressPrefix": "[parameters('vNetNewSubnetAddressPrefix')]",
-        "loadbalancerIp": "[parameters('vNetLoadBalancerIp')]"
-      }
-    },
-    "backendPoolConfigurations": {
-      "internal": [
-        {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
-        }
-      ],
-      "external": [
-        {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
-        },
-        {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
-        }
-      ]
-    },
-    "lbBackEndPoolsAdded": {
-      "backendPools": "[variables('backendPoolConfigurations')[parameters('loadBalancerType')]]"
-    },
-    "lbBackendPoolsRemoved": {
-      "backendPools": []
-    },
-    "dataLBOptions": [
-      "[variables('lbBackEndPoolsAdded')]",
-      "[variables('lbBackEndPoolsRemoved')]"
-    ],
-    "dataLBSettings": "[variables('dataLBOptions')[variables('clientResourceIndex')]]",
     "dataSkuSettings": {
       "Standard_A0": {
         "dataDisks": 1,
@@ -1054,20 +935,78 @@
         "storageAccountType": "Premium_LRS"
       }
     },
+    "backendPoolConfigurations": {
+      "internal": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+        }
+      ],
+      "external": [
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+        },
+        {
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
+        }
+      ]
+    },
+    "lbBackEndPoolsAdded": {
+      "backendPools": "[variables('backendPoolConfigurations')[parameters('loadBalancerType')]]"
+    },
+    "lbBackendPoolsRemoved": {
+      "backendPools": []
+    },
+    "dataLoadBalancerOptions": [
+      "[variables('lbBackEndPoolsAdded')]",
+      "[variables('lbBackEndPoolsRemoved')]"
+    ],
+    "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
     "nodesPerStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].nodesPerStorageAccount]",
     "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
-    "dataNodeStorageSettings": {
-      "count": "[variables('storageAccountsCount')]",
-      "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
-      "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]"
+    "topologySettings": {
+      "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
+      "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
+      "vmSizeDataNodes": "[parameters('vmSizeDataNodes')]",
+      "vmHostNamePrefix": "[parameters('vmHostNamePrefix')]",
+      "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
+      "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",
+      "vNetLoadBalancerIp": "[parameters('vNetLoadBalancerIp')]",
+      "vmSizeMasterNodes": "[parameters('vmSizeMasterNodes')]",
+      "vmSizeKibana": "[parameters('vmSizeKibana')]",
+      "kibana": "[parameters('kibana')]",
+      "jumpbox": "[parameters('jumpbox')]",
+      "dataNodeStorageSettings": {
+        "count": "[variables('storageAccountsCount')]",
+        "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
+        "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+        "dataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]"
+      },
+      "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
+      "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]"
     },
-    "dataTemplateUrl": "[concat(variables('templateBaseUrl'), 'datanodes/data-node-', string(variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks), 'disk-resources.json')]",
-    "sharedVmConfig": {
-      "storageAccountName": "[variables('storageAccountNameShared')]",
+    "networkSettings": {
+      "name": "[parameters('vNetName')]",
+      "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
+      "location": "[variables('location')]",
+      "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
+      "subnet": {
+        "name": "[parameters('vNetSubnetName')]",
+        "addressPrefix": "[parameters('vNetNewSubnetAddressPrefix')]",
+        "loadbalancerIp": "[parameters('vNetLoadBalancerIp')]"
+      }
+    },
+    "commonVmSettings": {
+      "namespacePrefix": "[parameters('vmHostNamePrefix')]",
+      "storageAccountName": "[concat('elastic', uniqueString(resourceGroup().id, deployment().name))]",
       "location": "[variables('location')]",
       "subnet": "[variables('networkSettings').subnet]",
       "subnetId": "[concat(resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', variables('networkSettings').name), '/subnets/', variables('networkSettings').subnet.name)]",
-      "credentials": "[variables('credentials')]"
+      "credentials": {
+        "adminUsername": "[parameters('adminUsername')]",
+        "password": "[parameters('adminPassword')]",
+        "authenticationType": "[parameters('authenticationType')]",
+        "sshPublicKey": "[parameters('sshPublicKey')]"
+      }
     }
   },
   "resources": [
@@ -1086,24 +1025,7 @@
             "value": "[variables('location')]"
           },
           "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          }
-        }
-      }
-    },
-    {
-      "name": "cloud-azure-storage-account",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('cloudAzureStorageAccountTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "cloudAzureStorageAccount": {
-            "value": "[variables('cloudAzureStorageAccount')]"
+            "value": "[variables('commonVmSettings').storageAccountName]"
           }
         }
       }
@@ -1131,8 +1053,7 @@
       "apiVersion": "2016-02-01",
       "dependsOn": [
         "[concat('Microsoft.Resources/deployments/', 'shared')]",
-        "[concat('Microsoft.Resources/deployments/', 'network')]",
-        "[concat('Microsoft.Resources/deployments/', 'cloud-azure-storage-account')]"
+        "[concat('Microsoft.Resources/deployments/', 'network')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -1148,11 +1069,11 @@
       }
     },
     {
-      "name": "os-settings",
+      "name": "virtual-machines",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'cloud-azure-storage-account')]"
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -1161,209 +1082,26 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
+          "templateBaseUrl": {
+            "value": "[variables('templateBaseUrl')]"
+          },
           "esSettings": {
             "value": "[variables('esSettings')]"
           },
-          "userDetails": {
-            "value": "[variables('userDetails')]"
+          "commonVmSettings": {
+            "value": "[variables('commonVmSettings')]"
           },
-          "clusterSetup": {
-            "value": "[variables('clusterSetup')]"
+          "phoneHomeSettings": {
+            "value": "[variables('phoneHomeSettings')]"
           },
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "cloudAzureStorageAccount": {
-            "value": {
-              "name": "[reference('cloud-azure-storage-account').outputs.name.value]",
-              "key": "[reference('cloud-azure-storage-account').outputs.key.value]"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "master-nodes",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'os-settings')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('masterTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "vm": {
-            "value": {
-              "shared": "[variables('sharedVmConfig')]",
-              "namespace": "[concat(variables('namespacePrefix'), 'master-')]",
-              "installScript": "[reference('os-settings').outputs.settings.value.extensionSettings.master]",
-              "size": "[parameters('vmSizeMasterNodes')]",
-              "count": 3,
-              "useSharedStorageAccount": "Yes",
-              "useBackendPools": "No",
-              "backendPools": [],
-              "imageReference": "[reference('os-settings').outputs.settings.value.imageReference]"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "client-nodes",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'os-settings')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('clientTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "vm": {
-            "value": {
-              "shared": "[variables('sharedVmConfig')]",
-              "namespace": "[concat(variables('namespacePrefix'), 'client-')]",
-              "installScript": "[reference('os-settings').outputs.settings.value.extensionSettings.client]",
-              "size": "[parameters('vmSizeClientNodes')]",
-              "count": "[parameters('vmClientNodeCount')]",
-              "useSharedStorageAccount": "Yes",
-              "useBackendPools": "Yes",
-              "backendPools": "[variables('lbBackEndPoolsAdded').backendPools]",
-              "imageReference": "[reference('os-settings').outputs.settings.value.imageReference]"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "data-nodes",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'os-settings')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('dataTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "vm": {
-            "value": {
-              "shared": "[variables('sharedVmConfig')]",
-              "namespace": "[concat(variables('namespacePrefix'), 'data-')]",
-              "installScript": "[reference('os-settings').outputs.settings.value.extensionSettings.data]",
-              "size": "[parameters('vmSizeDataNodes')]",
-              "count": "[parameters('vmDataNodeCount')]",
-              "useSharedStorageAccount": "No",
-              "useBackendPools": "Yes",
-              "backendPools": "[variables('dataLBSettings').backendPools]",
-              "imageReference": "[reference('os-settings').outputs.settings.value.imageReference]"
-            }
-          },
-          "storageSettings": {
-            "value": "[variables('dataNodeStorageSettings')]"
-          }
-        }
-      }
-    },
-    {
-      "name": "jumpbox",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'os-settings')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('jumpboxTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "credentials": {
-            "value": "[variables('credentials')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "namespace": {
-            "value": "[concat(variables('namespacePrefix'), 'jumpbox')]"
+          "topologySettings": {
+            "value": "[variables('topologySettings')]"
           },
           "networkSettings": {
             "value": "[variables('networkSettings')]"
           },
-          "osSettings": {
-            "value": "[reference('os-settings').outputs.settings.value]"
-          }
-        }
-      }
-    },
-    {
-      "name": "kibana",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'os-settings')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('kibanaTemplateUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "templateBaseUrl": {
-            "value": "[variables('templateBaseUrl')]"
-          },
-          "storageAccountName": {
-            "value": "[variables('storageAccountNameShared')]"
-          },
-          "credentials": {
-            "value": "[variables('credentials')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "namespace": {
-            "value": "[concat(variables('namespacePrefix'), 'kibana')]"
-          },
-          "networkSettings": {
-            "value": "[variables('networkSettings')]"
-          },
-          "osSettings": {
-            "value": "[reference('os-settings').outputs.settings.value]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSizeKibana')]"
+          "azureCloudStorageAccount": {
+            "value": "[variables('azureCloudStorageAccount')]"
           }
         }
       }
@@ -1375,11 +1113,11 @@
       "type": "string"
     },
     "kibana": {
-      "value": "[reference('kibana').outputs.fqdn.value]",
+      "value": "[reference('virtual-machines').outputs.kibana.value]",
       "type": "string"
     },
-    "jumpbox-ssh": {
-      "value": "[reference('jumpbox').outputs.ssh.value]",
+    "jumpboxssh": {
+      "value": "[reference('virtual-machines').outputs.jumpboxssh.value]",
       "type": "string"
     }
   }

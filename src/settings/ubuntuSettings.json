@@ -2,31 +2,43 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-      "esSettings": {
-          "type": "object",
-          "metadata": {
-              "description" : "The Elasticsearch settings"
-          }
-      },
-      "userDetails": {
-          "type": "object",
-          "metadata": {
-              "description": "User details"
-          }
-      },
-      "clusterSetup": {
-          "type": "object",
-          "metadata": {
-              "description": "Cluster deployment settings"
-          }
-      },
       "templateBaseUrl": {
           "type": "string",
           "metadata": {
               "description": "The base url for templates"
           }
       },
-      "cloudAzureStorageAccount": {
+      "esSettings": {
+          "type": "object",
+          "metadata": {
+              "description" : "The Elasticsearch settings"
+          }
+      },
+      "commonVmSettings": {
+          "type": "object",
+          "metadata": {
+              "description" : "Shared VM settings"
+          }
+      },
+      "phoneHomeSettings": {
+          "type": "object",
+          "metadata": {
+              "description": "Deployment details sent back to our CRM, only needed when deploying from the marketplace, optional in the ARM template"
+          }
+      },
+      "topologySettings": {
+          "type": "object",
+          "metadata": {
+              "description": "Aggregate for topology variable"
+          }
+      },
+      "networkSettings": {
+        "type": "object",
+        "metadata": {
+          "description": "Network settings"
+        }
+      },
+      "azureCloudStorageAccount": {
           "type": "object",
           "metadata": {
               "description": "The storage settings for the Azure Cloud plugin"
@@ -34,25 +46,30 @@
       }
   },
   "variables": {
-    "clusterSetup": "[parameters('clusterSetup').setup]",
-    "namespacePrefix": "[parameters('clusterSetup').vmHostNamePrefix]",
+    "nodesTemplateUrl": "[concat(parameters('templateBaseUrl'), 'partials/node-resources.json')]",
+    "namespacePrefix": "[parameters('topologySettings').vmHostNamePrefix]",
     "dataNodeShortOpts": {
       "No": "z",
       "Yes": ""
     },
-    "dataNodeShortOpt": "[variables('dataNodeShortOpts')[parameters('clusterSetup').dataNodesAreMasterEligible]]",
+    "dataNodeShortOpt": "[variables('dataNodeShortOpts')[parameters('topologySettings').dataNodesAreMasterEligible]]",
     "dedicatedMasterNodesShortOpts": {
       "No": "d",
       "Yes": ""
     },
-    "dedicatedMasterNodesShortOpt": "[variables('dedicatedMasterNodesShortOpts')[parameters('clusterSetup').dataNodesAreMasterEligible]]",
+    "dedicatedMasterNodesShortOpt": "[variables('dedicatedMasterNodesShortOpts')[parameters('topologySettings').dataNodesAreMasterEligible]]",
+    "installAzureCloudPluginShortOpts": {
+      "No": "",
+      "Yes": "j"
+    },
+    "installAzureCloudPluginShortOpt": "[variables('installAzureCloudPluginShortOpts')[parameters('azureCloudStorageAccount').install]]",
     "installPluginsShortOpts": {
       "No": "",
       "Yes": "l"
     },
     "installPluginsShortOpt": "[variables('installPluginsShortOpts')[parameters('esSettings').installPlugins]]",
-    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), 'n ')]",
-    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A ', parameters('esSettings').shieldAdminPwd, ' -R ', parameters('esSettings').shieldReadPwd, ' -K ', parameters('esSettings').shieldKibanaPwd, ' -S ', parameters('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('clusterSetup').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('cloudAzureStorageAccount').name, '\" -k \"', parameters('cloudAzureStorageAccount').key, '\"')]",
+    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), 'n ')]",
+    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A ', parameters('esSettings').shieldAdminPwd, ' -R ', parameters('esSettings').shieldReadPwd, ' -K ', parameters('esSettings').shieldKibanaPwd, ' -S ', parameters('esSettings').shieldKibanaServerPwd, ' -Z ', parameters('topologySettings').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -71,9 +88,9 @@
       "managementPort": "22",
       "extensionSettings": {
         "master": {
-          "publisher": "Microsoft.OSTCExtensions",
-          "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.5",
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]"
@@ -83,9 +100,9 @@
           }
         },
         "client": {
-          "publisher": "Microsoft.OSTCExtensions",
-          "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.5",
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]"
@@ -95,38 +112,72 @@
           }
         },
         "data": {
-          "publisher": "Microsoft.OSTCExtensions",
-          "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.5",
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('userDetails').company, '\" -e \"', parameters('userDetails').email, '\" -f \"', parameters('userDetails').firstName, '\" -m \"', parameters('userDetails').lastName, '\" -t \"', parameters('userDetails').jobTitle, '\" -s \"', variables('clusterSetup'), '\" -o \"', parameters('userDetails').country, '\"')]"
+            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('phoneHomeSettings').company, '\" -e \"', parameters('phoneHomeSettings').email, '\" -f \"', parameters('phoneHomeSettings').firstName, '\" -m \"', parameters('phoneHomeSettings').lastName, '\" -t \"', parameters('phoneHomeSettings').jobTitle, '\" -s \"', parameters('phoneHomeSettings').topology, '\" -o \"', parameters('phoneHomeSettings').country, '\"')]"
           }
         },
         "kibana": {
-          "publisher": "Microsoft.OSTCExtensions",
-          "type": "CustomScriptForLinux",
-          "typeHandlerVersion": "1.5",
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', parameters('esSettings').clusterName, ' -v ', parameters('esSettings').kibanaVersion, ' -e ', parameters('esSettings').version, ' -u ', concat('http://', parameters('clusterSetup').vNetLoadBalancerIp, ':9200') ,' -S ', parameters('esSettings').shieldKibanaServerPwd)]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n ', parameters('esSettings').clusterName, ' -v ', parameters('esSettings').kibanaVersion, ' -e ', parameters('esSettings').version, ' -u ', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,' -S ', parameters('esSettings').shieldKibanaServerPwd)]"
           }
         }
       }
     }
   },
   "resources": [
+    {
+      "name": "elasticsearch-nodes",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [ ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('nodesTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "osSettings": {
+            "value": "[variables('ubuntuSettings')]"
+          },
+          "commonVmSettings": {
+            "value": "[parameters('commonVmSettings')]"
+          },
+          "topologySettings": {
+            "value": "[parameters('topologySettings')]"
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          }
+        }
+      }
+    }
   ],
   "outputs": {
-    "settings": {
-        "value": "[variables('ubuntuSettings')]",
-        "type": "object"
+    "kibana": {
+      "value": "[reference('elasticsearch-nodes').outputs.kibana.value]",
+      "type": "string"
+    },
+    "jumpboxssh": {
+      "value": "[reference('elasticsearch-nodes').outputs.jumpboxssh.value]",
+      "type": "string"
     }
   }
 }

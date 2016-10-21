@@ -2,8 +2,8 @@
 
 This repository consists of:
 
-* [src/mainTemplate.json](src/mainTemplate.json) - Entry Azure Resource Management (ARM) template.
-* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our market place offering. This file produces an output JSON that the ARM template can accept as input parameters.
+* [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.
+* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. This file produces an output JSON that the ARM template can accept as input parameters.
 
 ## Building
 
@@ -27,9 +27,9 @@ will update the links to point to the name of the current branch. Once ready to 
 npm run links -- --branch master
 ```
 
-## Marketplace
+## Azure Marketplace
 
-The market place Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
+The Azure Marketplace Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
 It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), and for Elasticsearch 2.3.0+, [Graph](https://www.elastic.co/products/graph). 
 
 Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) is installed to support snapshot and restore.
@@ -45,87 +45,62 @@ Please create an issue with that message and in which resource it occured on our
 
 ## ARM template
 
-The output from the market place UI is fed directly to the ARM template. You can use the ARM template on its own without going through the market place.
+The output from the Azure Marketplace UI is fed directly to the ARM deployment template. You can use the ARM template on its own without going through the MarketPlace.
 
 ### Parameters
 
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th></tr>
+
+  <tr><td>artifactsBaseUrl</td><td>string</td>
+    <td>The base url of the Elastic ARM template. Defaults to the raw content of the current branch.
+    </td></tr>
+
   <tr><td>esVersion</td><td>string</td>
-    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L16-L23">this list for supported versions</a>
+    <td>A valid supported Elasticsearch version see <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L15">this list for supported versions</a>
     </td></tr>
 
   <tr><td>esClusterName</td><td>string</td>
     <td> The name of the Elasticsearch cluster
     </td></tr>
 
-  <tr><td>cloudAzureStorageAccountName</td><td>string</td>
-    <td> The name of the storage account to use for snapshots with Azure Cloud plugin. 
-    Must be between 3 and 24 alphanumeric lowercase characters. Defaults to <code>essnapshot</code>.
+  <tr><td>loadBalancerType</td><td>string</td>
+    <td> The load balancer to set up to access the cluster. Can be <code>internal</code> or <code>external</code>. The default is <code>internal</code>. 
+    By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
+    load balancer.
+    <strong>If you are setting up Elasticsearch on an external endpoint, you will need to secure your nodes with a product like Elastic's Shield as well as configure
+    transport level security.</strong>
     </td></tr>
 
-  <tr><td>cloudAzureStorageAccountExistingResourceGroup</td><td>string</td>
-    <td> The resource group name when using an existing storage account with Azure Cloud plugin.
-    <strong>Required when using an existing Storage account for Azure Cloud plugin</strong>
+  <tr><td>azureCloudPlugin</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to install the Azure Cloud plugin for snapshot/restore. 
+    Defaults to <code>No</code>. when set to <code>Yes</code>, both <code>azureCloudeStorageAccountName</code> 
+    and <code>azureCloudStorageAccountKey</code> should be specified to configure the plugin correctly.
     </td></tr>
 
-  <tr><td>cloudAzureStorageAccountNewType</td><td>string</td>
-    <td> The type of storage account when creating a new storage account for Azure Cloud plugin. Defaults to <code>Standard_LRS</code>.
-    <strong>Required when using a new Storage Account for Azure Cloud plugin</strong>
+  <tr><td>azureCloudStorageAccountName</td><td>string</td>
+    <td> The name of an existing storage account to use for snapshots with Azure Cloud plugin. 
+    Must be a valid Azure Storage Account name.
     </td></tr>
 
-  <tr><td>cloudAzureStorageAccountNewOrExisting</td><td>string</td>
-    <td> Whether to use an <code>existing</code> storage account or create a <code>new</code> storage account for Azure Cloud plugin.
-    Defaults to <code>new</code>.
-    </td></tr>
-
-  <tr><td>cloudAzureStorageAccountNewUnique</td><td>string</td>
-    <td> Whether the new storage account to use for snapshots has been validated to be unique. 
-    If set to <code>Yes</code> then the storage account name will be taken verbatim; if set to <code>No</code> then 
-    the first 11 characters of the storage account name provided in <code>cloudAzureStorageAccountName</code> 
-    will be taken as a prefix to a randomly generated unique storage account name.
-    <strong>Required when using a new Storage Account for Azure Cloud plugin</strong>
-    </td></tr>
-
-  <tr><td>vNetNewOrExisting</td><td>string</td>
-    <td>Whether the Virtual Network is <code>new</code> or <code>existing</code>. An <code>existing</code> Virtual Network in
-    another Resource Group in the same Location can be used. Defaults to <code>new</code>
-    </td></tr>
-
-  <tr><td>vNetName</td><td>string</td>
-    <td>The name of the Virtual Network. Defaults to <code>es-net</code>
-    </td></tr>
-
-  <tr><td>vNetSubnetName</td><td>string</td>
-    <td>The name of the subnet to which Elasticsearch nodes will be attached. Defaults to <code>es-subnet</code>
-    </td></tr>
-
-  <tr><td>vNetLoadBalancerIp</td><td>string</td>
-    <td>The internal static IP address to use when configuring the internal load balancer. Must be an available
-    IP address on the provided subnet name. Defaults to <code>10.0.0.4</code>. 
-    </td></tr>
-
-  <tr><td>vNetExistingResourceGroup</td><td>string</td>
-    <td>The name of the Resource Group in which the Virtual Network resides when using an existing Virtual Network.
-    <strong>Required when using an existing Virtual Network</strong>
-    </td></tr>
-
-  <tr><td>vNetNewAddressPrefix</td><td>string</td>
-    <td>The address prefix when creating a new Virtual Network. Defaults to <code>10.0.0.0/16</code>. <strong>Required when creating a new Virtual Network</strong>
-    </td></tr>
-
-  <tr><td>vNetNewSubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the subnet. Defaults to <code>10.0.0.0/24</code>. <strong>Required when creating a new Virtual Network</strong>
+  <tr><td>azureCloudStorageAccountKey</td><td>securestring</td>
+    <td> The access key of an existing storage account to use for snapshots with Azure Cloud plugin.
     </td></tr>
 
   <tr><td>esPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> whether to install the X-Pack
-    plugins: Shield, Watcher, Marvel and Graph (Elasticsearch version permitting), as well as Azure Cloud.
+    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial X-Pack
+    plugins: Shield, Watcher, Marvel and Graph (Elasticsearch 2.3.0+).
     </td></tr>
 
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> provision an extra machine with a public IP that
-    has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>esPlugins</code> then the Marvel and Sense Kibana apps get installed as well.
+    has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>esPlugins</code> then 
+    a trial license of the commercial X-Pack Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor</a> are also installed.
+    </td></tr>
+
+  <tr><td>vmSizeKibana</td><td>string</td>
+    <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    Defaults to <code>Standard_A1</code>.
     </td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
@@ -137,23 +112,26 @@ The output from the market place UI is fed directly to the ARM template. You can
     </td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>
-    <td>Azure VM size of the data nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
+    <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
-    <td>The number of data nodes you wish to deploy. Should be greater than 0.
+    <td>The number of data nodes you wish to deploy. Should be greater than 0. 
+    Defaults to <code>3</code>.
     </td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> Make all data nodes master eligible, this can be useful for small Elasticsearch clusters. When <code>Yes</code> no dedicated master nodes will be provisioned
+    <td>Either <code>Yes</code> or <code>No</code> to make all data nodes master eligible. This can be useful for small Elasticsearch clusters however, for larger clusters it is recommended to have dedicated master nodes. 
+    When <code>Yes</code> no dedicated master nodes will be provisioned.
     </td></tr>
 
   <tr><td>vmSizeMasterNodes</td><td>string</td>
-    <td>Azure VM size of the master nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
+    <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
     </td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
-    <td> The number of client nodes to provision. Defaults 0 and can be any positive integer. By default the data nodes are directly exposed on the loadbalancer. If you provision client nodes, only these will be added to the loadbalancer.
+    <td> The number of client nodes to provision. Defaults 0 and can be any positive integer. By default the data nodes are directly exposed on the loadbalancer. 
+    If you provision client nodes, only these will be added to the loadbalancer.
     </td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
@@ -193,6 +171,37 @@ The output from the market place UI is fed directly to the ARM template. You can
     from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported locations</a>.
     </td></tr>
 
+  <tr><td>vNetNewOrExisting</td><td>string</td>
+    <td>Whether the Virtual Network is <code>new</code> or <code>existing</code>. An <code>existing</code> Virtual Network in
+    another Resource Group in the same Location can be used. Defaults to <code>new</code>
+    </td></tr>
+
+  <tr><td>vNetName</td><td>string</td>
+    <td>The name of the Virtual Network. Defaults to <code>es-net</code>
+    </td></tr>
+
+  <tr><td>vNetSubnetName</td><td>string</td>
+    <td>The name of the subnet to which Elasticsearch nodes will be attached. Defaults to <code>es-subnet</code>
+    </td></tr>
+
+  <tr><td>vNetLoadBalancerIp</td><td>string</td>
+    <td>The internal static IP address to use when configuring the internal load balancer. Must be an available
+    IP address on the provided subnet name. Defaults to <code>10.0.0.4</code>. 
+    </td></tr>
+
+  <tr><td>vNetExistingResourceGroup</td><td>string</td>
+    <td>The name of the Resource Group in which the Virtual Network resides when using an existing Virtual Network.
+    <strong>Required when using an existing Virtual Network</strong>
+    </td></tr>
+
+  <tr><td>vNetNewAddressPrefix</td><td>string</td>
+    <td>The address prefix when creating a new Virtual Network. Defaults to <code>10.0.0.0/16</code>. <strong>Required when creating a new Virtual Network</strong>
+    </td></tr>
+
+  <tr><td>vNetNewSubnetAddressPrefix</td><td>string</td>
+    <td>The address space of the subnet. Defaults to <code>10.0.0.0/24</code>. <strong>Required when creating a new Virtual Network</strong>
+    </td></tr>
+
   <tr><td>userCompany</td><td>string</td>
     <td>The name of your company.
     </td></tr>
@@ -223,29 +232,33 @@ The output from the market place UI is fed directly to the ARM template. You can
 
 first make sure you are logged into azure
 
-```shell
-$ azure login
+```sh
+azure login
 ```
 
 Then make sure you are in arm mode
 
-```shell
-$ azure config mode arm
+```sh
+azure config mode arm
 ```
 
 Then create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
 
-```shell
-$ azure group create <name> <location>
+```sh
+azure group create <name> <location>
 ```
 
 Next we can either use our published template directly using `--template-uri`
 
-> $ azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+```sh
+azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+```
 
 or if your are executing commands from a clone of this repo using `--template-file`
 
-> $ azure group deployment create --template-file src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+```sh
+azure group deployment create --template-file src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+```
 
 `<name>` in these last two examples refers to the resource group you just created.
 
@@ -263,8 +276,9 @@ The above button will take you to the autogenerated web based UI based on the pa
 
 It should be pretty self explanatory except for password which only accepts a json object. Luckily the web UI lets you paste json in the text box. Here's an example:
 
-> {"sshPublicKey":null,"authenticationType":"password", "password":"Elastic12"}
-
+```json
+{"sshPublicKey":null,"authenticationType":"password", "password":"Elastic12"}
+```
 
 # License
 
