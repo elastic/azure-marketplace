@@ -319,16 +319,16 @@ install_plugins()
 
 install_azure_cloud_plugin()
 { 
-    log "[install_plugins] Installing plugin Cloud-Azure"
+    log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
     sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
-    log "[install_plugins] Installed plugin Cloud-Azure"
+    log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 
     # Configure Azure Cloud plugin
     if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
-        log "[configure_elasticsearch_yaml] Configuring storage for Azure Cloud"
+        log "[install_azure_cloud_plugin] Configuring storage for Azure Cloud"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[configure_elasticsearch_yaml] Configured storage for Azure Cloud"
+        log "[install_azure_cloud_plugin] Configured storage for Azure Cloud"
     fi
 }
 

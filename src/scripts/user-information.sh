@@ -114,13 +114,13 @@ done
 #########################
 
 # Need the endpoint and marketing id to be able to send
-if [[ -z "$API_URL" || -z "$MARKETING_ID" ]]; then
+if [[ -z $API_URL || -z $MARKETING_ID ]]; then
   log "No api url or marketing id defined."
   exit 1
 fi
 
 # Don't try to send a lead if we don't have an email address.
-if [[ -z "$EMAIL" ]]; then
+if [[ -z $EMAIL ]]; then
   log "No email address supplied. No lead to send."
   exit 0
 fi
@@ -133,31 +133,31 @@ post_user_information()
 {
     log "creating lead"    
     CURL_COMMAND=""
-    if [[ -n "$FIRST_NAME" ]]; then
+    if [[ -n $FIRST_NAME ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"FirstName=$FIRST_NAME\"" 
     fi
 
-    if [[ -n "$LAST_NAME" ]]; then
+    if [[ -n $LAST_NAME ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"LastName=$LAST_NAME\""
     fi
 
-    if [[ -n "$EMAIL" ]]; then
+    if [[ -n $EMAIL ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Email=$EMAIL\""
     fi
 
-    if [[ -n "$COMPANY_NAME" ]]; then
+    if [[ -n $COMPANY_NAME ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Company=$COMPANY_NAME\""
     fi
 
-    if [[ -n "$JOB_TITLE" ]]; then
+    if [[ -n $JOB_TITLE ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Job_Function__c=$JOB_TITLE\""
     fi
 
-    if [[ -n "$COUNTRY" ]]; then
+    if [[ -n $COUNTRY ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Country=$COUNTRY\""
     fi
 
-    if [[ -n "$CLUSTER_SETUP" ]]; then
+    if [[ -n $CLUSTER_SETUP ]]; then
         CURL_COMMAND=$CURL_COMMAND" --data-urlencode \"Form_Message=$CLUSTER_SETUP\""
     fi
 
