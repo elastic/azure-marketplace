@@ -481,12 +481,6 @@ port_forward()
     log "[port_forward] port forwarding configured"
 }
 
-start_walinuxagent()
-{
-    log "[start_walinuxagent] making sure the walinuxagent is running"
-    sudo service walinuxagent start
-}
-
 #########################
 # Installation sequence
 #########################
@@ -503,13 +497,9 @@ fi
 
 format_data_disks
 
-start_walinuxagent
-
 install_ntp
 
 install_java
-
-start_walinuxagent
 
 install_es
 
@@ -536,8 +526,6 @@ start_elasticsearch
 start_monit
 
 port_forward
-
-start_walinuxagent
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
 PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))
