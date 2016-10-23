@@ -137,6 +137,7 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
       ;;
     L) #install additional plugins
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;
     j) #install azure cloud plugin
       INSTALL_AZURECLOUD_PLUGIN=1
       ;;
