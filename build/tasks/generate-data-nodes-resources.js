@@ -30,6 +30,9 @@ gulp.task("generate-data-nodes-resource", function(cb) {
     var disks = _.range(size).map(nthDisk);
     rr.properties.parameters.dataDisks["value"].disks = disks;
 
+    var nodesPerStorageAccount = Math.max(1, (10 - ((Math.log(size) / Math.log(2)) * 2)));
+    t.variables.nodesPerStorageAccount = nodesPerStorageAccount;
+
     var resource = "../src/datanodes/data-node-" + size + "disk-resources.json";
     jsonfile.writeFile(resource, t, { flag: 'w' },function (err) {
       done();
