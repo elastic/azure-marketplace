@@ -205,6 +205,16 @@
                 "visible": "[equals(steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin, 'Yes')]"
               }
             ]
+          },
+          {
+            "name": "esAdditionalPlugins",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Additional Elasticsearch Plugins",
+            "defaultValue": "",
+            "toolTip": "Additional elasticsearch plugins to install. e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0",
+            "constraints": {
+              "required": false
+            }
           }
         ]
       },
@@ -1015,6 +1025,7 @@
       "azureCloudPlugin": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin]",
       "azureCloudStorageAccountName": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountName]",
       "azureCloudStorageAccountKey": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountKey]",
+      "esAdditionalPlugins": "[steps('clusterSettingsStep').esAdditionalPlugins]",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
