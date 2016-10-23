@@ -111,6 +111,10 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     plugins: Shield, Watcher, Marvel and Graph (Elasticsearch 2.3.0+).
     </td></tr>
 
+  <tr><td>esAdditionalPlugins</td><td>string</td>
+    <td>Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0
+    </td></tr>
+
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> provision an extra machine with a public IP that
     has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>esPlugins</code> then 

@@ -211,7 +211,7 @@
             "type": "Microsoft.Common.TextBox",
             "label": "Additional Elasticsearch Plugins",
             "defaultValue": "",
-            "toolTip": "Additional elasticsearch plugins to install. e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0",
+            "toolTip": "Additional elasticsearch plugins to install. Each plugin must be separated by a semicolon.  e.g. delete-by-query;lmenezes/elasticsearch-kopf/2.0",
             "constraints": {
               "required": false
             }
