@@ -141,6 +141,9 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
     j) #install azure cloud plugin
       INSTALL_AZURECLOUD_PLUGIN=1
       ;;
+    j) #install azure cloud plugin
+      INSTALL_AZURECLOUD_PLUGIN=1
+      ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT=${OPTARG}
       ;;
