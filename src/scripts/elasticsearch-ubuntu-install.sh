@@ -51,6 +51,7 @@ help()
     echo "-y configure as client only node (no master, no data)"
     echo "-z configure as data node (no master)"
     echo "-l install plugins"
+    echo "-L <plugin;plugin> install additional plugins"
 
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
@@ -103,6 +104,7 @@ CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="2.0.0"
 INSTALL_PLUGINS=0
+INSTALL_ADDITIONAL_PLUGINS=""
 CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
@@ -123,7 +125,7 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -159,6 +161,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:xyzldjh optname; do
     l) #install plugins
       INSTALL_PLUGINS=1
       ;;
+    L) #install additional plugins
+      INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;      
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
       ;;
@@ -262,6 +267,7 @@ install_es()
     sudo dpkg -i elasticsearch.deb
     log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
 }
+
 install_plugins()
 {
     log "[install_plugins] Installing X-Pack plugins Shield, Marvel, Watcher"
@@ -331,6 +337,22 @@ install_azure_cloud_plugin()
         log "[install_azure_cloud_plugin] Configured storage for Azure Cloud"
     fi
 }
+
+install_additional_plugins()
+{
+    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure"
+    log "[install_additional_plugins] Installing additional plugins"
+    for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
+    do
+        if [[ $SKIP_PLUGINS =~ $PLUGIN ]]; then
+            log "[install_additional_plugins] Skipping plugin $PLUGIN"
+        else
+            log "[install_additional_plugins] Installing plugin $PLUGIN"
+            sudo /usr/share/elasticsearch/bin/plugin install $PLUGIN
+            log "[install_additional_plugins] Installed plugin $PLUGIN"
+        fi
+    done    
+} 
 
 configure_elasticsearch_yaml()
 {
@@ -507,6 +529,10 @@ setup_data_disk
 
 if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     install_plugins
+fi
+
+if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
+    install_additional_plugins
 fi
 
 install_monit

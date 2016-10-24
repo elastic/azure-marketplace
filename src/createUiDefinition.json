@@ -1015,6 +1015,7 @@
       "azureCloudPlugin": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin]",
       "azureCloudStorageAccountName": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountName]",
       "azureCloudStorageAccountKey": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountKey]",
+      "esAdditionalPlugins": "",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",

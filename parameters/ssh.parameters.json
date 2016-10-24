@@ -4,6 +4,7 @@
 	"esClusterName":{"value":"my-azure-cluster"},
 	"location":{"value":"ResourceGroup"},
 	"esPlugins":{"value":"Yes"},
+	"esAdditionalPlugins": { "value": " " },
 	"azureCloudPlugin":{"value":"No"},
 	"azureCloudStorageAccountName":{"value":""},
 	"azureCloudStorageAccountKey":{"value":""},
