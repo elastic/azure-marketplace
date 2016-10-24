@@ -13,24 +13,10 @@ You may edit [build/allowedValues.json](build/allowedValues.json), which the bui
 
 Run `npm run build`, this will validate EditorConfig settings, validate JSON files, patch the allowedValues and then create a zip in the `dist` folder.
 
-### Development
-
-New features should be developed on separate branches and merged back into `master` once complete. To aid in the development process, a gulp task is configured to update all of the github template urls to point at a specific branch so that UI definition and web based deployments can be tested. To run the task
-
-```sh
-npm run links
-```
-
-will update the links to point to the name of the current branch. Once ready to merge back into `master`, a specific branch name can be passed with
-
-```sh
-npm run links -- --branch master
-```
-
 ## Azure Marketplace
 
 The Azure Marketplace Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
-It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), [Graph](https://www.elastic.co/products/graph) (for Elasticsearch 2.3.0+) and [Reporting](https://www.elastic.co/products/reporting) (for Elasticsearch 2.4.0+). 
+It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), [Graph](https://www.elastic.co/products/graph) (for Elasticsearch 2.3.0+) and [Reporting](https://www.elastic.co/products/reporting) when also installing Kibana* (with Elasticsearch 2.4.0+). 
 
 Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) can be optionally installed to support snapshot and restore.
 
