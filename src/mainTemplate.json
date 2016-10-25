@@ -82,6 +82,13 @@
         "description": "Install the Plugins - Marvel, Shield, Watcher, Graph* (Elasticsearch 2.3.0+)"
       }
     },
+    "esAdditionalPlugins": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments"
+      }
+    },
     "kibana": {
       "type": "string",
       "defaultValue": "Yes",
@@ -636,6 +643,7 @@
       "clusterName": "[parameters('esClusterName')]",
       "version": "[parameters('esVersion')]",
       "installPlugins": "[parameters('esPlugins')]",
+      "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "shieldAdminPwd": "[parameters('shieldAdminPassword')]",
       "shieldReadPwd": "[parameters('shieldReadPassword')]",
       "shieldKibanaPwd": "[parameters('shieldKibanaPassword')]",
