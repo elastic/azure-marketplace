@@ -150,61 +150,6 @@
                 }
               }
             ]
-          },
-          {
-            "name": "azureCloudStorageAccountConfiguration",
-            "type": "Microsoft.Common.Section",
-            "label": "Azure Cloud Plugin Configuration",
-            "elements": [
-              {
-                "name": "azureCloudPlugin",
-                "type": "Microsoft.Common.OptionsGroup",
-                "label": "Install Azure Cloud Plugin?",
-                "defaultValue": "No",
-                "toolTip": "Yes, to install Azure Cloud plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore",
-                "constraints": {
-                  "allowedValues": [
-                    {
-                      "label": "Yes",
-                      "value": "Yes"
-                    },
-                    {
-                      "label": "No",
-                      "value": "No"
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "azureCloudStorageAccountName",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Storage Account Name",
-                "defaultValue": "",
-                "toolTip": "The name of an existing storage account to use for snapshots with Azure Cloud plugin",
-                "constraints": {
-                  "regex": "^[a-z\\d]{3,24}$",
-                  "required": true,
-                  "validationMessage": "Must be a valid Storage account name"
-                },
-                "visible": "[equals(steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin, 'Yes')]"
-              },
-              {
-                "name": "azureCloudStorageAccountKey",
-                "type": "Microsoft.Common.PasswordBox",
-                "label": {
-                  "password": "Storage Account Access Key"
-                },
-                "toolTip": "The access key of an existing storage account to use for snapshots with Azure Cloud plugin",
-                "constraints": {
-                  "required": true,
-                  "validationMessage": "Storage account access key is required"
-                },
-                "options": {
-                  "hideConfirmation": true
-                },
-                "visible": "[equals(steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin, 'Yes')]"
-              }
-            ]
           }
         ]
       },
@@ -1012,9 +957,6 @@
     "outputs": {
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
-      "azureCloudPlugin": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudPlugin]",
-      "azureCloudStorageAccountName": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountName]",
-      "azureCloudStorageAccountKey": "[steps('clusterSettingsStep').azureCloudStorageAccountConfiguration.azureCloudStorageAccountKey]",
       "esAdditionalPlugins": "",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
