@@ -957,6 +957,9 @@
     "outputs": {
       "esVersion": "[steps('clusterSettingsStep').esVersion]",
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
+      "azureCloudPlugin": "No",
+      "azureCloudStorageAccountName": "",
+      "azureCloudStorageAccountKey": "",
       "esAdditionalPlugins": "",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
