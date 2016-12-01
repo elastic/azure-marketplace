@@ -37,7 +37,7 @@
     "eclint": "^1.1.5",
     "git-rev": "^0.2.1",
     "git-tools": "^0.2.1",
-    "gulp": "^3.9.0",
+    "gulp": "^3.9.1",
     "gulp-add-src": "^0.2.0",
     "gulp-casperjs": "0.0.5",
     "gulp-jsonlint": "^1.1.1",

@@ -10,8 +10,11 @@ var mkdirp = require('mkdirp');
 var del = require('del');
 var request = require('request');
 var hostname = require("os").hostname();
+var operatingSystem = require("os").platform();
 
-var azureCli = "..\\node_modules\\.bin\\azure.cmd"; //TODO *nix
+var azureCli = "../node_modules/.bin/azure";
+if (operatingSystem === "win32")
+  azureCli = "..\\node_modules\\.bin\\azure.cmd";
 var artifactsBaseUrl = "";
 var templateUri = "";
 var armTests = {};
@@ -53,7 +56,7 @@ var bootstrapTest = (t, defaultVersion) =>
     resourceGroup: "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
     location: test.location,
     isValid: test.isValid,
-    why: test.why,    
+    why: test.why,
     deploy: test.deploy,
     params: testParameters
   }
@@ -336,7 +339,8 @@ gulp.task("test", ["clean"], function(cb) {
 });
 
 gulp.task("deploy-all", ["clean"], function(cb) {
-  login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  //login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  login(() => validateTemplates(() => deployTemplates(() => () => logout(cb))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
