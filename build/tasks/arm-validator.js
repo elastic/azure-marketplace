@@ -339,8 +339,8 @@ gulp.task("test", ["clean"], function(cb) {
 });
 
 gulp.task("deploy-all", ["clean"], function(cb) {
-  //login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
-  login(() => validateTemplates(() => deployTemplates(() => () => logout(cb))));
+  login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  //login(() => validateTemplates(() => deployTemplates(() => () => logout(cb))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
