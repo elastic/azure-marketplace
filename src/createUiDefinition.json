@@ -53,7 +53,7 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v2.4.1",
+            "defaultValue": "v5.1.1",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
@@ -92,6 +92,14 @@
                 {
                   "label": "v2.4.1",
                   "value": "2.4.1"
+                },
+                {
+                  "label": "v5.0.2",
+                  "value": "5.0.2"
+                },
+                {
+                  "label": "v5.1.1",
+                  "value": "5.1.1"
                 }
               ]
             }
@@ -613,7 +621,8 @@
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "es_admin User",
+            "label": "superuser account (es_admin for < 5.x elastic otherwise)",
+            "visible": "[greater(steps('nodesStep').clientNodes.vmClientNodeCount, 0)]",
             "elements": [
               {
                 "name": "shieldAdminPassword",

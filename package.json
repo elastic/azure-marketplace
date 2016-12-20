@@ -11,6 +11,7 @@
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
     "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all",
+    "deploy-test": "gulp --gulpfile build/gulpfile.js deploy-test",
     "links": "gulp --gulpfile build/gulpfile.js links"
   },
   "repository": {
@@ -52,5 +53,8 @@
     "request": "^2.72.0",
     "requiredir": "^1.0.7",
     "yargs": "^6.0.0"
+  },
+  "dependencies": {
+    "compare-versions": "^3.0.0"
   }
 }

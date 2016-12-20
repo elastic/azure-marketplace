@@ -4,14 +4,14 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/5x-support/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "2.4.1",
+      "defaultValue": "5.1.1",
       "allowedValues": [
         "2.0.2",
         "2.1.2",
@@ -21,7 +21,9 @@
         "2.3.4",
         "2.3.5",
         "2.4.0",
-        "2.4.1"
+        "2.4.1",
+        "5.0.2",
+        "5.1.1"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -430,19 +432,19 @@
     "shieldAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Shield password for the 'es_admin' user with admin role, must be > 6 characters"
+        "description": "Password for the superuser 'es_admin' in 2.x or 'elastic' in 5.x and up, must be > 6 characters"
       }
     },
     "shieldReadPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Shield password for the 'es_read' user with user (read-only) role, must be > 6 characters"
+        "description": "Password for the 'es_read' user with user (read-only) role, must be > 6 characters"
       }
     },
     "shieldKibanaPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Shield password for the `es_kibana` user with kibana4 role, must be > 6 characters"
+        "description": "Password for the `es_kibana` user with kibana4 role, must be > 6 characters"
       }
     },
     "location": {
@@ -637,7 +639,9 @@
       "2.3.4": "4.5.4",
       "2.3.5": "4.5.4",
       "2.4.0": "4.6.1",
-      "2.4.1": "4.6.1"
+      "2.4.1": "4.6.1",
+      "5.0.2": "5.0.2",
+      "5.1.1": "5.1.1"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
