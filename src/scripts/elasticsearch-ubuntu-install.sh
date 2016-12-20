@@ -260,12 +260,15 @@ install_es()
         DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ES_VERSION.deb"
     fi
 
-    log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
+    log "[install_es] Installing Elasticsearch Version - $ES_VERSION"
     log "[install_es] Download location - $DOWNLOAD_URL"
     sudo wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
     log "[install_es] Downloaded elasticsearch $ES_VERSION"
     sudo dpkg -i elasticsearch.deb
-    log "[install_es] Installing Elaticsearch Version - $ES_VERSION"
+    log "[install_es] Installed Elasticsearch Version - $ES_VERSION"
+
+    log "[install_es] Disable Elasticsearch System-V style init scripts (will be using monit)"
+    sudo update-rc.d elasticsearch disable
 }
 
 install_plugins()
@@ -328,14 +331,6 @@ install_azure_cloud_plugin()
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
     sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
-
-    # Configure Azure Cloud plugin
-    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
-        log "[install_azure_cloud_plugin] Configuring storage for Azure Cloud"
-        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
-        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
-        log "[install_azure_cloud_plugin] Configured storage for Azure Cloud"
-    fi
 }
 
 install_additional_plugins()
@@ -400,6 +395,13 @@ configure_elasticsearch_yaml()
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 
+    # Configure Azure Cloud plugin
+    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
+        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+    fi
+
     # Swap is disabled by default in Ubuntu Azure VMs
     # echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
 }
@@ -435,15 +437,6 @@ start_monit()
     sudo monit reload # use the new configuration
     sudo monit start all
     log "[start_monit] started monit"
-}
-
-start_elasticsearch()
-{
-    # and... start the service
-    log "[start_elasticsearch] Starting Elasticsearch on ${HOSTNAME}"
-    update-rc.d elasticsearch defaults 95 10
-    sudo service elasticsearch start
-    log "[start_elasticsearch] complete elasticsearch setup and started"
 }
 
 configure_elasticsearch()
@@ -508,12 +501,14 @@ port_forward()
 #########################
 
 
-if service --status-all | grep -Fq 'elasticsearch'; then
-  sudo service elasticsearch stop
+if sudo monit status elasticsearch >& /dev/null; then
 
   configure_elasticsearch_yaml
+  
+  # restart elasticsearch if the configuration has changed
+  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
+    || sudo monit restart elasticsearch
 
-  sudo service elasticsearch start
   exit 0
 fi
 
@@ -535,19 +530,17 @@ if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
     install_additional_plugins
 fi
 
-install_monit
-
-configure_elasticsearch_yaml
-
 if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
     install_azure_cloud_plugin
 fi
 
+install_monit
+
+configure_elasticsearch_yaml
+
 configure_elasticsearch
 
 configure_os_properties
-
-start_elasticsearch
 
 start_monit
 
