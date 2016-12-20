@@ -163,7 +163,7 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
       ;;
     L) #install additional plugins
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
-      ;;      
+      ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
       ;;
@@ -327,7 +327,7 @@ install_plugins()
 }
 
 install_azure_cloud_plugin()
-{ 
+{
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
     sudo /usr/share/elasticsearch/bin/plugin install cloud-azure
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
@@ -346,8 +346,8 @@ install_additional_plugins()
             sudo /usr/share/elasticsearch/bin/plugin install $PLUGIN
             log "[install_additional_plugins] Installed plugin $PLUGIN"
         fi
-    done    
-} 
+    done
+}
 
 configure_elasticsearch_yaml()
 {
@@ -394,6 +394,7 @@ configure_elasticsearch_yaml()
     echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
 
     echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
+    echo "node.max_local_storage_nodes: 1" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure Azure Cloud plugin
     if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
@@ -501,10 +502,12 @@ port_forward()
 #########################
 
 
+# if elasticsearch is already installed assume this is a redeploy
+# change yaml configuration and only restart the server when needed
 if sudo monit status elasticsearch >& /dev/null; then
 
   configure_elasticsearch_yaml
-  
+
   # restart elasticsearch if the configuration has changed
   cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
     || sudo monit restart elasticsearch

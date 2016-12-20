@@ -87,7 +87,7 @@ var login = (cb) => bootstrap(() => {
   ];
   log("logging into azure cli tooling")
   var child = execFile(azureCli, login, (error, stdout, stderr) => {
-    if (error || stderr) return bailOut(error || new Error(stderr));
+    if (error || stderr) return bailOut(error || new Error(stderr), true);
     cb();
   });
 });
@@ -98,9 +98,10 @@ var logout = (cb) => {
   execFile(azureCli, logout, cb);
 }
 
-var bailOut = (error)  => {
+var bailOut = (error, noCleanup)  => {
   if (!error) return;
   log(error)
+  if (noCleanup) throw error;
   var cb = () => logout(() => { throw error; })
 
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
