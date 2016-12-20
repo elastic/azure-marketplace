@@ -1,5 +1,5 @@
 {
-	"artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/ajhewett-startup-with-monit/src"},
+	"artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"},
 	"esVersion":{"value":"2.2.0"},
 	"esClusterName":{"value":"my-azure-cluster"},
 	"location":{"value":"ResourceGroup"},
