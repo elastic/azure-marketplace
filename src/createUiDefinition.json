@@ -611,12 +611,12 @@
       },
       {
         "name": "shieldStep",
-        "label": "Shield Users Configuration",
+        "label": "User Configuration",
         "subLabel": {
           "preValidation": "Required",
           "postValidation": "Done"
         },
-        "bladeTitle": "Shield Users Configuration",
+        "bladeTitle": "User Configuration",
         "elements": [
           {
             "name": "es_admin",
@@ -634,7 +634,7 @@
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -654,11 +654,11 @@
                   "password": "es_read Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_read Shield user.",
+                "toolTip": "Password to use for the es_read user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -678,11 +678,11 @@
                   "password": "es_kibana Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_kibana Shield user.",
+                "toolTip": "Password to use for the es_kibana user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
