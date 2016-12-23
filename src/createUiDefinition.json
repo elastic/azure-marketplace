@@ -622,7 +622,6 @@
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
             "label": "superuser account (es_admin for < 5.x elastic otherwise)",
-            "visible": "[greater(steps('nodesStep').clientNodes.vmClientNodeCount, 0)]",
             "elements": [
               {
                 "name": "shieldAdminPassword",
