@@ -363,7 +363,7 @@ apply_security_settings_2x()
             echo -e "        - manage"
             echo -e "        - read"
             echo -e "        - index"
-        } >> $1
+        } >> $SEC_FILE
         log "[install_plugins]  kibana4 role added"
     fi
     log "[install_plugins]  Finished checking roles.yml for kibana4 role"
