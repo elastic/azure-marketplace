@@ -268,7 +268,6 @@ install_start_service()
 old_install_sequence()
 {
     log "[old_install_sequence] Starting the old install sequence for kibana"
-    sudo service kibana start
     old_add_kibana_os_user
     old_download_unzip_kibana
     old_configuration_and_plugins
