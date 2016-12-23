@@ -53,7 +53,7 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v2.4.1",
+            "defaultValue": "v5.1.1",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
@@ -92,6 +92,14 @@
                 {
                   "label": "v2.4.1",
                   "value": "2.4.1"
+                },
+                {
+                  "label": "v5.0.2",
+                  "value": "5.0.2"
+                },
+                {
+                  "label": "v5.1.1",
+                  "value": "5.1.1"
                 }
               ]
             }
@@ -603,30 +611,30 @@
       },
       {
         "name": "shieldStep",
-        "label": "Shield Users Configuration",
+        "label": "User Configuration",
         "subLabel": {
           "preValidation": "Required",
           "postValidation": "Done"
         },
-        "bladeTitle": "Shield Users Configuration",
+        "bladeTitle": "User Configuration",
         "elements": [
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "es_admin User",
+            "label": "Superuser Account ",
             "elements": [
               {
                 "name": "shieldAdminPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "es_admin Password",
+                  "password": "(es_admin or elastic) password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_admin Shield user.",
+                "toolTip": "Elasticsearch 5.x this is the password for the builtin `elastic` user otherwise we'll create a `es_admin` user",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -646,11 +654,11 @@
                   "password": "es_read Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_read Shield user.",
+                "toolTip": "Password to use for the es_read user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -670,11 +678,11 @@
                   "password": "es_kibana Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_kibana Shield user.",
+                "toolTip": "Password to use for the es_kibana user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
-                  "validationMessage": "Shield password must be at least 6 characters long"
+                  "validationMessage": "Password must be at least 6 characters long"
                 },
                 "options": {
                   "hideConfirmation": false

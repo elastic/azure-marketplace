@@ -85,7 +85,7 @@
             "properties": {
               "description": "Allows SSH traffic",
               "protocol": "Tcp",
-              "sourcePortRange": "[parameters('osSettings').managementPort]",
+              "sourcePortRange": "*",
               "destinationPortRange": "[parameters('osSettings').managementPort]",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",

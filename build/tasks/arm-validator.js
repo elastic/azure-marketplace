@@ -11,6 +11,7 @@ var del = require('del');
 var request = require('request');
 var hostname = require("os").hostname();
 var operatingSystem = require("os").platform();
+var compareVersions = require('compare-versions');
 
 var azureCli = "../node_modules/.bin/azure";
 if (operatingSystem === "win32")
@@ -254,7 +255,8 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   log("checking external loadbalancer "+ url +" in resource group: " + rg);
-  var opts = { json: true, auth: { username: "es_admin", password: config.deployments.shieldPassword } };
+  var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
+  var opts = { json: true, auth: { username: superuser, password: config.deployments.shieldPassword } };
   request(url, opts, (error, response, body) => {
     if (!error && response.statusCode == 200) {
       log(test, "loadBalancerResponse: " + JSON.stringify(body, null, 2));
