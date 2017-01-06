@@ -309,7 +309,11 @@ install_plugins()
 install_azure_cloud_plugin()
 {
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
-    sudo $(plugin_cmd) install cloud-azure
+    if [[ "${ES_VERSION}" == \5* ]]; then
+    	sudo $(plugin_cmd) install repository-azure
+    else
+    	sudo $(plugin_cmd) install cloud-azure
+    fi
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 }
 
