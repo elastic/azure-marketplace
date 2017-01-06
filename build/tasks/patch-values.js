@@ -26,10 +26,6 @@ var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
-//generate binPackMap of max data nodes but leave a minimum of 60 intact because thats what we shipped the ARM template with
-var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNodes, allowedValues.numberOfClientNodes) + 1))
-  .map(function (i) { return "[div(sub(add(" + i + ", variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]" });
-
 var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations)
 
 var userJobTitles = allowedValues.userJobTitle
@@ -38,6 +34,13 @@ var userJobTitles = allowedValues.userJobTitle
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
+    obj.variables.nodesPerStorageMapping = _(allowedValues.dataDisks)
+      .map(v => [v, Math.max(1, (10 - ((Math.log(v) / Math.log(2)) * 2)))])
+      .indexBy(a=>a[0])
+      .mapValues(a=>a[1])
+      .value()
+
+
     obj.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
       // 16 => 2
       // 8 => 4
@@ -48,7 +51,7 @@ gulp.task("patch", function(cb) {
       return {
         tier: v[0],
         dataDisks: v[1],
-        nodesPerStorageAccount: nodesPerStorageAccount,
+        //nodesPerStorageAccount: nodesPerStorageAccount,
         storageAccountType: v[2] + "_LRS"
       }
     })).indexBy(function (v) {
@@ -59,7 +62,6 @@ gulp.task("patch", function(cb) {
 
     obj.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
 
-    //obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
 
     obj.parameters.location.allowedValues = allowedLocations;
@@ -91,7 +93,7 @@ gulp.task("patch", function(cb) {
 
         //patch allowedVMSizes on the nodesStep
         var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
-        
+
         var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
         var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
         var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
