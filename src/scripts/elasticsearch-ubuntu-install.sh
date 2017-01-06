@@ -201,7 +201,7 @@ format_data_disks()
 {
     log "[format_data_disks] starting to RAID0 the attached disks"
     # using the -s paramater causing disks under /datadisks/* to be raid0'ed
-    #bash vm-disk-utils-0.1.sh -s
+    bash vm-disk-utils-0.1.sh -s
     log "[format_data_disks] finished RAID0'ing the attached disks"
 }
 
