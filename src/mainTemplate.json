@@ -247,6 +247,18 @@
         "description": "Size of the Elasticsearch data nodes"
       }
     },
+    "vmDataDiskSize": {
+      "type": "string",
+      "defaultValue": "Large",
+      "allowedValues": [
+        "Large",
+        "Medium",
+        "Small"
+      ],
+      "metadata": {
+        "description": "The disk size of the attached disks (Large, Medium, Small) for premium storage this equates to P10, P20, P30"
+      }
+    },
     "vmDataNodeCount": {
       "type": "int",
       "defaultValue": 3,
@@ -947,6 +959,11 @@
         "storageAccountType": "Premium_LRS"
       }
     },
+    "dataDiskSizes": {
+      "Large": 1023,
+      "Medium": 512,
+      "Small": 128
+    },
     "backendPoolConfigurations": {
       "internal": [
         {
@@ -991,6 +1008,7 @@
         "count": "[variables('storageAccountsCount')]",
         "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
         "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+        "diskSize": "[variables('dataDiskSizes')[parameters('vmDataDiskSize')]]",
         "dataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]"
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
