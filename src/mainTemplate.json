@@ -957,7 +957,7 @@
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
     "smallestDataDiskOption" : "[div(sub(add(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks')), int(replace(string(sub(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
     "numberOfDataDisks" : "[div(add(add(1, variables('smallestDataDiskOption')), int(replace(string(sub(1, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
-    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[variables('numberOfDataDisks')]]",
+    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[string(variables('numberOfDataDisks'))]]",
     "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
