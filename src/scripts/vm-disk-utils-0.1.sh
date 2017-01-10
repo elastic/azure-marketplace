@@ -272,15 +272,24 @@ create_striped_volume()
 	    PARTITIONS+=("${PARTITION}")
 	done
 
-    MDDEVICE=$(get_next_md_device)
+	MOUNTPOINT=$(get_next_mountpoint)
+	log "Next mount point appears to be ${MOUNTPOINT}"
+	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
+
+	if [ "${#DISKS[@]}" -eq 1 ];
+	then
+	    log "only one disk (${DISKS[0]}) is attached to this machine simply mount it"
+	    mkfs.ext4 -b 4096 -O noatime -E stride=${STRIDE},nodiscard "${DISKS[0]}"
+      sudo mount -t ext4 "${DISKS[0]}" "${MOUNTPOINT}"
+	    log "mounted $MOUNTPOINT to (${DISKS[0]}) directly since its the only disk"
+	    return
+	fi
+
+  MDDEVICE=$(get_next_md_device)
 
   sudo udevadm control --stop-exec-queue
 	mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
   sudo udevadm control --start-exec-queue
-
-	MOUNTPOINT=$(get_next_mountpoint)
-	log "Next mount point appears to be ${MOUNTPOINT}"
-	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 
 	#Make a file system on the new device
 	STRIDE=128 #(512kB stripe size) / (4kB block size)
