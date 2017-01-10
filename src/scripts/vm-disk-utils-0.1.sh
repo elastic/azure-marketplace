@@ -277,35 +277,31 @@ create_striped_volume()
 	log "Next mount point appears to be ${MOUNTPOINT}"
 	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 
+  MDDEVICE="${DISKS[0]}1"
 	if [ "${#DISKS[@]}" -eq 1 ];
 	then
 	    log "only one disk (${DISKS[0]}) is attached to this machine simply mount it"
-      log "mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard ${DISKS[0]}1"
 	    mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${DISKS[0]}1"
-      log "sudo mount -t ext4 -o noatime ${DISKS[0]}1 ${MOUNTPOINT}"
-      sudo mount -t ext4 -o noatime "${DISKS[0]}1" "${MOUNTPOINT}"
-	    log "mounted $MOUNTPOINT to (${DISKS[0]}) directly since its the only disk"
-	    return
+  else
+	    log "multiple disks are attached raiding them using mdadm"
+      MDDEVICE=$(get_next_md_device)
+      sudo udevadm control --stop-exec-queue
+    	mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
+      sudo udevadm control --start-exec-queue
+
+    	#Make a file system on the new device
+    	PARTITIONSNUM=${#PARTITIONS[@]}
+    	STRIPEWIDTH=$((${STRIDE} * ${PARTITIONSNUM}))
+    	mkfs.ext4 -b 4096 -E stride=${STRIDE},stripe-width=${STRIPEWIDTH},nodiscard "${MDDEVICE}"
 	fi
-
-  MDDEVICE=$(get_next_md_device)
-
-  sudo udevadm control --stop-exec-queue
-	mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
-  sudo udevadm control --start-exec-queue
-
-	#Make a file system on the new device
-	PARTITIONSNUM=${#PARTITIONS[@]}
-	STRIPEWIDTH=$((${STRIDE} * ${PARTITIONSNUM}))
-
-	mkfs.ext4 -b 4096 -E stride=${STRIDE},stripe-width=${STRIPEWIDTH},nodiscard "${MDDEVICE}"
 
 	log "attempting to get UUID from ${MDDEVICE}"
 	read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
 
+	log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
 	add_to_fstab "${UUID}" "${MOUNTPOINT}"
 
-	mount "${MOUNTPOINT}"
+  mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
 }
 
 check_mdadm() {
