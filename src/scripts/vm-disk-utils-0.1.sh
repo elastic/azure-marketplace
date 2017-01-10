@@ -273,14 +273,17 @@ create_striped_volume()
 	done
 
 	MOUNTPOINT=$(get_next_mountpoint)
+	STRIDE=128 #(512kB stripe size) / (4kB block size)
 	log "Next mount point appears to be ${MOUNTPOINT}"
 	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 
 	if [ "${#DISKS[@]}" -eq 1 ];
 	then
 	    log "only one disk (${DISKS[0]}) is attached to this machine simply mount it"
-	    mkfs.ext4 -b 4096 -O noatime -E stride=${STRIDE},nodiscard "${DISKS[0]}"
-      sudo mount -t ext4 "${DISKS[0]}" "${MOUNTPOINT}"
+      log "mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard ${DISKS[0]}1"
+	    mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${DISKS[0]}1"
+      log "sudo mount -t ext4 -o noatime ${DISKS[0]}1 ${MOUNTPOINT}"
+      sudo mount -t ext4 -o noatime "${DISKS[0]}1" "${MOUNTPOINT}"
 	    log "mounted $MOUNTPOINT to (${DISKS[0]}) directly since its the only disk"
 	    return
 	fi
@@ -292,7 +295,6 @@ create_striped_volume()
   sudo udevadm control --start-exec-queue
 
 	#Make a file system on the new device
-	STRIDE=128 #(512kB stripe size) / (4kB block size)
 	PARTITIONSNUM=${#PARTITIONS[@]}
 	STRIPEWIDTH=$((${STRIDE} * ${PARTITIONSNUM}))
 
