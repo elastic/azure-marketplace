@@ -39,10 +39,30 @@ gulp.task("patch", function(cb) {
     // 4 => 6
     // 2 => 8
     // 1 => 10
-    obj.variables.nodesPerStorageMapping = _(allowedValues.dataDisks)
-      .map(v => [v, Math.max(1, (10 - ((Math.log(v) / Math.log(2)) * 2)))])
-      .concat([[0, 0]])
-      .indexBy(a=>"a" + a[0])
+    //https://docs.microsoft.com/en-us/azure/storage/storage-scalability-targets
+    //chosing a value below documented for premium to err on the side of not sacrificing throughput
+    var tiers = [
+      { name: "Standard_LRS", max: (s, d) => Math.floor(40 / d) },
+      { name:"Premium_LRS", max: (s, d) => {
+        if (s == "Small") return Math.floor(250 / d);
+        else if (s == "Medium") return Math.floor(60 / d);
+        return Math.floor(34 / d);
+      }}
+    ];
+    var mapping = [];
+    var diskSizes = ["Small", "Medium", "Large"];
+    //this is horrible but its late and i'm in derp mode
+    tiers.forEach(tier => {
+      diskSizes.forEach(size=> {
+        allowedValues.dataDisks.forEach(d=> {
+          mapping.push([tier.name + "_" + size + "_" + d, tier.max(size, d)])
+        })
+        mapping.push([tier.name + "_" + size + "_0", 0])
+      })
+    });
+
+    obj.variables.nodesPerStorageMapping = _(mapping)
+      .indexBy(a=>a[0])
       .mapValues(a=>a[1])
       .value();
 
