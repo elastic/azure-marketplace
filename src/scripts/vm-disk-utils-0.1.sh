@@ -248,29 +248,26 @@ create_striped_volume()
 {
     DISKS=(${@})
 
-	if [ "${#DISKS[@]}" -eq 0 ];
+	if [ "${#DISKS[@]}" -gt 0 ];
 	then
-	    log "No unpartitioned disks without filesystems detected"
-	    return
+  	log "Disks are ${DISKS[@]}"
+
+  	declare -a PARTITIONS
+
+  	for DISK in "${DISKS[@]}";
+  	do
+  	    log "Working on ${DISK}"
+  	    is_partitioned ${DISK}
+  	    if [ ${?} -ne 0 ];
+  	    then
+  	        log "${DISK} is not partitioned, partitioning"
+  	        do_partition ${DISK} fd
+  	    fi
+
+  	    PARTITION=$(fdisk -l ${DISK}|grep -A 2 Device|tail -n 1|awk '{print $1}')
+  	    PARTITIONS+=("${PARTITION}")
+  	done
 	fi
-
-	log "Disks are ${DISKS[@]}"
-
-	declare -a PARTITIONS
-
-	for DISK in "${DISKS[@]}";
-	do
-	    log "Working on ${DISK}"
-	    is_partitioned ${DISK}
-	    if [ ${?} -ne 0 ];
-	    then
-	        log "${DISK} is not partitioned, partitioning"
-	        do_partition ${DISK} fd
-	    fi
-
-	    PARTITION=$(fdisk -l ${DISK}|grep -A 2 Device|tail -n 1|awk '{print $1}')
-	    PARTITIONS+=("${PARTITION}")
-	done
 
 	MOUNTPOINT=$(get_next_mountpoint)
 	STRIDE=128 #(512kB stripe size) / (4kB block size)
@@ -278,7 +275,11 @@ create_striped_volume()
 	[ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
 
   MDDEVICE="${DISKS[0]}1"
-	if [ "${#DISKS[@]}" -eq 1 ];
+	if [ "${#DISKS[@]}" -eq 0 ];
+  then
+    #WHEN no datadisks are attached mount to temp drive, this is highly volatile and not recommended
+    MDDEVICE="/dev/sdb1"
+  elif [ "${#DISKS[@]}" -eq 1 ];
 	then
 	    log "only one disk (${DISKS[0]}) is attached to this machine simply mount it"
 	    mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${DISKS[0]}1"
