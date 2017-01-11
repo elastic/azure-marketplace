@@ -34,24 +34,22 @@ var userJobTitles = allowedValues.userJobTitle
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
+    // 16 => 2
+    // 8 => 4
+    // 4 => 6
+    // 2 => 8
+    // 1 => 10
     obj.variables.nodesPerStorageMapping = _(allowedValues.dataDisks)
       .map(v => [v, Math.max(1, (10 - ((Math.log(v) / Math.log(2)) * 2)))])
-      .indexBy(a=>a[0])
+      .concat([[0, 0]])
+      .indexBy(a=>"a" + a[0])
       .mapValues(a=>a[1])
-      .value()
-
+      .value();
 
     obj.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
-      // 16 => 2
-      // 8 => 4
-      // 4 => 6
-      // 2 => 8
-      // 1 => 10
-      var nodesPerStorageAccount = Math.max(1, (10 - ((Math.log(v[1]) / Math.log(2)) * 2)));
       return {
         tier: v[0],
         dataDisks: v[1],
-        //nodesPerStorageAccount: nodesPerStorageAccount,
         storageAccountType: v[2] + "_LRS"
       }
     })).indexBy(function (v) {
