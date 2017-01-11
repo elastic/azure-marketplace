@@ -999,7 +999,7 @@
     "tmpVmStorageType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
     "smallestDataDiskOption": "[div(sub(add(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks')), int(replace(string(sub(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
     "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
-    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('tmpVmStorageType'), variables('dataDiskSizes')[parameters('vmDataDiskSize')], string(variables('numberOfDataDisks')))]]",
+    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('tmpVmStorageType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
     "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
     "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),1)))]",
     "topologySettings": {
