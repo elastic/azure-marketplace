@@ -44,6 +44,7 @@ gulp.task("patch", function(cb) {
     var tiers = [
       { name: "Standard_LRS", max: (s, d) => Math.floor(40 / d) },
       { name:"Premium_LRS", max: (s, d) => {
+        return 10;
         if (s == "Small") return Math.floor(250 / d);
         else if (s == "Medium") return Math.floor(60 / d);
         return Math.floor(34 / d);
