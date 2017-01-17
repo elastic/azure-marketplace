@@ -614,7 +614,7 @@
         ]
       },
       {
-        "name": "shieldStep",
+        "name": "securityStep",
         "label": "User Configuration",
         "subLabel": {
           "preValidation": "Required",
@@ -628,7 +628,7 @@
             "label": "Superuser Account ",
             "elements": [
               {
-                "name": "shieldAdminPassword",
+                "name": "securityAdminPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
                   "password": "(es_admin or elastic) password",
@@ -652,7 +652,7 @@
             "label": "es_read User",
             "elements": [
               {
-                "name": "shieldReadPassword",
+                "name": "securityReadPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
                   "password": "es_read Password",
@@ -676,7 +676,7 @@
             "label": "es_kibana User",
             "elements": [
               {
-                "name": "shieldKibanaPassword",
+                "name": "securityKibanaPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
                   "password": "es_kibana Password",
@@ -995,9 +995,9 @@
       "authenticationType": "[basics('password').authenticationType]",
       "adminPassword": "[basics('password').password]",
       "sshPublicKey": "[basics('password').sshPublicKey]",
-      "shieldAdminPassword": "[steps('shieldStep').es_admin.shieldAdminPassword]",
-      "shieldReadPassword": "[steps('shieldStep').es_read.shieldReadPassword]",
-      "shieldKibanaPassword": "[steps('shieldStep').es_kibana.shieldKibanaPassword]",
+      "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
+      "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
+      "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
       "location": "[location()]",
       "userCompany": "[steps('userInformationStep').userCompany]",
       "userEmail": "[steps('userInformationStep').userEmail]",

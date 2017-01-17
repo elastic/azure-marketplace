@@ -27,9 +27,9 @@ var bootstrapTest = (artifactsBaseUrl) =>
   params.adminUsername.value = config.deployments.username;
   params.adminPassword.value = config.deployments.password;
   params.sshPublicKey.value = config.deployments.ssh;
-  params.shieldAdminPassword.value = config.deployments.shieldPassword;
-  params.shieldReadPassword.value = config.deployments.shieldPassword;
-  params.shieldKibanaPassword.value = config.deployments.shieldPassword;
+  params.securityAdminPassword.value = config.deployments.securityPassword;
+  params.securityReadPassword.value = config.deployments.securityPassword;
+  params.securityKibanaPassword.value = config.deployments.securityPassword;
 
   return {
     location: "westeurope",

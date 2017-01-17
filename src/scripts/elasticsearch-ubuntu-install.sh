@@ -114,16 +114,16 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
     v) #elasticsearch version number
       ES_VERSION=${OPTARG}
       ;;
-    A) #shield admin pwd
+    A) #security admin pwd
       USER_ADMIN_PWD=${OPTARG}
       ;;
-    R) #shield readonly pwd
+    R) #security readonly pwd
       USER_READ_PWD=${OPTARG}
       ;;
-    K) #shield kibana user pwd
+    K) #security kibana user pwd
       USER_KIBANA4_PWD=${OPTARG}
       ;;
-    S) #shield kibana server pwd
+    S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
@@ -291,9 +291,9 @@ install_plugins()
     if [[ "${ES_VERSION}" == \5* ]]; then
       sudo $(plugin_cmd) install x-pack --batch
     else
-      log "[install_plugins] Installing X-Pack plugins Shield, Marvel, Watcher"
+      log "[install_plugins] Installing X-Pack plugins security, Marvel, Watcher"
       sudo $(plugin_cmd) install license
-      sudo $(plugin_cmd) install shield
+      sudo $(plugin_cmd) install security
       sudo $(plugin_cmd) install watcher
       sudo $(plugin_cmd) install marvel-agent
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
@@ -301,7 +301,7 @@ install_plugins()
         sudo $(plugin_cmd) install graph
         log "[install_plugins] Installed X-Pack plugin Graph"
       fi
-      log "[install_plugins] Installed X-Pack plugins Shield, Marvel, Watcher"
+      log "[install_plugins] Installed X-Pack plugins security, Marvel, Watcher"
     fi
 
 }
@@ -319,7 +319,7 @@ install_azure_cloud_plugin()
 
 install_additional_plugins()
 {
-    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure"
+    SKIP_PLUGINS="license security watcher marvel-agent graph cloud-azure"
     log "[install_additional_plugins] Installing additional plugins"
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
@@ -341,13 +341,13 @@ security_cmd()
     if [[ "${ES_VERSION}" == \5* ]]; then
       echo /usr/share/elasticsearch/bin/x-pack/users
     else
-      echo /usr/share/elasticsearch/bin/shield/esusers
+      echo /usr/share/elasticsearch/bin/security/esusers
     fi
 }
 
 apply_security_settings_2x()
 {
-    local SEC_FILE=/etc/elasticsearch/shield/roles.yml
+    local SEC_FILE=/etc/elasticsearch/security/roles.yml
     log "[install_plugins]  Check that $SEC_FILE contains kibana4 role"
     if ! sudo grep -q "kibana4:" "$SEC_FILE"; then
         log "[install_plugins]  No kibana4 role. Adding now"
@@ -470,7 +470,7 @@ apply_security_settings()
       fi
       log "[apply_security_settings] added es_kibana account"
 
-      #create a readonly role that mimmics the `user` role in shield for `es_read`
+      #create a readonly role that mimmics the `user` role in security for `es_read`
       curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/user?pretty' -d'
       {
         "cluster": [ "monitor" ],

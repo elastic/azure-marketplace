@@ -74,10 +74,10 @@ while getopts :n:v:e:u:S:m:lh optname; do
     u) #elasticsearch url
       ELASTICSEARCH_URL=${OPTARG}
       ;;
-    S) #shield kibana server pwd
+    S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
       ;;
-    m) #shield kibana server pwd
+    m) #security kibana server pwd
       HOSTMODE=${OPTARG}
       ;;
     l) #install plugins
@@ -158,25 +158,25 @@ old_configuration_and_plugins()
     if [ ${INSTALL_PLUGINS} -ne 0 ]; then
       echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
       echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
-      # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
+      # install security only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
       # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-        log "[old_configuration_and_plugins] installing latest shield"
-        /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
-        log "[old_configuration_and_plugins] shield plugin installed"
+        log "[old_configuration_and_plugins] installing latest security"
+        /opt/kibana/bin/kibana plugin --install kibana/security/2.4.0
+        log "[old_configuration_and_plugins] security plugin installed"
 
-        # NOTE: These settings allow Shield to work in Kibana without HTTPS.
+        # NOTE: These settings allow security to work in Kibana without HTTPS.
         # This is NOT recommended for production.
-        echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
-        echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
+        echo "security.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
+        echo "security.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
 
         install_pwgen
 
-        log "[old_configuration_and_plugins] generating shield encryption key"
+        log "[old_configuration_and_plugins] generating security encryption key"
         ENCRYPTION_KEY=$(pwgen 64 1)
-        echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
-        log "[old_configuration_and_plugins] shield encryption key generated"
+        echo "security.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        log "[old_configuration_and_plugins] security encryption key generated"
       fi
 
       # install graph

@@ -45,7 +45,7 @@
         "external"
       ],
       "metadata": {
-        "description": "Setup the load balancer as internal or external. If you are setting up Elasticsearch on an external endpoint you will need to secure your nodes with a product like Elastic's Shield"
+        "description": "Setup the load balancer as internal or external. If you are setting up Elasticsearch on an external endpoint you will need to secure your nodes with a product like Elastic's security"
       }
     },
     "azureCloudPlugin": {
@@ -82,7 +82,7 @@
       ],
       "defaultValue": "Yes",
       "metadata": {
-        "description": "Install the Plugins - Marvel, Shield, Watcher, Graph* (Elasticsearch 2.3.0+)"
+        "description": "Install the Plugins - Marvel, security, Watcher, Graph* (Elasticsearch 2.3.0+)"
       }
     },
     "esAdditionalPlugins": {
@@ -430,19 +430,19 @@
         "description": "Admin ssh public key"
       }
     },
-    "shieldAdminPassword": {
+    "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
         "description": "Password for the superuser 'es_admin' in 2.x or 'elastic' in 5.x and up, must be > 6 characters"
       }
     },
-    "shieldReadPassword": {
+    "securityReadPassword": {
       "type": "securestring",
       "metadata": {
         "description": "Password for the 'es_read' user with user (read-only) role, must be > 6 characters"
       }
     },
-    "shieldKibanaPassword": {
+    "securityKibanaPassword": {
       "type": "securestring",
       "metadata": {
         "description": "Password for the `es_kibana` user with kibana4 role, must be > 6 characters"
@@ -650,10 +650,10 @@
       "version": "[parameters('esVersion')]",
       "installPlugins": "[parameters('esPlugins')]",
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
-      "shieldAdminPwd": "[parameters('shieldAdminPassword')]",
-      "shieldReadPwd": "[parameters('shieldReadPassword')]",
-      "shieldKibanaPwd": "[parameters('shieldKibanaPassword')]",
-      "shieldKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('shieldKibanaPassword'))]",
+      "securityAdminPwd": "[parameters('securityAdminPassword')]",
+      "securityReadPwd": "[parameters('securityReadPassword')]",
+      "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
+      "securityKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('securityKibanaPassword'))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
     "masterNodeCount": {
