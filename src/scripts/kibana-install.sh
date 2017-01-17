@@ -158,18 +158,18 @@ old_configuration_and_plugins()
     if [ ${INSTALL_PLUGINS} -ne 0 ]; then
       echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
       echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
-      # install security only on Elasticsearch 2.4.0+ so that graph can be used.
+      # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
       # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-        log "[old_configuration_and_plugins] installing latest security"
-        /opt/kibana/bin/kibana plugin --install kibana/security/2.4.0
-        log "[old_configuration_and_plugins] security plugin installed"
+        log "[old_configuration_and_plugins] installing latest shield"
+        /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
+        log "[old_configuration_and_plugins] shield plugin installed"
 
         # NOTE: These settings allow security to work in Kibana without HTTPS.
         # This is NOT recommended for production.
-        echo "security.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
-        echo "security.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
+        echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
+        echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
 
         install_pwgen
 

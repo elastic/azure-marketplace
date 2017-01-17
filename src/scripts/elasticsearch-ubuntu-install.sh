@@ -293,7 +293,7 @@ install_plugins()
     else
       log "[install_plugins] Installing X-Pack plugins security, Marvel, Watcher"
       sudo $(plugin_cmd) install license
-      sudo $(plugin_cmd) install security
+      sudo $(plugin_cmd) install shield
       sudo $(plugin_cmd) install watcher
       sudo $(plugin_cmd) install marvel-agent
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
@@ -319,7 +319,7 @@ install_azure_cloud_plugin()
 
 install_additional_plugins()
 {
-    SKIP_PLUGINS="license security watcher marvel-agent graph cloud-azure"
+    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure"
     log "[install_additional_plugins] Installing additional plugins"
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
@@ -341,13 +341,13 @@ security_cmd()
     if [[ "${ES_VERSION}" == \5* ]]; then
       echo /usr/share/elasticsearch/bin/x-pack/users
     else
-      echo /usr/share/elasticsearch/bin/security/esusers
+      echo /usr/share/elasticsearch/bin/shield/esusers
     fi
 }
 
 apply_security_settings_2x()
 {
-    local SEC_FILE=/etc/elasticsearch/security/roles.yml
+    local SEC_FILE=/etc/elasticsearch/shield/roles.yml
     log "[install_plugins]  Check that $SEC_FILE contains kibana4 role"
     if ! sudo grep -q "kibana4:" "$SEC_FILE"; then
         log "[install_plugins]  No kibana4 role. Adding now"
@@ -470,7 +470,7 @@ apply_security_settings()
       fi
       log "[apply_security_settings] added es_kibana account"
 
-      #create a readonly role that mimmics the `user` role in security for `es_read`
+      #create a readonly role that mimmics the `user` role in the old shield plugin for es 2.x for `es_read`
       curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/user?pretty' -d'
       {
         "cluster": [ "monitor" ],
