@@ -16,26 +16,19 @@ Run `npm run build`, this will validate EditorConfig settings, validate JSON fil
 ## Azure Marketplace
 
 The Azure Marketplace Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
-It will always install a cluster complete with the X-Pack plugins [Shield](https://www.elastic.co/products/shield), [Watcher](https://www.elastic.co/products/watcher) and [Marvel](https://www.elastic.co/products/marvel), [Graph](https://www.elastic.co/products/graph) (for Elasticsearch 2.3.0+) and [Reporting](https://www.elastic.co/products/reporting) when also installing Kibana* (with Elasticsearch 2.4.0+). 
 
-Additionally, the [Azure Cloud plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/current/cloud-azure.html) can be optionally installed to support snapshot and restore.
+It will always bootstrap a cluster complete with [x-pack](https://www.elastic.co/products/x-pack).
+
+Did you know that you can apply for a free basic license? Go checkout our [subscription options](https://www.elastic.co/subscriptions)
+
+Deploying through the Marketplace is great and easy way to get your feet wet for a first time with Elasticsearch (on azure) but in the long run you'll want to deploy 
+the templates directly though the Azure CLI. For examples of this keep reading this document!
 
 ---
 
 ### VERY IMPORTANT
 **This template does not configure SSL/TLS for communication with Kibana, or Elasticsearch through an external load balancer. It is strongly recommended that you secure
 communication before using in production.**
-
-Additionally, for Elasticsearch 2.4.0+, when X-Pack plugins and Kibana are installed, the Shield plugin is also installed in Kibana to provide login/logout functionality as well
-as allow the Graph UI to function correctly. The Shield plugin is configured to skip checking that requests are made over HTTPS and allow session cookies to be sent
-over HTTP by setting the following options in `kibana.yml`
-
-```
-shield.useUnsafeSessions: true
-shield.skipSslCheck: true
-```
-**It is strongly recommended that you remove these settings and [secure communication to Kibana by enabling SSL](https://www.elastic.co/guide/en/kibana/4.6/production.html#enabling-ssl) before
-using in production.**
 
 ---
 
@@ -73,7 +66,7 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <td> The load balancer to set up to access the cluster. Can be <code>internal</code> or <code>external</code>. The default is <code>internal</code>. 
     By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
     load balancer.
-    <strong>If you are setting up Elasticsearch on an external endpoint, you will need to secure your nodes with a product like Elastic's Shield as well as configure
+    <strong>If you are setting up Elasticsearch on an external endpoint, you will need to secure your nodes with a product like Elastic's Security as well as configure
     transport level security.</strong>
     </td></tr>
 
@@ -94,7 +87,7 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 
   <tr><td>esPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial X-Pack
-    plugins: Shield, Watcher, Marvel and Graph (Elasticsearch 2.3.0+).
+    plugins: Security, Watcher, Marvel and Graph (Elasticsearch 2.3.0+), or simply x-pack in 5.x
     </td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
@@ -163,16 +156,16 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <td>When <code>authenticationType</code> is <code>sshPublicKey</code> this sets the OS level sshKey that can be used to login.
     </td></tr>
 
-  <tr><td>shieldAdminPassword</td><td>securestring</td>
-    <td>Shield password for the <code>es_admin</code> user with admin role, must be &gt; 6 characters
+  <tr><td>securityAdminPassword</td><td>securestring</td>
+    <td>The password for 5.x's superuser `elastic` or in 2.x the `es_admin` user with admin role
     </td></tr>
 
-  <tr><td>shieldReadPassword</td><td>securestring</td>
-    <td>Shield password for the <code>es_read</code> user with user (read-only) role, must be &gt; 6 characters
+  <tr><td>securityReadPassword</td><td>securestring</td>
+    <td>Security password for the <code>es_read</code> user with user (read-only) role, must be &gt; 6 characters
     </td></tr>
 
-  <tr><td>shieldKibanaPassword</td><td>securestring</td>
-    <td>Shield password for the <code>es_kibana</code> user with kibana4 role, must be &gt; 6 characters
+  <tr><td>securityKibanaPassword</td><td>securestring</td>
+    <td>Security password for the <code>es_kibana</code> user with kibana4 role, must be &gt; 6 characters
     </td></tr>
 
   <tr><td>location</td><td>string</td>

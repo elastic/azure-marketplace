@@ -74,10 +74,10 @@ while getopts :n:v:e:u:S:m:lh optname; do
     u) #elasticsearch url
       ELASTICSEARCH_URL=${OPTARG}
       ;;
-    S) #shield kibana server pwd
+    S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
       ;;
-    m) #shield kibana server pwd
+    m) #security kibana server pwd
       HOSTMODE=${OPTARG}
       ;;
     l) #install plugins
@@ -154,55 +154,57 @@ old_configuration_and_plugins()
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> /opt/kibana/config/kibana.yml
-    echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
-    echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
 
-    # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
-    # cannot be installed on earlier versions as
-    # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
-    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-      log "[old_configuration_and_plugins] installing latest shield"
-      /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
-      log "[old_configuration_and_plugins] shield plugin installed"
+    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+      echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
+      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
+      # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
+      # cannot be installed on earlier versions as
+      # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
+      if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+        log "[old_configuration_and_plugins] installing latest shield"
+        /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
+        log "[old_configuration_and_plugins] shield plugin installed"
 
-      # NOTE: These settings allow Shield to work in Kibana without HTTPS.
-      # This is NOT recommended for production.
-      echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
-      echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
+        # NOTE: These settings allow security to work in Kibana without HTTPS.
+        # This is NOT recommended for production.
+        echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
+        echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
 
-      install_pwgen
+        install_pwgen
 
-      log "[old_configuration_and_plugins] generating shield encryption key"
-      ENCRYPTION_KEY=$(pwgen 64 1)
-      echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
-      log "[old_configuration_and_plugins] shield encryption key generated"
-    fi
-
-    # install graph
-    if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
-      log "[old_configuration_and_plugins] installing graph plugin"
-      /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
-      log "[old_configuration_and_plugins] graph plugin installed"
-    fi
-
-    # install reporting
-    if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.1"; then
-      log "[old_configuration_and_plugins] installing reporting plugin"
-      /opt/kibana/bin/kibana plugin --install kibana/reporting/2.4.1
-      log "[old_configuration_and_plugins] reporting plugin installed"
-
-      log "[old_configuration_and_plugins] generating reporting encryption key"
-      if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
+        log "[old_configuration_and_plugins] generating security encryption key"
+        ENCRYPTION_KEY=$(pwgen 64 1)
+        echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        log "[old_configuration_and_plugins] security encryption key generated"
       fi
-      ENCRYPTION_KEY=$(pwgen 64 1)
-      echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
-      log "[old_configuration_and_plugins] reporting encryption key generated"
-    fi
 
-    log "[old_configuration_and_plugins] installing monitoring plugin"
-    /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
-    log "[old_configuration_and_plugins] monitoring plugin installed"
+      # install graph
+      if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
+        log "[old_configuration_and_plugins] installing graph plugin"
+        /opt/kibana/bin/kibana plugin --install elasticsearch/graph/$ES_VERSION
+        log "[old_configuration_and_plugins] graph plugin installed"
+      fi
+
+      # install reporting
+      if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.1"; then
+        log "[old_configuration_and_plugins] installing reporting plugin"
+        /opt/kibana/bin/kibana plugin --install kibana/reporting/2.4.1
+        log "[old_configuration_and_plugins] reporting plugin installed"
+
+        log "[old_configuration_and_plugins] generating reporting encryption key"
+        if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+          (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
+        fi
+        ENCRYPTION_KEY=$(pwgen 64 1)
+        echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        log "[old_configuration_and_plugins] reporting encryption key generated"
+      fi
+
+      log "[old_configuration_and_plugins] installing monitoring plugin"
+      /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
+      log "[old_configuration_and_plugins] monitoring plugin installed"
+    fi
     log "[old_configuration_and_plugins] installing sense plugin"
     /opt/kibana/bin/kibana plugin --install elastic/sense
     log "[old_configuration_and_plugins] sense plugin installed"
@@ -225,18 +227,21 @@ configuration_and_plugins()
     local KIBANA_CONF=/etc/kibana/kibana.yml
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
-    echo "elasticsearch.username: kibana" >> $KIBANA_CONF
-    echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
 
-    local ENCRYPTION_KEY=$(pwgen 64 1)
-    echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-    echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-    log "[configuration_and_plugins] x-pack security encryption key generated"
+    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+      echo "elasticsearch.username: kibana" >> $KIBANA_CONF
+      echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
 
-    log "[configuration_and_plugins] installing xpack plugin"
-    sudo /usr/share/kibana/bin/kibana-plugin install x-pack
-    log "[configuration_and_plugins] installed xpack plugin"
+      local ENCRYPTION_KEY=$(pwgen 64 1)
+      echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
+      echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
+      log "[configuration_and_plugins] x-pack security encryption key generated"
+
+      log "[configuration_and_plugins] installing xpack plugin"
+      sudo /usr/share/kibana/bin/kibana-plugin install x-pack
+      log "[configuration_and_plugins] installed xpack plugin"
+    fi
 }
 
 old_install_service()
@@ -289,12 +294,10 @@ install_sequence()
 # Installation sequence
 #########################
 
-if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-  if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.0.0"; then
-    install_sequence
-  else
-    old_install_sequence
-  fi
+if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.0.0"; then
+  install_sequence
+else
+  old_install_sequence
 fi
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))

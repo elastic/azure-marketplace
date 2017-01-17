@@ -12,7 +12,7 @@
   "deployments" : {
     "username" : "",
     "password" : "",
-    "shieldPassword" : "",
+    "securityPassword" : "",
     "ssh" : ""
   }
 }

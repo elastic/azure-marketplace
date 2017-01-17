@@ -48,9 +48,9 @@ var bootstrapTest = (t, defaultVersion) =>
   testParameters.adminUsername.value = config.deployments.username;
   testParameters.adminPassword.value = config.deployments.password;
   testParameters.sshPublicKey.value = config.deployments.ssh;
-  testParameters.shieldAdminPassword.value = config.deployments.shieldPassword;
-  testParameters.shieldReadPassword.value = config.deployments.shieldPassword;
-  testParameters.shieldKibanaPassword.value = config.deployments.shieldPassword;
+  testParameters.securityAdminPassword.value = config.deployments.securityPassword;
+  testParameters.securityReadPassword.value = config.deployments.securityPassword;
+  testParameters.securityKibanaPassword.value = config.deployments.securityPassword;
   testParameters.esVersion.value = defaultVersion;
 
   return {
@@ -256,7 +256,7 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
   var rg = t.resourceGroup;
   log("checking external loadbalancer "+ url +" in resource group: " + rg);
   var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
-  var opts = { json: true, auth: { username: superuser, password: config.deployments.shieldPassword } };
+  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword } };
   request(url, opts, (error, response, body) => {
     if (!error && response.statusCode == 200) {
       log(test, "loadBalancerResponse: " + JSON.stringify(body, null, 2));

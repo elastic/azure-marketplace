@@ -97,16 +97,16 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
     v) #elasticsearch version number
       ES_VERSION=${OPTARG}
       ;;
-    A) #shield admin pwd
+    A) #security admin pwd
       USER_ADMIN_PWD=${OPTARG}
       ;;
-    R) #shield readonly pwd
+    R) #security readonly pwd
       USER_READ_PWD=${OPTARG}
       ;;
-    K) #shield kibana user pwd
+    K) #security kibana user pwd
       USER_KIBANA4_PWD=${OPTARG}
       ;;
-    S) #shield kibana server pwd
+    S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
