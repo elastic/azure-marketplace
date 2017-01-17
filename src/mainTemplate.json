@@ -274,6 +274,18 @@
         "description": "Number of Elasticsearch data nodes"
       }
     },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "The disk size of the attached disks (Large, Medium, Small) for premium storage this equates to P10, P20, P30"
+      }
+    },
     "dataNodesAreMasterEligible": {
       "type": "string",
       "defaultValue": "No",
@@ -995,11 +1007,16 @@
       "Premium_LRS_Large_40": 0,
       "Premium_LRS_Large_0": 0
     },
+    "storageAccountOverrides" : {
+      "Default" : "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+      "Standard" : "Standard_LRS",
+      "Premium" : "Premium_LRS"
+    },
+    "resolvedStorageAccountType": "[variables('storageAccountTypeOverrides')[parameters('storageAccountType')]]",
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
-    "tmpVmStorageType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
     "smallestDataDiskOption": "[div(sub(add(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks')), int(replace(string(sub(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
     "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
-    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('tmpVmStorageType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
+    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('resolvedStorageAccountType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
     "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
     "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),1)))]",
     "topologySettings": {
@@ -1017,7 +1034,7 @@
       "dataNodeStorageSettings": {
         "count": "[variables('storageAccountsCount')]",
         "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
-        "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+        "accountType": "[variables('resolvedStorageAccountType')]",
         "diskSize": "[variables('dataDiskSizes')[parameters('vmDataDiskSize')]]",
         "dataDisks": "[variables('numberOfDataDisks')]"
       },
