@@ -154,10 +154,10 @@ old_configuration_and_plugins()
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> /opt/kibana/config/kibana.yml
-    echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
-    echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
 
     if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+      echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
+      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
       # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
       # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
