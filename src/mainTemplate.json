@@ -1012,7 +1012,7 @@
       "Standard" : "Standard_LRS",
       "Premium" : "Premium_LRS"
     },
-    "resolvedStorageAccountType": "[variables('storageAccountTypeOverrides')[parameters('storageAccountType')]]",
+    "resolvedStorageAccountType": "[variables('storageAccountOverrides')[parameters('storageAccountType')]]",
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
     "smallestDataDiskOption": "[div(sub(add(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks')), int(replace(string(sub(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
     "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
