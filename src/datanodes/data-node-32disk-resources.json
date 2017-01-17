@@ -132,6 +132,7 @@
               "disks": [
                 {
                   "name": "datadisk1",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
                   "vhd": {
@@ -142,6 +143,7 @@
                 },
                 {
                   "name": "datadisk2",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 1,
                   "vhd": {
@@ -152,6 +154,7 @@
                 },
                 {
                   "name": "datadisk3",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 2,
                   "vhd": {
@@ -162,6 +165,7 @@
                 },
                 {
                   "name": "datadisk4",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 3,
                   "vhd": {
@@ -172,6 +176,7 @@
                 },
                 {
                   "name": "datadisk5",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 4,
                   "vhd": {
@@ -182,6 +187,7 @@
                 },
                 {
                   "name": "datadisk6",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 5,
                   "vhd": {
@@ -192,6 +198,7 @@
                 },
                 {
                   "name": "datadisk7",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 6,
                   "vhd": {
@@ -202,6 +209,7 @@
                 },
                 {
                   "name": "datadisk8",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 7,
                   "vhd": {
@@ -212,6 +220,7 @@
                 },
                 {
                   "name": "datadisk9",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 8,
                   "vhd": {
@@ -222,6 +231,7 @@
                 },
                 {
                   "name": "datadisk10",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 9,
                   "vhd": {
@@ -232,6 +242,7 @@
                 },
                 {
                   "name": "datadisk11",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 10,
                   "vhd": {
@@ -242,6 +253,7 @@
                 },
                 {
                   "name": "datadisk12",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 11,
                   "vhd": {
@@ -252,6 +264,7 @@
                 },
                 {
                   "name": "datadisk13",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 12,
                   "vhd": {
@@ -262,6 +275,7 @@
                 },
                 {
                   "name": "datadisk14",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 13,
                   "vhd": {
@@ -272,6 +286,7 @@
                 },
                 {
                   "name": "datadisk15",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 14,
                   "vhd": {
@@ -282,6 +297,7 @@
                 },
                 {
                   "name": "datadisk16",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 15,
                   "vhd": {
@@ -292,6 +308,7 @@
                 },
                 {
                   "name": "datadisk17",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 16,
                   "vhd": {
@@ -302,6 +319,7 @@
                 },
                 {
                   "name": "datadisk18",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 17,
                   "vhd": {
@@ -312,6 +330,7 @@
                 },
                 {
                   "name": "datadisk19",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 18,
                   "vhd": {
@@ -322,6 +341,7 @@
                 },
                 {
                   "name": "datadisk20",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 19,
                   "vhd": {
@@ -332,6 +352,7 @@
                 },
                 {
                   "name": "datadisk21",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 20,
                   "vhd": {
@@ -342,6 +363,7 @@
                 },
                 {
                   "name": "datadisk22",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 21,
                   "vhd": {
@@ -352,6 +374,7 @@
                 },
                 {
                   "name": "datadisk23",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 22,
                   "vhd": {
@@ -362,6 +385,7 @@
                 },
                 {
                   "name": "datadisk24",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 23,
                   "vhd": {
@@ -372,6 +396,7 @@
                 },
                 {
                   "name": "datadisk25",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 24,
                   "vhd": {
@@ -382,6 +407,7 @@
                 },
                 {
                   "name": "datadisk26",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 25,
                   "vhd": {
@@ -392,6 +418,7 @@
                 },
                 {
                   "name": "datadisk27",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 26,
                   "vhd": {
@@ -402,6 +429,7 @@
                 },
                 {
                   "name": "datadisk28",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 27,
                   "vhd": {
@@ -412,6 +440,7 @@
                 },
                 {
                   "name": "datadisk29",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 28,
                   "vhd": {
@@ -422,6 +451,7 @@
                 },
                 {
                   "name": "datadisk30",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 29,
                   "vhd": {
@@ -432,6 +462,7 @@
                 },
                 {
                   "name": "datadisk31",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 30,
                   "vhd": {
@@ -442,6 +473,7 @@
                 },
                 {
                   "name": "datadisk32",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 31,
                   "vhd": {

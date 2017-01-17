@@ -254,6 +254,17 @@
         "description": "Number of disks to attach in raid0 setup, upperbound protected by vmsize maximum"
       }
     },
+    "vmDataDiskType": {
+      "type": "string",
+      "defaultValue": "ssd",
+      "allowedValues": [
+        "hdd",
+        "ssd"
+      ],
+      "metadata": {
+        "description": "The disk type of the attached disks (HDD, SSD) for premium storage"
+      }
+    },
     "vmDataDiskSize": {
       "type": "string",
       "defaultValue": "Large",
@@ -1016,6 +1027,7 @@
         "count": "[variables('storageAccountsCount')]",
         "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
         "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+        "diskType": "[parameters('vmDataDiskType')]",
         "diskSize": "[variables('dataDiskSizes')[parameters('vmDataDiskSize')]]",
         "dataDisks": "[variables('numberOfDataDisks')]"
       },

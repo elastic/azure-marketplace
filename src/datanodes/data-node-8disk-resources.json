@@ -132,6 +132,7 @@
               "disks": [
                 {
                   "name": "datadisk1",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
                   "vhd": {
@@ -142,6 +143,7 @@
                 },
                 {
                   "name": "datadisk2",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 1,
                   "vhd": {
@@ -152,6 +154,7 @@
                 },
                 {
                   "name": "datadisk3",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 2,
                   "vhd": {
@@ -162,6 +165,7 @@
                 },
                 {
                   "name": "datadisk4",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 3,
                   "vhd": {
@@ -172,6 +176,7 @@
                 },
                 {
                   "name": "datadisk5",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 4,
                   "vhd": {
@@ -182,6 +187,7 @@
                 },
                 {
                   "name": "datadisk6",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 5,
                   "vhd": {
@@ -192,6 +198,7 @@
                 },
                 {
                   "name": "datadisk7",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 6,
                   "vhd": {
@@ -202,6 +209,7 @@
                 },
                 {
                   "name": "datadisk8",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 7,
                   "vhd": {

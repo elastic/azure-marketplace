@@ -132,6 +132,7 @@
               "disks": [
                 {
                   "name": "datadisk1",
+                  "type": "[parameters('storageSettings').diskType]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
                   "vhd": {
