@@ -41,7 +41,7 @@ using in production.**
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Fniemyjski%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Fniemyjski%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -260,7 +260,7 @@ azure group create <name> <location>
 Next we can either use our published template directly using `--template-uri`
 
 ```sh
-azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/disks/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+azure group deployment create --template-uri https://raw.githubusercontent.com/niemyjski/azure-marketplace/feature/disks/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
 ```
 
 or if your are executing commands from a clone of this repo using `--template-file`
@@ -277,7 +277,7 @@ The `--parameters-file` can specify a different location for the items that get 
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fniemyjski%2Fazure-marketplace%2Ffeature/disks%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
