@@ -175,7 +175,7 @@ old_configuration_and_plugins()
 
         log "[old_configuration_and_plugins] generating security encryption key"
         ENCRYPTION_KEY=$(pwgen 64 1)
-        echo "security.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
         log "[old_configuration_and_plugins] security encryption key generated"
       fi
 
