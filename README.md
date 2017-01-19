@@ -134,7 +134,7 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     </td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of the attached disks. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb). 
+    <td>The disk size of the attached disks. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb). Defaults is <code>Large</code>.
     For Premium Storage, the disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
     storage disk types, respectively.
     </td>
