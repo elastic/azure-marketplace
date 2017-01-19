@@ -1026,7 +1026,7 @@
     },
     "resolvedStorageAccountType": "[variables('storageAccountOverrides')[parameters('storageAccountType')]]",
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
-    "smallestDataDiskOption": "[div(sub(add(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks')), int(replace(string(sub(parameters('vmDataDiskCount'), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
+    "smallestDataDiskOption": "[div(sub(add(int(parameters('vmDataDiskCount')), variables('tmpVmSizeDataDisks')), int(replace(string(sub(int(parameters('vmDataDiskCount')), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
     "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
     "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('resolvedStorageAccountType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
     "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
