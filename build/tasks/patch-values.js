@@ -62,9 +62,9 @@ gulp.task("patch", function(cb) {
     });
 
     // valid disk counts + 0 for no disks (temporary disk)
-    var diskCount = ["0"];
+    var diskCount = [0];
     allowedValues.dataDisks.forEach(n => {
-      diskCount.push(n+"");
+      diskCount.push(n);
     });
 
     obj.variables.nodesPerStorageMapping = _(mapping)

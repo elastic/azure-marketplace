@@ -249,17 +249,17 @@
       }
     },
     "vmDataDiskCount": {
-      "type": "string",
-      "defaultValue": "40",
+      "type": "int",
+      "defaultValue": 40,
       "allowedValues": [
-        "0",
-        "1",
-        "2",
-        "4",
-        "8",
-        "16",
-        "32",
-        "40"
+        0,
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        40
       ],
       "metadata": {
         "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used"
