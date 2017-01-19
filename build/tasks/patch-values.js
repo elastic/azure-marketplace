@@ -50,7 +50,7 @@ gulp.task("patch", function(cb) {
       }}
     ];
     var mapping = [];
-    var diskSizes = ["Small", "Medium", "Large"];
+    var diskSizes = allowedValues.diskSizes;
     //this is horrible but its late and i'm in derp mode
     tiers.forEach(tier => {
       diskSizes.forEach(size=> {
@@ -59,6 +59,12 @@ gulp.task("patch", function(cb) {
         })
         mapping.push([tier.name + "_" + size + "_0", 0])
       })
+    });
+
+    // valid disk counts + 0 for no disks (temporary disk)
+    var diskCount = [0];
+    allowedValues.dataDisks.forEach(n => {
+      diskCount.push(n);
     });
 
     obj.variables.nodesPerStorageMapping = _(mapping)
@@ -90,6 +96,10 @@ gulp.task("patch", function(cb) {
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
+    obj.parameters.vmDataDiskCount.allowedValues = diskCount;
+    obj.parameters.vmDataDiskCount.defaultValue = _.max(diskCount);
+    obj.parameters.vmDataDiskSize.allowedValues = diskSizes;
+    obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeKibana.allowedValues = vmSizes;

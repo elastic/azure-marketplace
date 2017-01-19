@@ -250,21 +250,31 @@
     },
     "vmDataDiskCount": {
       "type": "int",
-      "defaultValue": 100,
+      "defaultValue": 40,
+      "allowedValues": [
+        0,
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        40
+      ],
       "metadata": {
-        "description": "Number of disks to attach in raid0 setup, upperbound protected by vmsize maximum"
+        "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used"
       }
     },
     "vmDataDiskSize": {
       "type": "string",
       "defaultValue": "Large",
       "allowedValues": [
-        "Large",
+        "Small",
         "Medium",
-        "Small"
+        "Large"
       ],
       "metadata": {
-        "description": "The disk size of the attached disks (Large, Medium, Small) for premium storage this equates to P10, P20, P30"
+        "description": "The disk size of the attached disks, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
       }
     },
     "vmDataNodeCount": {
@@ -283,7 +293,7 @@
         "Premium"
       ],
       "metadata": {
-        "description": "The storage account type of the attached disks (Default, Standard, Premimum). The Default storage account type will be premium storage for this VMs that support premium storage and standard storage for those that do not."
+        "description": "The storage account type of the attached disks (Default, Standard, Premimum). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard Storage for those that do not."
       }
     },
     "dataNodesAreMasterEligible": {

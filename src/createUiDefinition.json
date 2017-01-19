@@ -634,7 +634,7 @@
                   "password": "(es_admin or elastic) password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Elasticsearch 5.x this is the password for the builtin `elastic` user otherwise we'll create a `es_admin` user",
+                "toolTip": "Elasticsearch 5.x this is the password for the built-in 'elastic' user otherwise we'll create a 'es_admin' user",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -658,7 +658,7 @@
                   "password": "es_read Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_read user.",
+                "toolTip": "Password to use for the 'es_read' user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -682,7 +682,7 @@
                   "password": "es_kibana Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the es_kibana user.",
+                "toolTip": "Password to use for the 'es_kibana' user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -984,7 +984,10 @@
       "kibana": "[steps('externalAccessStep').kibana]",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
+      "vmDataDiskCount": "40",
+      "vmDataDiskSize": "Large",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
+      "storageAccountType": "Default",
       "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodes.dataNodesAreMasterEligible]",
       "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
       "vmSizeMasterNodes": "[steps('nodesStep').masterNodes.vmSizeMasterNodes]",
