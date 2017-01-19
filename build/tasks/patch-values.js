@@ -62,10 +62,11 @@ gulp.task("patch", function(cb) {
     });
 
     // valid disk counts + 0 for no disks (temporary disk)
-    var diskCount = [0];
-    allowedValues.dataDisks.forEach(n => {
+    var diskCount = [];
+    _.clone(allowedValues.dataDisks).sort((a, b) => { return b - a; }).forEach(n => {
       diskCount.push(n);
     });
+    diskCount.push(0);
 
     obj.variables.nodesPerStorageMapping = _(mapping)
       .indexBy(a=>a[0])
@@ -97,7 +98,6 @@ gulp.task("patch", function(cb) {
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
     obj.parameters.vmDataDiskCount.allowedValues = diskCount;
-    obj.parameters.vmDataDiskCount.defaultValue = _.max(diskCount);
     obj.parameters.vmDataDiskSize.allowedValues = diskSizes;
     obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
