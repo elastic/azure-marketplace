@@ -117,10 +117,10 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
-  <tr><td>vmDataDiskCount</td><td>int</td>
+  <tr><td>vmDataDiskCount</td><td>string</td>
     <td>Number of disks to attach to each data node in RAID 0 setup. 
-    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>. 
-    Default is <code>40</code>. If the number of disks selected is more than can be attached to the data node VM size, 
+    Must be one of <code>"0"</code>, <code>"1"</code>, <code>"2"</code>, <code>"4"</code>, <code>"8"</code>, <code>"16"</code>, <code>"32"</code>, <code>"40"</code>. 
+    Default is <code>"40"</code>. If the number of disks selected is more than can be attached to the data node VM size, 
     the maximum number of disks that can be attached for the data node VM size will be used. Equivalent to
     taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code> 
     <ul>
