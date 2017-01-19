@@ -39,7 +39,7 @@ gulp.task("links", (cb) => {
     var link = /https:\/\/raw\.githubusercontent\.com\/.+?\/.+?\/.+?\/src/g;
     var escapedLink = /https%3A%2F%2Fraw\.githubusercontent\.com%2F.+?%2F.+?%2F.+?%2Fsrc/g;
     var newContent = content.replace(link, "https://raw.githubusercontent.com/" + repo + "/" + branch + "/src");
-    newContent = newContent.replace(escapedLink, "https%3A%2F%2Fraw.githubusercontent.com%2F" + repo.replace("/", "%2F") + "%2F" + branch + "%2Fsrc");
+    newContent = newContent.replace(escapedLink, "https%3A%2F%2Fraw.githubusercontent.com%2F" + repo.replace("/", "%2F") + "%2F" + branch.replace("/", "%2F") + "%2Fsrc");
     fs.writeFile(fileName, newContent, error); 
   }
 

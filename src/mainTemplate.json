@@ -283,7 +283,7 @@
         "Premium"
       ],
       "metadata": {
-        "description": "The disk size of the attached disks (Large, Medium, Small) for premium storage this equates to P10, P20, P30"
+        "description": "The storage account type of the attached disks (Default, Standard, Premimum). The Default storage account type will be premium storage for this VMs that support premium storage and standard storage for those that do not."
       }
     },
     "dataNodesAreMasterEligible": {
@@ -294,7 +294,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Make all data nodes master-eligible, this can be useful for small elasticsearch cluster deployments, but for larger deployments, it is recommended to use dedicated master nodes"
+        "description": "Make all data nodes master-eligible. This can be useful for small elasticsearch cluster deployments, but for larger deployments it is recommended to use dedicated master nodes"
       }
     },
     "vmSizeMasterNodes": {
@@ -464,19 +464,19 @@
     "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the superuser 'es_admin' in 2.x or 'elastic' in 5.x and up, must be > 6 characters"
+        "description": "Password for the superuser 'es_admin' in 2.x, or 'elastic' in 5.x and up. Must be > 6 characters"
       }
     },
     "securityReadPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'es_read' user with user (read-only) role, must be > 6 characters"
+        "description": "Password for the 'es_read' user with user (read-only) role. Must be > 6 characters"
       }
     },
     "securityKibanaPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the `es_kibana` user with kibana4 role, must be > 6 characters"
+        "description": "Password for the `es_kibana` user with kibana4 role. Must be > 6 characters"
       }
     },
     "location": {
@@ -1007,10 +1007,10 @@
       "Premium_LRS_Large_40": 0,
       "Premium_LRS_Large_0": 0
     },
-    "storageAccountOverrides" : {
-      "Default" : "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
-      "Standard" : "Standard_LRS",
-      "Premium" : "Premium_LRS"
+    "storageAccountOverrides": {
+      "Default": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+      "Standard": "Standard_LRS",
+      "Premium": "Premium_LRS"
     },
     "resolvedStorageAccountType": "[variables('storageAccountOverrides')[parameters('storageAccountType')]]",
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
