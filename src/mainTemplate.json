@@ -565,14 +565,14 @@
     },
     "vNetNewAddressPrefix": {
       "type": "string",
-      "defaultValue": "10.0.0.0/16",
+      "defaultValue": "10.0.0.0/24",
       "metadata": {
         "description": "The address prefix size to use for a New Virtual Network. Required when creating a new Virtual Network"
       }
     },
     "vNetNewSubnetAddressPrefix": {
       "type": "string",
-      "defaultValue": "10.0.0.0/24",
+      "defaultValue": "10.0.0.0/25",
       "metadata": {
         "description": "The address space of the subnet. Required when creating a new Virtual Network"
       }
