@@ -984,7 +984,7 @@
       "kibana": "[steps('externalAccessStep').kibana]",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
-      "vmDataDiskCount": "40",
+      "vmDataDiskCount": 40,
       "vmDataDiskSize": "Large",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
       "storageAccountType": "Default",
