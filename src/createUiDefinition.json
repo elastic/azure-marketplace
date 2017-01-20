@@ -194,7 +194,7 @@
               {
                 "name": "vmDataNodeCount",
                 "type": "Microsoft.Common.DropDown",
-                "label": "Number of data nodes (if not using dedicated masters, >= 3 data nodes)",
+                "label": "Number of data nodes (if not using dedicated master nodes, recommended >= 3 data nodes)",
                 "defaultValue": "3",
                 "toolTip": "Specify the number of data nodes for this cluster. When not using dedicated master nodes, it is strongly recommended to have at least 3 data nodes in order to avoid split brain scenarios.",
                 "constraints": {
@@ -625,7 +625,7 @@
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "Superuser Account ",
+            "label": "Superuser Account",
             "elements": [
               {
                 "name": "securityAdminPassword",
@@ -634,7 +634,7 @@
                   "password": "(es_admin or elastic) password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Elasticsearch 5.x this is the password for the built-in 'elastic' user otherwise we'll create a 'es_admin' user",
+                "toolTip": "In Elasticsearch 5.x, this is the password for the built-in 'elastic' user. In 2.x, this is the 'es_admin' user",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",

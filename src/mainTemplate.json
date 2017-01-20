@@ -262,7 +262,7 @@
         40
       ],
       "metadata": {
-        "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used"
+        "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used. If 1 disk is selected, it is not RAIDed. If 0 disks are selected, the temporary disk will be used to store Elasticsearch data. IMPORTANT: The temporary disk is ephemeral in nature so be sure you now the trade-offs when choosing 0 disks."
       }
     },
     "vmDataDiskSize": {
@@ -274,7 +274,7 @@
         "Large"
       ],
       "metadata": {
-        "description": "The disk size of the attached disks, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
+        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
       }
     },
     "vmDataNodeCount": {
@@ -290,11 +290,10 @@
       "defaultValue": "Default",
       "allowedValues": [
         "Default",
-        "Standard",
-        "Premium"
+        "Standard"
       ],
       "metadata": {
-        "description": "The storage account type of the attached disks (Default, Standard, Premimum). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard Storage for those that do not."
+        "description": "The storage account type of the attached disks (Default or Standard). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard Storage for those that do not."
       }
     },
     "dataNodesAreMasterEligible": {

@@ -117,25 +117,25 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
-  <tr><td>vmDataDiskCount</td><td>string</td>
+  <tr><td>vmDataDiskCount</td><td>int</td>
     <td>Number of disks to attach to each data node in RAID 0 setup. 
-    Must be one of <code>"0"</code>, <code>"1"</code>, <code>"2"</code>, <code>"4"</code>, <code>"8"</code>, <code>"16"</code>, <code>"32"</code>, <code>"40"</code>. 
-    Default is <code>"40"</code>. If the number of disks selected is more than can be attached to the data node VM size, 
+    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>. 
+    Default is <code>40</code>. If the number of disks selected is more than can be attached to the data node VM size, 
     the maximum number of disks that can be attached for the data node VM size will be used. Equivalent to
     taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code> 
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
-    <li>When 0 disks are selected, no disks will be attached to each data node 
-    and the temporary disk will be used to store Elasticsearch data. 
+    <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data. 
     <strong>The temporary disk is ephemeral in nature and not persistent. This is not intended for long running clusters but can really help keeping the costs down for short lived ones.</strong>
-    Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> to understand the trade-offs in using it for storage.
+    Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
+    to understand the trade-offs in using it for storage.
     </li>
     </ul>
     </td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of the attached disks. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb). Defaults is <code>Large</code>.
-    For Premium Storage, the disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
+    <td>The disk size of each attached disk. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb). Default is <code>Large</code>.
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
     storage disk types, respectively.
     </td>
   </td></tr>
@@ -145,12 +145,10 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     Defaults to <code>3</code>.
     </td></tr>
 
-  <tr><td>storageAccountType</td><td>int</td>
-    <td>The storage account type of the attached disks - can be either <code>Default</code>, <code>Standard</code> or <code>Premimum</code>. 
+  <tr><td>storageAccountType</td><td>string</td>
+    <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. Default is <code>Default</code>. 
     The <code>Default</code> storage account type will be Premium Storage for VMs that 
-    support Premium Storage and Standard Storage for those that do not. 
-    Only VMs that support Premium Storage should choose <code>Premium</code> as an option 
-    (VMs that do not support Premium will fail deployment if <code>Premium</code> is chosen).
+    support Premium Storage and Standard Storage for those that do not.
     </td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
