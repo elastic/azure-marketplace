@@ -78,11 +78,16 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
+    "ubuntuSkus": {
+      "2": "14.04.4-LTS",
+      "5": "16.04.0-LTS"
+    },
+    "ubuntuSku": "[variables('ubuntuSkus')[substring(parameters('esSettings').version, 0, 1)]]",
     "ubuntuSettings": {
       "imageReference": {
         "publisher": "Canonical",
         "offer": "UbuntuServer",
-        "sku": "14.04.4-LTS",
+        "sku": "[variables('ubuntuSku')]",
         "version": "latest"
       },
       "managementPort": "22",
