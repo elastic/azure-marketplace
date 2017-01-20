@@ -97,7 +97,7 @@ gulp.task("patch", function(cb) {
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
     obj.parameters.vmDataDiskCount.allowedValues = diskCount;
-    obj.parameters.vmDataDiskCount.defaultValue = _.max(diskCount, c => { return +c; });
+    obj.parameters.vmDataDiskCount.defaultValue = _.max(diskCount);
     obj.parameters.vmDataDiskSize.allowedValues = diskSizes;
     obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
