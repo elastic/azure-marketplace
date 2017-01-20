@@ -4,7 +4,7 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/disks/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
@@ -248,11 +248,52 @@
         "description": "Size of the Elasticsearch data nodes"
       }
     },
+    "vmDataDiskCount": {
+      "type": "int",
+      "defaultValue": 40,
+      "allowedValues": [
+        0,
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        40
+      ],
+      "metadata": {
+        "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used. If 1 disk is selected, it is not RAIDed. If 0 disks are selected, the temporary disk will be used to store Elasticsearch data. IMPORTANT: The temporary disk is ephemeral in nature so be sure you now the trade-offs when choosing 0 disks."
+      }
+    },
+    "vmDataDiskSize": {
+      "type": "string",
+      "defaultValue": "Large",
+      "allowedValues": [
+        "Small",
+        "Medium",
+        "Large"
+      ],
+      "metadata": {
+        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
+      }
+    },
     "vmDataNodeCount": {
       "type": "int",
       "defaultValue": 3,
+      "minValue": 1,
       "metadata": {
         "description": "Number of Elasticsearch data nodes"
+      }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "The storage account type of the attached disks (Default or Standard). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard Storage for those that do not."
       }
     },
     "dataNodesAreMasterEligible": {
@@ -263,7 +304,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Make all data nodes master-eligible, this can be useful for small elasticsearch cluster deployments, but for larger deployments, it is recommended to use dedicated master nodes"
+        "description": "Make all data nodes master-eligible. This can be useful for small elasticsearch cluster deployments, but for larger deployments it is recommended to use dedicated master nodes"
       }
     },
     "vmSizeMasterNodes": {
@@ -332,6 +373,7 @@
     "vmClientNodeCount": {
       "type": "int",
       "defaultValue": 0,
+      "minValue": 0,
       "metadata": {
         "description": "Number of Elasticsearch client nodes to provision (Setting this to zero puts the data nodes on the load balancer)"
       }
@@ -433,19 +475,19 @@
     "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the superuser 'es_admin' in 2.x or 'elastic' in 5.x and up, must be > 6 characters"
+        "description": "Password for the superuser 'es_admin' in 2.x, or 'elastic' in 5.x and up. Must be > 6 characters"
       }
     },
     "securityReadPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'es_read' user with user (read-only) role, must be > 6 characters"
+        "description": "Password for the 'es_read' user with user (read-only) role. Must be > 6 characters"
       }
     },
     "securityKibanaPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the `es_kibana` user with kibana4 role, must be > 6 characters"
+        "description": "Password for the `es_kibana` user with kibana4 role. Must be > 6 characters"
       }
     },
     "location": {
@@ -680,274 +722,225 @@
     "dataSkuSettings": {
       "Standard_A0": {
         "dataDisks": 1,
-        "nodesPerStorageAccount": 10,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A1": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A3": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A4": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A5": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A6": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A7": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D1": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D3": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D4": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D11": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D12": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D13": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D14": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D1_v2": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D2_v2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D3_v2": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D4_v2": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D5_v2": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D11_v2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D12_v2": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D13_v2": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D14_v2": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D15_v2": {
         "dataDisks": 40,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_DS1": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS3": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS4": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS11": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS12": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS13": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS14": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS1_v2": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS2_v2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS3_v2": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS4_v2": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS5_v2": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS11_v2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS12_v2": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS13_v2": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS14_v2": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS15_v2": {
         "dataDisks": 40,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F1": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F2": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F4": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F8": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F16": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_F1s": {
         "dataDisks": 2,
-        "nodesPerStorageAccount": 8,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F2s": {
         "dataDisks": 4,
-        "nodesPerStorageAccount": 6,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F4s": {
         "dataDisks": 8,
-        "nodesPerStorageAccount": 4,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F8s": {
         "dataDisks": 16,
-        "nodesPerStorageAccount": 2,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F16s": {
         "dataDisks": 32,
-        "nodesPerStorageAccount": 1,
         "storageAccountType": "Premium_LRS"
       }
+    },
+    "dataDiskSizes": {
+      "Large": 1023,
+      "Medium": 512,
+      "Small": 128
     },
     "backendPoolConfigurations": {
       "internal": [
@@ -975,8 +968,68 @@
       "[variables('lbBackEndPoolsRemoved')]"
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
-    "nodesPerStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].nodesPerStorageAccount]",
-    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccount')),1)))]",
+    "nodesPerStorageMapping": {
+      "Standard_LRS_Small_1": 40,
+      "Standard_LRS_Small_2": 20,
+      "Standard_LRS_Small_4": 10,
+      "Standard_LRS_Small_8": 5,
+      "Standard_LRS_Small_16": 2,
+      "Standard_LRS_Small_32": 1,
+      "Standard_LRS_Small_40": 1,
+      "Standard_LRS_Small_0": 0,
+      "Standard_LRS_Medium_1": 40,
+      "Standard_LRS_Medium_2": 20,
+      "Standard_LRS_Medium_4": 10,
+      "Standard_LRS_Medium_8": 5,
+      "Standard_LRS_Medium_16": 2,
+      "Standard_LRS_Medium_32": 1,
+      "Standard_LRS_Medium_40": 1,
+      "Standard_LRS_Medium_0": 0,
+      "Standard_LRS_Large_1": 40,
+      "Standard_LRS_Large_2": 20,
+      "Standard_LRS_Large_4": 10,
+      "Standard_LRS_Large_8": 5,
+      "Standard_LRS_Large_16": 2,
+      "Standard_LRS_Large_32": 1,
+      "Standard_LRS_Large_40": 1,
+      "Standard_LRS_Large_0": 0,
+      "Premium_LRS_Small_1": 250,
+      "Premium_LRS_Small_2": 125,
+      "Premium_LRS_Small_4": 62,
+      "Premium_LRS_Small_8": 31,
+      "Premium_LRS_Small_16": 15,
+      "Premium_LRS_Small_32": 7,
+      "Premium_LRS_Small_40": 6,
+      "Premium_LRS_Small_0": 0,
+      "Premium_LRS_Medium_1": 60,
+      "Premium_LRS_Medium_2": 30,
+      "Premium_LRS_Medium_4": 15,
+      "Premium_LRS_Medium_8": 7,
+      "Premium_LRS_Medium_16": 3,
+      "Premium_LRS_Medium_32": 1,
+      "Premium_LRS_Medium_40": 1,
+      "Premium_LRS_Medium_0": 0,
+      "Premium_LRS_Large_1": 34,
+      "Premium_LRS_Large_2": 17,
+      "Premium_LRS_Large_4": 8,
+      "Premium_LRS_Large_8": 4,
+      "Premium_LRS_Large_16": 2,
+      "Premium_LRS_Large_32": 1,
+      "Premium_LRS_Large_40": 0,
+      "Premium_LRS_Large_0": 0
+    },
+    "storageAccountOverrides": {
+      "Default": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+      "Standard": "Standard_LRS",
+      "Premium": "Premium_LRS"
+    },
+    "resolvedStorageAccountType": "[variables('storageAccountOverrides')[parameters('storageAccountType')]]",
+    "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
+    "smallestDataDiskOption": "[div(sub(add(int(parameters('vmDataDiskCount')), variables('tmpVmSizeDataDisks')), int(replace(string(sub(int(parameters('vmDataDiskCount')), variables('tmpVmSizeDataDisks'))), '-', ''))), 2)]",
+    "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
+    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('resolvedStorageAccountType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
+    "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
+    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),1)))]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
@@ -992,8 +1045,9 @@
       "dataNodeStorageSettings": {
         "count": "[variables('storageAccountsCount')]",
         "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
-        "accountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
-        "dataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]"
+        "accountType": "[variables('resolvedStorageAccountType')]",
+        "diskSize": "[variables('dataDiskSizes')[parameters('vmDataDiskSize')]]",
+        "dataDisks": "[variables('numberOfDataDisks')]"
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
       "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]"

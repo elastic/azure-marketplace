@@ -17,7 +17,7 @@
     "namespace": {
       "type": "string",
       "metadata": {
-        "description": "The unique namespace for kibana nodes"
+        "description": "The unique namespace for the Kibana VM"
       }
     },
     "networkSettings": {
@@ -48,7 +48,7 @@
       "type": "string",
       "defaultValue": "Standard_A1",
       "metadata": {
-        "description": "Size of the Elasticsearch master nodes"
+        "description": "Size of the Kibana VM"
       }
     }
   },

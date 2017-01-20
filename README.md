@@ -34,7 +34,7 @@ communication before using in production.**
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fdisks%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fdisks%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -117,9 +117,38 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
     </td></tr>
 
+  <tr><td>vmDataDiskCount</td><td>int</td>
+    <td>Number of disks to attach to each data node in RAID 0 setup. 
+    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>. 
+    Default is <code>40</code>. If the number of disks selected is more than can be attached to the data node VM size, 
+    the maximum number of disks that can be attached for the data node VM size will be used. Equivalent to
+    taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code> 
+    <ul>
+    <li>When 1 disk is selected, the disk is not RAIDed.</li>
+    <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data. 
+    <strong>The temporary disk is ephemeral in nature and not persistent. This is not intended for long running clusters but can really help keeping the costs down for short lived ones.</strong>
+    Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
+    to understand the trade-offs in using it for storage.
+    </li>
+    </ul>
+    </td></tr>
+
+  <tr><td>vmDataDiskSize</td><td>string</td>
+    <td>The disk size of each attached disk. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb). Default is <code>Large</code>.
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
+    storage disk types, respectively.
+    </td>
+  </td></tr>
+
   <tr><td>vmDataNodeCount</td><td>int</td>
-    <td>The number of data nodes you wish to deploy. Should be greater than 0. 
+    <td>The number of data nodes you wish to deploy. Must be greater than 0. 
     Defaults to <code>3</code>.
+    </td></tr>
+
+  <tr><td>storageAccountType</td><td>string</td>
+    <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. Default is <code>Default</code>. 
+    The <code>Default</code> storage account type will be Premium Storage for VMs that 
+    support Premium Storage and Standard Storage for those that do not.
     </td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
@@ -253,7 +282,7 @@ azure group create <name> <location>
 Next we can either use our published template directly using `--template-uri`
 
 ```sh
-azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/disks/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
 ```
 
 or if your are executing commands from a clone of this repo using `--template-file`
@@ -270,7 +299,7 @@ The `--parameters-file` can specify a different location for the items that get 
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fdisks%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 

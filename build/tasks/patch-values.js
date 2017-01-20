@@ -26,10 +26,6 @@ var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
-//generate binPackMap of max data nodes but leave a minimum of 60 intact because thats what we shipped the ARM template with
-var binPackMap = _.range(1, Math.max(61, Math.max(allowedValues.numberOfDataNodes, allowedValues.numberOfClientNodes) + 1))
-  .map(function (i) { return "[div(sub(add(" + i + ", variables('nodesPerStorageAccount')), 1), variables('nodesPerStorageAccount'))]" });
-
 var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations)
 
 var userJobTitles = allowedValues.userJobTitle
@@ -38,17 +34,48 @@ var userJobTitles = allowedValues.userJobTitle
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(mainTemplate, function(err, obj) {
+    // 16 => 2
+    // 8 => 4
+    // 4 => 6
+    // 2 => 8
+    // 1 => 10
+    //https://docs.microsoft.com/en-us/azure/storage/storage-scalability-targets
+    //chosing a value below documented for premium to err on the side of not sacrificing throughput
+    var tiers = [
+      { name: "Standard_LRS", max: (s, d) => Math.floor(40 / d) },
+      { name:"Premium_LRS", max: (s, d) => {
+        if (s == "Small") return Math.floor(250 / d);
+        else if (s == "Medium") return Math.floor(60 / d);
+        return Math.floor(34 / d);
+      }}
+    ];
+    var mapping = [];
+    var diskSizes = allowedValues.diskSizes;
+    //this is horrible but its late and i'm in derp mode
+    tiers.forEach(tier => {
+      diskSizes.forEach(size=> {
+        allowedValues.dataDisks.forEach(d=> {
+          mapping.push([tier.name + "_" + size + "_" + d, tier.max(size, d)])
+        })
+        mapping.push([tier.name + "_" + size + "_0", 0])
+      })
+    });
+
+    // valid disk counts + 0 for no disks (temporary disk)
+    var diskCount = [0];
+    allowedValues.dataDisks.forEach(n => {
+      diskCount.push(n);
+    });
+
+    obj.variables.nodesPerStorageMapping = _(mapping)
+      .indexBy(a=>a[0])
+      .mapValues(a=>a[1])
+      .value();
+
     obj.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
-      // 16 => 2
-      // 8 => 4
-      // 4 => 6
-      // 2 => 8
-      // 1 => 10
-      var nodesPerStorageAccount = Math.max(1, (10 - ((Math.log(v[1]) / Math.log(2)) * 2)));
       return {
         tier: v[0],
         dataDisks: v[1],
-        nodesPerStorageAccount: nodesPerStorageAccount,
         storageAccountType: v[2] + "_LRS"
       }
     })).indexBy(function (v) {
@@ -59,7 +86,6 @@ gulp.task("patch", function(cb) {
 
     obj.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
 
-    //obj.variables.storageBinPackMap = binPackMap;
     obj.variables.esToKibanaMapping = esToKibanaMapping;
 
     obj.parameters.location.allowedValues = allowedLocations;
@@ -70,6 +96,10 @@ gulp.task("patch", function(cb) {
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
+    obj.parameters.vmDataDiskCount.allowedValues = diskCount;
+    obj.parameters.vmDataDiskCount.defaultValue = _.max(diskCount);
+    obj.parameters.vmDataDiskSize.allowedValues = diskSizes;
+    obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeKibana.allowedValues = vmSizes;
@@ -91,7 +121,7 @@ gulp.task("patch", function(cb) {
 
         //patch allowedVMSizes on the nodesStep
         var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
-        
+
         var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
         var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
         var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
