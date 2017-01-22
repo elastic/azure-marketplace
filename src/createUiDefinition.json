@@ -138,10 +138,10 @@
                 },
                 "defaultValue": {
                   "name": "es-net",
-                  "addressPrefixSize": "/16"
+                  "addressPrefixSize": "/24"
                 },
                 "constraints": {
-                  "minAddressPrefixSize": "/16"
+                  "minAddressPrefixSize": "/24"
                 },
                 "options": {
                   "hideExisting": false
@@ -151,11 +151,11 @@
                     "label": "subnet",
                     "defaultValue": {
                       "name": "es-subnet",
-                      "addressPrefixSize": "/24"
+                      "addressPrefixSize": "/25"
                     },
                     "constraints": {
-                      "minAddressPrefixSize": "/24",
-                      "minAddressCount": 12,
+                      "minAddressPrefixSize": "/25",
+                      "minAddressCount": 3,
                       "requireContiguousAddresses": true
                     }
                   }
