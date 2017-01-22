@@ -569,7 +569,7 @@ configure_elasticsearch_yaml()
 configure_elasticsearch()
 {
     log "[configure_elasticsearch] configuring elasticsearch default configuration"
-    local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print $2/2;}'`
+    local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print int($2/2+0.5);}'`
     if [[ "${ES_VERSION}" == \5* ]]; then
       configure_elasticsearch5 $ES_HEAP
     else
