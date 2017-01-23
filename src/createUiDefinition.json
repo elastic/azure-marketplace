@@ -1,6 +1,6 @@
 {
   "handler": "Microsoft.Compute.MultiVm",
-  "version": "0.0.1-preview",
+  "version": "0.1.2-preview",
   "parameters": {
     "basics": [
       {
@@ -130,11 +130,11 @@
                 "type": "Microsoft.Network.VirtualNetworkCombo",
                 "label": {
                   "virtualNetwork": "Virtual network",
-                  "subnets": "Subnet"
+                  "subnets": "Subnets"
                 },
                 "toolTip": {
                   "virtualNetwork": "Create a new Virtual Network or use an existing one",
-                  "subnets": "Choose the Subnet for the Virtual Network for Elasticsearch nodes. If choosing an existing Virtual Network, the Subnet to use will need to exist beforehand; Creating a new subnet in an existing Virtual Network is not supported"
+                  "subnets": "Choose the Subnet for Elasticsearch nodes. If choosing an existing Virtual Network, the Subnets to use will need to exist beforehand; Creating a new subnet in an existing Virtual Network is not supported"
                 },
                 "defaultValue": {
                   "name": "es-net",
@@ -148,7 +148,7 @@
                 },
                 "subnets": {
                   "subnet1": {
-                    "label": "subnet",
+                    "label": "Elasticsearch nodes subnet",
                     "defaultValue": {
                       "name": "es-subnet",
                       "addressPrefixSize": "/25"
@@ -972,15 +972,18 @@
       "azureCloudPlugin": "No",
       "azureCloudStorageAccountName": "",
       "azureCloudStorageAccountKey": "",
+      "xpackPlugins": "Yes",
       "esAdditionalPlugins": "",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
-      "vNetSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
+      "vNetClusterSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
       "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress]",
       "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]",
       "vNetNewAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefix]",
-      "vNetNewSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",
+      "vNetNewClusterSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",
+      "vNetAppGatewaySubnetName": "es-gateway-subnet",
+      "vNetNewAppGatewaySubnetAddressPrefix": "10.0.0.128/28",
       "kibana": "[steps('externalAccessStep').kibana]",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
@@ -1001,6 +1004,13 @@
       "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
       "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
+      "appGatewayTier": "Standard",
+      "appGatewaySku": "Small",
+      "appGatewayCount": 1,
+      "appGatewayCertBlob": "",
+      "appGatewayCertPassword": "",
+      "appGatewayWafStatus": "Disabled",
+      "appGatewayWafMode": "Detection",
       "location": "[location()]",
       "userCompany": "[steps('userInformationStep').userCompany]",
       "userEmail": "[steps('userInformationStep').userEmail]",

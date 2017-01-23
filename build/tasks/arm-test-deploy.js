@@ -68,7 +68,7 @@ var logout = (cb) => {
 
 var bailOut = (error)  => {
   if (!error) return;
-  log(error)
+  log(error);
   logout(() => { throw error; });
 }
 
@@ -79,6 +79,9 @@ var createResourceGroup = (test, cb) => {
   log("creating resource group: " + rg);
   execFile(azureCli, createGroup, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr));
+
+    if (!stdout) return bailOut(new Error("No output returned when creating resourceGroup: " + rg));
+
     log("createGroupResult: " + stdout);
     var result = JSON.parse(stdout);
     if (result.properties.provisioningState != "Succeeded") return bailOut(new Error("failed to create resourceGroup: " + rg));

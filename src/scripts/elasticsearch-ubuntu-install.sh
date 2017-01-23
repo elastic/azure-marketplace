@@ -26,6 +26,7 @@ help()
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S kibana server password"
+    echo "-X enable anonymous access with monitoring role (for health probes)"
 
     echo "-x configure as a dedicated master node"
     echo "-y configure as client only node (no master, no data)"
@@ -99,13 +100,14 @@ USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
 USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
+ANONYMOUS_ACCESS=0
 
 INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -125,6 +127,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:xyzldjh optname; do
       ;;
     S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
+      ;;
+    X) #anonymous access
+      ANONYMOUS_ACCESS=1
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -348,9 +353,9 @@ security_cmd()
 apply_security_settings_2x()
 {
     local SEC_FILE=/etc/elasticsearch/shield/roles.yml
-    log "[install_plugins]  Check that $SEC_FILE contains kibana4 role"
+    log "[apply_security_settings]  Check that $SEC_FILE contains kibana4 role"
     if ! sudo grep -q "kibana4:" "$SEC_FILE"; then
-        log "[install_plugins]  No kibana4 role. Adding now"
+        log "[apply_security_settings]  No kibana4 role. Adding now"
         {
             echo -e ""
             echo -e "# kibana4 user role."
@@ -368,25 +373,41 @@ apply_security_settings_2x()
             echo -e "        - read"
             echo -e "        - index"
         } >> $SEC_FILE
-        log "[install_plugins]  kibana4 role added"
+        log "[apply_security_settings]  kibana4 role added"
     fi
-    log "[install_plugins]  Finished checking roles.yml for kibana4 role"
+    log "[apply_security_settings]  Finished checking roles.yml for kibana4 role"
 
-    log "[install_plugins] Start adding es_admin"
+    if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
+      log "[apply_security_settings]  Check that $SEC_FILE contains anonymous_user role"
+      if ! sudo grep -q "anonymous_user:" "$SEC_FILE"; then
+          log "[apply_security_settings]  No anonymous_user role. Adding now"
+          {
+              echo -e ""
+              echo -e "# anonymous user role."
+              echo -e "anonymous_user:"
+              echo -e "  cluster:"
+              echo -e "    - cluster:monitor/main"
+          } >> $SEC_FILE
+          log "[apply_security_settings]  anonymous_user role added"
+      fi
+      log "[apply_security_settings]  Finished checking roles.yml for anonymous_user role"
+    fi
+
+    log "[apply_security_settings] Start adding es_admin"
     sudo $(security_cmd) useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
-    log "[install_plugins] Finished adding es_admin"
+    log "[instalapply_security_settingsl_plugins] Finished adding es_admin"
 
-    log "[install_plugins]  Start adding es_read"
+    log "[apply_security_settings]  Start adding es_read"
     sudo $(security_cmd) useradd "es_read" -p "${USER_READ_PWD}" -r user
-    log "[install_plugins]  Finished adding es_read"
+    log "[apply_security_settings]  Finished adding es_read"
 
-    log "[install_plugins]  Start adding es_kibana"
+    log "[apply_security_settings]  Start adding es_kibana"
     sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4
-    log "[install_plugins]  Finished adding es_kibana"
+    log "[apply_security_settings]  Finished adding es_kibana"
 
-    log "[install_plugins]  Start adding es_kibana_server"
+    log "[apply_security_settings]  Start adding es_kibana_server"
     sudo $(security_cmd) useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
-    log "[install_plugins]  Finished adding es_kibana_server"
+    log "[apply_security_settings]  Finished adding es_kibana_server"
 }
 
 node_is_up()
@@ -470,7 +491,7 @@ apply_security_settings()
       fi
       log "[apply_security_settings] added es_kibana account"
 
-      #create a readonly role that mimmics the `user` role in the old shield plugin for es 2.x for `es_read`
+      #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
       curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/user?pretty' -d'
       {
         "cluster": [ "monitor" ],
@@ -495,6 +516,22 @@ apply_security_settings()
         exit 10
       fi
       log "[apply_security_settings] added es_read account"
+
+      # create an anonymous_user role
+      if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
+        log "[apply_security_settings] create anonymous_user role"
+        curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/anonymous_user?pretty' -d'
+        {
+          "cluster": [ "cluster:monitor/main" ]
+        }'
+        if [[ $? != 0 ]]; then
+          log "[apply_security_settings] could not create anonymous_user role"
+          exit 10
+        fi
+        log "[apply_security_settings] added anonymous_user role"
+      fi
+
+
 
       log "[apply_security_settings] updated roles and users"
     fi
@@ -560,6 +597,33 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+    fi
+
+    # Configure Anonymous access
+    if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
+      if [[ "${ES_VERSION}" == \5* ]]; then
+        {
+            echo -e ""
+            echo -e "# anonymous access"
+            echo -e "xpack.security.authc:"
+            echo -e "  anonymous:"
+            echo -e "    username: anonymous_user"
+            echo -e "    roles: anonymous_user"
+            echo -e "    authz_exception: false"
+            echo -e ""
+        } >> /etc/elasticsearch/elasticsearch.yml
+      else
+        {
+            echo -e ""
+            echo -e "# anonymous access"
+            echo -e "shield.authc:"
+            echo -e "  anonymous:"
+            echo -e "    username: anonymous_user"
+            echo -e "    roles: anonymous_user"
+            echo -e "    authz_exception: false"
+            echo -e ""
+        } >> /etc/elasticsearch/elasticsearch.yml
+      fi    
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs
