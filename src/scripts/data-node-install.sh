@@ -26,6 +26,7 @@ help()
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S kibana server password"
+    echo "-X enable anonymous access with monitoring role (for health probes)"
 
     echo "-l install plugins"
     echo "-L <plugin;plugin> install additional plugins"
@@ -75,6 +76,7 @@ USER_ADMIN_PWD="changeME"
 USER_READ_PWD="changeME"
 USER_KIBANA4_PWD="changeME"
 USER_KIBANA4_SERVER_PWD="changeME"
+ANONYMOUS_ACCESS=0
 
 API_URL=""
 MARKETING_ID=""
@@ -88,7 +90,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -108,6 +110,9 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:xyzldjh optname; do
       ;;
     S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD=${OPTARG}
+      ;;
+    X) #anonymous access
+      ANONYMOUS_ACCESS=1
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -195,6 +200,10 @@ fi
 
 if [ $INSTALL_PLUGINS -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -l"
+fi
+
+if [ $ANONYMOUS_ACCESS -eq 1 ]; then
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -X"
 fi
 
 if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then

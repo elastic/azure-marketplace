@@ -7,6 +7,12 @@
       "metadata": {
         "description": "Network settings object"
       }
+    },
+    "applicationGatewaySettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Application Gateway settings"
+      }
     }
   },
   "resources": [
