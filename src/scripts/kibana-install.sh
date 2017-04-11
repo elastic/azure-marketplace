@@ -193,9 +193,7 @@ old_configuration_and_plugins()
         log "[old_configuration_and_plugins] reporting plugin installed"
 
         log "[old_configuration_and_plugins] generating reporting encryption key"
-        if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-          (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
-        fi
+        install_pwgen
         ENCRYPTION_KEY=$(pwgen 64 1)
         echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
         log "[old_configuration_and_plugins] reporting encryption key generated"
@@ -233,6 +231,7 @@ configuration_and_plugins()
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
       echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
 
+      install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
@@ -284,7 +283,6 @@ install_sequence()
 {
     log "[install_sequence] Starting installation"
     download_install_deb
-    install_pwgen
     configuration_and_plugins
     install_start_service
     log "[install_sequence] Finished installation"
