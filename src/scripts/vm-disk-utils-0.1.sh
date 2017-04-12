@@ -43,8 +43,9 @@ help()
     echo ""
     echo "Options:"
     echo "   -b         base directory for mount points (default: /datadisks)"
-    echo "   -h         this help message"
     echo "   -s         create a striped RAID array (no redundancy)"
+    echo "   -x         mount temporary disk if no data disks attached"
+    echo "   -h         this help message"
 }
 
 log()
@@ -52,6 +53,8 @@ log()
     echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
     echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1" >> /var/log/arm-install.log
 }
+
+export DEBIAN_FRONTEND=noninteractive
 
 if [ "${UID}" -ne 0 ];
 then
@@ -62,15 +65,19 @@ fi
 
 # Base path for data disk mount points
 DATA_BASE="/datadisks"
+TEMP_DISK=0
 
-while getopts b:sh optname; do
+while getopts b:sxh optname; do
     log "Option $optname set with value ${OPTARG}"
   case ${optname} in
-    b)  #set cluster name
+    b)  #Set base path for data disks
       DATA_BASE=${OPTARG}
       ;;
-    s) #Partition and format data disks as raid set
+    s)  #Partition and format data disks as raid set
       RAID_CONFIGURATION=1
+      ;;
+    x)  #Mount temp disk if no data disks attached
+      TEMP_DISK=1
       ;;
     h)  #show help
       help
@@ -210,38 +217,38 @@ scan_partition_format()
 
     DISKS=($(scan_for_new_disks))
 
-	if [ "${#DISKS}" -eq 0 ];
-	then
-	    log "No unpartitioned disks without filesystems detected"
-	    return
-	fi
-	log "Disks are ${DISKS[@]}"
-	for DISK in "${DISKS[@]}";
-	do
-	    log "Working on ${DISK}"
-	    is_partitioned ${DISK}
-	    if [ ${?} -ne 0 ];
-	    then
-	        log "${DISK} is not partitioned, partitioning"
-	        do_partition ${DISK}
-	    fi
-	    PARTITION=$(fdisk -l ${DISK}|grep -A 1 Device|tail -n 1|awk '{print $1}')
-	    has_filesystem ${PARTITION}
-	    if [ ${?} -ne 0 ];
-	    then
-	        log "Creating filesystem on ${PARTITION}."
-	#        echo "Press Ctrl-C if you don't want to destroy all data on ${PARTITION}"
-	#        sleep 10
-	        mkfs -j -t ext4 ${PARTITION}
-	    fi
-	    MOUNTPOINT=$(get_next_mountpoint)
-	    log "Next mount point appears to be ${MOUNTPOINT}"
-	    [ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
-	    read UUID FS_TYPE < <(blkid -u filesystem ${PARTITION}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
-	    add_to_fstab "${UUID}" "${MOUNTPOINT}"
-	    log "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
-	    mount "${MOUNTPOINT}"
-	done
+    if [ "${#DISKS}" -eq 0 ];
+    then
+        log "No unpartitioned disks without filesystems detected"
+        return
+    fi
+    log "Disks are ${DISKS[@]}"
+    for DISK in "${DISKS[@]}";
+    do
+        log "Working on ${DISK}"
+        is_partitioned ${DISK}
+        if [ ${?} -ne 0 ];
+        then
+            log "${DISK} is not partitioned, partitioning"
+            do_partition ${DISK}
+        fi
+        PARTITION=$(fdisk -l ${DISK}|grep -A 1 Device|tail -n 1|awk '{print $1}')
+        has_filesystem ${PARTITION}
+        if [ ${?} -ne 0 ];
+        then
+            log "Creating filesystem on ${PARTITION}."
+    #        echo "Press Ctrl-C if you don't want to destroy all data on ${PARTITION}"
+    #        sleep 10
+            mkfs -j -t ext4 ${PARTITION}
+        fi
+        MOUNTPOINT=$(get_next_mountpoint)
+        log "Next mount point appears to be ${MOUNTPOINT}"
+        [ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
+        read UUID FS_TYPE < <(blkid -u filesystem ${PARTITION}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
+        add_to_fstab "${UUID}" "${MOUNTPOINT}"
+        log "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
+        mount "${MOUNTPOINT}"
+    done
 }
 
 create_striped_volume()
@@ -250,7 +257,7 @@ create_striped_volume()
 
 	if [ "${#DISKS[@]}" -gt 0 ];
 	then
-  	log "Disks are ${DISKS[@]}"
+  	log "Disks are ${DISKS[*]}"
 
   	declare -a PARTITIONS
 
@@ -277,14 +284,19 @@ create_striped_volume()
   MDDEVICE="${DISKS[0]}1"
 	if [ "${#DISKS[@]}" -eq 0 ];
   then
-    #WHEN no datadisks are attached mount to temp drive, this is highly volatile and not recommended
-    MDDEVICE="/dev/sdb1"
+      if [ ${TEMP_DISK} -eq 0 ]; then
+          log "no disks attached and do not mount temp drive. exiting."
+          return
+      fi
+      #WHEN no datadisks are attached mount to temp drive, this is highly volatile and not recommended
+      log "no disks attached. mount temp drive"
+      MDDEVICE="/dev/sdb1"
   elif [ "${#DISKS[@]}" -eq 1 ];
 	then
-	    log "only one disk (${DISKS[0]}) is attached to this machine simply mount it"
-	    mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${DISKS[0]}1"
+	    log "only one disk (${DISKS[0]}) is attached. mount it"
+	    mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${MDDEVICE}"
   else
-	    log "multiple disks are attached raiding them using mdadm"
+	    log "multiple disks are attached. raiding them using mdadm"
       MDDEVICE=$(get_next_md_device)
       sudo udevadm control --stop-exec-queue
     	mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
@@ -312,7 +324,7 @@ check_mdadm() {
     log "[check_mdadm] mdadm not found updating apt-get"
     (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
     log "[check_mdadm] apt-get updated installing mdadm now"
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -y install mdadm --fix-missing
+    (sudo apt-get -yq install mdadm --fix-missing || (sleep 15; apt-get -yq install mdadm --fix-missing))
     dpkg -s mdadm >/dev/null 2>&1
     log "[check_mdadm] apt-get installed mdadm and can be found returns: ${?}"
   fi

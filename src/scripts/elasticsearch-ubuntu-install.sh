@@ -92,6 +92,7 @@ MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
+DATAPATH_CONFIG=""
 
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
@@ -205,19 +206,31 @@ log "Cluster install plugins is set to $INSTALL_PLUGINS"
 format_data_disks()
 {
     log "[format_data_disks] starting to RAID0 the attached disks"
+    local DATA_NODE=""
+    if [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        log "[format_data_disks] use temporary disk if no data disks attached"
+        DATA_NODE="-x"
+    fi
     # using the -s paramater causing disks under /datadisks/* to be raid0'ed
-    bash vm-disk-utils-0.1.sh -s
+    bash vm-disk-utils-0.1.sh -s $DATA_NODE
     log "[format_data_disks] finished RAID0'ing the attached disks"
 }
 
 # Configure Elasticsearch Data Disk Folder and Permissions
 setup_data_disk()
 {
-    local RAIDDISK="/datadisks/disk1"
-    log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
-    mkdir -p "$RAIDDISK/elasticsearch/data"
-    chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
-    chmod 755 "$RAIDDISK/elasticsearch"
+    if [ -d "/datadisks" ]; then
+        local RAIDDISK="/datadisks/disk1"
+        log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
+        mkdir -p "$RAIDDISK/elasticsearch/data"
+        chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
+        chmod 755 "$RAIDDISK/elasticsearch"
+
+        DATAPATH_CONFIG="$RAIDDISK/elasticsearch/data"
+    else
+        #If we do not find folders/disks in our data disk mount directory then use the defaults
+        log "Configured data directory does not exist for ${HOSTNAME}. using defaults"
+    fi
 }
 
 # Install Oracle Java
@@ -549,8 +562,11 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
     echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
 
-    log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
-    echo "path.data: /datadisks/disk1/elasticsearch/data" >> /etc/elasticsearch/elasticsearch.yml
+    # Configure paths - if we have data disks attached then use them
+    if [ -n "$DATAPATH_CONFIG" ]; then
+        log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
+        echo "path.data: $DATAPATH_CONFIG" >> /etc/elasticsearch/elasticsearch.yml
+    fi
 
     # Configure discovery
     log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
@@ -623,7 +639,7 @@ configure_elasticsearch_yaml()
             echo -e "    authz_exception: false"
             echo -e ""
         } >> /etc/elasticsearch/elasticsearch.yml
-      fi    
+      fi
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs
