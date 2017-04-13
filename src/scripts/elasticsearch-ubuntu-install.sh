@@ -92,7 +92,6 @@ MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
-DATAPATH_CONFIG=""
 
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
@@ -205,15 +204,18 @@ log "Cluster install plugins is set to $INSTALL_PLUGINS"
 # Format data disks (Find data disks then partition, format, and mount them as seperate drives)
 format_data_disks()
 {
-    log "[format_data_disks] starting to RAID0 the attached disks"
-    local DATA_NODE=""
-    if [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
-        log "[format_data_disks] use temporary disk if no data disks attached"
-        DATA_NODE="-x"
+    log "[format_data_disks] checking node role"
+    if [ ${MASTER_ONLY_NODE} -eq 1 ]; then
+        log "[format_data_disks] master node, no data disks attached"
+    elif [ ${CLIENT_ONLY_NODE} -eq 1 ]; then
+        log "[format_data_disks] client node, no data disks attached"
+    else
+        log "[format_data_disks] data node, data disks may be attached"
+        log "[format_data_disks] starting partition and format attached disks"
+        # using the -s paramater causing disks under /datadisks/* to be raid0'ed
+        bash vm-disk-utils-0.1.sh -s
+        log "[format_data_disks] finished partition and format attached disks"
     fi
-    # using the -s paramater causing disks under /datadisks/* to be raid0'ed
-    bash vm-disk-utils-0.1.sh -s $DATA_NODE
-    log "[format_data_disks] finished RAID0'ing the attached disks"
 }
 
 # Configure Elasticsearch Data Disk Folder and Permissions
@@ -225,11 +227,36 @@ setup_data_disk()
         mkdir -p "$RAIDDISK/elasticsearch/data"
         chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
         chmod 755 "$RAIDDISK/elasticsearch"
-
-        DATAPATH_CONFIG="$RAIDDISK/elasticsearch/data"
+    elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        local TEMPDISK="/mnt"
+        log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
+        mkdir -p "$TEMPDISK/elasticsearch/data"
+        chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
+        chmod 755 "$TEMPDISK/elasticsearch"
     else
         #If we do not find folders/disks in our data disk mount directory then use the defaults
-        log "Configured data directory does not exist for ${HOSTNAME}. using defaults"
+        log "[setup_data_disk] Configured data directory does not exist for ${HOSTNAME}. using defaults"
+    fi
+}
+
+# Check Data Disk Folder and Permissions
+check_data_disk()
+{
+    if [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        log "[check_data_disk] data node checking data directory"
+        if [ -d "/datadisks" ]; then
+            log "[check_data_disk] Data disks attached and mounted at /datadisks"
+        elif [ -d "/mnt/elasticsearch/data" ]; then
+            log "[check_data_disk] Data directory at /mnt/elasticsearch/data"
+        else
+            #this could happen when the temporary disk is lost and a new one mounted
+            local TEMPDISK="/mnt"
+            log "[check_data_disk] No data directory at /mnt/elasticsearch/data dir"
+            log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
+            mkdir -p "$TEMPDISK/elasticsearch/data"
+            chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
+            chmod 755 "$TEMPDISK/elasticsearch"
+        fi
     fi
 }
 
@@ -562,6 +589,13 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
     echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
 
+    local DATAPATH_CONFIG=""
+    if [ -d "/datadisks" ]; then
+        DATAPATH_CONFIG="/datadisks/disk1/elasticsearch/data"
+    elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        DATAPATH_CONFIG="/mnt/elasticsearch/data"
+    fi
+
     # Configure paths - if we have data disks attached then use them
     if [ -n "$DATAPATH_CONFIG" ]; then
         log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
@@ -744,11 +778,22 @@ port_forward()
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
     (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
-    #persist the rules to file
-    sudo service iptables-persistent save
-    sudo service iptables-persistent start
-    # add iptables-persistent to startup before elasticsearch
-    sudo update-rc.d iptables-persistent defaults 90 15
+
+    # iptables-persistent is different on 16 compared to 14
+    UBUNTU_VERSION=$(lsb_release -sr)
+    if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
+      sudo service netfilter-persistent save
+      sudo service netfilter-persistent start
+      # add netfilter-persistent to startup before elasticsearch
+      sudo update-rc.d netfilter-persistent defaults 90 15
+    else
+      #persist the rules to file
+      sudo service iptables-persistent save
+      sudo service iptables-persistent start
+      # add iptables-persistent to startup before elasticsearch
+      sudo update-rc.d iptables-persistent defaults 90 15
+    fi
+
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
 }
@@ -763,6 +808,9 @@ port_forward()
 if sudo monit status elasticsearch >& /dev/null; then
 
   configure_elasticsearch_yaml
+
+  # if this is a data node using temp disk, check existence and permissions
+  check_data_disk
 
   # restart elasticsearch if the configuration has changed
   cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
