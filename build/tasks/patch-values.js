@@ -139,7 +139,6 @@ gulp.task("patch", function(cb) {
           if (patchRecommended)
           {
             control.recommendedSizes = recommendedSizes;
-            control.defaultValue = _(recommendedSizes).first();
           }
         }
         patchVmSizes(masterSizeControl);

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
   "handler": "Microsoft.Compute.MultiVm",
   "version": "0.1.2-preview",
   "parameters": {
@@ -274,7 +275,6 @@
                 "name": "vmSizeDataNodes",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Data node VM size",
-                "defaultValue": "Standard_DS1_v2",
                 "toolTip": "Choose VM SKU, Standard D1, D2, D3",
                 "recommendedSizes": [
                   "Standard_DS1_v2",
@@ -284,7 +284,6 @@
                   "Standard_DS12_v2"
                 ],
                 "constraints": {
-                  "excludedSizes": [],
                   "allowedSizes": [
                     "Standard_A0",
                     "Standard_A1",
@@ -377,14 +376,12 @@
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Master node VM size",
                 "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-                "defaultValue": "Standard_D1",
                 "recommendedSizes": [
                   "Standard_D1",
                   "Standard_D2",
                   "Standard_D3"
                 ],
                 "constraints": {
-                  "excludedSizes": [],
                   "allowedSizes": [
                     "Standard_A0",
                     "Standard_A1",
@@ -529,14 +526,12 @@
                 "label": "Client node VM size",
                 "toolTip": "Choose VM SKU, Standard D1, D2, D3",
                 "visible": "[greater(steps('nodesStep').clientNodes.vmClientNodeCount, 0)]",
-                "defaultValue": "Standard_D1",
                 "recommendedSizes": [
                   "Standard_D1",
                   "Standard_D2",
                   "Standard_D3"
                 ],
                 "constraints": {
-                  "excludedSizes": [],
                   "allowedSizes": [
                     "Standard_A0",
                     "Standard_A1",
@@ -717,7 +712,6 @@
             "type": "Microsoft.Compute.SizeSelector",
             "label": "Kibana VM size",
             "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "defaultValue": "Standard_D1",
             "visible": "[equals(steps('externalAccessStep').kibana, 'Yes')]",
             "recommendedSizes": [
               "Standard_D1",
@@ -780,8 +774,7 @@
                 "Standard_F4s",
                 "Standard_F8s",
                 "Standard_F16s"
-              ],
-              "excludedSizes": []
+              ]
             },
             "osPlatform": "Linux",
             "count": "1"
