@@ -676,8 +676,14 @@ configure_elasticsearch_yaml()
       fi
     fi
 
-    # Swap is disabled by default in Ubuntu Azure VMs
-    # echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+    # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
+    # if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+    #     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
+    #     echo "bootstrap.memory_lock: true" >> /etc/elasticsearch/elasticsearch.yml
+    # else
+    #     log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
+    #     echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+    # fi
 }
 
 configure_elasticsearch()
