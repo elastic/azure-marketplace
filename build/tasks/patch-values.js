@@ -133,16 +133,25 @@ gulp.task("patch", function(cb) {
         var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
         var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
         var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
-        var patchVmSizes = function(control, patchRecommended) {
+        var patchVmSizes = function(control, patchRecommended, recommendedSize) {
           delete control.constraints.allowedValues;
           control.constraints.allowedSizes = vmSizes;
-          if (patchRecommended)
-          {
-            control.recommendedSizes = recommendedSizes;
+          if (patchRecommended) {
+            var sizes = recommendedSizes.slice();
+            if (recommendedSize) {
+              var fromIndex = sizes.indexOf(recommendedSize);
+              if (fromIndex == -1) {
+                throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
+              }
+              sizes.splice(fromIndex);
+              sizes.unshift(recommendedSize);
+            }
+
+            control.recommendedSizes = sizes;
           }
         }
         patchVmSizes(masterSizeControl);
-        patchVmSizes(dataSizeControl, true);
+        patchVmSizes(dataSizeControl, true, "Standard_DS1_v2");
         patchVmSizes(clientSizeControl);
         patchVmSizes(kibanaSizeControl);
 
