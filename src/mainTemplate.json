@@ -1124,7 +1124,7 @@
       "Premium_LRS_Large_8": 4,
       "Premium_LRS_Large_16": 2,
       "Premium_LRS_Large_32": 1,
-      "Premium_LRS_Large_40": 0,
+      "Premium_LRS_Large_40": 1,
       "Premium_LRS_Large_0": 0
     },
     "storageAccountOverrides": {

@@ -46,7 +46,8 @@ gulp.task("patch", function(cb) {
       { name:"Premium_LRS", max: (s, d) => {
         if (s == "Small") return Math.floor(250 / d);
         else if (s == "Medium") return Math.floor(60 / d);
-        return Math.floor(34 / d);
+        var tier = Math.floor(34 / d);
+        return (tier == 0 && d > 0) ? 1 : tier;
       }}
     ];
     var mapping = [];
