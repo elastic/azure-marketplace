@@ -87,6 +87,7 @@ NAMESPACE_PREFIX=""
 ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
+MANDATORY_PLUGINS=""
 CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
@@ -341,17 +342,17 @@ install_plugins()
     if [[ "${ES_VERSION}" == \5* ]]; then
       sudo $(plugin_cmd) install x-pack --batch
     else
-      log "[install_plugins] Installing X-Pack plugins security, Marvel, Watcher"
+      log "[install_plugins] Installing X-Pack plugins Security, Marvel, Watcher"
       sudo $(plugin_cmd) install license
       sudo $(plugin_cmd) install shield
       sudo $(plugin_cmd) install watcher
       sudo $(plugin_cmd) install marvel-agent
+      log "[install_plugins] Installed X-Pack plugins Security, Marvel, Watcher"
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
         log "[install_plugins] Installing X-Pack plugin Graph"
         sudo $(plugin_cmd) install graph
         log "[install_plugins] Installed X-Pack plugin Graph"
       fi
-      log "[install_plugins] Installed X-Pack plugins security, Marvel, Watcher"
     fi
 
 }
@@ -360,16 +361,16 @@ install_azure_cloud_plugin()
 {
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
     if [[ "${ES_VERSION}" == \5* ]]; then
-    	sudo $(plugin_cmd) install repository-azure
+    	  sudo $(plugin_cmd) install repository-azure --batch
     else
-    	sudo $(plugin_cmd) install cloud-azure
+    	  sudo $(plugin_cmd) install cloud-azure
     fi
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 }
 
 install_additional_plugins()
 {
-    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure"
+    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure repository-azure"
     log "[install_additional_plugins] Installing additional plugins"
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
@@ -377,10 +378,16 @@ install_additional_plugins()
             log "[install_additional_plugins] Skipping plugin $PLUGIN"
         else
             log "[install_additional_plugins] Installing plugin $PLUGIN"
-            sudo $(plugin_cmd) install $PLUGIN
+            if [[ "${ES_VERSION}" == \5* ]]; then
+                sudo $(plugin_cmd) install $PLUGIN --batch
+                MANDATORY_PLUGINS+="$PLUGIN,"
+            else
+                sudo $(plugin_cmd) install $PLUGIN
+            fi
             log "[install_additional_plugins] Installed plugin $PLUGIN"
         fi
     done
+    log "[install_additional_plugins] Installed additional plugins"
 }
 
 ## Security
@@ -658,6 +665,12 @@ configure_elasticsearch_yaml()
     fi
 
     echo "node.max_local_storage_nodes: 1" >> /etc/elasticsearch/elasticsearch.yml
+
+    # Configure mandatory plugins
+    if [[ -n "${MANDATORY_PLUGINS}" ]]; then
+        log "[configure_elasticsearch_yaml] Set plugin.mandatory to $MANDATORY_PLUGINS"
+        echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> /etc/elasticsearch/elasticsearch.yml
+    fi
 
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
