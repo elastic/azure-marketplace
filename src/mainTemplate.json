@@ -4,7 +4,7 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/enhancement/tidy-up/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
@@ -62,7 +62,7 @@
       "defaultValue": "",
       "maxLength": 24,
       "metadata": {
-        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase characters."
+        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase or characters or numbers."
       }
     },
     "azureCloudStorageAccountKey": {

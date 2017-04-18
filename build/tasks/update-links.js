@@ -17,7 +17,7 @@ gulp.task("links", (cb) => {
       filenames.forEach((filename) => {
         if (fs.statSync(dirname + '/' + filename).isDirectory()) {
           readFiles(dirname + '/' + filename + '/', repo, branch, onFileContent, onError);
-        }   
+        }
         else {
           if (filename.endsWith('.json') || filename.endsWith('.md')) {
             fs.readFile(dirname + filename, 'utf-8', function(err, content) {
@@ -27,7 +27,7 @@ gulp.task("links", (cb) => {
               }
               onFileContent(dirname + filename, content, repo, branch);
             });
-          }         
+          }
         }
       });
     });
@@ -35,12 +35,12 @@ gulp.task("links", (cb) => {
 
   function error(err) { }
 
-  function replaceLinks(fileName, content, repo, branch) {  
-    var link = /https:\/\/raw\.githubusercontent\.com\/.+?\/.+?\/.+?\/src/g;
-    var escapedLink = /https%3A%2F%2Fraw\.githubusercontent\.com%2F.+?%2F.+?%2F.+?%2Fsrc/g;
+  function replaceLinks(fileName, content, repo, branch) {
+    var link = /https:\/\/raw\.githubusercontent\.com\/.+?\/.+?\/(?!\$).+?\/src/g;
+    var escapedLink = /https%3A%2F%2Fraw\.githubusercontent\.com%2F.+?%2F.+?%2F(?!\$).+?%2Fsrc/g;
     var newContent = content.replace(link, "https://raw.githubusercontent.com/" + repo + "/" + branch + "/src");
     newContent = newContent.replace(escapedLink, "https%3A%2F%2Fraw.githubusercontent.com%2F" + repo.replace("/", "%2F") + "%2F" + branch.replace("/", "%2F") + "%2Fsrc");
-    fs.writeFile(fileName, newContent, error); 
+    fs.writeFile(fileName, newContent, error);
   }
 
   repo.remotes(function(error, remotes) {
