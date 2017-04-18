@@ -21,6 +21,7 @@ help()
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "-Y <number of nodes> hint to the install script how many client nodes we are provisioning"
 
     echo "-A admin password"
     echo "-R read password"
@@ -62,7 +63,7 @@ log "Begin execution of Data Node Install script extension"
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="2.0.0"
+ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
 INSTALL_AZURECLOUD_PLUGIN=0
@@ -70,6 +71,7 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
+CLIENTNODE_COUNT=0
 DATA_ONLY_NODE=0
 
 USER_ADMIN_PWD="changeME"
@@ -90,29 +92,32 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Y:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
-      CLUSTER_NAME=${OPTARG}
+      CLUSTER_NAME="${OPTARG}"
       ;;
     v) #elasticsearch version number
-      ES_VERSION=${OPTARG}
+      ES_VERSION="${OPTARG}"
       ;;
     A) #security admin pwd
-      USER_ADMIN_PWD=${OPTARG}
+      USER_ADMIN_PWD="${OPTARG}"
       ;;
     R) #security readonly pwd
-      USER_READ_PWD=${OPTARG}
+      USER_READ_PWD="${OPTARG}"
       ;;
     K) #security kibana user pwd
-      USER_KIBANA4_PWD=${OPTARG}
+      USER_KIBANA4_PWD="${OPTARG}"
       ;;
     S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD=${OPTARG}
+      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
+      ;;
+    Y) #number of client nodes hints (used to calculate whether data nodes or client nodes should be ingest nodes)
+      CLIENTNODE_COUNT=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -127,10 +132,10 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
       ;;
     a) #azure storage account for azure cloud plugin
-      STORAGE_ACCOUNT=${OPTARG}
+      STORAGE_ACCOUNT="${OPTARG}"
       ;;
     k) #azure storage account key for azure cloud plugin
-      STORAGE_KEY=${OPTARG}
+      STORAGE_KEY="${OPTARG}"
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
@@ -148,31 +153,31 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
       NAMESPACE_PREFIX="${OPTARG}"
       ;;
     U) #set API url
-      API_URL=${OPTARG}
+      API_URL="${OPTARG}"
       ;;
     I) #set marketing id
-      MARKETING_ID=${OPTARG}
+      MARKETING_ID="${OPTARG}"
       ;;
     c) #set company name
-      COMPANY_NAME=${OPTARG}
+      COMPANY_NAME="${OPTARG}"
       ;;
     e) #set email
-      EMAIL=${OPTARG}
+      EMAIL="${OPTARG}"
       ;;
     f) #set first name
-      FIRST_NAME=${OPTARG}
+      FIRST_NAME="${OPTARG}"
       ;;
     m) #set last name
-      LAST_NAME=${OPTARG}
+      LAST_NAME="${OPTARG}"
       ;;
     t) #set job title
-      JOB_TITLE=${OPTARG}
+      JOB_TITLE="${OPTARG}"
       ;;
     o) #set country
-      COUNTRY=${OPTARG}
+      COUNTRY="${OPTARG}"
       ;;
     s) #set cluster setup
-      CLUSTER_SETUP=${OPTARG}
+      CLUSTER_SETUP="${OPTARG}"
       ;;
     h) #show help
       help
@@ -211,7 +216,7 @@ if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Y "$CLIENTNODE_COUNT" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

@@ -21,12 +21,13 @@ help()
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "-Y <number of nodes> hint to the install script how many client nodes we are provisioning"
 
     echo "-A admin password"
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S kibana server password"
-    echo "-X enable anonymous access with monitoring role (for health probes)"
+    echo "-X enable anonymous access with cluster monitoring role (for health probes)"
 
     echo "-x configure as a dedicated master node"
     echo "-y configure as client only node (no master, no data)"
@@ -83,7 +84,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="2.0.0"
+ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
 CLIENT_ONLY_NODE=0
@@ -92,6 +93,7 @@ MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
+CLIENTNODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
@@ -107,29 +109,32 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Y:Z:p:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
-      CLUSTER_NAME=${OPTARG}
+      CLUSTER_NAME="${OPTARG}"
       ;;
     v) #elasticsearch version number
-      ES_VERSION=${OPTARG}
+      ES_VERSION="${OPTARG}"
       ;;
     A) #security admin pwd
-      USER_ADMIN_PWD=${OPTARG}
+      USER_ADMIN_PWD="${OPTARG}"
       ;;
     R) #security readonly pwd
-      USER_READ_PWD=${OPTARG}
+      USER_READ_PWD="${OPTARG}"
       ;;
     K) #security kibana user pwd
-      USER_KIBANA4_PWD=${OPTARG}
+      USER_KIBANA4_PWD="${OPTARG}"
       ;;
     S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD=${OPTARG}
+      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
+      ;;
+    Y) #number of client nodes hints (used to calculate whether data nodes or client nodes should be ingest nodes)
+      CLIENTNODE_COUNT=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -159,10 +164,10 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
       INSTALL_AZURECLOUD_PLUGIN=1
       ;;
     a) #azure storage account for azure cloud plugin
-      STORAGE_ACCOUNT=${OPTARG}
+      STORAGE_ACCOUNT="${OPTARG}"
       ;;
     k) #azure storage account key for azure cloud plugin
-      STORAGE_KEY=${OPTARG}
+      STORAGE_KEY="${OPTARG}"
       ;;
     h) #show help
       help
@@ -589,6 +594,7 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
     echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
 
+    # Check if data disks are attached. If they are then use them, otherwise if this is a data node, use the temporary disk
     local DATAPATH_CONFIG=""
     if [ -d "/datadisks" ]; then
         DATAPATH_CONFIG="/datadisks/disk1/elasticsearch/data"
@@ -596,7 +602,6 @@ configure_elasticsearch_yaml()
         DATAPATH_CONFIG="/mnt/elasticsearch/data"
     fi
 
-    # Configure paths - if we have data disks attached then use them
     if [ -n "$DATAPATH_CONFIG" ]; then
         log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
         echo "path.data: $DATAPATH_CONFIG" >> /etc/elasticsearch/elasticsearch.yml
@@ -613,11 +618,19 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master only"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as client only"
@@ -628,6 +641,10 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master and data"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
     fi
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
@@ -643,7 +660,7 @@ configure_elasticsearch_yaml()
     echo "node.max_local_storage_nodes: 1" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure Azure Cloud plugin
-    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
+    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
