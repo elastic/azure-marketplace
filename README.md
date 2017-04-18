@@ -21,7 +21,7 @@ The Azure Marketplace Elasticsearch offering offers a simplified UI over the ful
 
 It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack plugins](https://www.elastic.co/products/x-pack).
 
-Did you know that you can apply for a free basic license? Go checkout our [subscription options](https://www.elastic.co/subscriptions)
+Did you know that you can apply for a **free basic license**? Go check out our [subscription options](https://www.elastic.co/subscriptions)
 
 Deploying through the Marketplace is great and easy way to get your feet wet for a first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy 
 the templates directly though the Azure CLI or PowerShell SDKs. <a href="#command-line-deploy">Check out the examples.</a>
@@ -31,6 +31,9 @@ the templates directly though the Azure CLI or PowerShell SDKs. <a href="#comman
 ### VERY IMPORTANT
 **This template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer or Kibana. It is strongly recommended that you secure
 communication before using in production.**
+
+You can secure external access to the cluster with TLS by using `gateway` as the `loadBalancerType` and supplying a PFX certificate with the `appGatewayCertBlob` parameter. This sets
+the cluster up to use [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/) for load balancing and SSL offload.
 
 ---
 
@@ -70,14 +73,17 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 
   <tr><td>loadBalancerType</td><td>string</td>
     <td> The load balancer to set up to access the cluster. Can be <code>internal</code>, <code>external</code> or <code>gateway</code>. 
-    <br />By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
-    load balancer.
-    <br />By choosing <code>gateway</code>, <a href="https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-introduction">Application Gateway</a> will be deployed for load balancing, 
+    <ul>
+    <li>By choosing <code>internal</code>, only an internal load balancer is deployed. Useful when connecting to the cluster happens from inside the Virtual Network</li>
+    <li>By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
+    load balancer.</li>
+    <li>By choosing <code>gateway</code>, <a href="https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-introduction">Application Gateway</a> will be deployed for load balancing, 
     allowing a PFX certificate to be supplied for transport layer security to and from Application Gateway, and providing SSL offload. 
     An internal load balancer will also deployed. Application Gateway and Kibana communicate with the cluster through the internal
-    load balancer.
-    <br /><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, you will need to secure access with a product like 
-    <a href="https://www.elastic.co/products/x-pack/security">Elastic's Security</a>, as well as configure transport layer security.</strong>
+    load balancer.</li>
+    </ul>
+    <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like 
+    <a href="https://www.elastic.co/products/x-pack/security">Elastic's Security</a>, in addition to configuring transport layer security.</strong></p>
     </td><td><code>internal</code></td></tr>
 
   <tr><td>azureCloudPlugin</td><td>string</td>
@@ -112,6 +118,7 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 
   <tr><td>vmSizeKibana</td><td>string</td>
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_A1</code></td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
@@ -124,7 +131,8 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     </td><td><code>""</code></td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>
-    <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>
+    <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmDataDiskCount</td><td>int</td>
@@ -136,9 +144,8 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
     <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data. 
-    <strong>The temporary disk is ephemeral in nature and not persistent. This is not intended for long running clusters but can really help keeping the costs down for short lived ones.</strong>
-    Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
-    to understand the trade-offs in using it for storage.
+    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
+    to understand the trade-offs in using it for storage.</strong>
     </li>
     </ul>
     </td><td><code>40</code><br />i.e. the max supported disks for data node VM size</td></tr>
@@ -166,7 +173,8 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     </td><td><code>No</code></td></tr>
 
   <tr><td>vmSizeMasterNodes</td><td>string</td>
-    <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>
+    <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>.
+    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
@@ -176,10 +184,11 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
     <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
-    <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#_ubuntu">avoid any of the following usernames for Ubuntu</a> 
+    <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#ubuntu">avoid any of the following usernames for Ubuntu</a> 
     </td><td><code>""</code></td></tr>
 
   <tr><td>authenticationType</td><td>string</td>
@@ -195,7 +204,7 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityAdminPassword</td><td>securestring</td>
-    <td>The password for 5.x's superuser `elastic` or, in 2.x the `es_admin` user, with admin role.
+    <td>The password for 5.x's superuser <code>elastic</code> or, in 2.x the <code>es_admin</code> user, with admin role.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityReadPassword</td><td>securestring</td>
@@ -316,6 +325,8 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 
 ### Command line deploy
 
+You can deploy using the template directly from Github using the Azure CLI or Azure PowerShell
+
 #### Azure CLI
 
 1. Log into Azure
@@ -397,6 +408,30 @@ The `--parameters-file` can specify a different location for the items that get 
   ```powershell
   New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
+
+### Targeting a specific template version
+
+You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template. 
+
+For example, to target the `5.0.1` tag release with PowerShell
+
+```powershell
+$templateVersion = "5.0.1"
+$templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
+
+$clusterParameters = @{
+    "artifactsBaseUrl"= $templateBaseUrl
+    "esVersion" = "5.0.0"
+    "adminUsername" = "russ"
+    "adminPassword" = "Password1234"
+    "securityAdminPassword" = "Password123"
+    "securityReadPassword" = "Password123"
+    "securityKibanaPassword" = "Password123"
+}
+
+New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
+New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
+```
 
 ### Web based deploy
 

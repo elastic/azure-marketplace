@@ -74,7 +74,7 @@
     },
     "enableAnonymousAccessOpt": "[variables('enableAnonymousAccessOpts')[parameters('topologySettings').enableAnonymousAccess]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), 'n ')]",
-    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityKibanaServerPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount, ' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\"')]",
+    "commonInstallParams": "[concat(parameters('esSettings').clusterName, ' -v ', parameters('esSettings').version, ' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityKibanaServerPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount, ' -Y ', parameters('topologySettings').vmClientNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -82,7 +82,6 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/user-information.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
-    "clientInstallScript": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]",
     "ubuntuSkus": {
       "2": "14.04.4-LTS",
       "5": "16.04.0-LTS"
@@ -118,7 +117,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[variables('clientInstallScript')]"
+            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
         "data": {

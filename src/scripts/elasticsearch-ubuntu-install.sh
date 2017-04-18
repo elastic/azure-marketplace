@@ -21,12 +21,13 @@ help()
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "-Y <number of nodes> hint to the install script how many client nodes we are provisioning"
 
     echo "-A admin password"
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S kibana server password"
-    echo "-X enable anonymous access with monitoring role (for health probes)"
+    echo "-X enable anonymous access with cluster monitoring role (for health probes)"
 
     echo "-x configure as a dedicated master node"
     echo "-y configure as client only node (no master, no data)"
@@ -83,7 +84,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="2.0.0"
+ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
 CLIENT_ONLY_NODE=0
@@ -92,6 +93,7 @@ MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
+CLIENTNODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
@@ -107,29 +109,32 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Y:Z:p:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
-      CLUSTER_NAME=${OPTARG}
+      CLUSTER_NAME="${OPTARG}"
       ;;
     v) #elasticsearch version number
-      ES_VERSION=${OPTARG}
+      ES_VERSION="${OPTARG}"
       ;;
     A) #security admin pwd
-      USER_ADMIN_PWD=${OPTARG}
+      USER_ADMIN_PWD="${OPTARG}"
       ;;
     R) #security readonly pwd
-      USER_READ_PWD=${OPTARG}
+      USER_READ_PWD="${OPTARG}"
       ;;
     K) #security kibana user pwd
-      USER_KIBANA4_PWD=${OPTARG}
+      USER_KIBANA4_PWD="${OPTARG}"
       ;;
     S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD=${OPTARG}
+      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
+      ;;
+    Y) #number of client nodes hints (used to calculate whether data nodes or client nodes should be ingest nodes)
+      CLIENTNODE_COUNT=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -159,10 +164,10 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
       INSTALL_AZURECLOUD_PLUGIN=1
       ;;
     a) #azure storage account for azure cloud plugin
-      STORAGE_ACCOUNT=${OPTARG}
+      STORAGE_ACCOUNT="${OPTARG}"
       ;;
     k) #azure storage account key for azure cloud plugin
-      STORAGE_KEY=${OPTARG}
+      STORAGE_KEY="${OPTARG}"
       ;;
     h) #show help
       help
@@ -204,20 +209,60 @@ log "Cluster install plugins is set to $INSTALL_PLUGINS"
 # Format data disks (Find data disks then partition, format, and mount them as seperate drives)
 format_data_disks()
 {
-    log "[format_data_disks] starting to RAID0 the attached disks"
-    # using the -s paramater causing disks under /datadisks/* to be raid0'ed
-    bash vm-disk-utils-0.1.sh -s
-    log "[format_data_disks] finished RAID0'ing the attached disks"
+    log "[format_data_disks] checking node role"
+    if [ ${MASTER_ONLY_NODE} -eq 1 ]; then
+        log "[format_data_disks] master node, no data disks attached"
+    elif [ ${CLIENT_ONLY_NODE} -eq 1 ]; then
+        log "[format_data_disks] client node, no data disks attached"
+    else
+        log "[format_data_disks] data node, data disks may be attached"
+        log "[format_data_disks] starting partition and format attached disks"
+        # using the -s paramater causing disks under /datadisks/* to be raid0'ed
+        bash vm-disk-utils-0.1.sh -s
+        log "[format_data_disks] finished partition and format attached disks"
+    fi
 }
 
 # Configure Elasticsearch Data Disk Folder and Permissions
 setup_data_disk()
 {
-    local RAIDDISK="/datadisks/disk1"
-    log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
-    mkdir -p "$RAIDDISK/elasticsearch/data"
-    chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
-    chmod 755 "$RAIDDISK/elasticsearch"
+    if [ -d "/datadisks" ]; then
+        local RAIDDISK="/datadisks/disk1"
+        log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
+        mkdir -p "$RAIDDISK/elasticsearch/data"
+        chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
+        chmod 755 "$RAIDDISK/elasticsearch"
+    elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        local TEMPDISK="/mnt"
+        log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
+        mkdir -p "$TEMPDISK/elasticsearch/data"
+        chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
+        chmod 755 "$TEMPDISK/elasticsearch"
+    else
+        #If we do not find folders/disks in our data disk mount directory then use the defaults
+        log "[setup_data_disk] Configured data directory does not exist for ${HOSTNAME}. using defaults"
+    fi
+}
+
+# Check Data Disk Folder and Permissions
+check_data_disk()
+{
+    if [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        log "[check_data_disk] data node checking data directory"
+        if [ -d "/datadisks" ]; then
+            log "[check_data_disk] Data disks attached and mounted at /datadisks"
+        elif [ -d "/mnt/elasticsearch/data" ]; then
+            log "[check_data_disk] Data directory at /mnt/elasticsearch/data"
+        else
+            #this could happen when the temporary disk is lost and a new one mounted
+            local TEMPDISK="/mnt"
+            log "[check_data_disk] No data directory at /mnt/elasticsearch/data dir"
+            log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
+            mkdir -p "$TEMPDISK/elasticsearch/data"
+            chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
+            chmod 755 "$TEMPDISK/elasticsearch"
+        fi
+    fi
 }
 
 # Install Oracle Java
@@ -549,8 +594,18 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
     echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
 
-    log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
-    echo "path.data: /datadisks/disk1/elasticsearch/data" >> /etc/elasticsearch/elasticsearch.yml
+    # Check if data disks are attached. If they are then use them, otherwise if this is a data node, use the temporary disk
+    local DATAPATH_CONFIG=""
+    if [ -d "/datadisks" ]; then
+        DATAPATH_CONFIG="/datadisks/disk1/elasticsearch/data"
+    elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+        DATAPATH_CONFIG="/mnt/elasticsearch/data"
+    fi
+
+    if [ -n "$DATAPATH_CONFIG" ]; then
+        log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
+        echo "path.data: $DATAPATH_CONFIG" >> /etc/elasticsearch/elasticsearch.yml
+    fi
 
     # Configure discovery
     log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
@@ -563,11 +618,19 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master only"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
         # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as client only"
@@ -578,6 +641,10 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master and data"
         echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
         echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
+            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
+            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+        fi
     fi
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
@@ -593,7 +660,7 @@ configure_elasticsearch_yaml()
     echo "node.max_local_storage_nodes: 1" >> /etc/elasticsearch/elasticsearch.yml
 
     # Configure Azure Cloud plugin
-    if [[ -n $STORAGE_ACCOUNT && -n $STORAGE_KEY ]]; then
+    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
@@ -623,11 +690,17 @@ configure_elasticsearch_yaml()
             echo -e "    authz_exception: false"
             echo -e ""
         } >> /etc/elasticsearch/elasticsearch.yml
-      fi    
+      fi
     fi
 
-    # Swap is disabled by default in Ubuntu Azure VMs
-    # echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+    # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
+    # if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+    #     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
+    #     echo "bootstrap.memory_lock: true" >> /etc/elasticsearch/elasticsearch.yml
+    # else
+    #     log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
+    #     echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+    # fi
 }
 
 configure_elasticsearch()
@@ -728,11 +801,22 @@ port_forward()
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
     (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
-    #persist the rules to file
-    sudo service iptables-persistent save
-    sudo service iptables-persistent start
-    # add iptables-persistent to startup before elasticsearch
-    sudo update-rc.d iptables-persistent defaults 90 15
+
+    # iptables-persistent is different on 16 compared to 14
+    UBUNTU_VERSION=$(lsb_release -sr)
+    if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
+      sudo service netfilter-persistent save
+      sudo service netfilter-persistent start
+      # add netfilter-persistent to startup before elasticsearch
+      sudo update-rc.d netfilter-persistent defaults 90 15
+    else
+      #persist the rules to file
+      sudo service iptables-persistent save
+      sudo service iptables-persistent start
+      # add iptables-persistent to startup before elasticsearch
+      sudo update-rc.d iptables-persistent defaults 90 15
+    fi
+
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
 }
@@ -747,6 +831,9 @@ port_forward()
 if sudo monit status elasticsearch >& /dev/null; then
 
   configure_elasticsearch_yaml
+
+  # if this is a data node using temp disk, check existence and permissions
+  check_data_disk
 
   # restart elasticsearch if the configuration has changed
   cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \

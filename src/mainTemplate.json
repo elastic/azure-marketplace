@@ -62,7 +62,7 @@
       "defaultValue": "",
       "maxLength": 24,
       "metadata": {
-        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase characters."
+        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase or characters or numbers."
       }
     },
     "azureCloudStorageAccountKey": {
@@ -373,7 +373,7 @@
       "defaultValue": 0,
       "minValue": 0,
       "metadata": {
-        "description": "Number of Elasticsearch client nodes to provision (Setting this to zero puts the data nodes on the load balancer)"
+        "description": "Number of Elasticsearch client nodes to provision. A value of 0 puts the data nodes on the load balancer"
       }
     },
     "vmSizeClientNodes": {
@@ -544,7 +544,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "The name of the resource group of the Existing Virtual Network. Required when using an existing Virtual Network"
+        "description": "The name of the resource group for the existing Virtual Network. Required when using an existing Virtual Network"
       }
     },
     "vNetNewAddressPrefix": {
@@ -628,7 +628,7 @@
         10
       ],
       "metadata": {
-        "description": "The number of instances of the Application Gateway. A minimum of 2 is recommended for Production clusters"
+        "description": "The number of instances of the Application Gateway. A minimum of 2 is recommended for Production clusters. Required when selecting Application Gateway for load balancing"
       }
     },
     "appGatewayCertBlob": {
@@ -1124,7 +1124,7 @@
       "Premium_LRS_Large_8": 4,
       "Premium_LRS_Large_16": 2,
       "Premium_LRS_Large_32": 1,
-      "Premium_LRS_Large_40": 0,
+      "Premium_LRS_Large_40": 1,
       "Premium_LRS_Large_0": 0
     },
     "storageAccountOverrides": {
