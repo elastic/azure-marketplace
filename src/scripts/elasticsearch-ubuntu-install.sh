@@ -595,11 +595,11 @@ apply_security_settings()
 configure_elasticsearch_yaml()
 {
     # Backup the current Elasticsearch configuration file
-    mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak
-
+    mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.bak
+    local ES_CONF=/etc/elasticsearch/elasticsearch.yml
     # Set cluster and machine names - just use hostname for our node.name
-    echo "cluster.name: $CLUSTER_NAME" >> /etc/elasticsearch/elasticsearch.yml
-    echo "node.name: ${HOSTNAME}" >> /etc/elasticsearch/elasticsearch.yml
+    echo "cluster.name: $CLUSTER_NAME" >> $ES_CONF
+    echo "node.name: ${HOSTNAME}" >> $ES_CONF
 
     # Check if data disks are attached. If they are then use them, otherwise if this is a data node, use the temporary disk
     local DATAPATH_CONFIG=""
@@ -611,72 +611,72 @@ configure_elasticsearch_yaml()
 
     if [ -n "$DATAPATH_CONFIG" ]; then
         log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
-        echo "path.data: $DATAPATH_CONFIG" >> /etc/elasticsearch/elasticsearch.yml
+        echo "path.data: $DATAPATH_CONFIG" >> $ES_CONF
     fi
 
     # Configure discovery
     log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
-    echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> /etc/elasticsearch/elasticsearch.yml
+    echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> $ES_CONF
 
     # Configure Elasticsearch node type
     log "[configure_elasticsearch_yaml] Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_ONLY_NODE"
 
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as master only"
-        echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
-        echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.master: true" >> $ES_CONF
+        echo "node.data: false" >> $ES_CONF
         if [[ "${ES_VERSION}" == \5* ]]; then
             log "[configure_elasticsearch_yaml] Disable ingest node"
-            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+            echo "node.ingest: false" >> $ES_CONF
         fi
-        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+        # echo "marvel.agent.enabled: false" >> $ES_CONF
     elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as data only"
-        echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
-        echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.master: false" >> $ES_CONF
+        echo "node.data: true" >> $ES_CONF
         if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
             log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
-            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+            echo "node.ingest: false" >> $ES_CONF
         fi
-        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+        # echo "marvel.agent.enabled: false" >> $ES_CONF
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as client only"
-        echo "node.master: false" >> /etc/elasticsearch/elasticsearch.yml
-        echo "node.data: false" >> /etc/elasticsearch/elasticsearch.yml
-        # echo "marvel.agent.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.master: false" >> $ES_CONF
+        echo "node.data: false" >> $ES_CONF
+        # echo "marvel.agent.enabled: false" >> $ES_CONF
     else
         log "[configure_elasticsearch_yaml] Configure node as master and data"
-        echo "node.master: true" >> /etc/elasticsearch/elasticsearch.yml
-        echo "node.data: true" >> /etc/elasticsearch/elasticsearch.yml
+        echo "node.master: true" >> $ES_CONF
+        echo "node.data: true" >> $ES_CONF
         if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
             log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
-            echo "node.ingest: false" >> /etc/elasticsearch/elasticsearch.yml
+            echo "node.ingest: false" >> $ES_CONF
         fi
     fi
 
-    echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> /etc/elasticsearch/elasticsearch.yml
+    echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
 
     if [[ "${ES_VERSION}" == \5* ]]; then
-        echo "network.host: [_site_, _local_]" >> /etc/elasticsearch/elasticsearch.yml
+        echo "network.host: [_site_, _local_]" >> $ES_CONF
     else
-        echo "discovery.zen.ping.multicast.enabled: false" >> /etc/elasticsearch/elasticsearch.yml
-        echo "network.host: _non_loopback_" >> /etc/elasticsearch/elasticsearch.yml
-        echo "marvel.agent.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
+        echo "discovery.zen.ping.multicast.enabled: false" >> $ES_CONF
+        echo "network.host: _non_loopback_" >> $ES_CONF
+        echo "marvel.agent.enabled: true" >> $ES_CONF
     fi
 
-    echo "node.max_local_storage_nodes: 1" >> /etc/elasticsearch/elasticsearch.yml
+    echo "node.max_local_storage_nodes: 1" >> $ES_CONF
 
     # Configure mandatory plugins
     if [[ -n "${MANDATORY_PLUGINS}" ]]; then
         log "[configure_elasticsearch_yaml] Set plugin.mandatory to $MANDATORY_PLUGINS"
-        echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> $ES_CONF
     fi
 
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
-        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> /etc/elasticsearch/elasticsearch.yml
-        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> /etc/elasticsearch/elasticsearch.yml
+        echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> $ES_CONF
+        echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> $ES_CONF
     fi
 
     # Configure Anonymous access
@@ -691,7 +691,7 @@ configure_elasticsearch_yaml()
             echo -e "    roles: anonymous_user"
             echo -e "    authz_exception: false"
             echo -e ""
-        } >> /etc/elasticsearch/elasticsearch.yml
+        } >> $ES_CONF
       else
         {
             echo -e ""
@@ -702,17 +702,17 @@ configure_elasticsearch_yaml()
             echo -e "    roles: anonymous_user"
             echo -e "    authz_exception: false"
             echo -e ""
-        } >> /etc/elasticsearch/elasticsearch.yml
+        } >> $ES_CONF
       fi
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
     # if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
     #     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
-    #     echo "bootstrap.memory_lock: true" >> /etc/elasticsearch/elasticsearch.yml
+    #     echo "bootstrap.memory_lock: true" >> $ES_CONF
     # else
     #     log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
-    #     echo "bootstrap.mlockall: true" >> /etc/elasticsearch/elasticsearch.yml
+    #     echo "bootstrap.mlockall: true" >> $ES_CONF
     # fi
 }
 

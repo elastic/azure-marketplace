@@ -21,6 +21,9 @@ help()
     echo "-u elasticsearch url e.g. http://10.0.0.4:9200"
     echo "-l install plugins true/false"
     echo "-S kibana server password"
+    echo "-C kibana cert to encrypt communication between the browser and Kibana"
+    echo "-K kibana key to encrypt communication between the browser and Kibana"
+    echo "-P kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
     echo "-m <internal/external> hints whether to use the internal loadbalancer or internal client node (when external loadbalancing)"
 
     echo "-h view this help content"
@@ -50,38 +53,50 @@ fi
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="4.2.1"
-ES_VERSION="2.0.0"
+KIBANA_VERSION="5.3.0"
+ES_VERSION="5.3.0"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_PLUGINS=0
 HOSTMODE="internal"
 USER_KIBANA4_SERVER_PWD="changeME"
+SSL_CERT=""
+SSL_KEY=""
+SSL_PASSPHRASE=""
 
 #Loop through options passed
-while getopts :n:v:e:u:S:m:lh optname; do
+while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
-      CLUSTER_NAME=${OPTARG}
+      CLUSTER_NAME="${OPTARG}"
       ;;
     v) #kibana version number
-      KIBANA_VERSION=${OPTARG}
+      KIBANA_VERSION="${OPTARG}"
       ;;
     e) #elasticsearch version number
-      ES_VERSION=${OPTARG}
+      ES_VERSION="${OPTARG}"
       ;;
     u) #elasticsearch url
-      ELASTICSEARCH_URL=${OPTARG}
+      ELASTICSEARCH_URL="${OPTARG}"
       ;;
     S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD=${OPTARG}
+      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     m) #security kibana server pwd
-      HOSTMODE=${OPTARG}
+      HOSTMODE="${OPTARG}"
       ;;
     l) #install plugins
       INSTALL_PLUGINS=1
+      ;;
+    C) #kibana ssl cert
+      SSL_CERT="${OPTARG}"
+      ;;
+    K) #kibana ssl key
+      SSL_KEY="${OPTARG}"
+      ;;
+    P) #kibana ssl key passphrase
+      SSL_PASSPHRASE="${OPTARG}"
       ;;
     h) #show help
       help
@@ -150,32 +165,42 @@ download_install_deb()
 old_configuration_and_plugins()
 {
     log "[old_configuration_and_plugins] configuring kibana.yml"
+    local KIBANA_CONF=/opt/kibana/config/kibana.yml
     # set the elasticsearch URL
-    echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
+    echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     # specify kibana log location
-    echo "logging.dest: /var/log/kibana.log" >> /opt/kibana/config/kibana.yml
+    echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
+    sudo touch /var/log/kibana.log
+    sudo chown kibana: /var/log/kibana.log
+    # set logging to silent by default
+    echo "logging.silent: true" >> $KIBANA_CONF
 
     if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-      echo "elasticsearch.username: es_kibana_server" >> /opt/kibana/config/kibana.yml
-      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> /opt/kibana/config/kibana.yml
+      echo "elasticsearch.username: es_kibana_server" >> $KIBANA_CONF
+      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> $KIBANA_CONF
+
       # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
       # they do not allow unsafe sessions (i.e. sending session cookie over HTTP)
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
         log "[old_configuration_and_plugins] installing latest shield"
-        /opt/kibana/bin/kibana plugin --install kibana/shield/2.4.0
+        /opt/kibana/bin/kibana plugin --install kibana/shield/$ES_VERSION
         log "[old_configuration_and_plugins] shield plugin installed"
 
-        # NOTE: These settings allow security to work in Kibana without HTTPS.
-        # This is NOT recommended for production.
-        echo "shield.useUnsafeSessions: true" >> /opt/kibana/config/kibana.yml
-        echo "shield.skipSslCheck: true" >> /opt/kibana/config/kibana.yml
+        if [[ -z "${SSL_CERT}" || -z "${SSL_KEY}" ]]; then
+            # IMPORTANT: These settings allow security to work in Kibana without HTTPS.
+            # This is NOT recommended for production.
+            log "[old_configuration_and_plugins] set shield.useUnsafeSessions: true because no kibana .crt or .key provided"
+            echo "shield.useUnsafeSessions: true" >> $KIBANA_CONF
+            log "[old_configuration_and_plugins] set shield.skipSslCheck: true because no kibana .crt or .key provided"
+            echo "shield.skipSslCheck: true" >> $KIBANA_CONF
+        fi
 
         install_pwgen
 
         log "[old_configuration_and_plugins] generating security encryption key"
         ENCRYPTION_KEY=$(pwgen 64 1)
-        echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        echo "shield.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
         log "[old_configuration_and_plugins] security encryption key generated"
       fi
 
@@ -189,13 +214,13 @@ old_configuration_and_plugins()
       # install reporting
       if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.1"; then
         log "[old_configuration_and_plugins] installing reporting plugin"
-        /opt/kibana/bin/kibana plugin --install kibana/reporting/2.4.1
+        /opt/kibana/bin/kibana plugin --install kibana/reporting/$ES_VERSION
         log "[old_configuration_and_plugins] reporting plugin installed"
 
         log "[old_configuration_and_plugins] generating reporting encryption key"
         install_pwgen
         ENCRYPTION_KEY=$(pwgen 64 1)
-        echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> /opt/kibana/config/kibana.yml
+        echo "reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
         log "[old_configuration_and_plugins] reporting encryption key generated"
       fi
 
@@ -203,12 +228,26 @@ old_configuration_and_plugins()
       /opt/kibana/bin/kibana plugin --install elasticsearch/marvel/$ES_VERSION
       log "[old_configuration_and_plugins] monitoring plugin installed"
     fi
+
+    # configure HTTPS if cert and private key supplied
+    if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
+        mkdir -p /opt/kibana/config/ssl
+        log "[old_configuration_and_plugins] save kibana cert blob to file"
+        echo ${SSL_CERT} | base64 -d | sudo tee /opt/kibana/config/ssl/kibana.crt
+        log "[old_configuration_and_plugins] save kibana key blob to file"
+        echo ${SSL_KEY} | base64 -d | sudo tee /opt/kibana/config/ssl/kibana.key
+        log "[old_configuration_and_plugins] configuring encrypted communication"
+        echo "server.ssl.key: /opt/kibana/config/ssl/kibana.key" >> $KIBANA_CONF
+        echo "server.ssl.cert: /opt/kibana/config/ssl/kibana.crt" >> $KIBANA_CONF
+        log "[old_configuration_and_plugins] configured encrypted communication"
+    fi
+
     log "[old_configuration_and_plugins] installing sense plugin"
     /opt/kibana/bin/kibana plugin --install elastic/sense
     log "[old_configuration_and_plugins] sense plugin installed"
 
     # sense default url to point at Elasticsearch on first load
-    echo "sense.defaultServerUrl: \"$ELASTICSEARCH_URL\"" >> /opt/kibana/config/kibana.yml
+    echo "sense.defaultServerUrl: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
 }
 
 install_pwgen()
@@ -221,12 +260,22 @@ install_pwgen()
 
 configuration_and_plugins()
 {
+    # backup the current config
+    mv /etc/kibana/kibana.yml /etc/kibana/kibana.yml.bak
+
     log "[configuration_and_plugins] configuring kibana.yml"
     local KIBANA_CONF=/etc/kibana/kibana.yml
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
+    # specify kibana log location
+    echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
+    sudo touch /var/log/kibana.log
+    sudo chown kibana: /var/log/kibana.log
+    # set logging to silent by default
+    echo "logging.silent: true" >> $KIBANA_CONF
 
+    # install plugins
     if [ ${INSTALL_PLUGINS} -ne 0 ]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
       echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
@@ -234,12 +283,39 @@ configuration_and_plugins()
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
+      ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configuration_and_plugins] x-pack security encryption key generated"
 
       log "[configuration_and_plugins] installing xpack plugin"
       sudo /usr/share/kibana/bin/kibana-plugin install x-pack
       log "[configuration_and_plugins] installed xpack plugin"
+    fi
+
+    # configure HTTPS if cert and private key supplied
+    if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
+      mkdir -p /etc/kibana/ssl
+      log "[configuration_and_plugins] save kibana cert blob to file"
+      echo ${SSL_CERT} | base64 -d | sudo tee /etc/kibana/ssl/kibana.crt
+      log "[configuration_and_plugins] save kibana key blob to file"
+      echo ${SSL_KEY} | base64 -d | sudo tee /etc/kibana/ssl/kibana.key
+
+      log "[configuration_and_plugins] configuring encrypted communication"
+
+      if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
+          echo "server.ssl.enabled: true" >> $KIBANA_CONF
+          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
+          echo "server.ssl.certificate: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
+
+          if [[ -n "${SSL_PASSPHRASE}" ]]; then
+              echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
+          fi
+      else
+          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
+          echo "server.ssl.cert: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
+      fi
+
+      log "[configuration_and_plugins] configured encrypted communication"
     fi
 }
 

@@ -164,6 +164,27 @@
         "description": "Size of the Elasticsearch Kibana node"
       }
     },
+    "kibanaCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the certificate (.crt) to secure HTTPS communications between the browser and Kibana."
+      }
+    },
+    "kibanaKeyBlob": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the private key (.key) to secure HTTPS communications between the browser and Kibana."
+      }
+    },
+    "kibanaKeyPassphrase": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+"
+      }
+    },
     "jumpbox": {
       "type": "string",
       "defaultValue": "No",
@@ -1144,6 +1165,8 @@
       "external": "No",
       "gateway": "Yes"
     },
+    "kibanaHttpsOpts": ["No", "Yes"],
+    "kibanaHttps": "[variables('kibanaHttpsOpts')[mul(length(take(parameters('kibanaKeyBlob'), 1)), length(take(parameters('kibanaCertBlob'), 1)))]]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
@@ -1155,6 +1178,10 @@
       "vmSizeMasterNodes": "[parameters('vmSizeMasterNodes')]",
       "vmSizeKibana": "[parameters('vmSizeKibana')]",
       "kibana": "[parameters('kibana')]",
+      "kibanaKeyBlob": "[parameters('kibanaKeyBlob')]",
+      "kibanaKeyPassphrase": "[parameters('kibanaKeyPassphrase')]",
+      "kibanaCertBlob": "[parameters('kibanaCertBlob')]",
+      "kibanaHttps": "[variables('kibanaHttps')]",
       "jumpbox": "[parameters('jumpbox')]",
       "dataNodeStorageSettings": {
         "count": "[variables('storageAccountsCount')]",

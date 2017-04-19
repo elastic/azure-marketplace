@@ -121,8 +121,17 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_A1</code></td></tr>
 
+  <tr><td>kibanaCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of the certificate (.crt) to secure HTTPS communications between the browser and Kibana.</td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaKeyBlob</td><td>securestring</td>
+    <td>A Base-64 encoded form of the private key (.key) to secure HTTPS communications between the browser and Kibana.</td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
+    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+</td><td><code>""</code></td></tr>
+
   <tr><td>jumpbox</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code>to optionally add a virtual machine to the deployment which you can use to connect and 
+    <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine to the deployment which you can use to connect and 
     manage virtual machines on the internal network.
     </td><td><code>No</code></td></tr>
 

@@ -50,6 +50,17 @@
       "metadata": {
         "description": "Size of the Kibana VM"
       }
+    },
+    "https": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Controls if the output address should be HTTP or HTTPS"
+      }
     }
   },
   "variables": {},

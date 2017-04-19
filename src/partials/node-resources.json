@@ -224,6 +224,9 @@
           },
           "vmSize": {
             "value": "[parameters('topologySettings').vmSizeKibana]"
+          },
+          "https": {
+            "value": "[parameters('topologySettings').kibanaHttps]"
           }
         }
       }
