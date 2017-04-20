@@ -29,11 +29,13 @@ the templates directly though the Azure CLI or PowerShell SDKs. <a href="#comman
 ---
 
 ### VERY IMPORTANT
-**This template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer or Kibana. It is strongly recommended that you secure
+**This template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer. It is strongly recommended that you secure
 communication before using in production.**
 
 You can secure external access to the cluster with TLS by using `gateway` as the `loadBalancerType` and supplying a PFX certificate with the `appGatewayCertBlob` parameter. This sets
 the cluster up to use [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/) for load balancing and SSL offload.
+
+You can secure external access from the browser to Kibana with TLS by supplying a certificate and private key with `kibanaCertBlob` and `kibanaKeyBlob`, respectively.
 
 ---
 
@@ -122,10 +124,10 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
     </td><td><code>Standard_A1</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the certificate (.crt) to secure HTTPS communications between the browser and Kibana.</td><td><code>""</code></td></tr>
+    <td>A Base-64 encoded form of the certificate (.crt) to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaKeyBlob</td><td>securestring</td>
-    <td>A Base-64 encoded form of the private key (.key) to secure HTTPS communications between the browser and Kibana.</td><td><code>""</code></td></tr>
+    <td>A Base-64 encoded form of the private key (.key) to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
     <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+</td><td><code>""</code></td></tr>
