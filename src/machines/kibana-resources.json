@@ -50,6 +50,17 @@
       "metadata": {
         "description": "Size of the Kibana VM"
       }
+    },
+    "https": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Controls if the output address should be HTTP or HTTPS"
+      }
     }
   },
   "variables": {
@@ -76,7 +87,12 @@
         }
       }
     },
-    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
+    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]",
+    "httpsOpts": {
+      "Yes" : "https://",
+      "No" : "http://"
+    },
+    "https": "[variables('httpsOpts')[parameters('https')]]"
   },
   "resources": [
     {
@@ -206,7 +222,7 @@
   ],
   "outputs": {
     "fqdn": {
-      "value": "[concat('http://',reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn, ':5601')]",
+      "value": "[concat(variables('https'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn, ':5601')]",
       "type": "string"
     }
   }
