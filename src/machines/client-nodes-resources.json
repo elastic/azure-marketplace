@@ -13,6 +13,15 @@
       "metadata": {
         "description": "vm configuration"
       }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
     }
   },
   "variables": {
@@ -24,6 +33,9 @@
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), 'av-set')]",
       "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
       "properties": { }
     },
     {
@@ -48,13 +60,16 @@
             "value": "[parameters('templateBaseUrl')]"
           },
           "vm": {
-            "value": "[parameters('vm')]"
+              "value": "[parameters('vm')]"
+            },
+          "availabilitySet": {
+              "value": "[concat(variables('namespace'), 'av-set')]"
           },
-        "availabilitySet": {
-            "value": "[concat(variables('namespace'), 'av-set')]"
-        },
           "index": {
-            "value": "[copyindex()]"
+              "value": "[copyindex()]"
+            },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
