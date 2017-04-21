@@ -13,6 +13,15 @@
       "metadata": {
         "description": "Application Gateway settings"
       }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
     }
   },
   "variables": {
@@ -30,6 +39,9 @@
       "name": "es-internal-lb",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
       "properties": {
         "frontendIPConfigurations": [
           {
@@ -103,6 +115,9 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "es-app-gateway-ip",
       "location": "[parameters('networkSettings').location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
       }
@@ -112,6 +127,9 @@
       "name": "es-app-gateway",
       "type": "Microsoft.Network/applicationGateways",
       "location": "[parameters('networkSettings').location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', 'es-app-gateway-ip')]"
       ],

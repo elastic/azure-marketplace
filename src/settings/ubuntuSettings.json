@@ -2,48 +2,57 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-      "templateBaseUrl": {
-          "type": "string",
-          "metadata": {
-              "description": "The base url for templates"
-          }
-      },
-      "esSettings": {
-          "type": "object",
-          "metadata": {
-              "description" : "The Elasticsearch settings"
-          }
-      },
-      "commonVmSettings": {
-          "type": "object",
-          "metadata": {
-              "description" : "Shared VM settings"
-          }
-      },
-      "phoneHomeSettings": {
-          "type": "object",
-          "metadata": {
-              "description": "Deployment details sent back to our CRM, only needed when deploying from the marketplace, optional in the ARM template"
-          }
-      },
-      "topologySettings": {
-          "type": "object",
-          "metadata": {
-              "description": "Aggregate for topology variable"
-          }
-      },
-      "networkSettings": {
+    "templateBaseUrl": {
+        "type": "string",
+        "metadata": {
+            "description": "The base url for templates"
+        }
+    },
+    "esSettings": {
         "type": "object",
         "metadata": {
-          "description": "Network settings"
+            "description" : "The Elasticsearch settings"
         }
-      },
-      "azureCloudStorageAccount": {
-          "type": "object",
-          "metadata": {
-              "description": "The storage settings for the Azure Cloud plugin"
-          }
+    },
+    "commonVmSettings": {
+        "type": "object",
+        "metadata": {
+            "description" : "Shared VM settings"
+        }
+    },
+    "phoneHomeSettings": {
+        "type": "object",
+        "metadata": {
+            "description": "Deployment details sent back to our CRM, only needed when deploying from the marketplace, optional in the ARM template"
+        }
+    },
+    "topologySettings": {
+        "type": "object",
+        "metadata": {
+            "description": "Aggregate for topology variable"
+        }
+    },
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings"
       }
+    },
+    "azureCloudStorageAccount": {
+        "type": "object",
+        "metadata": {
+            "description": "The storage settings for the Azure Cloud plugin"
+        }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
   },
   "variables": {
     "nodesTemplateUrl": "[concat(parameters('templateBaseUrl'), 'partials/node-resources.json')]",
@@ -174,6 +183,9 @@
           },
           "networkSettings": {
             "value": "[parameters('networkSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }

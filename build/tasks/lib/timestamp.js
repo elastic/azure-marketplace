@@ -1,7 +1,7 @@
 var dateFormat = require("dateformat");
-if (!GLOBAL.timestamp)
+if (!global.timestamp)
 {
   const timestamp = dateFormat(new Date(), "-yyyymmdd-HHMMss-Z").replace("+","-");
-  GLOBAL.timestamp = timestamp;
+  global.timestamp = timestamp;
 }
-module.exports = GLOBAL.timestamp;
+module.exports = global.timestamp;

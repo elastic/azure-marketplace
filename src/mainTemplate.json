@@ -9,6 +9,15 @@
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
     },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    },
     "esVersion": {
       "type": "string",
       "defaultValue": "5.3.0",
@@ -1165,7 +1174,10 @@
       "external": "No",
       "gateway": "Yes"
     },
-    "kibanaHttpsOpts": ["No", "Yes"],
+    "kibanaHttpsOpts": [
+      "No",
+      "Yes"
+    ],
     "kibanaHttps": "[variables('kibanaHttpsOpts')[mul(length(take(parameters('kibanaKeyBlob'), 1)), length(take(parameters('kibanaCertBlob'), 1)))]]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
@@ -1249,6 +1261,9 @@
           },
           "storageAccountName": {
             "value": "[variables('commonVmSettings').storageAccountName]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -1266,6 +1281,9 @@
         "parameters": {
           "networkSettings": {
             "value": "[variables('networkSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -1290,6 +1308,9 @@
           },
           "applicationGatewaySettings": {
             "value": "[variables('applicationGatewaySettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -1328,6 +1349,9 @@
           },
           "azureCloudStorageAccount": {
             "value": "[variables('azureCloudStorageAccount')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }

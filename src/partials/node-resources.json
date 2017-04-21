@@ -2,36 +2,45 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-      "templateBaseUrl": {
-          "type": "string",
-          "metadata": {
-              "description": "The base url for templates"
-          }
-      },
-      "osSettings": {
-          "type": "object",
-          "metadata": {
-              "description" : "Operating system settings"
-          }
-      },
-      "commonVmSettings": {
-          "type": "object",
-          "metadata": {
-              "description" : "Shared VM settings"
-          }
-      },
-      "topologySettings": {
+    "templateBaseUrl": {
+        "type": "string",
+        "metadata": {
+            "description": "The base url for templates"
+        }
+    },
+    "osSettings": {
         "type": "object",
         "metadata": {
-          "description": "Aggregate for topology variable"
+            "description" : "Operating system settings"
         }
-      },
-      "networkSettings": {
+    },
+    "commonVmSettings": {
         "type": "object",
         "metadata": {
-          "description": "Network settings"
+            "description" : "Shared VM settings"
         }
+    },
+    "topologySettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Aggregate for topology variable"
       }
+    },
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings"
+      }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
   },
   "variables": {
     "jumpboxTemplates": {
@@ -84,6 +93,9 @@
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]"
             }
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -114,6 +126,9 @@
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]"
             }
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -147,6 +162,9 @@
           },
           "storageSettings": {
             "value": "[parameters('topologySettings').dataNodeStorageSettings]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -184,6 +202,9 @@
           },
           "osSettings": {
             "value": "[parameters('osSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }
@@ -227,6 +248,9 @@
           },
           "https": {
             "value": "[parameters('topologySettings').kibanaHttps]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
           }
         }
       }

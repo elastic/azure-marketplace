@@ -4,33 +4,13 @@ var fs = require('fs');
 var git = require('git-rev');
 var Repo = require('git-tools');
 var argv = require('yargs').argv;
+var filereader = require('./lib/filereader');
 
 var repo = new Repo(".");
 
 gulp.task("links", (cb) => {
-  function readFiles(dirname, repo, branch, onFileContent, onError) {
-    fs.readdir(dirname, (err, filenames) => {
-      if (err) {
-        onError(err);
-        return;
-      }
-      filenames.forEach((filename) => {
-        if (fs.statSync(dirname + '/' + filename).isDirectory()) {
-          readFiles(dirname + '/' + filename + '/', repo, branch, onFileContent, onError);
-        }
-        else {
-          if (filename.endsWith('.json') || filename.endsWith('.md')) {
-            fs.readFile(dirname + filename, 'utf-8', function(err, content) {
-              if (err) {
-                onError(err);
-                return;
-              }
-              onFileContent(dirname + filename, content, repo, branch);
-            });
-          }
-        }
-      });
-    });
+  function filter(filename) {
+    return filename.endsWith('.json') || filename.endsWith('.md');
   }
 
   function error(err) { }
@@ -54,12 +34,17 @@ gulp.task("links", (cb) => {
         /https:\/\/github.com\/(.+?\/.+?)\.git/.exec(originRepo.url)[1] :
         /git@github\.com:(.+?\/.+?)\.git/.exec(originRepo.url)[1];
     }
-
+    
     var repoName = argv.repo || getRepoNameFromRemotes(remotes);
 
     git.branch(function (branch) {
       var branchName = argv.branch || branch;
-      ["../src/", "../parameters/"].forEach((dir) => { readFiles(dir, repoName, branchName, replaceLinks, error) });
+
+      ["../src/", "../parameters/"].forEach((dir) => { 
+        filereader.readFiles(dir, filter, function (fileName, content) { 
+          replaceLinks(fileName, content, repoName, branchName); 
+        }, error) 
+      });
       fs.readFile("../README.md", 'utf-8', (err, content) => {
         if (err) {
           onError(err);
