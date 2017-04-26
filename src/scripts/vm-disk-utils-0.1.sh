@@ -263,6 +263,7 @@ create_striped_volume()
         PARTITIONS+=("${PARTITION}")
     done
 
+    log "Using ${#PARTITIONS[@]} partitions ${PARTITIONS[*]}"
     MOUNTPOINT=$(get_next_mountpoint)
     STRIDE=128 #(512kB stripe size) / (4kB block size)
     log "Next mount point appears to be ${MOUNTPOINT}"
@@ -273,9 +274,18 @@ create_striped_volume()
     then
         log "only one disk (${DISKS[0]}) attached. mount it"
         mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${MDDEVICE}"
+
+        log "attempting to get UUID from ${MDDEVICE}"
+        read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
+
+        log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
+        add_to_fstab "${UUID}" "${MOUNTPOINT}"
+
+        mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
     else
         log "${#DISKS[@]} disks are attached. RAID0-ing them using mdadm"
         MDDEVICE=$(get_next_md_device)
+        log "Next md device is ${MDDEVICE}"
         sudo udevadm control --stop-exec-queue
         mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
         sudo udevadm control --start-exec-queue
@@ -284,29 +294,58 @@ create_striped_volume()
         PARTITIONSNUM=${#PARTITIONS[@]}
         STRIPEWIDTH=$((${STRIDE} * ${PARTITIONSNUM}))
         mkfs.ext4 -b 4096 -E stride=${STRIDE},stripe-width=${STRIPEWIDTH},nodiscard "${MDDEVICE}"
+
+        log "attempting to get UUID from ${MDDEVICE}"
+        read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
+
+        if [[ -z "$UUID" && "${#DISKS[@]}" -ne 1 ]]; then
+            log "UUID is empty. checking state of ${MDDEVICE}"
+
+            # check if disk is inactive and spare. if it is, stop and assemble
+            if grep -q "$(basename ${MDDEVICE}) : inactive" /proc/mdstat; then
+              log "${MDDEVICE} is inactive, stopping and assembling"
+              sudo mdadm --stop "${MDDEVICE}"
+              sudo mdadm --assemble --scan
+              log "${MDDEVICE} stopped and assembled"
+            fi
+
+            log "checking state of ${MDDEVICE}"
+            if ! grep -q "$(basename ${MDDEVICE}) : active raid0" /proc/mdstat; then
+              log "${MDDEVICE} not active. exiting"
+              exit 4
+            fi
+
+            log "${MDDEVICE} is active"
+            mkfs.ext4 -b 4096 -E stride=${STRIDE},stripe-width=${STRIPEWIDTH},nodiscard "${MDDEVICE}"
+
+            log "attempting to get UUID from ${MDDEVICE} again"
+            read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
+
+            if [[ -z "$UUID" ]]; then
+              log "UUID is still empty. exiting"
+              exit 4
+            fi
+        fi
+
+        log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
+        add_to_fstab "${UUID}" "${MOUNTPOINT}"
+
+        mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
+
+        log "add entry to  /etc/mdadm/mdadm.conf for RAID array"
+        sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+        log "update update-initramfs"
+        sudo update-initramfs -u
     fi
-
-    log "attempting to get UUID from ${MDDEVICE}"
-    read UUID FS_TYPE < <(blkid -u filesystem ${MDDEVICE}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
-
-    log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
-    add_to_fstab "${UUID}" "${MOUNTPOINT}"
-
-    mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
 }
 
 check_mdadm() {
-  log "check mdadm begin"
+  log "installing or updating mdadm"
+  (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
+  log "apt-get updated installing mdadm now"
+  (sudo apt-get -yq install mdadm || (sleep 15; apt-get -yq install mdadm))
   dpkg -s mdadm >/dev/null 2>&1
-  if [ ${?} -ne 0 ]; then
-    log "mdadm not found updating apt-get"
-    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
-    log "apt-get updated installing mdadm now"
-    (sudo apt-get -yq install mdadm --fix-missing || (sleep 15; apt-get -yq install mdadm --fix-missing))
-    dpkg -s mdadm >/dev/null 2>&1
-    log "apt-get installed mdadm and can be found returns: ${?}"
-  fi
-  log "check mdadm end"
+  log "apt-get installed mdadm and can be found returns: ${?}"
 }
 
 # Create Partitions

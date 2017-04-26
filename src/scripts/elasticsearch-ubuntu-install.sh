@@ -21,7 +21,6 @@ help()
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
-    echo "-Y <number of nodes> hint to the install script how many client nodes we are provisioning"
 
     echo "-A admin password"
     echo "-R read password"
@@ -94,7 +93,6 @@ MASTER_ONLY_NODE=0
 
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
-CLIENTNODE_COUNT=0
 
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
@@ -110,7 +108,7 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Y:Z:p:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -133,9 +131,6 @@ while getopts :n:v:A:R:K:S:Y:Z:p:a:k:L:Xxyzldjh optname; do
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
-      ;;
-    Y) #number of client nodes hints (used to calculate whether data nodes or client nodes should be ingest nodes)
-      CLIENTNODE_COUNT=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -220,6 +215,11 @@ format_data_disks()
         log "[format_data_disks] starting partition and format attached disks"
         # using the -s paramater causing disks under /datadisks/* to be raid0'ed
         bash vm-disk-utils-0.1.sh -s
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -ne 0 ]; then
+          log "[format_data_disks] returned non-zero exit code: $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
         log "[format_data_disks] finished partition and format attached disks"
     fi
 }
@@ -625,19 +625,11 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master only"
         echo "node.master: true" >> $ES_CONF
         echo "node.data: false" >> $ES_CONF
-        if [[ "${ES_VERSION}" == \5* ]]; then
-            log "[configure_elasticsearch_yaml] Disable ingest node"
-            echo "node.ingest: false" >> $ES_CONF
-        fi
         # echo "marvel.agent.enabled: false" >> $ES_CONF
     elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as data only"
         echo "node.master: false" >> $ES_CONF
         echo "node.data: true" >> $ES_CONF
-        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
-            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
-            echo "node.ingest: false" >> $ES_CONF
-        fi
         # echo "marvel.agent.enabled: false" >> $ES_CONF
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as client only"
@@ -648,10 +640,6 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] Configure node as master and data"
         echo "node.master: true" >> $ES_CONF
         echo "node.data: true" >> $ES_CONF
-        if [[ "${ES_VERSION}" == \5* && ${CLIENTNODE_COUNT} -ne 0 ]]; then
-            log "[configure_elasticsearch_yaml] Disable ingest node as client node count is $CLIENTNODE_COUNT"
-            echo "node.ingest: false" >> $ES_CONF
-        fi
     fi
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF

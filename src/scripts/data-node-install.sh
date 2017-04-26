@@ -71,7 +71,6 @@ STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
-CLIENTNODE_COUNT=0
 DATA_ONLY_NODE=0
 
 USER_ADMIN_PWD="changeME"
@@ -92,7 +91,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Y:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -115,9 +114,6 @@ while getopts :n:v:A:R:K:S:Y:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
-      ;;
-    Y) #number of client nodes hints (used to calculate whether data nodes or client nodes should be ingest nodes)
-      CLIENTNODE_COUNT=${OPTARG}
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -216,7 +212,7 @@ if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Y "$CLIENTNODE_COUNT" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"
