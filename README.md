@@ -56,6 +56,11 @@ The output from the Azure Marketplace UI is fed directly to the ARM deployment t
 - Application Gateway to use for TLS and SSL offload
 - The number and size of disks to attach to each data node VM
 
+Check out our [examples repository](https://github.com/elastic/azure-marketplace-examples) for examples of common scenarios and also take a look at the following blog posts for further information
+
+- [Spinning up a cluster with Elastic's Azure Marketplace template](https://www.elastic.co/blog/spinning-up-a-cluster-with-elastics-azure-marketplace-template)
+- [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
+
 ### Parameters
 
 <table>
