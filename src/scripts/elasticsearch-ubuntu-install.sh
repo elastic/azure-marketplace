@@ -723,11 +723,12 @@ configure_elasticsearch_yaml()
         done
         unset IFS
         log "[configure_elasticsearch_yaml] included additional yaml configuration"
-        log "[configure_elasticsearch_yaml] run yaml linter on configuration"
+        log "[configure_elasticsearch_yaml] run yaml lint on configuration"
         install_yamllint
-        local lint=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}, line-length: disabled}" $ES_CONF)
+        local lint=""
+        lint=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}, line-length: disable}" $ES_CONF; exit ${PIPESTATUS[0]})
         local exit_code=$?
-        log "[configure_elasticsearch_yaml] ran yaml linter (exit code: $exit_code): $lint"
+        log "[configure_elasticsearch_yaml] ran yaml lint (exit code: $exit_code): $lint"
         if [ $exit_code -ne 0 ]; then
           log "[configure_elasticsearch_yaml] errors in yaml configuration. exiting"
           exit 11
