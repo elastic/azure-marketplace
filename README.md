@@ -114,7 +114,12 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
-    <td>Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments
+    <td>Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esAdditionalYaml</td><td>string</td>
+    <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>action.auto_create_index: .security\nindices.queries.cache.size:5%</code>
+    You should use the 
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>

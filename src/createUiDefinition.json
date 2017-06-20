@@ -963,6 +963,7 @@
       "azureCloudStorageAccountKey": "",
       "xpackPlugins": "Yes",
       "esAdditionalPlugins": "",
+      "esAdditionalYaml": "",
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",

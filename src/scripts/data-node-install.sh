@@ -66,6 +66,7 @@ NAMESPACE_PREFIX=""
 ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
+YAML_CONFIGURATION=""
 INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
@@ -91,7 +92,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -126,6 +127,9 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:Xxyzldjh optname; do
       ;;
     L) #install additional plugins
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;
+    C) #additional yaml configuration
+      YAML_CONFIGURATION="${OPTARG}"
       ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT="${OPTARG}"
@@ -207,12 +211,8 @@ if [ $ANONYMOUS_ACCESS -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -X"
 fi
 
-if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
-  INSTALL_SWITCHES="$INSTALL_SWITCHES -L $INSTALL_ADDITIONAL_PLUGINS"
-fi
-
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"
