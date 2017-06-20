@@ -726,13 +726,12 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] run yaml lint on configuration"
         install_yamllint
         local lint=""
-        # set line length warning to arbitrarily long value.
         lint=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $ES_CONF; exit ${PIPESTATUS[0]})
         local exit_code=$?
         if [[ -n "$lint" ]]; then
             log "[configure_elasticsearch_yaml] ran yaml lint. no warnings or errors"
         else
-            log "[configure_elasticsearch_yaml] ran yaml lint. $lint"
+            log "[configure_elasticsearch_yaml] ran yaml lint (exit code: $exit_code). $lint"
         fi
 
         if [ $exit_code -ne 0 ]; then
@@ -812,7 +811,7 @@ install_yamllint()
       (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
     else
       sudo add-apt-repository -y ppa:adrienverge/ppa && sudo apt-get update
-      (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
+      (sudo apt-get -yq --force-yes install yamllint || (sleep 15; sudo apt-get -yq --force-yes install yamllint))
     fi
     log "[install_yamllint] installed yamllint"
 }
