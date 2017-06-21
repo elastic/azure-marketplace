@@ -810,8 +810,10 @@ install_yamllint()
     if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
       (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
     else
-      sudo add-apt-repository -y ppa:adrienverge/ppa && sudo apt-get update
-      (sudo apt-get -yq --force-yes install yamllint || (sleep 15; sudo apt-get -yq --force-yes install yamllint))
+      # Install yamllint via pip for Ubuntu 14.04
+      sudo apt-get update
+      (apt-get -yq install python-pip || (sleep 15; apt-get -yq install python-pip))
+      pip install yamllint
     fi
     log "[install_yamllint] installed yamllint"
 }
