@@ -725,16 +725,10 @@ configure_elasticsearch_yaml()
         log "[configure_elasticsearch_yaml] included additional yaml configuration"
         log "[configure_elasticsearch_yaml] run yaml lint on configuration"
         install_yamllint
-        local lint=""
-        lint=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $ES_CONF; exit ${PIPESTATUS[0]})
-        local exit_code=$?
-        if [[ -n "$lint" ]]; then
-            log "[configure_elasticsearch_yaml] ran yaml lint. no warnings or errors"
-        else
-            log "[configure_elasticsearch_yaml] ran yaml lint (exit code: $exit_code). $lint"
-        fi
-
-        if [ $exit_code -ne 0 ]; then
+        LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $ES_CONF; exit ${PIPESTATUS[0]})
+        EXIT_CODE=$?
+        log "[configure_elasticsearch_yaml] ran yaml lint (exit code $EXIT_CODE) $LINT"
+        if [ $EXIT_CODE -ne 0 ]; then
             log "[configure_elasticsearch_yaml] errors in yaml configuration. exiting"
             exit 11
         fi
