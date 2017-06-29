@@ -8,6 +8,7 @@
   "azureCloudStorageAccountKey":{"value":""},
   "xpackPlugins":{"value":"Yes"},
   "esAdditionalPlugins": { "value":""},
+  "esAdditionalYaml": { "value":""},
   "kibana":{"value":"Yes"},
   "vmSizeKibana":{"value":"Standard_D1"},
   "kibanaCertBlob":{"value":""},
@@ -39,7 +40,7 @@
   "vNetLoadBalancerIp": {"value": "10.0.0.4"},
   "vNetClusterSubnetName": {"value": "es-subnet"},
   "vNetNewClusterSubnetAddressPrefix": {"value": "10.0.0.0/25"},
-  "vNetAppGatewaySubnetName": {"value": "es-app-gateway"},  
+  "vNetAppGatewaySubnetName": {"value": "es-app-gateway"},
   "vNetNewAppGatewaySubnetAddressPrefix": {"value": "10.0.0.128/28"},
   "appGatewayTier": {"value":"Standard"},
   "appGatewaySku": {"value":"Small"},
@@ -50,8 +51,8 @@
   "appGatewayWafMode": {"value":"Detection"},
   "userCompany": { "value": "" },
   "userEmail": { "value": "" },
-  "userFirstName": { "value": "" },  
+  "userFirstName": { "value": "" },
   "userLastName": { "value": "" },
   "userJobTitle": { "value": "Other" },
-  "userCountry": { "value": "" }  
+  "userCountry": { "value": "" }
 }

@@ -33,6 +33,7 @@ help()
     echo "-z configure as data node (no master)"
     echo "-l install plugins"
     echo "-L <plugin;plugin> install additional plugins"
+    echo "-C <yaml\nyaml> additional yaml configuration"
 
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
@@ -86,6 +87,7 @@ NAMESPACE_PREFIX=""
 ES_VERSION="5.3.0"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
+YAML_CONFIGURATION=""
 MANDATORY_PLUGINS=""
 CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
@@ -107,8 +109,10 @@ INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
+UBUNTU_VERSION=$(lsb_release -sr)
+
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -149,6 +153,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:Xxyzldjh optname; do
       ;;
     L) #install additional plugins
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
+      ;;
+    C) #additional yaml configuration
+      YAML_CONFIGURATION="${OPTARG}"
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
@@ -583,8 +590,6 @@ apply_security_settings()
         log "[apply_security_settings] added anonymous_user role"
       fi
 
-
-
       log "[apply_security_settings] updated roles and users"
     fi
 }
@@ -694,6 +699,41 @@ configure_elasticsearch_yaml()
       fi
     fi
 
+    # Additional yaml configuration
+    if [[ -n "$YAML_CONFIGURATION" ]]; then
+        log "[configure_elasticsearch_yaml] include additional yaml configuration"
+
+        local SKIP_LINES="cluster.name node.name path.data discovery.zen.ping.unicast.hosts "
+        SKIP_LINES+="node.master node.data discovery.zen.minimum_master_nodes network.host "
+        SKIP_LINES+="discovery.zen.ping.multicast.enabled marvel.agent.enabled "
+        SKIP_LINES+="node.max_local_storage_nodes plugin.mandatory cloud.azure.storage.default.account "
+        SKIP_LINES+="cloud.azure.storage.default.key xpack.security.authc shield.authc"
+        local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
+        IFS=$'\n'
+        for LINE in $(echo -e "$YAML_CONFIGURATION")
+        do
+            if [[ -n "$LINE" ]]; then
+                if [[ $LINE =~ $SKIP_REGEX ]]; then
+                    log "[configure_elasticsearch_yaml] Skipping line '$LINE'"
+                else
+                    log "[configure_elasticsearch_yaml] Adding line '$LINE' to $ES_CONF"
+                    echo -e "$LINE" >> $ES_CONF
+                fi
+            fi
+        done
+        unset IFS
+        log "[configure_elasticsearch_yaml] included additional yaml configuration"
+        log "[configure_elasticsearch_yaml] run yaml lint on configuration"
+        install_yamllint
+        LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $ES_CONF; exit ${PIPESTATUS[0]})
+        EXIT_CODE=$?
+        log "[configure_elasticsearch_yaml] ran yaml lint (exit code $EXIT_CODE) $LINT"
+        if [ $EXIT_CODE -ne 0 ]; then
+            log "[configure_elasticsearch_yaml] errors in yaml configuration. exiting"
+            exit 11
+        fi
+    fi
+
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
     # if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
     #     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
@@ -707,7 +747,7 @@ configure_elasticsearch_yaml()
 configure_elasticsearch()
 {
     log "[configure_elasticsearch] configuring elasticsearch default configuration"
-    local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744)  print 31744;else print int($2/2+0.5);}'`
+    local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
     if [[ "${ES_VERSION}" == \5* ]]; then
       configure_elasticsearch5 $ES_HEAP
     else
@@ -758,6 +798,20 @@ configure_os_properties()
 ## Installation of dependencies
 ##----------------------------------
 
+install_yamllint()
+{
+    log "[install_yamllint] installing yamllint"
+    if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
+      (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
+    else
+      # Install yamllint via pip for Ubuntu 14.04
+      sudo apt-get update
+      (apt-get -yq install python-pip || (sleep 15; apt-get -yq install python-pip))
+      pip install yamllint
+    fi
+    log "[install_yamllint] installed yamllint"
+}
+
 install_ntp()
 {
     log "[install_ntp] installing ntp daemon"
@@ -804,7 +858,6 @@ port_forward()
     (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
 
     # iptables-persistent is different on 16 compared to 14
-    UBUNTU_VERSION=$(lsb_release -sr)
     if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
       sudo service netfilter-persistent save
       sudo service netfilter-persistent start

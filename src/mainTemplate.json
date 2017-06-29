@@ -98,7 +98,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments"
+        "description": "Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments"
+      }
+    },
+    "esAdditionalYaml": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character e.g. action.auto_create_index: .security\nindices.queries.cache.size:5%"
       }
     },
     "kibana": {
@@ -830,6 +837,7 @@
       "version": "[parameters('esVersion')]",
       "installPlugins": "[parameters('xpackPlugins')]",
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
+      "yamlConfiguration": "[parameters('esAdditionalYaml')]",
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
