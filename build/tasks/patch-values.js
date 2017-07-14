@@ -92,7 +92,7 @@ gulp.task("patch", function(cb) {
     obj.parameters.location.allowedValues = allowedLocations;
     obj.variables.locationMap = _(allowedLocations)
       .indexBy(function(location) { return location; })
-      .mapValues(function(k) { return (k === "ResourceGroup") ? "[resourceGroup().location]" : "[resourceGroup().location]"; });
+      .mapValues(function(k) { return (k === "ResourceGroup") ? "[resourceGroup().location]" : k; });
 
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
