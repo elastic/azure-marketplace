@@ -533,7 +533,7 @@
       "type": "string",
       "defaultValue": "ResourceGroup",
       "metadata": {
-        "description": "Location where resources will be provisioned.  A value of 'ResourceGroup' will deploy the resources to the same location as the resource group. Must be a valid Azure location e.g. australiasoutheast"
+        "description": "Location where resources will be provisioned. A value of 'ResourceGroup' will deploy the resources to the same location as the resource group, any other value must be a valid Azure location e.g. 'australiasoutheast'"
       }
     },
     "vNetNewOrExisting": {

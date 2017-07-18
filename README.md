@@ -237,7 +237,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>location</td><td>string</td>
     <td>The location where to provision all the items in this template. Defaults to the special <code>ResourceGroup</code> value which means it will inherit the location
-    from the resource group see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported locations</a>.
+    from the resource group. Any other value must be a valid <a href="https://azure.microsoft.com/regions/">Azure region</a>.
     </td><td><code>ResourceGroup</code></td></tr>
 
   <tr><td>vNetNewOrExisting</td><td>string</td>
