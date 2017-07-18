@@ -765,7 +765,7 @@
       "true": "[resourceGroup().location]",
       "false": "[parameters('location')]"
     },
-    "location": "[variables('locationDeployToResourceGroup')[string(equals('ResourceGroup', parameters('location')))]]",
+    "location": "[variables('locationDeployToResourceGroup')[string(equals('resourcegroup', toLower(parameters('location'))))]]",
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
