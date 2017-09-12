@@ -20,6 +20,14 @@ function checks(cb) {
     errors.push("Main template has different inputs as the ui template outputs: " + excludingDefault)
   }
 
+  var outputDiff = (kind, template, empty) => {
+    var template = require("../../src/" + template);
+    var empty = require("../../src/" + empty)
+    var difference = _.difference(_.keys(template.outputs), _.keys(empty.outputs));
+    if (difference.length == 0) return;
+    errors.push("The " + kind +" template differs from its empty variant: " + difference);
+  }
+
   var parametersParity = () => {
     var parameters = [
       {
@@ -70,6 +78,8 @@ function checks(cb) {
   }
 
   marketPlaceArmParity();
+  outputDiff("kibana", "machines/kibana-resources.json", "empty/empty-kibana-resources.json");
+  outputDiff("jumpbox", "machines/jumpbox-resources.json", "empty/empty-jumpbox-resources.json");
   parametersParity();
 
   filereader.readFiles('../src/', filter, resourcesHaveProviderTag);
