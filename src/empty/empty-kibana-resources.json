@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location where resources will be provisioned"
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "metadata": {
+        "description": "The unique namespace for the Kibana VM"
+      }
+    },
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
+      }
+    },
+    "credentials": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Credentials information block"
+      }
+    },
+    "osSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Platform and OS settings"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A1",
+      "metadata": {
+        "description": "Size of the Kibana VM"
+      }
+    },
+    "https": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Controls if the output address should be HTTP or HTTPS"
+      }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
+  },
+  "variables": {},
+  "resources": [],
+  "outputs": {
+    "fqdn": {
+      "value": "N/A",
+      "type": "string"
+    }
+  }
+}

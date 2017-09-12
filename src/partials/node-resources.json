@@ -43,6 +43,16 @@
     }
   },
   "variables": {
+    "jumpboxTemplates": {
+      "No": "empty/empty-jumpbox-resources.json",
+      "Yes": "machines/jumpbox-resources.json"
+    },
+    "jumpboxTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('jumpboxTemplates')[parameters('topologySettings').jumpbox])]",
+    "kibanaTemplates": {
+      "No": "empty/empty-kibana-resources.json",
+      "Yes": "machines/kibana-resources.json"
+    },
+    "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
     "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-', string(parameters('topologySettings').dataNodeStorageSettings.dataDisks), 'disk-resources.json')]"
   },
   "resources": [
@@ -151,7 +161,6 @@
       }
     },
     {
-      "condition": "[equals(parameters('topologySettings').jumpbox, 'Yes')]",
       "name": "jumpbox",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
@@ -160,7 +169,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'machines/jumpbox-resources.json')]",
+          "uri": "[variables('jumpboxTemplateUrl')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -192,7 +201,6 @@
       }
     },
     {
-      "condition": "[equals(parameters('topologySettings').kibana, 'Yes')]",
       "name": "kibana",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
@@ -201,7 +209,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'machines/kibana-resources.json')]",
+          "uri": "[variables('kibanaTemplateUrl')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -241,11 +249,11 @@
   ],
   "outputs": {
     "kibana": {
-      "value": "[if(equals(parameters('topologySettings').kibana, 'Yes'), reference('kibana').outputs.fqdn.value, '')]",
+      "value": "[reference('kibana').outputs.fqdn.value]",
       "type": "string"
     },
     "jumpboxssh": {
-      "value": "[if(equals(parameters('topologySettings').jumpbox, 'Yes'), reference('jumpbox').outputs.ssh.value, '')]",
+      "value": "[reference('jumpbox').outputs.ssh.value]",
       "type": "string"
     }
   }
