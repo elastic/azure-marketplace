@@ -241,11 +241,11 @@
   ],
   "outputs": {
     "kibana": {
-      "value": "[reference('kibana').outputs.fqdn.value]",
+      "value": "[if(equals(parameters('topologySettings').kibana, 'Yes'), reference('kibana').outputs.fqdn.value, '')]",
       "type": "string"
     },
     "jumpboxssh": {
-      "value": "[reference('jumpbox').outputs.ssh.value]",
+      "value": "[if(equals(parameters('topologySettings').jumpbox, 'Yes'), reference('jumpbox').outputs.ssh.value, '')]",
       "type": "string"
     }
   }
