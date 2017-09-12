@@ -742,19 +742,7 @@
   "variables": {
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'partials/shared-resources.json')]",
-    "networkOptions": {
-      "new": {
-        "internal": "new-virtual-network",
-        "external": "new-virtual-network",
-        "gateway": "new-virtual-network-with-gateway"
-      },
-      "existing": {
-        "internal": "existing-virtual-network",
-        "external": "existing-virtual-network",
-        "gateway": "existing-virtual-network"
-      }
-    },
-    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', variables('networkOptions')[parameters('vNetNewOrExisting')][parameters('loadBalancerType')],'.json')]",
+    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', if(equals(parameters('vNetNewOrExisting'), 'new'), if(equals(parameters('loadBalancerType'), 'gateway'), 'new-virtual-network-with-gateway', 'new-virtual-network'), 'existing-virtual-network'), '.json')]",
     "loadBalancerOptions": {
       "internal": "internal-lb-resources",
       "external": "external-lb-resources",
@@ -762,11 +750,7 @@
     },
     "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), 'loadbalancers/', variables('loadBalancerOptions')[parameters('loadBalancerType')],'.json')]",
     "osSettingsTemplateUrl": "[concat(variables('templateBaseUrl'), 'settings/ubuntuSettings.json')]",
-    "locationDeployToResourceGroup": {
-      "true": "[resourceGroup().location]",
-      "false": "[parameters('location')]"
-    },
-    "location": "[variables('locationDeployToResourceGroup')[string(equals('resourcegroup', toLower(parameters('location'))))]]",
+    "location": "[if(equals('resourcegroup', toLower(parameters('location'))), resourceGroup().location, parameters('location'))]",
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
@@ -800,14 +784,6 @@
       "securityKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('securityKibanaPassword'))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
-    "masterNodeCount": {
-      "No": "3",
-      "Yes": "0"
-    },
-    "kibanajumpboxNodeCount": {
-      "No": "0",
-      "Yes": "1"
-    },
     "phoneHomeSettings": {
       "email": "[parameters('userEmail')]",
       "firstName": "[parameters('userFirstName')]",
@@ -815,7 +791,7 @@
       "jobTitle": "[parameters('userJobTitle')]",
       "company": "[parameters('userCompany')]",
       "country": "[parameters('userCountry')]",
-      "topology": "[concat('m=', variables('masterNodeCount')[parameters('dataNodesAreMasterEligible')], ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', variables('kibanajumpboxNodeCount')[parameters('kibana')], ' ', parameters('vmSizeKibana'), ',j=', variables('kibanajumpboxNodeCount')[parameters('jumpbox')], ' Standard_A0', ',l=', parameters('loadBalancerType'))]"
+      "topology": "[concat('m=', if(equals(parameters('dataNodesAreMasterEligible'), 'No'), '3', '0'), ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', if(equals(parameters('kibana'), 'Yes'), '1', '0'), ' ', parameters('vmSizeKibana'), ',j=', if(equals(parameters('jumpbox'), 'Yes'), '1', '0'), ' Standard_A0', ',l=', parameters('loadBalancerType'))]"
     },
     "networkResourceGroupMap": {
       "new": "[resourceGroup().name]",
@@ -1141,16 +1117,7 @@
     "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('resolvedStorageAccountType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
     "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
     "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),1)))]",
-    "enableAnonymousAccessOpts": {
-      "internal": "No",
-      "external": "No",
-      "gateway": "Yes"
-    },
-    "kibanaHttpsOpts": [
-      "No",
-      "Yes"
-    ],
-    "kibanaHttps": "[variables('kibanaHttpsOpts')[mul(length(take(parameters('kibanaKeyBlob'), 1)), length(take(parameters('kibanaCertBlob'), 1)))]]",
+    "kibanaHttps": "[if(and(greater(length(parameters('kibanaKeyBlob')), 0), greater(length(parameters('kibanaCertBlob')), 0)), 'Yes', 'No')]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
@@ -1176,7 +1143,7 @@
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
       "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]",
-      "enableAnonymousAccess": "[variables('enableAnonymousAccessOpts')[parameters('loadBalancerType')]]"
+      "enableAnonymousAccess": "[if(equals(parameters('loadBalancerType'), 'gateway'), 'Yes', 'No')]"
     },
     "networkSettings": {
       "name": "[parameters('vNetName')]",
@@ -1241,6 +1208,7 @@
       }
     },
     {
+      "condition": "[equals(parameters('vNetNewOrExisting'), 'new')]",
       "name": "network",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",

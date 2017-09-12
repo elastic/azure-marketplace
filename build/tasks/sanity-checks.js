@@ -4,11 +4,11 @@ var filereader = require('./lib/filereader');
 
 function checks(cb) {
   var errors = [];
+  var mainTemplate = require("../../src/mainTemplate.json");
+  var mainTemplateParams = _.keys(mainTemplate.parameters);
 
   var marketPlaceArmParity = () => {
-    var mainTemplate = require("../../src/mainTemplate.json");
     var uiTemplate = require("../../src/createUiDefinition.json");
-    var mainTemplateParams = _.keys(mainTemplate.parameters);
     var difference = _.difference(mainTemplateParams, _.keys(uiTemplate.parameters.outputs));
     if (difference.length == 0) return;
     var excludingDefault = [];
@@ -17,15 +17,31 @@ function checks(cb) {
       excludingDefault.push(p);
     });
     if (excludingDefault.length == 0) return;
-    errors.push("Main template has different inputs as the ui template outputs" + excludingDefault)
+    errors.push("Main template has different inputs as the ui template outputs: " + excludingDefault)
   }
 
-  var outputDiff = (kind, template, empty) => {
-    var template = require("../../src/" + template);
-    var empty = require("../../src/" + empty)
-    var difference = _.difference(_.keys(template.outputs), _.keys(empty.outputs));
-    if (difference.length == 0) return;
-    errors.push("The " + kind +" template differs from its empty variant: " + difference);
+  var parametersParity = () => {
+    var parameters = [
+      {
+        name: "password",
+        template: require("../../parameters/password.parameters.json")
+      },
+      {
+        name: "ssh",
+        template: require("../../parameters/ssh.parameters.json")
+      }];
+
+    parameters.forEach(p=> {
+      var difference = _.difference(mainTemplateParams, _.keys(p.template));
+      if (difference.length == 0) return;
+      var excludingDefault = [];
+      difference.forEach(p=> {
+        if (mainTemplate.parameters[p] && mainTemplate.parameters[p].defaultValue) return;
+        excludingDefault.push(p);
+      });
+      if (excludingDefault.length == 0) return;
+      errors.push(p.name + " parameters has different inputs than the main template parameters" + excludingDefault)
+    });
   }
 
   var filter = function(filename) {
@@ -54,16 +70,12 @@ function checks(cb) {
   }
 
   marketPlaceArmParity();
-  outputDiff("kibana", "machines/kibana-resources.json", "empty/empty-kibana-resources.json");
-  outputDiff("jumpbox", "machines/jumpbox-resources.json", "empty/empty-jumpbox-resources.json");
-  outputDiff("client", "machines/client-nodes-resources.json", "empty/empty-client-nodes-resources.json");
-  outputDiff("master", "machines/master-nodes-resources.json", "empty/empty-master-nodes-resources.json");
-  outputDiff("networks", "networks/existing-virtual-network.json", "networks/new-virtual-network.json");
+  parametersParity();
 
   filereader.readFiles('../src/', filter, resourcesHaveProviderTag);
 
   if (errors.length) {
-    throw new Error("Sanity checks failed:\n" + errors);
+    throw new Error("Sanity checks failed:\n" + errors.join('\n'));
   }
 
   cb();

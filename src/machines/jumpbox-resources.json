@@ -195,7 +195,7 @@
   ],
   "outputs": {
     "ssh": {
-      "value": "[concat(parameters('credentials').adminUsername, '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).dnsSettings.fqdn)]",
+      "value": "[concat(parameters('credentials').adminUsername, '@',reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName')), '2016-03-30').dnsSettings.fqdn)]",
       "type": "string"
     }
   }
