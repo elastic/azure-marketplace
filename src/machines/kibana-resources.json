@@ -243,7 +243,7 @@
   ],
   "outputs": {
     "fqdn": {
-      "value": "[concat(variables('https'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2016-03-30').dnsSettings.fqdn, ':5601')]",
+      "value": "[concat(variables('https'), reference(variables('publicIpName')).dnsSettings.fqdn, ':5601')]",
       "type": "string"
     }
   }
