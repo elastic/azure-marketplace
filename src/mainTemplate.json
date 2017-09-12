@@ -20,7 +20,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "5.5.1",
+      "defaultValue": "5.6.0",
       "allowedValues": [
         "2.0.2",
         "2.1.2",
@@ -35,7 +35,10 @@
         "5.4.2",
         "5.4.3",
         "5.5.0",
-        "5.5.1"
+        "5.5.1",
+        "5.5.2",
+        "5.5.3",
+        "5.6.0"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
@@ -770,7 +773,10 @@
       "5.4.2": "5.4.2",
       "5.4.3": "5.4.3",
       "5.5.0": "5.5.0",
-      "5.5.1": "5.5.1"
+      "5.5.1": "5.5.1",
+      "5.5.2": "5.5.2",
+      "5.5.3": "5.5.3",
+      "5.6.0": "5.6.0"
     },
     "esSettings": {
       "clusterName": "[parameters('esClusterName')]",
