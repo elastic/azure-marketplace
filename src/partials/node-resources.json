@@ -53,21 +53,11 @@
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
-    "masterTemplates": {
-      "No": "machines/master-nodes-resources.json",
-      "Yes": "empty/empty-master-nodes-resources.json"
-    },
-    "masterTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('masterTemplates')[parameters('topologySettings').dataNodesAreMasterEligible])]",
-    "clientTemplates": [
-      "empty/empty-client-nodes-resources.json",
-      "machines/client-nodes-resources.json"
-    ],
-    "clientResourceIndex": "[mod(add(parameters('topologySettings').vmClientNodeCount,2),add(parameters('topologySettings').vmClientNodeCount,1))]",
-    "clientTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('clientTemplates')[variables('clientResourceIndex')])]",
     "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-', string(parameters('topologySettings').dataNodeStorageSettings.dataDisks), 'disk-resources.json')]"
   },
   "resources": [
     {
+      "condition": "[equals(parameters('topologySettings').dataNodesAreMasterEligible, 'No')]",
       "name": "master-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
@@ -76,7 +66,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('masterTemplateUrl')]",
+          "uri": "[concat(parameters('templateBaseUrl'), 'machines/master-nodes-resources.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -101,6 +91,7 @@
       }
     },
     {
+      "condition": "[greater(parameters('topologySettings').vmClientNodeCount, 0)]",
       "name": "client-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
@@ -109,7 +100,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('clientTemplateUrl')]",
+          "uri": "[concat(parameters('templateBaseUrl'), 'machines/client-nodes-resources.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {

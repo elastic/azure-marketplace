@@ -241,7 +241,7 @@
   ],
   "outputs" : {
     "fqdn": {
-      "value": "",
+      "value": "N/A",
       "type": "string"
     }
   }
