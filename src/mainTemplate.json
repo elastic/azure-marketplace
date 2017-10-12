@@ -535,9 +535,9 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "ResourceGroup",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Location where resources will be provisioned. A value of 'ResourceGroup' will deploy the resources to the same location as the resource group, any other value must be a valid Azure location e.g. 'australiasoutheast'"
+        "description": "Location where resources will be provisioned. By default, the template deploys the resources to the same location as the resource group. If specified, must be a valid Azure location e.g. 'australiasoutheast'"
       }
     },
     "vNetNewOrExisting": {
@@ -753,7 +753,7 @@
     },
     "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), 'loadbalancers/', variables('loadBalancerOptions')[parameters('loadBalancerType')],'.json')]",
     "osSettingsTemplateUrl": "[concat(variables('templateBaseUrl'), 'settings/ubuntuSettings.json')]",
-    "location": "[if(equals('resourcegroup', toLower(parameters('location'))), resourceGroup().location, parameters('location'))]",
+    "location": "[parameters('location')]",
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
