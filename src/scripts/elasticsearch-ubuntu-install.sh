@@ -805,7 +805,6 @@ install_yamllint()
       (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
     else
       # Install yamllint via pip for Ubuntu 14.04
-      sudo apt-get update
       (apt-get -yq install python-pip || (sleep 15; apt-get -yq install python-pip))
       pip install yamllint
     fi
@@ -897,6 +896,8 @@ if sudo monit status elasticsearch >& /dev/null; then
 fi
 
 format_data_disks
+
+sudo apt-get update
 
 install_ntp
 
