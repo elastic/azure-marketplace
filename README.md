@@ -247,11 +247,12 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>vNetName</td><td>string</td>
     <td>The name of the Virtual Network.
+    <strong>The Virtual Network must already exist when using an <code>existing</code> Virtual Network</strong>
     </td><td><code>es-net</code></td></tr>
 
   <tr><td>vNetExistingResourceGroup</td><td>string</td>
     <td>The name of the Resource Group in which the Virtual Network resides when using an existing Virtual Network.
-    <strong>Required when using an existing Virtual Network</strong>
+    <strong>Required when using an <code>existing</code> Virtual Network</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>vNetNewAddressPrefix</td><td>string</td>
@@ -265,56 +266,61 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>vNetClusterSubnetName</td><td>string</td>
     <td>The name of the subnet to which Elasticsearch nodes will be attached.
+    <strong>The subnet must already exist when using an <code>existing</code> Virtual Network</strong>
     </td><td><code>es-subnet</code></td></tr>
 
   <tr><td>vNetNewClusterSubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the subnet. <strong>Required when creating a new Virtual Network</strong>
+    <td>The address space of the subnet. 
+    <strong>Required when creating a <code>new</code> Virtual Network</strong>
     </td><td><code>10.0.0.0/25</code></td></tr>
 
   <tr><td>vNetAppGatewaySubnetName</td><td>string</td>
-    <td>Subnet name to use for the Application Gateway. Required when selecting <code>gateway</code> for load balancing.
+    <td>Subnet name to use for the Application Gateway. 
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong><br />
+    <strong>The subnet must already exist when using an <code>existing</code> Virtual Network</strong>
     </td><td><code>es-gateway-subnet</code></td></tr>
 
   <tr><td>vNetNewAppGatewaySubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the Application Gateway subnet. Required when creating a new Virtual Network and selecting <code>gateway</code> for load balancing.
+    <td>The address space of the Application Gateway subnet. 
+    <strong>Required when creating a <code>new</code> Virtual Network and selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>10.0.0.128/28</code></td></tr>
 
    <tr><td>appGatewayTier</td><td>string</td>
     <td>The tier of the Application Gateway, either <code>Standard</code> or <code>WAF</code>.
-    Required when selecting <code>gateway</code> for load balancing.
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>Standard</code></td></tr>   
 
    <tr><td>appGatewaySku</td><td>string</td>
     <td>The size of the Application Gateway. Choose <code>Small</code>, <code>Medium</code> or <code>Large</code>. 
     When choosing appGatewayTier <code>WAF</code>, the size must be at least <code>Medium</code>.
-    Required when selecting <code>gateway</code> for load balancing.
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>Medium</code></td></tr> 
 
    <tr><td>appGatewayCount</td><td>int</td>
     <td>The number instances of the Application Gateway. Can be a value between <code>1</code> and <code>10</code>.
     A minimum of <code>2</code> is recommended for production.
-    Required when selecting <code>gateway</code> for load balancing.
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>2</code></td></tr> 
 
    <tr><td>appGatewayCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the PFX certificate for the Application Gateway. 
     This certificate is used to secure HTTPS connections to and from the Application Gateway.
-    Required when selecting <code>gateway</code> for load balancing.
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr>   
 
    <tr><td>appGatewayCertPassword</td><td>securestring</td>
     <td>The password for the PFX certificate for the Application Gateway. Defaults to <code>""</code>.
-    Required when selecting <code>gateway</code> for load balancing.
+    <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr> 
     
    <tr><td>appGatewayWafStatus</td><td>string</td>
     <td>The firewall status of the Application Gateway, either <code>Enabled</code> or <code>Disabled</code>.
-    Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.
+    <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
     </td><td><code>Enabled</code></td></tr> 
 
    <tr><td>appGatewayWafMode</td><td>string</td>
     <td>The firewall mode of the Application Gateway, either <code>Detection</code> or <code>Prevention</code>.
-    Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.
+    <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
     </td><td><code>Detection</code></td></tr>   
 
   <tr><td>userCompany</td><td>string</td>
