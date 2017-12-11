@@ -1149,7 +1149,7 @@
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
       "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]",
-      "enableAnonymousAccess": "[if(equals(parameters('loadBalancerType'), 'gateway'), 'Yes', 'No')]"
+      "enableAnonymousAccess": "[if(and(equals(parameters('loadBalancerType'), 'gateway'), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]"
     },
     "networkSettings": {
       "name": "[parameters('vNetName')]",
