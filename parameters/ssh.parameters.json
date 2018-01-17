@@ -1,5 +1,5 @@
 {
-  "artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"},
+  "artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/feature/vm-update/src"},
   "esVersion":{"value":"2.2.0"},
   "esClusterName":{"value":"my-azure-cluster"},
   "loadBalancerType":{"value":"internal"},
