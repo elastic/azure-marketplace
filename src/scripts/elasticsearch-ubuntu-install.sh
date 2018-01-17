@@ -279,7 +279,6 @@ install_java()
     log "[install_java] Adding apt repository for java 8"
     (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
     log "[install_java] updating apt-get"
-
     (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
     log "[install_java] updated apt-get"
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
@@ -288,7 +287,7 @@ install_java()
     (apt-get -yq install oracle-java8-installer || (sleep 15; apt-get -yq install oracle-java8-installer))
     command -v java >/dev/null 2>&1 || { sleep 15; sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install -f; }
 
-    #if the previus did not install correctly we go nuclear, otherwise this loop will early exit
+    #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
     for i in $(seq 30); do
       if $(command -v java >/dev/null 2>&1); then
         log "[install_java] Installed java!"
@@ -897,7 +896,9 @@ fi
 
 format_data_disks
 
-sudo apt-get update
+log "[apt-get] updating apt-get"
+(sudo apt-get -y update || (sleep 15; sudo apt-get -y update)) > /dev/null
+log "[apt-get] updated apt-get"
 
 install_ntp
 
