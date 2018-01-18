@@ -92,8 +92,8 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "ubuntuSkus": {
-      "2": "14.04.4-LTS",
-      "5": "16.04.0-LTS"
+      "2": "14.04-LTS",
+      "5": "16.04-LTS"
     },
     "ubuntuSku": "[variables('ubuntuSkus')[substring(parameters('esSettings').version, 0, 1)]]",
     "ubuntuSettings": {
