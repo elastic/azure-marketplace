@@ -273,6 +273,23 @@ check_data_disk()
     fi
 }
 
+# Update the oracle-java8-installer to patch download of Java 8u151 to 8u162.
+# 8u151 is no longer available for download.
+# TODO: Remove this once oracle-java8-installer package is updated
+install_update_java_package()
+{
+  apt-get -yq $@ install oracle-java8-installer || true \
+  && pushd /var/lib/dpkg/info \
+  && log "[install_update_java_package] Update oracle-java8-installer to 8u162" \
+  && sed -i 's|JAVA_VERSION=8u151|JAVA_VERSION=8u162|' oracle-java8-installer.* \
+  && sed -i 's|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u162-b12/0da788060d494f5095bf8624735fa2f1/|' oracle-java8-installer.* \
+  && sed -i 's|SHA256SUM_TGZ="c78200ce409367b296ec39be4427f020e2c585470c4eed01021feada576f027f"|SHA256SUM_TGZ="68ec82d47fd9c2b8eb84225b6db398a72008285fafc98631b1ff8d2229680257"|' oracle-java8-installer.* \
+  && sed -i 's|J_DIR=jdk1.8.0_151|J_DIR=jdk1.8.0_162|' oracle-java8-installer.* \
+  && popd \
+  && log "[install_update_java_package] Updated oracle-java8-installer" \
+  && apt-get -yq $@ install oracle-java8-installer
+}
+
 # Install Oracle Java
 install_java()
 {
@@ -284,7 +301,7 @@ install_java()
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
     log "[install_java] Installing Java"
-    (apt-get -yq install oracle-java8-installer || (sleep 15; apt-get -yq install oracle-java8-installer))
+    (install_update_java_package || (sleep 15; install_update_java_package))
     command -v java >/dev/null 2>&1 || { sleep 15; sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install -f; }
 
     #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
@@ -302,7 +319,7 @@ install_java()
         sudo apt-get -yq clean
         (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
         sudo apt-get -yq update
-        sudo apt-get -yq install --reinstall oracle-java8-installer
+        sudo install_update_java_package --reinstall
         log "[install_java] Seeing if java is Installed after nuclear retry ${i}/30"
       fi
     done
