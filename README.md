@@ -223,6 +223,12 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     <td>When <code>authenticationType</code> is <code>sshPublicKey</code> this sets the OS level sshKey that can be used to login.
     </td><td><code>""</code></td></tr>
 
+  <tr><td>securityBootstrapPassword</td><td>securestring</td>
+    <td>Security password for 6.x bootstrap.password that is added to the keystore. If no value is supplied, a 13 character password
+    will be generated using the ARM template <code>uniqueString()</code> function. The bootstrap password is used to seed the built-in
+    users.
+    </td><td><code>""</code></td></tr>
+
   <tr><td>securityAdminPassword</td><td>securestring</td>
     <td>Security password for 5.x+ superuser <code>elastic</code> or, in 2.x the <code>es_admin</code> user, with admin role.
     </td><td><code>""</code></td></tr>

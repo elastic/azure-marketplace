@@ -1042,6 +1042,7 @@
       "authenticationType": "[basics('password').authenticationType]",
       "adminPassword": "[basics('password').password]",
       "sshPublicKey": "[basics('password').sshPublicKey]",
+      "securityBootstrapPassword": "",
       "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
       "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",

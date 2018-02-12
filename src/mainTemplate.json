@@ -521,6 +521,12 @@
         "description": "Admin ssh public key"
       }
     },
+    "securityBootstrapPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the bootstrap.password to add to the keystore in 6.x. If no value is supplied, a 13 character password will be generated using the uniqueString() function"
+      }
+    },
     "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
@@ -799,7 +805,7 @@
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
-      "securityBootstrapPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword'))]",
+      "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },
     "phoneHomeSettings": {
