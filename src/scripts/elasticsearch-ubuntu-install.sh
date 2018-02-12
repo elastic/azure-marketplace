@@ -308,11 +308,11 @@ install_java()
     log "[install_java] updating apt-get"
     (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
     log "[install_java] updated apt-get"
-    echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
-    echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
     log "[install_java] Installing Java"
     (install_update_java_package || (sleep 15; install_update_java_package))
-    command -v java >/dev/null 2>&1 || { sleep 15; sudo rm /var/cache/oracle-jdk8-installer/jdk-*; sudo apt-get install -f; }
+    command -v java >/dev/null 2>&1 || { sleep 15; rm /var/cache/oracle-jdk8-installer/jdk-*; apt-get install -f; }
 
     #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
     for i in $(seq 30); do
@@ -321,15 +321,15 @@ install_java()
         return
       else
         sleep 5
-        sudo rm /var/cache/oracle-jdk8-installer/jdk-*;
-        sudo rm -f /var/lib/dpkg/info/oracle-java8-installer*
-        sudo rm /etc/apt/sources.list.d/*java*
-        sudo apt-get -yq purge oracle-java8-installer*
-        sudo apt-get -yq autoremove
-        sudo apt-get -yq clean
+        rm /var/cache/oracle-jdk8-installer/jdk-*;
+        rm -f /var/lib/dpkg/info/oracle-java8-installer*
+        rm /etc/apt/sources.list.d/*java*
+        apt-get -yq purge oracle-java8-installer*
+        apt-get -yq autoremove
+        apt-get -yq clean
         (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-        sudo apt-get -yq update
-        sudo install_update_java_package --reinstall
+        apt-get -yq update
+        install_update_java_package --reinstall
         log "[install_java] Seeing if java is Installed after nuclear retry ${i}/30"
       fi
     done
@@ -349,13 +349,13 @@ install_es()
 
     log "[install_es] Installing Elasticsearch Version - $ES_VERSION"
     log "[install_es] Download location - $DOWNLOAD_URL"
-    sudo wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
     log "[install_es] Downloaded elasticsearch $ES_VERSION"
-    sudo dpkg -i elasticsearch.deb
+    dpkg -i elasticsearch.deb
     log "[install_es] Installed Elasticsearch Version - $ES_VERSION"
 
     log "[install_es] Disable Elasticsearch System-V style init scripts (will be using monit)"
-    sudo update-rc.d elasticsearch disable
+    update-rc.d elasticsearch disable
 }
 
 ## Plugins
@@ -374,18 +374,18 @@ install_xpack()
 {
     if [[ "${ES_VERSION}" == \2* ]]; then
       log "[install_xpack] Installing X-Pack plugins Security, Marvel, Watcher"
-      sudo $(plugin_cmd) install license
-      sudo $(plugin_cmd) install shield
-      sudo $(plugin_cmd) install watcher
-      sudo $(plugin_cmd) install marvel-agent
+      $(plugin_cmd) install license
+      $(plugin_cmd) install shield
+      $(plugin_cmd) install watcher
+      $(plugin_cmd) install marvel-agent
       log "[install_xpack] Installed X-Pack plugins Security, Marvel, Watcher"
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
         log "[install_xpack] Installing X-Pack plugin Graph"
-        sudo $(plugin_cmd) install graph
+        $(plugin_cmd) install graph
         log "[install_xpack] Installed X-Pack plugin Graph"
       fi
     else
-      sudo $(plugin_cmd) install x-pack --batch
+      $(plugin_cmd) install x-pack --batch
     fi
 
 }
@@ -394,9 +394,9 @@ install_azure_cloud_plugin()
 {
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
     if [[ "${ES_VERSION}" == \2* ]]; then
-    	  sudo $(plugin_cmd) install cloud-azure
+    	  $(plugin_cmd) install cloud-azure
     else
-        sudo $(plugin_cmd) install repository-azure --batch
+        $(plugin_cmd) install repository-azure --batch
     fi
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 }
@@ -412,9 +412,9 @@ install_additional_plugins()
         else
             log "[install_additional_plugins] Installing plugin $PLUGIN"
             if [[ "${ES_VERSION}" == \2* ]]; then
-                sudo $(plugin_cmd) install $PLUGIN
+                $(plugin_cmd) install $PLUGIN
             else
-                sudo $(plugin_cmd) install $PLUGIN --batch
+                $(plugin_cmd) install $PLUGIN --batch
                 log "[install_additional_plugins] Add plugin $PLUGIN to mandatory plugins"
                 MANDATORY_PLUGINS+="$PLUGIN,"
             fi
@@ -441,7 +441,7 @@ apply_security_settings_2x()
     local SEC_FILE=/etc/elasticsearch/shield/roles.yml
     if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
       log "[apply_security_settings]  Check that $SEC_FILE contains anonymous_user role"
-      if ! sudo grep -q "anonymous_user:" "$SEC_FILE"; then
+      if ! grep -q "anonymous_user:" "$SEC_FILE"; then
           log "[apply_security_settings]  No anonymous_user role. Adding now"
           {
               echo -e ""
@@ -456,15 +456,15 @@ apply_security_settings_2x()
     fi
 
     log "[apply_security_settings] Start adding es_admin"
-    sudo $(security_cmd) useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
+    $(security_cmd) useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
     log "[instalapply_security_settingsl_plugins] Finished adding es_admin"
 
     log "[apply_security_settings]  Start adding es_read"
-    sudo $(security_cmd) useradd "es_read" -p "${USER_READ_PWD}" -r user
+    $(security_cmd) useradd "es_read" -p "${USER_READ_PWD}" -r user
     log "[apply_security_settings]  Finished adding es_read"
 
     log "[apply_security_settings]  Start adding es_kibana"
-    sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA_PWD}" -r kibana4_server
+    $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA_PWD}" -r kibana4_server
     log "[apply_security_settings]  Finished adding es_kibana"
 }
 
@@ -602,7 +602,7 @@ apply_security_settings()
 setup_bootstrap_password()
 {
   log "[setup_bootstrap_password] adding bootstrap.password to keystore"
-  echo "$BOOTSTRAP_PASSWORD" | sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add bootstrap.password -xf
+  echo "$BOOTSTRAP_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add bootstrap.password -xf
   log "[setup_bootstrap_password] added bootstrap.password to keystore"
 }
 
@@ -839,7 +839,7 @@ install_monit()
     echo "set httpd port 2812 and" >> /etc/monit/monitrc
     echo "    use address localhost" >> /etc/monit/monitrc
     echo "    allow localhost" >> /etc/monit/monitrc
-    sudo touch /etc/monit/conf.d/elasticsearch.conf
+    touch /etc/monit/conf.d/elasticsearch.conf
     echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
@@ -854,9 +854,9 @@ install_monit()
 start_monit()
 {
     log "[start_monit] starting monit"
-    sudo /etc/init.d/monit start
-    sudo monit reload # use the new configuration
-    sudo monit start all
+    /etc/init.d/monit start
+    monit reload # use the new configuration
+    monit start all
     log "[start_monit] started monit"
 }
 
@@ -865,8 +865,8 @@ port_forward()
     log "[port_forward] setting up port forwarding from 9201 to 9200"
     #redirects 9201 > 9200 locally
     #this to overcome a limitation in ARM where to vm loadbalancers can route on the same backed ports
-    sudo iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
-    sudo iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
+    iptables -t nat -I PREROUTING -p tcp --dport 9201 -j REDIRECT --to-ports 9200
+    iptables -t nat -I OUTPUT -p tcp -o lo --dport 9201 -j REDIRECT --to-ports 9200
 
     #install iptables-persistent to restore configuration after reboot
     log "[port_forward] installing iptables-persistent"
@@ -874,16 +874,16 @@ port_forward()
 
     # iptables-persistent is different on 16 compared to 14
     if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
-      sudo service netfilter-persistent save
-      sudo service netfilter-persistent start
+      service netfilter-persistent save
+      service netfilter-persistent start
       # add netfilter-persistent to startup before elasticsearch
-      sudo update-rc.d netfilter-persistent defaults 90 15
+      update-rc.d netfilter-persistent defaults 90 15
     else
       #persist the rules to file
-      sudo service iptables-persistent save
-      sudo service iptables-persistent start
+      service iptables-persistent save
+      service iptables-persistent start
       # add iptables-persistent to startup before elasticsearch
-      sudo update-rc.d iptables-persistent defaults 90 15
+      update-rc.d iptables-persistent defaults 90 15
     fi
 
     log "[port_forward] installed iptables-persistent"
@@ -896,7 +896,7 @@ port_forward()
 
 # if elasticsearch is already installed assume this is a redeploy
 # change yaml configuration and only restart the server when needed
-if sudo monit status elasticsearch >& /dev/null; then
+if monit status elasticsearch >& /dev/null; then
 
   configure_elasticsearch_yaml
 
@@ -905,7 +905,7 @@ if sudo monit status elasticsearch >& /dev/null; then
 
   # restart elasticsearch if the configuration has changed
   cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
-    || sudo monit restart elasticsearch
+    || monit restart elasticsearch
 
   exit 0
 fi
@@ -913,7 +913,7 @@ fi
 format_data_disks
 
 log "[apt-get] updating apt-get"
-(sudo apt-get -y update || (sleep 15; sudo apt-get -y update)) > /dev/null
+(apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
 log "[apt-get] updated apt-get"
 
 install_ntp
