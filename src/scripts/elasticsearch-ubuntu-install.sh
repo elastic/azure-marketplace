@@ -85,7 +85,7 @@ fi
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="6.2.1"
-INSTALL_PLUGINS=0
+INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
 MANDATORY_PLUGINS=""
@@ -153,8 +153,8 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
     z) #data node
       DATA_ONLY_NODE=1
       ;;
-    l) #install plugins
-      INSTALL_PLUGINS=1
+    l) #install X-Pack
+      INSTALL_XPACK=1
       ;;
     L) #install additional plugins
       INSTALL_ADDITIONAL_PLUGINS="${OPTARG}"
@@ -205,14 +205,14 @@ else
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi
 
-if [[ "${ES_VERSION}" == \6* -a ${INSTALL_PLUGINS} -ne 0 ]]; then
+if [[ "${ES_VERSION}" == \6* -a ${INSTALL_XPACK} -ne 0 ]]; then
     log "using bootstrap password as the seed password"
     SEED_PASSWORD=$BOOTSTRAP_PASSWORD
 fi
 
 log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
 log "Cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
-log "Cluster install plugins is set to $INSTALL_PLUGINS"
+log "Cluster install X-Pack plugin is set to $INSTALL_XPACK"
 
 
 #########################
@@ -370,19 +370,19 @@ plugin_cmd()
     fi
 }
 
-install_plugins()
+install_xpack()
 {
     if [[ "${ES_VERSION}" == \2* ]]; then
-      log "[install_plugins] Installing X-Pack plugins Security, Marvel, Watcher"
+      log "[install_xpack] Installing X-Pack plugins Security, Marvel, Watcher"
       sudo $(plugin_cmd) install license
       sudo $(plugin_cmd) install shield
       sudo $(plugin_cmd) install watcher
       sudo $(plugin_cmd) install marvel-agent
-      log "[install_plugins] Installed X-Pack plugins Security, Marvel, Watcher"
+      log "[install_xpack] Installed X-Pack plugins Security, Marvel, Watcher"
       if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
-        log "[install_plugins] Installing X-Pack plugin Graph"
+        log "[install_xpack] Installing X-Pack plugin Graph"
         sudo $(plugin_cmd) install graph
-        log "[install_plugins] Installed X-Pack plugin Graph"
+        log "[install_xpack] Installed X-Pack plugin Graph"
       fi
     else
       sudo $(plugin_cmd) install x-pack --batch
@@ -946,8 +946,8 @@ install_es
 
 setup_data_disk
 
-if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-    install_plugins
+if [ ${INSTALL_XPACK} -ne 0 ]; then
+    install_xpack
     # in 2.x we use the file realm so we can apply security config before boot up
     if [[ "${ES_VERSION}" == \2* ]]; then
         apply_security_settings_2x
@@ -978,7 +978,7 @@ port_forward
 start_monit
 
 # In 5.x+ we have to patch roles and users through the REST API which is a tad trickier
-if [[ ${INSTALL_PLUGINS} -ne 0 -a "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
+if [[ ${INSTALL_XPACK} -ne 0 -a "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
   wait_for_started
   apply_security_settings
 fi

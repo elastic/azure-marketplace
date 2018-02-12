@@ -64,7 +64,7 @@ log "Begin execution of Data Node Install script extension"
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
 ES_VERSION="5.3.0"
-INSTALL_PLUGINS=0
+INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
 INSTALL_AZURECLOUD_PLUGIN=0
@@ -123,8 +123,8 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
       ;;
-    l) #install plugins
-      INSTALL_PLUGINS=1
+    l) #install X-Pack
+      INSTALL_XPACK=1
       ;;
     j) #install azure cloud plugin
       INSTALL_AZURECLOUD_PLUGIN=1
@@ -207,7 +207,7 @@ if [ $INSTALL_AZURECLOUD_PLUGIN -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -j"
 fi
 
-if [ $INSTALL_PLUGINS -eq 1 ]; then
+if [ $INSTALL_XPACK -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -l"
 fi
 
