@@ -84,7 +84,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="5.3.0"
+ES_VERSION="6.2.1"
 INSTALL_PLUGINS=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
@@ -99,10 +99,12 @@ DATANODE_COUNT=0
 MINIMUM_MASTER_NODES=3
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'master-1:9300","'"$NAMESPACE_PREFIX"'master-2:9300"]'
 
-USER_ADMIN_PWD="changeME"
-USER_READ_PWD="changeME"
-USER_KIBANA4_PWD="changeME"
-USER_KIBANA4_SERVER_PWD="changeME"
+USER_ADMIN_PWD="changeme"
+USER_READ_PWD="changeme"
+USER_KIBANA4_PWD="changeme"
+USER_KIBANA4_SERVER_PWD="changeme"
+BOOTSTRAP_PASSWORD="changeme"
+SEED_PASSWORD="changeme"
 ANONYMOUS_ACCESS=0
 
 INSTALL_AZURECLOUD_PLUGIN=0
@@ -112,7 +114,7 @@ STORAGE_KEY=""
 UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -132,6 +134,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:Xxyzldjh optname; do
       ;;
     S) #security kibana server pwd
       USER_KIBANA4_SERVER_PWD="${OPTARG}"
+      ;;
+    B) #bootstrap password
+      BOOTSTRAP_PASSWORD="${OPTARG}"
       ;;
     X) #anonymous access
       ANONYMOUS_ACCESS=1
@@ -198,6 +203,11 @@ else
         UNICAST_HOSTS="$UNICAST_HOSTS\"${NAMESPACE_PREFIX}data-$i:9300\","
     done
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
+fi
+
+if [[ "${ES_VERSION}" == \6* -a ${INSTALL_PLUGINS} -ne 0 ]]; then
+    log "using bootstrap password as the seed password"
+    SEED_PASSWORD=$BOOTSTRAP_PASSWORD
 fi
 
 log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
@@ -331,7 +341,7 @@ install_es()
 {
     if [[ "${ES_VERSION}" == \2* ]]; then
         DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/$ES_VERSION/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
-    elif [[ "${ES_VERSION}" == \5* ]]; then
+    elif [[ "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
         DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
     else
         DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ES_VERSION.deb"
@@ -353,18 +363,16 @@ install_es()
 
 plugin_cmd()
 {
-    if [[ "${ES_VERSION}" == \5* ]]; then
-      echo /usr/share/elasticsearch/bin/elasticsearch-plugin
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
       echo /usr/share/elasticsearch/bin/plugin
+    else
+      echo /usr/share/elasticsearch/bin/elasticsearch-plugin
     fi
 }
 
 install_plugins()
 {
-    if [[ "${ES_VERSION}" == \5* ]]; then
-      sudo $(plugin_cmd) install x-pack --batch
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
       log "[install_plugins] Installing X-Pack plugins Security, Marvel, Watcher"
       sudo $(plugin_cmd) install license
       sudo $(plugin_cmd) install shield
@@ -376,6 +384,8 @@ install_plugins()
         sudo $(plugin_cmd) install graph
         log "[install_plugins] Installed X-Pack plugin Graph"
       fi
+    else
+      sudo $(plugin_cmd) install x-pack --batch
     fi
 
 }
@@ -383,10 +393,10 @@ install_plugins()
 install_azure_cloud_plugin()
 {
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
-    if [[ "${ES_VERSION}" == \5* ]]; then
-    	  sudo $(plugin_cmd) install repository-azure --batch
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
     	  sudo $(plugin_cmd) install cloud-azure
+    else
+        sudo $(plugin_cmd) install repository-azure --batch
     fi
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 }
@@ -401,11 +411,12 @@ install_additional_plugins()
             log "[install_additional_plugins] Skipping plugin $PLUGIN"
         else
             log "[install_additional_plugins] Installing plugin $PLUGIN"
-            if [[ "${ES_VERSION}" == \5* ]]; then
-                sudo $(plugin_cmd) install $PLUGIN --batch
-                MANDATORY_PLUGINS+="$PLUGIN,"
-            else
+            if [[ "${ES_VERSION}" == \2* ]]; then
                 sudo $(plugin_cmd) install $PLUGIN
+            else
+                sudo $(plugin_cmd) install $PLUGIN --batch
+                log "[install_additional_plugins] Add plugin $PLUGIN to mandatory plugins"
+                MANDATORY_PLUGINS+="$PLUGIN,"
             fi
             log "[install_additional_plugins] Installed plugin $PLUGIN"
         fi
@@ -418,10 +429,10 @@ install_additional_plugins()
 
 security_cmd()
 {
-    if [[ "${ES_VERSION}" == \5* ]]; then
-      echo /usr/share/elasticsearch/bin/x-pack/users
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
       echo /usr/share/elasticsearch/bin/shield/esusers
+    else
+      echo /usr/share/elasticsearch/bin/x-pack/users
     fi
 }
 
@@ -490,26 +501,29 @@ node_is_up()
   curl --output /dev/null --silent --head --fail http://localhost:9200 --user elastic:$1
   return $?
 }
+
 wait_for_started()
 {
-  for i in $(seq 30); do
-    if $(node_is_up "changeme" || node_is_up "$USER_ADMIN_PWD"); then
+  local TOTAL_RETRIES=30
+  for i in $(seq $TOTAL_RETRIES); do
+    if $(node_is_up "$SEED_PASSWORD" || node_is_up "$USER_ADMIN_PWD"); then
       log "[wait_for_started] Node is up!"
       return
     else
       sleep 5
-      log "[wait_for_started] Seeing if node is up for the after sleeping 5 seconds, retry ${i}/30"
+      log "[wait_for_started] Seeing if node is up for the after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
     fi
   done
   log "[wait_for_started] never saw elasticsearch go up locally"
   exit 10
 }
 
-#since upserts of roles users CAN throw 409 conflicts we ignore these for now
-#opened a tick on x-pack repos to handle this more gracefully later
+# since upserts of roles users CAN throw 409 conflicts we ignore these for now
+# opened a tick on x-pack repos to handle this more gracefully later
 curl_ignore_409 () {
     _curl_with_error_code "$@" | sed '$d'
 }
+
 _curl_with_error_code () {
     local curl_error_code http_code
     exec 17>&1
@@ -537,10 +551,11 @@ apply_security_settings()
 
       #update superuser `elastic` this takes the role of `es_admin` in 2.x clusters
       local ADMIN_JSON=$(printf '{"password": "%s"}\n' $USER_ADMIN_PWD)
-      echo $ADMIN_JSON | curl_ignore_409 -XPUT -u elastic:changeme 'localhost:9200/_xpack/security/user/elastic/_password' -d @-
+
+      echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" 'localhost:9200/_xpack/security/user/elastic/_password' -d @-
       if [[ $? != 0 ]]; then
         #Make sure another deploy did not already change the elastic password
-        curl_ignore_409 -XGET -u elastic:$USER_ADMIN_PWD  'localhost:9200/'
+        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD"  'localhost:9200/'
         if [[ $? != 0 ]]; then
           log "[apply_security_settings] could not update the builtin elastic user"
           exit 10
@@ -550,7 +565,7 @@ apply_security_settings()
 
       #update builtin `kibana` server account
       local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA4_SERVER_PWD)
-      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/user/kibana/_password' -d @-
+      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/kibana/_password' -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the builtin kibana user"
         exit 10
@@ -559,7 +574,7 @@ apply_security_settings()
 
       # add `es_kibana` user with the new builtin [kibana_user, monitoring_user, reporting_user] roles
       local KIBANA_USER_JSON=$(printf '{"password": "%s", "roles":["kibana_user", "monitoring_user", "reporting_user"]}\n' $USER_KIBANA4_PWD)
-      echo $KIBANA_USER_JSON | curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/user/es_kibana?pretty' -d @-
+      echo $KIBANA_USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/es_kibana?pretty' -d @-
       if [[ $? != 0 ]]; then
         log "[apply_security_settings] could not add es_kibana"
         exit 10
@@ -567,7 +582,7 @@ apply_security_settings()
       log "[apply_security_settings] added es_kibana account"
 
       #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
-      curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/user?pretty' -d'
+      curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/user?pretty' -d'
       {
         "cluster": [ "monitor" ],
         "indices": [
@@ -585,7 +600,7 @@ apply_security_settings()
 
       # add `es_read` user with the newly created `user` role
       local USER_JSON=$(printf '{"password": "%s", "roles":["user"]}\n' $USER_READ_PWD)
-      echo $USER_JSON | curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/user/es_read?pretty' -d @-
+      echo $USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/es_read?pretty' -d @-
       if [[ $? != 0 ]]; then
         log "[apply_security_settings] could not add es_read"
         exit 10
@@ -595,7 +610,7 @@ apply_security_settings()
       # create an anonymous_user role
       if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
         log "[apply_security_settings] create anonymous_user role"
-        curl_ignore_409 -XPOST -u elastic:$USER_ADMIN_PWD 'localhost:9200/_xpack/security/role/anonymous_user?pretty' -d'
+        curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/anonymous_user?pretty' -d'
         {
           "cluster": [ "cluster:monitor/main" ]
         }'
@@ -608,6 +623,13 @@ apply_security_settings()
 
       log "[apply_security_settings] updated roles and users"
     fi
+}
+
+setup_bootstrap_password()
+{
+  log "[setup_bootstrap_password] adding bootstrap.password to keystore"
+  echo "$BOOTSTRAP_PASSWORD" | sudo /usr/share/elasticsearch/bin/elasticsearch-keystore add bootstrap.password -xf
+  log "[setup_bootstrap_password] added bootstrap.password to keystore"
 }
 
 ## Configuration
@@ -665,12 +687,12 @@ configure_elasticsearch_yaml()
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
 
-    if [[ "${ES_VERSION}" == \5* ]]; then
-        echo "network.host: [_site_, _local_]" >> $ES_CONF
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
         echo "discovery.zen.ping.multicast.enabled: false" >> $ES_CONF
         echo "network.host: _non_loopback_" >> $ES_CONF
         echo "marvel.agent.enabled: true" >> $ES_CONF
+    else
+        echo "network.host: [_site_, _local_]" >> $ES_CONF
     fi
 
     echo "node.max_local_storage_nodes: 1" >> $ES_CONF
@@ -690,11 +712,11 @@ configure_elasticsearch_yaml()
 
     # Configure Anonymous access
     if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
-      if [[ "${ES_VERSION}" == \5* ]]; then
+      if [[ "${ES_VERSION}" == \2* ]]; then
         {
             echo -e ""
             echo -e "# anonymous access"
-            echo -e "xpack.security.authc:"
+            echo -e "shield.authc:"
             echo -e "  anonymous:"
             echo -e "    username: anonymous_user"
             echo -e "    roles: anonymous_user"
@@ -705,7 +727,7 @@ configure_elasticsearch_yaml()
         {
             echo -e ""
             echo -e "# anonymous access"
-            echo -e "shield.authc:"
+            echo -e "xpack.security.authc:"
             echo -e "  anonymous:"
             echo -e "    username: anonymous_user"
             echo -e "    roles: anonymous_user"
@@ -764,10 +786,10 @@ configure_elasticsearch()
 {
     log "[configure_elasticsearch] configuring elasticsearch default configuration"
     local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
-    if [[ "${ES_VERSION}" == \5* ]]; then
-      configure_elasticsearch5 $ES_HEAP
-    else
+    if [[ "${ES_VERSION}" == \2* ]]; then
       configure_elasticsearch2 $ES_HEAP
+    else
+      configure_elasticsearch5plus $ES_HEAP
     fi
     log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
@@ -783,9 +805,9 @@ configure_elasticsearch2()
     fi
 }
 
-configure_elasticsearch5()
+configure_elasticsearch5plus()
 {
-    log "[configure_elasticsearch] Configure elasticsearch 5.x heap size - $1"
+    log "[configure_elasticsearch] Configure elasticsearch heap size - $1"
     echo "-Xmx$1m" >> /etc/elasticsearch/jvm.options
     echo "-Xms$1m" >> /etc/elasticsearch/jvm.options
 }
@@ -894,7 +916,6 @@ port_forward()
 # Installation sequence
 #########################
 
-
 # if elasticsearch is already installed assume this is a redeploy
 # change yaml configuration and only restart the server when needed
 if sudo monit status elasticsearch >& /dev/null; then
@@ -930,6 +951,9 @@ if [ ${INSTALL_PLUGINS} -ne 0 ]; then
     # in 2.x we use the file realm so we can apply security config before boot up
     if [[ "${ES_VERSION}" == \2* ]]; then
         apply_security_settings_2x
+    # in 6.x we need to set up the bootstrap.password in the keystore to use when setting up users
+    elif [[ "${ES_VERSION}" == \6* ]]; then
+        setup_bootstrap_password
     fi
 fi
 
@@ -949,16 +973,14 @@ configure_elasticsearch
 
 configure_os_properties
 
-start_monit
-
 port_forward
 
-# In 5.x we have to patch roles and users through the REST API which is a tad trickier
-if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-    if [[ "${ES_VERSION}" == \5* ]]; then
-        wait_for_started
-        apply_security_settings
-    fi
+start_monit
+
+# In 5.x+ we have to patch roles and users through the REST API which is a tad trickier
+if [[ ${INSTALL_PLUGINS} -ne 0 -a "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
+  wait_for_started
+  apply_security_settings
 fi
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
