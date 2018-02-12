@@ -952,7 +952,7 @@ port_forward
 start_monit
 
 # In 5.x+ we have to patch roles and users through the REST API which is a tad trickier
-if [[ ${INSTALL_XPACK} -ne 0 -a "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
+if [[ ${INSTALL_XPACK} -ne 0 && "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
   wait_for_started
   apply_security_settings
 fi
