@@ -100,7 +100,8 @@ UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'maste
 
 USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
-USER_KIBANA4_PWD="changeme"
+USER_KIBANA_PWD="changeme"
+USER_LOGSTASH_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
 ANONYMOUS_ACCESS=0
@@ -112,7 +113,7 @@ STORAGE_KEY=""
 UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
-while getopts :n:v:A:R:K:Z:p:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -128,7 +129,10 @@ while getopts :n:v:A:R:K:Z:p:a:k:L:C:B:Xxyzldjh optname; do
       USER_READ_PWD="${OPTARG}"
       ;;
     K) #security kibana user pwd
-      USER_KIBANA4_PWD="${OPTARG}"
+      USER_KIBANA_PWD="${OPTARG}"
+      ;;
+    S) #security logstash_system user pwd
+      USER_LOGSTASH_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -202,7 +206,7 @@ fi
 
 if [[ "${ES_VERSION}" == \6* -a ${INSTALL_XPACK} -ne 0 ]]; then
     log "using bootstrap password as the seed password"
-    SEED_PASSWORD=$BOOTSTRAP_PASSWORD
+    SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi
 
 log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
@@ -459,7 +463,7 @@ apply_security_settings_2x()
     log "[apply_security_settings]  Finished adding es_read"
 
     log "[apply_security_settings]  Start adding es_kibana"
-    sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4_server
+    sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA_PWD}" -r kibana4_server
     log "[apply_security_settings]  Finished adding es_kibana"
 }
 
@@ -530,14 +534,25 @@ apply_security_settings()
       fi
       log "[apply_security_settings] updated builtin elastic superuser password"
 
-      #update builtin `kibana` server account
-      local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA4_PWD)
+      #update builtin `kibana` account
+      local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA_PWD)
       echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/kibana/_password' -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the builtin kibana user"
         exit 10
       fi
       log "[apply_security_settings] updated builtin kibana user password"
+
+      if dpkg --compare-versions "$ES_VERSION" ">=" "5.2.0"; then
+        #update builtin `logstash_system` account
+        local LOGSTASH_JSON=$(printf '{"password": "%s"}\n' $USER_LOGSTASH_PWD)
+        echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/logstash_system/_password' -d @-
+        if [[ $? != 0 ]];  then
+          log "[apply_security_settings] could not update the builtin logstash_system user"
+          exit 10
+        fi
+        log "[apply_security_settings] updated builtin logstash_system user password"
+      fi
 
       #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/user?pretty' -d'

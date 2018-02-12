@@ -530,7 +530,7 @@
     "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the superuser 'es_admin' in 2.x, or 'elastic' in 5.x and up. Must be > 6 characters"
+        "description": "Password for the superuser 'es_admin' in 2.x, or 'elastic' user in 5.x and up. Must be > 6 characters"
       }
     },
     "securityReadPassword": {
@@ -542,7 +542,13 @@
     "securityKibanaPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the `es_kibana` user with kibana4 role. Must be > 6 characters"
+        "description": "Password for the 'es_kibana' user with kibana4_server role in 2.x, or 'kibana' user in 5.x and up. Must be > 6 characters"
+      }
+    },
+    "securityLogstashPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the 'logstash_system' user in 5.2.0 and up. Must be > 6 characters"
       }
     },
     "location": {
@@ -805,6 +811,7 @@
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
+      "securityLogstashPwd": "[parameters('securityLogstashPassword')]",
       "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },

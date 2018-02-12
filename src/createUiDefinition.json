@@ -732,6 +732,30 @@
                 }
               }
             ]
+          },
+          {
+            "name": "es_logstash",
+            "type": "Microsoft.Common.Section",
+            "label": "Logstash System User",
+            "elements": [
+              {
+                "name": "securityLogstashPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "logstash_system Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "In Elasticsearch 5.2.0+, this is the password for the built-in 'logstash_system' user.",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{6,}",
+                  "validationMessage": "Password must be at least 6 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
           }
         ]
       },
@@ -1046,6 +1070,7 @@
       "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
       "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
+      "securityLogstashPassword": "[steps('securityStep').es_logstash.securityLogstashPassword]",
       "appGatewayTier": "Standard",
       "appGatewaySku": "Small",
       "appGatewayCount": 1,
