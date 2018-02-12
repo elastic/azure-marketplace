@@ -77,7 +77,6 @@ DATA_ONLY_NODE=0
 USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
 USER_KIBANA4_PWD="changeme"
-USER_KIBANA4_SERVER_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 ANONYMOUS_ACCESS=0
 
@@ -93,7 +92,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -110,9 +109,6 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
       ;;
     K) #security kibana user pwd
       USER_KIBANA4_PWD="${OPTARG}"
-      ;;
-    S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -216,7 +212,7 @@ if [ $ANONYMOUS_ACCESS -eq 1 ]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -S "$USER_KIBANA4_SERVER_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA4_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

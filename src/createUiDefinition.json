@@ -712,16 +712,16 @@
           {
             "name": "es_kibana",
             "type": "Microsoft.Common.Section",
-            "label": "es_kibana User",
+            "label": "Kibana User",
             "elements": [
               {
                 "name": "securityKibanaPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "es_kibana Password",
+                  "password": "(es_kibana or kibana) Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the 'es_kibana' user.",
+                "toolTip": "In Elasticsearch 5.x+, this is the password for the built-in 'kibana' user. In 2.x, this is the 'es_kibana' user",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",

@@ -25,7 +25,6 @@ help()
     echo "-A admin password"
     echo "-R read password"
     echo "-K kibana user password"
-    echo "-S kibana server password"
     echo "-X enable anonymous access with cluster monitoring role (for health probes)"
 
     echo "-x configure as a dedicated master node"
@@ -102,7 +101,6 @@ UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0:9300","'"$NAMESPACE_PREFIX"'maste
 USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
 USER_KIBANA4_PWD="changeme"
-USER_KIBANA4_SERVER_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
 ANONYMOUS_ACCESS=0
@@ -114,7 +112,7 @@ STORAGE_KEY=""
 UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:v:A:R:K:Z:p:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -131,9 +129,6 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
       ;;
     K) #security kibana user pwd
       USER_KIBANA4_PWD="${OPTARG}"
-      ;;
-    S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -439,30 +434,6 @@ security_cmd()
 apply_security_settings_2x()
 {
     local SEC_FILE=/etc/elasticsearch/shield/roles.yml
-    log "[apply_security_settings]  Check that $SEC_FILE contains kibana4 role"
-    if ! sudo grep -q "kibana4:" "$SEC_FILE"; then
-        log "[apply_security_settings]  No kibana4 role. Adding now"
-        {
-            echo -e ""
-            echo -e "# kibana4 user role."
-            echo -e "kibana4:"
-            echo -e "  cluster:"
-            echo -e "    - monitor"
-            echo -e "  indices:"
-            echo -e "    - names: '*'"
-            echo -e "      privileges:"
-            echo -e "        - view_index_metadata"
-            echo -e "        - read"
-            echo -e "    - names: '.kibana*'"
-            echo -e "      privileges:"
-            echo -e "        - manage"
-            echo -e "        - read"
-            echo -e "        - index"
-        } >> $SEC_FILE
-        log "[apply_security_settings]  kibana4 role added"
-    fi
-    log "[apply_security_settings]  Finished checking roles.yml for kibana4 role"
-
     if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
       log "[apply_security_settings]  Check that $SEC_FILE contains anonymous_user role"
       if ! sudo grep -q "anonymous_user:" "$SEC_FILE"; then
@@ -488,12 +459,8 @@ apply_security_settings_2x()
     log "[apply_security_settings]  Finished adding es_read"
 
     log "[apply_security_settings]  Start adding es_kibana"
-    sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4
+    sudo $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA4_PWD}" -r kibana4_server
     log "[apply_security_settings]  Finished adding es_kibana"
-
-    log "[apply_security_settings]  Start adding es_kibana_server"
-    sudo $(security_cmd) useradd "es_kibana_server" -p "${USER_KIBANA4_SERVER_PWD}" -r kibana4_server
-    log "[apply_security_settings]  Finished adding es_kibana_server"
 }
 
 node_is_up()
@@ -564,22 +531,13 @@ apply_security_settings()
       log "[apply_security_settings] updated builtin elastic superuser password"
 
       #update builtin `kibana` server account
-      local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA4_SERVER_PWD)
+      local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA4_PWD)
       echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/kibana/_password' -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the builtin kibana user"
         exit 10
       fi
       log "[apply_security_settings] updated builtin kibana user password"
-
-      # add `es_kibana` user with the new builtin [kibana_user, monitoring_user, reporting_user] roles
-      local KIBANA_USER_JSON=$(printf '{"password": "%s", "roles":["kibana_user", "monitoring_user", "reporting_user"]}\n' $USER_KIBANA4_PWD)
-      echo $KIBANA_USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/es_kibana?pretty' -d @-
-      if [[ $? != 0 ]]; then
-        log "[apply_security_settings] could not add es_kibana"
-        exit 10
-      fi
-      log "[apply_security_settings] added es_kibana account"
 
       #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/user?pretty' -d'

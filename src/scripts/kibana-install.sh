@@ -20,7 +20,7 @@ help()
     echo "-e elasticsearch version e.g 2.3.1"
     echo "-u elasticsearch url e.g. http://10.0.0.4:9200"
     echo "-l install plugins true/false"
-    echo "-S kibana server password"
+    echo "-S kibana password"
     echo "-C kibana cert to encrypt communication between the browser and Kibana"
     echo "-K kibana key to encrypt communication between the browser and Kibana"
     echo "-P kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
@@ -43,7 +43,7 @@ START_TIME=$SECONDS
 export DEBIAN_FRONTEND=noninteractive
 
 if service --status-all | grep -Fq 'kibana'; then
-  log "Kibana already installed"
+  log "Kibana already installed."
   exit 0
 fi
 
@@ -53,13 +53,12 @@ fi
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="5.3.0"
-ES_VERSION="5.3.0"
+KIBANA_VERSION="6.2.1"
+ES_VERSION="6.2.1"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
-INSTALL_PLUGINS=0
-HOSTMODE="internal"
-USER_KIBANA4_SERVER_PWD="changeME"
+INSTALL_XPACK=0
+USER_KIBANA_PWD="changeme"
 SSL_CERT=""
 SSL_KEY=""
 SSL_PASSPHRASE=""
@@ -80,14 +79,11 @@ while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
     u) #elasticsearch url
       ELASTICSEARCH_URL="${OPTARG}"
       ;;
-    S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD="${OPTARG}"
+    S) #security kibana pwd
+      USER_KIBANA_PWD="${OPTARG}"
       ;;
-    m) #security kibana server pwd
-      HOSTMODE="${OPTARG}"
-      ;;
-    l) #install plugins
-      INSTALL_PLUGINS=1
+    l) #install X-Pack
+      INSTALL_XPACK=1
       ;;
     C) #kibana ssl cert
       SSL_CERT="${OPTARG}"
@@ -115,7 +111,7 @@ done
 #########################
 
 log "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
-log "installing kibana plugins is set to: $INSTALL_PLUGINS"
+log "installing X-Pack plugins is set to: $INSTALL_XPACK"
 log "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
@@ -175,9 +171,9 @@ old_configuration_and_plugins()
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-      echo "elasticsearch.username: es_kibana_server" >> $KIBANA_CONF
-      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> $KIBANA_CONF
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
+      echo "elasticsearch.username: es_kibana" >> $KIBANA_CONF
+      echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
       # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
@@ -275,10 +271,10 @@ configuration_and_plugins()
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    # install plugins
-    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    # install x-pack
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
-      echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
+      echo "elasticsearch.password: $USER_KIBANA_PWD" >> $KIBANA_CONF
 
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)

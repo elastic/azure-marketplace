@@ -799,7 +799,6 @@
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
-      "securityKibanaServerPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('securityKibanaPassword'))]",
       "securityBootstrapPwd": "[uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword'))]",
       "kibanaVersion": "[variables('esToKibanaMapping')[parameters('esVersion')]]"
     },

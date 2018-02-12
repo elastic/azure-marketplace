@@ -224,7 +224,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityAdminPassword</td><td>securestring</td>
-    <td>The password for 5.x's superuser <code>elastic</code> or, in 2.x the <code>es_admin</code> user, with admin role.
+    <td>Security password for 5.x+ superuser <code>elastic</code> or, in 2.x the <code>es_admin</code> user, with admin role.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityReadPassword</td><td>securestring</td>
@@ -232,7 +232,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityKibanaPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_kibana</code> user with kibana4 role, must be &gt; 6 characters
+    <td>Security password for 5.x+ <code>kibana</code> or, in 2.x the <code>es_kibana</code> user with kibana4_server role, must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
   <tr><td>location</td><td>string</td>
