@@ -25,6 +25,7 @@ help()
     echo "-A admin password"
     echo "-R read password"
     echo "-K kibana user password"
+    echo "-S logstash_system user password"
     echo "-X enable anonymous access with cluster monitoring role (for health probes)"
 
     echo "-x configure as a dedicated master node"
@@ -204,7 +205,7 @@ else
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi
 
-if [[ "${ES_VERSION}" == \6* -a ${INSTALL_XPACK} -ne 0 ]]; then
+if [[ "${ES_VERSION}" == \6* && ${INSTALL_XPACK} -ne 0 ]]; then
     log "using bootstrap password as the seed password"
     SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi

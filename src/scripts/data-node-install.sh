@@ -26,7 +26,7 @@ help()
     echo "-A admin password"
     echo "-R read password"
     echo "-K kibana user password"
-    echo "-S kibana server password"
+    echo "-S logstash_system user password"
     echo "-X enable anonymous access with monitoring role (for health probes)"
 
     echo "-l install plugins"
