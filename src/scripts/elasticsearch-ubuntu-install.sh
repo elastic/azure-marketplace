@@ -483,7 +483,7 @@ wait_for_started()
       return
     else
       sleep 5
-      log "[wait_for_started] Seeing if node is up for the after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
+      log "[wait_for_started] Seeing if node is up after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
     fi
   done
   log "[wait_for_started] never saw elasticsearch go up locally"
@@ -491,7 +491,7 @@ wait_for_started()
 }
 
 # since upserts of roles users CAN throw 409 conflicts we ignore these for now
-# opened a tick on x-pack repos to handle this more gracefully later
+# opened an issue on x-pack repos to handle this more gracefully later
 curl_ignore_409 () {
     _curl_with_error_code "$@" | sed '$d'
 }
