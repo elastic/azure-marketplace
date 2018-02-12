@@ -844,6 +844,10 @@ install_monit()
     echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
     echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
+
+    # comment out include /etc/monit/conf-enabled/* as not needed. Prevents unuseful warning to stderr
+    sed -i 's|\s*include /etc/monit/conf-enabled/*|# include /etc/monit/conf-enabled/*|' /etc/monit/monitrc
+
     log "[install_monit] installed monit"
 }
 
