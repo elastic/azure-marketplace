@@ -476,7 +476,7 @@ node_is_up()
 
 wait_for_started()
 {
-  local TOTAL_RETRIES=30
+  local TOTAL_RETRIES=60
   for i in $(seq $TOTAL_RETRIES); do
     if $(node_is_up "$SEED_PASSWORD" || node_is_up "$USER_ADMIN_PWD"); then
       log "[wait_for_started] Node is up!"
