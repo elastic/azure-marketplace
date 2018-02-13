@@ -470,7 +470,7 @@ apply_security_settings_2x()
 
 node_is_up()
 {
-  curl --output /dev/null --silent --head --fail http://localhost:9200 --user elastic:$1
+  curl --output /dev/null --silent --head --fail http://localhost:9200 -u elastic:$1 -H 'Content-Type: application/json'
   return $?
 }
 
@@ -499,7 +499,7 @@ curl_ignore_409 () {
 _curl_with_error_code () {
     local curl_error_code http_code
     exec 17>&1
-    http_code=$(curl --write-out '\n%{http_code}\n' "$@" | tee /dev/fd/17 | tail -n 1)
+    http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' "$@" | tee /dev/fd/17 | tail -n 1)
     curl_error_code=$?
     exec 17>&-
     if [ $http_code -eq 409 ]; then
@@ -521,13 +521,15 @@ apply_security_settings()
     else
       log "[apply_security_settings] start updating roles and users"
 
-      #update superuser `elastic` this takes the role of `es_admin` in 2.x clusters
-      local ADMIN_JSON=$(printf '{"password": "%s"}\n' $USER_ADMIN_PWD)
+      local XPACK_USER_ENDPOINT="http://localhost:9200/_xpack/security/user"
+      local XPACK_ROLE_ENDPOINT="http://localhost:9200/_xpack/security/role"
 
-      echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" 'localhost:9200/_xpack/security/user/elastic/_password' -d @-
+      #update builtin `elastic` account. Takes the role of `es_admin` in 2.x clusters
+      local ADMIN_JSON=$(printf '{"password":"%s"}\n' $USER_ADMIN_PWD)
+      echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
         #Make sure another deploy did not already change the elastic password
-        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD"  'localhost:9200/'
+        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" 'http://localhost:9200/'
         if [[ $? != 0 ]]; then
           log "[apply_security_settings] could not update the builtin elastic user"
           exit 10
@@ -536,8 +538,8 @@ apply_security_settings()
       log "[apply_security_settings] updated builtin elastic superuser password"
 
       #update builtin `kibana` account
-      local KIBANA_JSON=$(printf '{"password": "%s"}\n' $USER_KIBANA_PWD)
-      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/kibana/_password' -d @-
+      local KIBANA_JSON=$(printf '{"password":"%s"}\n' $USER_KIBANA_PWD)
+      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/kibana/_password" -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the builtin kibana user"
         exit 10
@@ -546,8 +548,8 @@ apply_security_settings()
 
       if dpkg --compare-versions "$ES_VERSION" ">=" "5.2.0"; then
         #update builtin `logstash_system` account
-        local LOGSTASH_JSON=$(printf '{"password": "%s"}\n' $USER_LOGSTASH_PWD)
-        echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/logstash_system/_password' -d @-
+        local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
+        echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
         if [[ $? != 0 ]];  then
           log "[apply_security_settings] could not update the builtin logstash_system user"
           exit 10
@@ -556,7 +558,7 @@ apply_security_settings()
       fi
 
       #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
-      curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/user?pretty' -d'
+      curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'
       {
         "cluster": [ "monitor" ],
         "indices": [
@@ -573,8 +575,8 @@ apply_security_settings()
       log "[apply_security_settings] added user role"
 
       # add `es_read` user with the newly created `user` role
-      local USER_JSON=$(printf '{"password": "%s", "roles":["user"]}\n' $USER_READ_PWD)
-      echo $USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/user/es_read?pretty' -d @-
+      local USER_JSON=$(printf '{"password":"%s","roles":["user"]}\n' $USER_READ_PWD)
+      echo $USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/es_read" -d @-
       if [[ $? != 0 ]]; then
         log "[apply_security_settings] could not add es_read"
         exit 10
@@ -584,7 +586,7 @@ apply_security_settings()
       # create an anonymous_user role
       if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
         log "[apply_security_settings] create anonymous_user role"
-        curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" 'localhost:9200/_xpack/security/role/anonymous_user?pretty' -d'
+        curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/anonymous_user" -d'
         {
           "cluster": [ "cluster:monitor/main" ]
         }'
