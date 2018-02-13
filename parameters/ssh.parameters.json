@@ -34,7 +34,6 @@
   "securityReadPassword":{"value":""},
   "securityKibanaPassword":{"value":""},
   "securityLogstashPassword":{"value":""},
-  "location":{"value":"ResourceGroup"},
   "vNetNewOrExisting": {"value":"new"},
   "vNetName": {"value": "es-net"},
   "vNetExistingResourceGroup": {"value": ""},

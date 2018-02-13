@@ -81,7 +81,6 @@ var bootstrap = (cb) => {
   })
 };
 
-
 var login = (cb) => bootstrap(() => {
   var login = [ 'login', '--service-principal',
     '--username', config.arm.clientId,
@@ -90,7 +89,7 @@ var login = (cb) => bootstrap(() => {
   ];
   log("logging into azure cli tooling")
   var child = execFile(azureCli, login, (error, stdout, stderr) => {
-    if (error || stderr) return bailOut(error || new Error(stderr), true);
+    if (error || stderr) return bailOutNoCleanUp(error || new Error(stderr));
     cb();
   });
 });
@@ -101,10 +100,17 @@ var logout = (cb) => {
   execFile(azureCli, logout, cb);
 }
 
-var bailOut = (error, noCleanup)  => {
+var bailOutNoCleanUp = (error)  => {
   if (!error) return;
   log(error)
-  if (noCleanup) throw error;
+  throw error;
+}
+
+var bailOut = (error, rg)  => {
+  if (!error) return;
+  if (!rg) log(error)
+  else log("resourcegroup: " + rg + " - " + error)
+  
   var cb = () => logout(() => { throw error; })
 
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
@@ -121,7 +127,7 @@ var deleteGroups = function (groups, cb) {
     var groupDelete = [ 'group', 'delete', n, '-q', '--json', '--nowait'];
     log("deleting resource group: " + n);
     execFile(azureCli, groupDelete, (error, stdout, stderr) => {
-      if (error || stderr) return bailOut(error || new Error(stderr));
+      if (error || stderr) return bailOut(error || new Error(stderr), n);
       log("deleted resource group: " + n, false);
       allDeleted();
     });
@@ -153,7 +159,7 @@ var createResourceGroup = (test, cb) => {
   var createGroup = [ 'group', 'create', rg, location, '--json'];
   log("creating resource group: " + rg);
   execFile(azureCli, createGroup, (error, stdout, stderr) => {
-    if (error || stderr) return bailOut(error || new Error(stderr));
+    if (error || stderr) return bailOut(error || new Error(stderr), rg);
     log(test, "createGroupResult: " + stdout);
     var result = JSON.parse(stdout);
     if (result.properties.provisioningState != "Succeeded") return bailOut(new Error("failed to create resourceGroup: " + rg));
@@ -192,8 +198,8 @@ var validateTemplate = (test, cb) => {
     execFile(azureCli, validateGroup, (error, stdout, stderr) => {
       log(test, "Expected result: " + t.isValid + " because " + t.why);
       log(test, "validateResult:" + (stdout || stderr));
-      if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr));
-      else if (!t.isValid && !(error || stderr)) return bailOut(new Error("expected " + test + "to result in an error because " + t.why));
+      if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr), rg);
+      else if (!t.isValid && !(error || stderr)) return bailOut(new Error("expected " + test + "to result in an error because " + t.why), rg);
       cb();
     });
   })
@@ -226,7 +232,7 @@ var showOperationList = (test, cb) => {
   log("getting operation list result for deployment in resource group: " + rg);
   execFile(azureCli, operationList, (error, stdout, stderr) => {
     log(test, "operationListResult:" + (stdout || stderr));
-    if (error || stderr) return bailOut(error || new Error(stderr));
+    if (error || stderr) return bailOut(error || new Error(stderr), rg);
     var errors = _(JSON.parse(stdout))
       .filter(f=>f.properties.provisioningState !== "Succeeded")
       .map(f=>f.properties.statusMessage)
@@ -329,7 +335,7 @@ var deployTemplate = (test, cb) => {
     log(test, "deployResult: " + (stdout || stderr));
     if (error || stderr)
     {
-      showOperationList(test, ()=> bailOut(error || new Error(stderr)));
+      showOperationList(test, ()=> bailOut(error || new Error(stderr), rg));
       return;
     }
     sanityCheckOutput(test, stdout, cb);
