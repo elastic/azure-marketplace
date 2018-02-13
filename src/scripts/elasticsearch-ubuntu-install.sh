@@ -75,7 +75,7 @@ else
   log "${HOSTNAME} not found in /etc/hosts"
   # Append it to the hsots file if not there
   echo "127.0.0.1 ${HOSTNAME}" >> /etc/hosts
-  log "hostname ${HOSTNAME} added to /etchosts"
+  log "hostname ${HOSTNAME} added to /etc/hosts"
 fi
 
 #########################
@@ -387,7 +387,6 @@ install_xpack()
     else
       $(plugin_cmd) install x-pack --batch
     fi
-
 }
 
 install_azure_cloud_plugin()
@@ -643,7 +642,7 @@ configure_elasticsearch_yaml()
     echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> $ES_CONF
 
     # Configure Elasticsearch node type
-    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags master-$MASTER_ONLY_NODE data-$DATA_ONLY_NODE"
+    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags only master-$MASTER_ONLY_NODE only data-$DATA_ONLY_NODE"
 
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] Configure node as master only"
