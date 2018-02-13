@@ -619,23 +619,23 @@ configure_elasticsearch_yaml()
     echo "cluster.name: $CLUSTER_NAME" >> $ES_CONF
     echo "node.name: ${HOSTNAME}" >> $ES_CONF
 
-    # put log files on the OS disk in writable location
+    # put log files on the OS disk in a writable location
     echo "path.logs: /var/log/elasticsearch" >> $ES_CONF
 
-    # Check if data disks are attached. If they are then use them, otherwise if this is a data node, use the temporary disk
-    # with all the caveats that come with using ephemeral storage for data
-    # https://docs.microsoft.com/en-us/azure/virtual-machines/windows/about-disks-and-vhds#temporary-disk
-    local DATAPATH_CONFIG=""
+    # Check if data disks are attached. If they are then use them. Otherwise
+    # 1. if this is a data node, use the temporary disk with all the caveats that come with using ephemeral storage for data
+    #    https://docs.microsoft.com/en-us/azure/virtual-machines/windows/about-disks-and-vhds#temporary-disk
+    # 2. for any other node, use the OS disk
+    local DATAPATH_CONFIG="/var/lib/elasticsearch"
     if [ -d "/datadisks" ]; then
         DATAPATH_CONFIG="/datadisks/disk1/elasticsearch/data"
     elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
         DATAPATH_CONFIG="/mnt/elasticsearch/data"
     fi
 
-    if [ -n "$DATAPATH_CONFIG" ]; then
-        log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
-        echo "path.data: $DATAPATH_CONFIG" >> $ES_CONF
-    fi
+    # configure path.data
+    log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
+    echo "path.data: $DATAPATH_CONFIG" >> $ES_CONF
 
     # Configure discovery
     log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
