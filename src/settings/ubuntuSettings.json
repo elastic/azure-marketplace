@@ -92,7 +92,7 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "ubuntuSkus": {
-      "2": "14.04-LTS",
+      "2": "14.04.5-LTS",
       "5": "16.04-LTS",
       "6": "16.04-LTS"
     },
