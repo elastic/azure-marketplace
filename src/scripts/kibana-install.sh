@@ -268,6 +268,7 @@ configuration_and_plugins()
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
     touch /var/log/kibana.log
     chown kibana: /var/log/kibana.log
+
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
@@ -283,9 +284,9 @@ configuration_and_plugins()
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configuration_and_plugins] x-pack security encryption key generated"
 
-      log "[configuration_and_plugins] installing xpack plugin"
+      log "[configuration_and_plugins] installing x-pack plugin"
       /usr/share/kibana/bin/kibana-plugin install x-pack
-      log "[configuration_and_plugins] installed xpack plugin"
+      log "[configuration_and_plugins] installed x-pack plugin"
     fi
 
     # configure HTTPS if cert and private key supplied

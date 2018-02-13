@@ -142,6 +142,9 @@
   "ignoredVmsBecauseWeHaveNo40DisksResource" : [
     "D15_v2", "DS15_v2"
   ],
+  "ignoredKibanaVmsBecauseNotEnoughRam" : [
+    "Standard_A0", "Standard_A1"
+  ],
   "userJobTitle": [
     "IT Executive (CIO, CTO, VP Engineering, etc.)",
     "Business Executive (CEO, COO, CMO, etc.)",

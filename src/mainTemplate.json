@@ -133,10 +133,8 @@
     },
     "vmSizeKibana": {
       "type": "string",
-      "defaultValue": "Standard_A1",
+      "defaultValue": "Standard_A2",
       "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
         "Standard_A2",
         "Standard_A3",
         "Standard_A4",
@@ -191,7 +189,7 @@
         "Standard_F16s"
       ],
       "metadata": {
-        "description": "Size of the Elasticsearch Kibana node"
+        "description": "Size of the Kibana node"
       }
     },
     "kibanaCertBlob": {
