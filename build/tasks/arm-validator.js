@@ -48,9 +48,11 @@ var bootstrapTest = (t, defaultVersion) =>
   testParameters.adminUsername.value = config.deployments.username;
   testParameters.adminPassword.value = config.deployments.password;
   testParameters.sshPublicKey.value = config.deployments.ssh;
+  testParameters.securityBootstrapPassword.value = config.deployments.securityPassword;
   testParameters.securityAdminPassword.value = config.deployments.securityPassword;
   testParameters.securityReadPassword.value = config.deployments.securityPassword;
   testParameters.securityKibanaPassword.value = config.deployments.securityPassword;
+  testParameters.securityLogstashPassword.value = config.deployments.securityPassword;
   testParameters.esVersion.value = defaultVersion;
 
   return {
