@@ -28,8 +28,6 @@ var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
-var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations);
-
 var userJobTitles = allowedValues.userJobTitle
   .map(function(v) { return { "label": v, "value": v }});
 
