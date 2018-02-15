@@ -473,6 +473,31 @@ node_is_up()
   return $?
 }
 
+elastic_user_exists()
+{
+  local USER_TYPENAME curl_error_code http_code
+  if [[ "${ES_VERSION}" == \5* ]]; then
+    USER_TYPENAME="reserved-user"
+  else
+    USER_TYPENAME="doc"
+  fi
+
+  exec 17>&1
+  http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' http://localhost:9200/.security/$USER_TYPENAME/elastic -u elastic:$1 | tee /dev/fd/17 | tail -n 1)
+  curl_error_code=$?
+  exec 17>&-
+  if [ $http_code -eq 200 ]; then
+    return 0
+  fi
+  if [ $curl_error_code -ne 0 ]; then
+      return $curl_error_code
+  fi
+  if [ $http_code -ge 400 ] && [ $http_code -lt 600 ]; then
+      echo "HTTP $http_code" >&2
+      return 127
+  fi
+}
+
 wait_for_started()
 {
   local TOTAL_RETRIES=60
@@ -515,7 +540,9 @@ _curl_with_error_code () {
 
 apply_security_settings()
 {
-    if node_is_up "$USER_ADMIN_PWD"; then
+    # if the node is up, check that the elastic user exists in the .security index if
+    # the elastic user password is the same as the bootstrap password.
+    if [[ $(node_is_up "$USER_ADMIN_PWD") && ("$USER_ADMIN_PWD" != "$SEED_PASSWORD" || $(elastic_user_exists "$USER_ADMIN_PWD")) ]]; then
       log "[apply_security_settings] Can already ping node using user provided credentials, exiting early!"
     else
       log "[apply_security_settings] start updating roles and users"
