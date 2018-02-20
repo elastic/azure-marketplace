@@ -18,6 +18,7 @@ help()
     echo "-n elasticsearch cluster name"
     echo "-v elasticsearch version 2.3.3"
     echo "-p hostname prefix of nodes for unicast discovery"
+    echo "-m heap size in megabytes to allocate to JVM"
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
@@ -63,7 +64,8 @@ log "Begin execution of Data Node Install script extension"
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="5.3.0"
+ES_VERSION="6.2.2"
+ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
@@ -92,7 +94,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -100,6 +102,9 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
       ;;
     v) #elasticsearch version number
       ES_VERSION="${OPTARG}"
+      ;;
+    m) #heap_size
+      ES_HEAP=${OPTARG}
       ;;
     A) #security admin pwd
       USER_ADMIN_PWD="${OPTARG}"
@@ -170,7 +175,7 @@ while getopts :n:v:A:R:K:S:Z:p:U:I:c:e:f:m:t:s:o:a:k:L:C:B:Xxyzldjh optname; do
     f) #set first name
       FIRST_NAME="${OPTARG}"
       ;;
-    m) #set last name
+    g) #set last name
       LAST_NAME="${OPTARG}"
       ;;
     t) #set job title
@@ -215,7 +220,7 @@ if [ $ANONYMOUS_ACCESS -eq 1 ]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

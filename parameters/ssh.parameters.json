@@ -9,6 +9,7 @@
   "xpackPlugins":{"value":"Yes"},
   "esAdditionalPlugins": { "value":""},
   "esAdditionalYaml": { "value":""},
+  "esHeapSize": { "value":0},
   "kibana":{"value":"Yes"},
   "vmSizeKibana":{"value":"Standard_D1"},
   "kibanaCertBlob":{"value":""},

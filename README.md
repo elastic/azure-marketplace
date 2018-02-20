@@ -121,6 +121,11 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"action.auto_create_index: .security\nindices.queries.cache.size: 5%"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
     </td><td><code>""</code></td></tr>
 
+  <tr><td>esHeapSize</td><td>integer</td>
+    <td>The size, in megaytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744 MB. 
+    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature</strong>
+    </td><td><code>0</code></td></tr>
+
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP that
     has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>xpackPlugins</code> then 

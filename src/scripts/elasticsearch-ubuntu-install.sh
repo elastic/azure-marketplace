@@ -16,8 +16,9 @@ help()
     echo "This script installs Elasticsearch cluster on Ubuntu"
     echo "Parameters:"
     echo "-n elasticsearch cluster name"
-    echo "-v elasticsearch version 1.5.0"
+    echo "-v elasticsearch version e.g. 6.2.2"
     echo "-p hostname prefix of nodes for unicast discovery"
+    echo "-m heap size in megabytes to allocate to JVM"
 
     echo "-d cluster uses dedicated masters"
     echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
@@ -84,7 +85,8 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.2.1"
+ES_VERSION="6.2.2"
+ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
@@ -114,7 +116,7 @@ STORAGE_KEY=""
 UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
-while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -122,6 +124,9 @@ while getopts :n:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
       ;;
     v) #elasticsearch version number
       ES_VERSION="${OPTARG}"
+      ;;
+    m) #heap_size
+      ES_HEAP=${OPTARG}
       ;;
     A) #security admin pwd
       USER_ADMIN_PWD="${OPTARG}"
@@ -786,7 +791,12 @@ configure_elasticsearch_yaml()
 configure_elasticsearch()
 {
     log "[configure_elasticsearch] configuring elasticsearch default configuration"
-    local ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
+
+    if [[ "$ES_HEAP" -eq "0" ]]; then
+      log "[configure_elasticsearch] configuring heap size from available memory"
+      ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
+    fi
+
     if [[ "${ES_VERSION}" == \2* ]]; then
       configure_elasticsearch2 $ES_HEAP
     else
@@ -794,6 +804,7 @@ configure_elasticsearch()
     fi
     log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
+
 configure_elasticsearch2()
 {
     log "[configure_elasticsearch] Configure elasticsearch 2.x heap size - $1"
@@ -809,8 +820,8 @@ configure_elasticsearch2()
 configure_elasticsearch5plus()
 {
     log "[configure_elasticsearch] Configure elasticsearch heap size - $1"
-    echo "-Xmx$1m" >> /etc/elasticsearch/jvm.options
-    echo "-Xms$1m" >> /etc/elasticsearch/jvm.options
+    sed -i -e "s/^\-Xmx.*/-Xmx$1m/" /etc/elasticsearch/jvm.options
+    sed -i -e "s/^\-Xms.*/-Xms$1m/" /etc/elasticsearch/jvm.options
 }
 
 configure_os_properties()
