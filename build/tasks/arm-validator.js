@@ -309,7 +309,14 @@ var sanityCheckKibana = (test, url, cb) => {
   var rg = t.resourceGroup;
   log("checking kibana at "+ url +" in resource group: " + rg);
   request(url + "/api/status", { json: true, }, function (error, response, body) {
-    var state = (body && body.status && body.status.overall) ? body.status.overall.state : "unknown";
+    var state = (body)
+      ? body.status && body.status.overall
+        ? body.status.overall.state
+        : body.error
+            ? body.error
+            : "unknown"
+      : "unknown";
+
     log("kibana is running in resource group: " + rg + " with state:" + state);
     log(test, "kibanaResponse: " + JSON.stringify((body && body.status) ? body.status : {}, null, 2));
     //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster

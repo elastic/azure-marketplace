@@ -67,7 +67,7 @@ var login = (cb) => bootstrap((test) => {
 
 var logout = (cb) => {
   var logout = [ 'logout', config.arm.clientId];
-  log("logging out of the  azure cli tooling")
+  log("logging out of azure cli tooling")
   execFile(azureCli, logout, cb);
 }
 
@@ -151,7 +151,7 @@ var deployTemplate = (test, cb) => {
     log("deployResult: " + !!(stdout || stderr));
     if (error || stderr) showOperationList(test, ()=> bailOut(error || new Error(stderr)));
     else {
-      log("Succes! outputs: " + JSON.stringify(JSON.parse(stdout, null, 2).properties.outputs, null, 2))
+      log("Success! outputs: " + JSON.stringify(JSON.parse(stdout, null, 2).properties.outputs, null, 2))
     }
   });
 }
