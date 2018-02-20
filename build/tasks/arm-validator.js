@@ -185,7 +185,7 @@ var validateTemplates = function(cb) {
 
 var validateTemplate = (test, cb) => {
   var t = armTests[test];
-  var p = JSON.stringify(t.params)
+  var p = JSON.stringify(t.params);
   var rg = t.resourceGroup;
   createResourceGroup(test, () => {
     var validateGroup = [ 'group', 'template', 'validate',
