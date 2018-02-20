@@ -700,9 +700,15 @@ configure_elasticsearch_yaml()
 
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
-        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud"
+      if [[ "${ES_VERSION}" == \6* ]]; then
+        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in keystore"
+        echo "$STORAGE_ACCOUNT" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.account -xf
+        echo "$STORAGE_KEY" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.key -xf
+      else
+        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in $ES_CONF"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> $ES_CONF
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> $ES_CONF
+      fi
     fi
 
     # Configure Anonymous access
