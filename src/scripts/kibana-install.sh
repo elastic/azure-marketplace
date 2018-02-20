@@ -20,7 +20,7 @@ help()
     echo "-e elasticsearch version e.g 2.3.1"
     echo "-u elasticsearch url e.g. http://10.0.0.4:9200"
     echo "-l install plugins true/false"
-    echo "-S kibana server password"
+    echo "-S kibana password"
     echo "-C kibana cert to encrypt communication between the browser and Kibana"
     echo "-K kibana key to encrypt communication between the browser and Kibana"
     echo "-P kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
@@ -43,7 +43,7 @@ START_TIME=$SECONDS
 export DEBIAN_FRONTEND=noninteractive
 
 if service --status-all | grep -Fq 'kibana'; then
-  log "Kibana already installed"
+  log "Kibana already installed."
   exit 0
 fi
 
@@ -53,13 +53,12 @@ fi
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="5.3.0"
-ES_VERSION="5.3.0"
+KIBANA_VERSION="6.2.1"
+ES_VERSION="6.2.1"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
-INSTALL_PLUGINS=0
-HOSTMODE="internal"
-USER_KIBANA4_SERVER_PWD="changeME"
+INSTALL_XPACK=0
+USER_KIBANA_PWD="changeme"
 SSL_CERT=""
 SSL_KEY=""
 SSL_PASSPHRASE=""
@@ -80,14 +79,11 @@ while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
     u) #elasticsearch url
       ELASTICSEARCH_URL="${OPTARG}"
       ;;
-    S) #security kibana server pwd
-      USER_KIBANA4_SERVER_PWD="${OPTARG}"
+    S) #security kibana pwd
+      USER_KIBANA_PWD="${OPTARG}"
       ;;
-    m) #security kibana server pwd
-      HOSTMODE="${OPTARG}"
-      ;;
-    l) #install plugins
-      INSTALL_PLUGINS=1
+    l) #install X-Pack
+      INSTALL_XPACK=1
       ;;
     C) #kibana ssl cert
       SSL_CERT="${OPTARG}"
@@ -115,7 +111,7 @@ done
 #########################
 
 log "installing kibana $KIBANA_VERSION for Elasticsearch $ES_VERSION cluster: $CLUSTER_NAME"
-log "installing kibana plugins is set to: $INSTALL_PLUGINS"
+log "installing X-Pack plugins is set to: $INSTALL_XPACK"
 log "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
@@ -125,16 +121,14 @@ log "Kibana will talk to elasticsearch over $ELASTICSEARCH_URL"
 old_add_kibana_os_user()
 {
   log "[old_add_kibana_os_user] adding kibana user"
-  sudo groupadd -g 999 kibana
-  sudo useradd -u 999 -g 999 kibana
+  groupadd -g 999 kibana
+  useradd -u 999 -g 999 kibana
 }
 
 old_download_unzip_kibana()
 {
-  sudo mkdir -p /opt/kibana
-  if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.0.0"; then
-      DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-linux-x86_64.tar.gz"
-  elif dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
+  mkdir -p /opt/kibana
+  if dpkg --compare-versions "$KIBANA_VERSION" ">=" "4.6.0"; then
       DOWNLOAD_URL="https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x86_64.tar.gz"
   else
       DOWNLOAD_URL="https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION-linux-x64.tar.gz"
@@ -145,7 +139,7 @@ old_download_unzip_kibana()
   tar xvf kibana.tar.gz -C /opt/kibana/ --strip-components=1
   log "kibana $KIBANA_VERSION downloaded"
 
-  sudo chown -R kibana: /opt/kibana
+  chown -R kibana: /opt/kibana
 
   mv /opt/kibana/config/kibana.yml /opt/kibana/config/kibana.yml.bak
 }
@@ -156,7 +150,7 @@ download_install_deb()
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-amd64.deb"
     curl -o "kibana-$KIBANA_VERSION.deb" "$DOWNLOAD_URL"
     log "[download_install_deb] installing downloaded package"
-    sudo dpkg -i "kibana-$KIBANA_VERSION.deb"
+    dpkg -i "kibana-$KIBANA_VERSION.deb"
 }
 
 ## Security
@@ -170,14 +164,14 @@ old_configuration_and_plugins()
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
-    sudo touch /var/log/kibana.log
-    sudo chown kibana: /var/log/kibana.log
+    touch /var/log/kibana.log
+    chown kibana: /var/log/kibana.log
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
-      echo "elasticsearch.username: es_kibana_server" >> $KIBANA_CONF
-      echo "elasticsearch.password: \"$USER_KIBANA4_SERVER_PWD\"" >> $KIBANA_CONF
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
+      echo "elasticsearch.username: es_kibana" >> $KIBANA_CONF
+      echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
       # install shield only on Elasticsearch 2.4.0+ so that graph can be used.
       # cannot be installed on earlier versions as
@@ -233,9 +227,9 @@ old_configuration_and_plugins()
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
         mkdir -p /opt/kibana/config/ssl
         log "[old_configuration_and_plugins] save kibana cert blob to file"
-        echo ${SSL_CERT} | base64 -d | sudo tee /opt/kibana/config/ssl/kibana.crt
+        echo ${SSL_CERT} | base64 -d | tee /opt/kibana/config/ssl/kibana.crt
         log "[old_configuration_and_plugins] save kibana key blob to file"
-        echo ${SSL_KEY} | base64 -d | sudo tee /opt/kibana/config/ssl/kibana.key
+        echo ${SSL_KEY} | base64 -d | tee /opt/kibana/config/ssl/kibana.key
         log "[old_configuration_and_plugins] configuring encrypted communication"
         echo "server.ssl.key: /opt/kibana/config/ssl/kibana.key" >> $KIBANA_CONF
         echo "server.ssl.cert: /opt/kibana/config/ssl/kibana.crt" >> $KIBANA_CONF
@@ -254,7 +248,7 @@ install_pwgen()
 {
     log "[install_pwgen] installing pwgen tool if needed"
     if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-      (sudo apt-get -yq install pwgen || (sleep 15; sudo apt-get -yq install pwgen))
+      (apt-get -yq install pwgen || (sleep 15; apt-get -yq install pwgen))
     fi
 }
 
@@ -270,15 +264,16 @@ configuration_and_plugins()
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
-    sudo touch /var/log/kibana.log
-    sudo chown kibana: /var/log/kibana.log
+    touch /var/log/kibana.log
+    chown kibana: /var/log/kibana.log
+
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    # install plugins
-    if [ ${INSTALL_PLUGINS} -ne 0 ]; then
+    # install x-pack
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
-      echo "elasticsearch.password: $USER_KIBANA4_SERVER_PWD" >> $KIBANA_CONF
+      echo "elasticsearch.password: $USER_KIBANA_PWD" >> $KIBANA_CONF
 
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
@@ -287,18 +282,18 @@ configuration_and_plugins()
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configuration_and_plugins] x-pack security encryption key generated"
 
-      log "[configuration_and_plugins] installing xpack plugin"
-      sudo /usr/share/kibana/bin/kibana-plugin install x-pack
-      log "[configuration_and_plugins] installed xpack plugin"
+      log "[configuration_and_plugins] installing x-pack plugin"
+      /usr/share/kibana/bin/kibana-plugin install x-pack
+      log "[configuration_and_plugins] installed x-pack plugin"
     fi
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
       mkdir -p /etc/kibana/ssl
       log "[configuration_and_plugins] save kibana cert blob to file"
-      echo ${SSL_CERT} | base64 -d | sudo tee /etc/kibana/ssl/kibana.crt
+      echo ${SSL_CERT} | base64 -d | tee /etc/kibana/ssl/kibana.crt
       log "[configuration_and_plugins] save kibana key blob to file"
-      echo ${SSL_KEY} | base64 -d | sudo tee /etc/kibana/ssl/kibana.key
+      echo ${SSL_KEY} | base64 -d | tee /etc/kibana/ssl/kibana.key
 
       log "[configuration_and_plugins] configuring encrypted communication"
 
@@ -334,15 +329,15 @@ old_install_service()
     } >> /etc/init/kibana.conf
 
     chmod +x /etc/init/kibana.conf
-    sudo service kibana start
+    service kibana start
 }
 
 install_start_service()
 {
     log "[install_start_service] configuring service for kibana to run at start"
-    sudo update-rc.d kibana defaults 95 10
+    update-rc.d kibana defaults 95 10
     log "[install_start_service] starting kibana!"
-    sudo service kibana start
+    service kibana start
 }
 
 old_install_sequence()
@@ -367,6 +362,10 @@ install_sequence()
 #########################
 # Installation sequence
 #########################
+
+log "[apt-get] updating apt-get"
+(apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
+log "[apt-get] updated apt-get"
 
 if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.0.0"; then
   install_sequence

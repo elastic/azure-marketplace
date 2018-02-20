@@ -1,6 +1,7 @@
 var config = require('../.test.json');
 var gulp = require("gulp");
 const execFile = require('child_process').execFile;
+const spawn = require('child_process').spawn;
 var fs = require('fs');
 var _ = require('lodash');
 var dateFormat = require("dateformat");
@@ -27,9 +28,13 @@ var bootstrapTest = (artifactsBaseUrl) =>
   params.adminUsername.value = config.deployments.username;
   params.adminPassword.value = config.deployments.password;
   params.sshPublicKey.value = config.deployments.ssh;
+
+  params.securityBootstrapPassword.value = config.deployments.securityPassword;
   params.securityAdminPassword.value = config.deployments.securityPassword;
   params.securityReadPassword.value = config.deployments.securityPassword;
   params.securityKibanaPassword.value = config.deployments.securityPassword;
+  params.securityAdminPassword.value = config.deployments.securityPassword;
+  params.securityLogstashPassword.value = config.deployments.securityPassword;
 
   return {
     location: "westeurope",
@@ -62,7 +67,7 @@ var login = (cb) => bootstrap((test) => {
 
 var logout = (cb) => {
   var logout = [ 'logout', config.arm.clientId];
-  log("logging out of the  azure cli tooling")
+  log("logging out of azure cli tooling")
   execFile(azureCli, logout, cb);
 }
 
@@ -99,9 +104,9 @@ var validateTemplate = (test, cb) => {
       '--parameters', p,
       '--json'
     ];
-    log("validating in resource group: " + rg);
+    log("validating resource group: " + rg);
     execFile(azureCli, validateGroup, (error, stdout, stderr) => {
-      log("validateResult:" + !!(stdout || stderr));
+      log("validation errors:" + (error || stderr));
       if ((error || stderr)) return bailOut(error || new Error(stderr));
       cb(test);
     });
@@ -146,7 +151,7 @@ var deployTemplate = (test, cb) => {
     log("deployResult: " + !!(stdout || stderr));
     if (error || stderr) showOperationList(test, ()=> bailOut(error || new Error(stderr)));
     else {
-      log("Succes! outputs: " + JSON.stringify(JSON.parse(stdout, null, 2).properties.outputs, null, 2))
+      log("Success! outputs: " + JSON.stringify(JSON.parse(stdout, null, 2).properties.outputs, null, 2))
     }
   });
 }

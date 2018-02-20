@@ -24,7 +24,7 @@
 		"vNetLoadBalancerIp": {"value": "10.0.0.4"},
 		"vNetNewOrExisting": {"value":"new"},
 		"vNetExistingResourceGroup": {"value": ""},
-		"vNetNewAddressPrefix": {"value": "10.0.0.0/24"},   
+		"vNetNewAddressPrefix": {"value": "10.0.0.0/24"},
 		"vNetNewClusterSubnetAddressPrefix": {"value": "10.0.0.0/25"},
 		"vNetNewAppGatewaySubnetAddressPrefix": {"value": "10.0.0.128/28"},
 		"appGatewayTier": {"value":"Standard"},
@@ -36,9 +36,9 @@
 		"appGatewayWafMode": {"value":"Detection"},
 		"userCompany": { "value": "" },
 		"userEmail": { "value": "" },
-		"userFirstName": { "value": "" },	
+		"userFirstName": { "value": "" },
 		"userLastName": { "value": "" },
 		"userJobTitle": { "value": "Other" },
-		"userCountry": { "value": "" }	
+		"userCountry": { "value": "" }
 	}
 }

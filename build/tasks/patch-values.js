@@ -14,6 +14,8 @@ var versions = _.keys(allowedValues.versions);
 var esToKibanaMapping = _.mapValues(allowedValues.versions, function(v) { return v.kibana; });
 
 var vmSizes = _.map(allowedValues.vmSizes, function(v) { return v[0]; });
+var kibanaVmSizes = _.difference(vmSizes, allowedValues.ignoredKibanaVmsBecauseNotEnoughRam);
+
 var recommendedSizes = _(allowedValues.vmSizes)
   .filter(function(v) { return v[3] })
   .map(function(v) { return v[0]; });
@@ -25,8 +27,6 @@ var dataNodeValues = _.range(1, allowedValues.numberOfDataNodes + 1)
 var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
-
-var allowedLocations = _(["ResourceGroup"]).concat(allowedValues.locations)
 
 var userJobTitles = allowedValues.userJobTitle
   .map(function(v) { return { "label": v, "value": v }});
@@ -98,7 +98,7 @@ gulp.task("patch", function(cb) {
     obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
     obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
     obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
-    obj.parameters.vmSizeKibana.allowedValues = vmSizes;
+    obj.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
 
     jsonfile.writeFile(mainTemplate, obj, function (err) {
       jsonfile.readFile(uiTemplate, function(err, obj) {
@@ -129,9 +129,9 @@ gulp.task("patch", function(cb) {
         var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
         var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
         var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
-        var patchVmSizes = function(control, patchRecommended, recommendedSize) {
+        var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
           delete control.constraints.allowedValues;
-          control.constraints.allowedSizes = vmSizes;
+          control.constraints.allowedSizes = allowedSizes;
           if (patchRecommended) {
             var sizes = recommendedSizes.slice();
             if (recommendedSize) {
@@ -146,10 +146,10 @@ gulp.task("patch", function(cb) {
             control.recommendedSizes = sizes;
           }
         }
-        patchVmSizes(masterSizeControl);
-        patchVmSizes(dataSizeControl, true, "Standard_DS1_v2");
-        patchVmSizes(clientSizeControl);
-        patchVmSizes(kibanaSizeControl);
+        patchVmSizes(masterSizeControl, vmSizes);
+        patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
+        patchVmSizes(clientSizeControl, vmSizes);
+        patchVmSizes(kibanaSizeControl, kibanaVmSizes);
 
         var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
         dataNodeCountControl.constraints.allowedValues = dataNodeValues;
