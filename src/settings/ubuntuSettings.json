@@ -83,7 +83,7 @@
     },
     "enableAnonymousAccessOpt": "[variables('enableAnonymousAccessOpts')[parameters('topologySettings').enableAnonymousAccess]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), 'n ')]",
-    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', parameters('esSettings').yamlConfiguration, '\"')]",
+    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', parameters('esSettings').yamlConfiguration, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -139,7 +139,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('phoneHomeSettings').company, '\" -e \"', parameters('phoneHomeSettings').email, '\" -f \"', parameters('phoneHomeSettings').firstName, '\" -m \"', parameters('phoneHomeSettings').lastName, '\" -t \"', parameters('phoneHomeSettings').jobTitle, '\" -s \"', parameters('phoneHomeSettings').topology, '\" -o \"', parameters('phoneHomeSettings').country, '\"')]"
+            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('phoneHomeSettings').company, '\" -e \"', parameters('phoneHomeSettings').email, '\" -f \"', parameters('phoneHomeSettings').firstName, '\" -g \"', parameters('phoneHomeSettings').lastName, '\" -t \"', parameters('phoneHomeSettings').jobTitle, '\" -s \"', parameters('phoneHomeSettings').topology, '\" -o \"', parameters('phoneHomeSettings').country, '\"')]"
           }
         },
         "kibana": {

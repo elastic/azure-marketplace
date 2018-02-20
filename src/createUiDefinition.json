@@ -1026,6 +1026,7 @@
       "xpackPlugins": "Yes",
       "esAdditionalPlugins": "",
       "esAdditionalYaml": "",
+      "esHeapSize": 0,
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",

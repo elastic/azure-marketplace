@@ -118,6 +118,13 @@
         "description": "Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character e.g. action.auto_create_index: .security\nindices.queries.cache.size:5%"
       }
     },
+    "esHeapSize": {
+      "type": "int",
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744 MB."
+      }
+    },
     "kibana": {
       "type": "string",
       "defaultValue": "Yes",
@@ -802,6 +809,7 @@
       "installPlugins": "[parameters('xpackPlugins')]",
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "yamlConfiguration": "[parameters('esAdditionalYaml')]",
+      "heapSize": "[parameters('esHeapSize')]",
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
