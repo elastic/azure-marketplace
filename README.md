@@ -400,7 +400,7 @@ You can deploy using the template directly from Github using the Azure CLI or Az
 4. Use our published template directly using `--template-uri`
 
 ```sh
-azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g name
+azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
 ```
 
 or if your are executing commands from a clone of this repo using `--template-file`
@@ -434,9 +434,8 @@ The `--parameters-file` can specify a different location for the items that get 
   ```powershell
   $clusterParameters = @{
       "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"
-      "esVersion" = "5.1.2"
+      "esVersion" = "6.2.1"
       "esClusterName" = "elasticsearch"
-      "location" = "ResourceGroup"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
       "adminUsername" = "russ"
@@ -444,6 +443,7 @@ The `--parameters-file` can specify a different location for the items that get 
       "securityAdminPassword" = "Password123"
       "securityReadPassword" = "Password123"
       "securityKibanaPassword" = "Password123"
+      "securityLogstashPassword" = "Password123"
   }
   ```
 
@@ -477,11 +477,14 @@ $clusterParameters = @{
     "securityAdminPassword" = "Password123"
     "securityReadPassword" = "Password123"
     "securityKibanaPassword" = "Password123"
+    "securityLogstashPassword" = "Password123"
 }
 
 New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
 New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
 ```
+
+Targeting a specific template version is recommended for repeatable deployments.
 
 ### Web based deploy
 
