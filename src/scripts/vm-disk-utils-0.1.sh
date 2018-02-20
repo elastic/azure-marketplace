@@ -39,11 +39,12 @@
 
 help()
 {
-    echo "Usage: $(basename $0) [-b data_base] [-h] [-s]"
+    echo "Usage: $(basename $0) [-b data_base] [-h] [-s] [-o mount_options]"
     echo ""
     echo "Options:"
     echo "   -b         base directory for mount points (default: /datadisks)"
     echo "   -s         create a striped RAID array (no redundancy)"
+    echo "   -o         mount options for data disk"
     echo "   -h         this help message"
 }
 
@@ -64,8 +65,10 @@ fi
 
 # Base path for data disk mount points
 DATA_BASE="/datadisks"
+# Mount options for data disk
+MOUNT_OPTIONS="noatime,nodiratime,nodev,noexec,nosuid,nofail"
 
-while getopts b:sh optname; do
+while getopts b:sho: optname; do
     log "Option $optname set with value ${OPTARG}"
   case ${optname} in
     b)  #Set base path for data disks
@@ -73,6 +76,9 @@ while getopts b:sh optname; do
       ;;
     s)  #Partition and format data disks as raid set
       RAID_CONFIGURATION=1
+      ;;
+    o) #mount option
+      MOUNT_OPTIONS=${OPTARG}
       ;;
     h)  #show help
       help
@@ -171,7 +177,7 @@ add_to_fstab() {
     then
         log "Not adding ${UUID} to fstab again (it's already there!)"
     else
-        LINE="UUID=\"${UUID}\"\t${MOUNTPOINT}\text4\tnoatime,nodiratime,nodev,noexec,nosuid\t1 2"
+        LINE="UUID=\"${UUID}\"\t${MOUNTPOINT}\text4\t${MOUNT_OPTIONS}\t1 2"
         echo -e "${LINE}" >> /etc/fstab
     fi
 }
@@ -281,14 +287,14 @@ create_striped_volume()
         log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
         add_to_fstab "${UUID}" "${MOUNTPOINT}"
 
-        mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
+        mount "${MOUNTPOINT}"
     else
         log "${#DISKS[@]} disks are attached. RAID0-ing them using mdadm"
         MDDEVICE=$(get_next_md_device)
         log "Next md device is ${MDDEVICE}"
-        sudo udevadm control --stop-exec-queue
-        mdadm --create ${MDDEVICE} --level=0 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
-        sudo udevadm control --start-exec-queue
+        udevadm control --stop-exec-queue
+        mdadm --create ${MDDEVICE} --level=0 -c 64 --raid-devices=${#PARTITIONS[@]} ${PARTITIONS[*]}
+        udevadm control --start-exec-queue
 
         #Make a file system on the new device
         PARTITIONSNUM=${#PARTITIONS[@]}
@@ -304,8 +310,8 @@ create_striped_volume()
             # check if disk is inactive and spare. if it is, stop and assemble
             if grep -q "$(basename ${MDDEVICE}) : inactive" /proc/mdstat; then
               log "${MDDEVICE} is inactive, stopping and assembling"
-              sudo mdadm --stop "${MDDEVICE}"
-              sudo mdadm --assemble --scan
+              mdadm --stop "${MDDEVICE}"
+              mdadm --assemble --scan
               log "${MDDEVICE} stopped and assembled"
             fi
 
@@ -330,12 +336,12 @@ create_striped_volume()
         log "adding UUID: ${UUID} to fstab ${MDDEVICE}"
         add_to_fstab "${UUID}" "${MOUNTPOINT}"
 
-        mount -t ext4 -o noatime "${MDDEVICE}" "${MOUNTPOINT}"
+        mount "${MOUNTPOINT}"
 
         log "add entry to  /etc/mdadm/mdadm.conf for RAID array"
-        sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+        mdadm --detail --scan | tee -a /etc/mdadm/mdadm.conf
         log "update update-initramfs"
-        sudo update-initramfs -u
+        update-initramfs -u
     fi
 }
 
@@ -343,7 +349,7 @@ check_mdadm() {
   log "installing or updating mdadm"
   (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
   log "apt-get updated installing mdadm now"
-  (sudo apt-get -yq install mdadm || (sleep 15; apt-get -yq install mdadm))
+  (apt-get -yq install mdadm || (sleep 15; apt-get -yq install mdadm))
   dpkg -s mdadm >/dev/null 2>&1
   log "apt-get installed mdadm and can be found returns: ${?}"
 }

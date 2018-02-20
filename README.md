@@ -96,7 +96,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
   <tr><td>azureCloudPlugin</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install the Azure Cloud plugin for snapshot/restore. 
     When set to <code>Yes</code>, both <code>azureCloudeStorageAccountName</code> 
-    and <code>azureCloudStorageAccountKey</code> should be specified to configure the plugin correctly.
+    and <code>azureCloudStorageAccountKey</code> must be specified to configure the plugin correctly.
     </td><td><code>No</code></td></tr>
 
   <tr><td>azureCloudStorageAccountName</td><td>string</td>
@@ -110,7 +110,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <see href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    plugins: Monitoring, Security, Alerting and Graph (Elasticsearch 2.3.0+).
+    plugins: Monitoring, Security, Alerting, Graph (Elasticsearch 2.3.0+) and Machine Learning (5.5.0+).
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
@@ -124,13 +124,13 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP that
     has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>xpackPlugins</code> then 
-    a trial license of the commercial <see href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor</a> are also installed.
+    a trial license of the commercial <see href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor (Kibana 4.x)</a> are also installed.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
-    </td><td><code>Standard_A1</code></td></tr>
+    </td><td><code>Standard_A2</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the certificate (.crt) to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
@@ -142,12 +142,14 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+</td><td><code>""</code></td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine to the deployment which you can use to connect and 
-    manage virtual machines on the internal network.
-    </td><td><code>No</code></td></tr>
+    <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
+    <br /><br />
+    NOTE: If you are deploying Kibana, the Kibana virtual machine can act
+    as a jumpbox.
+  </td><td><code>No</code></td></tr>
 
   <tr><td>vmHostNamePrefix</td><td>string</td>
-    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters.
+    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes on the network, so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>
@@ -171,7 +173,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>40</code><br />i.e. the max supported disks for data node VM size</td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of each attached disk. Choose <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
+    <td>The disk size of each attached disk. Choose <code>Large</code> (1023Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
     For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
     storage disk types, respectively.
     </td>
@@ -223,8 +225,19 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     <td>When <code>authenticationType</code> is <code>sshPublicKey</code> this sets the OS level sshKey that can be used to login.
     </td><td><code>""</code></td></tr>
 
+  <tr><td>securityBootstrapPassword</td><td>securestring</td>
+    <td>Security password for 6.x <a href="https://www.elastic.co/guide/en/x-pack/current/setting-up-authentication.html#bootstrap-elastic-passwords"><code>bootstrap.password</code> key</a> that is added to the keystore. If no value is supplied, a 13 character password
+    will be generated using the ARM template <code>uniqueString()</code> function. The bootstrap password is used to seed the built-in
+    users. Used only in 6.0.0+
+    </td><td><code>""</code></td></tr>
+
   <tr><td>securityAdminPassword</td><td>securestring</td>
-    <td>The password for 5.x's superuser <code>elastic</code> or, in 2.x the <code>es_admin</code> user, with admin role.
+    <td>Security password Admin user.
+    <ul>
+    <li>for 5.x+, built-in <code>elastic</code> user</li>
+    <li>for 2.x, the <code>es_admin</code> user, with <code>admin</code> role</li>
+    </ul>
+    must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityReadPassword</td><td>securestring</td>
@@ -232,13 +245,24 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityKibanaPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_kibana</code> user with kibana4 role, must be &gt; 6 characters
+    <td>Security password Kibana. 
+    <ul>
+    <li>for 5.x+, built-in <code>kibana</code> user</li>
+    <li>for 2.x, the <code>es_kibana</code> user with <code>kibana4_server role</code></li>
+    </ul>
+     must be &gt; 6 characters
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>securityLogstashPassword</td><td>securestring</td>
+    <td>Security password for 5.2.0+ built-in <code>logstash_system</code> user. Only used in 5.2.0+.
+    <br />
+    must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
   <tr><td>location</td><td>string</td>
-    <td>The location where to provision all the items in this template. Defaults to the special <code>ResourceGroup</code> value which means it will inherit the location
+    <td>The location where to provision all the items in this template. Defaults to the special <code>[resourceGroup().location]</code> value which means it will inherit the location
     from the resource group. Any other value must be a valid <a href="https://azure.microsoft.com/regions/">Azure region</a>.
-    </td><td><code>ResourceGroup</code></td></tr>
+    </td><td><code>[resourceGroup().location]</code></td></tr>
 
   <tr><td>vNetNewOrExisting</td><td>string</td>
     <td>Whether the Virtual Network is <code>new</code> or <code>existing</code>. An <code>existing</code> Virtual Network in

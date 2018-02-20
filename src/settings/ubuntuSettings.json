@@ -83,7 +83,7 @@
     },
     "enableAnonymousAccessOpt": "[variables('enableAnonymousAccessOpts')[parameters('topologySettings').enableAnonymousAccess]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), 'n ')]",
-    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityKibanaServerPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', parameters('esSettings').yamlConfiguration, '\"')]",
+    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', parameters('esSettings').yamlConfiguration, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -92,8 +92,9 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "ubuntuSkus": {
-      "2": "14.04-LTS",
-      "5": "16.04-LTS"
+      "2": "14.04.5-LTS",
+      "5": "16.04-LTS",
+      "6": "16.04-LTS"
     },
     "ubuntuSku": "[variables('ubuntuSkus')[substring(parameters('esSettings').version, 0, 1)]]",
     "ubuntuSettings": {
@@ -150,7 +151,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').kibanaVersion, '\" -e \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaServerPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\"')]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').kibanaVersion, '\" -e \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\"')]"
           }
         }
       }
