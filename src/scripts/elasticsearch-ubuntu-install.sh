@@ -779,13 +779,13 @@ configure_elasticsearch_yaml()
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
-    # if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-    #     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
-    #     echo "bootstrap.memory_lock: true" >> $ES_CONF
-    # else
-    #     log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
-    #     echo "bootstrap.mlockall: true" >> $ES_CONF
-    # fi
+    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
+        log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
+        echo "bootstrap.memory_lock: true" >> $ES_CONF
+    else
+        log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
+        echo "bootstrap.mlockall: true" >> $ES_CONF
+    fi
 }
 
 configure_elasticsearch()
@@ -834,14 +834,20 @@ configure_os_properties()
     # Increase maximum mmap count
     echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
 
-    # Verify this is necessary on azure
-    # ML: 80% certain i verified this but will do so again
-    #echo "elasticsearch    -    nofile    65536" >> /etc/security/limits.conf
-    #echo "elasticsearch     -    memlock   unlimited" >> /etc/security/limits.conf
-    #echo "session    required    pam_limits.so" >> /etc/pam.d/su
-    #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session
-    #echo "session    required    pam_limits.so" >> /etc/pam.d/common-session-noninteractive
-    #echo "session    required    pam_limits.so" >> /etc/pam.d/sudo
+    # Update pam_limits for bootstrap memory lock
+    echo "# allow user 'elasticsearch' mlockall" >> /etc/security/limits.conf
+    echo "elasticsearch soft memlock unlimited" >> /etc/security/limits.conf
+    echo "elasticsearch hard memlock unlimited" >> /etc/security/limits.conf
+
+    # Required for bootstrap memory lock
+    echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
+
+    # Maximum number of open files for elasticsearch user
+    echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
+
+    # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
+    echo "session    required   pam_limits.so" >> /etc/pam.d/su
+
     log "[configure_os_properties] configured operating system level configuration"
 }
 

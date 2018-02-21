@@ -122,7 +122,7 @@
       "type": "int",
       "defaultValue": 0,
       "metadata": {
-        "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744 MB."
+        "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB)."
       }
     },
     "kibana": {
