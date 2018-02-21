@@ -122,8 +122,8 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHeapSize</td><td>integer</td>
-    <td>The size, in megaytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744 MB. 
-    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature</strong>
+    <td>The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB). 
+    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
