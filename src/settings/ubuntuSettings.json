@@ -93,6 +93,7 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
+      "[concat(parameters('templateBaseUrl'), 'scripts/java-ubuntu-install.sh')]"
     ],
     "ubuntuSkus": {
       "5": "16.04-LTS",
