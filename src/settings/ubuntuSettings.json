@@ -156,6 +156,18 @@
           "protectedSettings": {
             "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -u \"', concat(if(equals(parameters('networkSettings').https, 'Yes'), 'https', 'http'), '://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\" -Y \"', replace(parameters('topologySettings').kibanaYaml, '\"', '\\\"'), '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob,'\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -U \"', variables('kibanaDomainName'), '\"')]"
           }
+        },
+        "logstash": {
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('bash logstash-ubuntu-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').logstashVersion, '\" -e \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityLogstashPwd, '\"')]"
+          }
         }
       }
     }
