@@ -10,8 +10,7 @@ var mainTemplate = "../src/mainTemplate.json";
 var uiTemplate = "../src/createUiDefinition.json";
 
 var allowedValues = require('../allowedValues.json');
-var versions = _.keys(allowedValues.versions);
-var esToKibanaMapping = _.mapValues(allowedValues.versions, function(v) { return v.kibana; });
+var versions = allowedValues.versions;
 
 var vmSizes = _.map(allowedValues.vmSizes, function(v) { return v[0]; });
 var kibanaVmSizes = _.difference(vmSizes, allowedValues.ignoredKibanaVmsBecauseNotEnoughRam);
@@ -86,9 +85,6 @@ gulp.task("patch", function(cb) {
     });
 
     obj.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
-
-    obj.variables.esToKibanaMapping = esToKibanaMapping;
-
     obj.parameters.esVersion.allowedValues = versions;
     obj.parameters.esVersion.defaultValue = _.last(versions);
     obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;

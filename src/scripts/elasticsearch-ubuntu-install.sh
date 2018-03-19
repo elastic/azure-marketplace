@@ -11,6 +11,8 @@
 # HELP
 #########################
 
+export DEBIAN_FRONTEND=noninteractive
+
 help()
 {
     echo "This script installs Elasticsearch cluster on Ubuntu"
@@ -53,8 +55,6 @@ log()
 log "Begin execution of Elasticsearch script extension on ${HOSTNAME}"
 START_TIME=$SECONDS
 
-export DEBIAN_FRONTEND=noninteractive
-
 #########################
 # Preconditions
 #########################
@@ -71,7 +71,7 @@ fi
 grep -q "${HOSTNAME}" /etc/hosts
 if [ $? == 0 ]
 then
-  log "${HOSTNAME}found in /etc/hosts"
+  log "${HOSTNAME} found in /etc/hosts"
 else
   log "${HOSTNAME} not found in /etc/hosts"
   # Append it to the hsots file if not there
@@ -112,8 +112,6 @@ ANONYMOUS_ACCESS=0
 INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
-
-UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
 while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
@@ -218,7 +216,6 @@ fi
 log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
 log "Cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
 log "Cluster install X-Pack plugin is set to $INSTALL_XPACK"
-
 
 #########################
 # Installation steps as functions
@@ -332,13 +329,7 @@ install_java()
 # Install Elasticsearch
 install_es()
 {
-    if [[ "${ES_VERSION}" == \2* ]]; then
-        DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/$ES_VERSION/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
-    elif [[ "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
-        DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
-    else
-        DOWNLOAD_URL="https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ES_VERSION.deb"
-    fi
+    DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
 
     log "[install_es] Installing Elasticsearch Version - $ES_VERSION"
     log "[install_es] Download location - $DOWNLOAD_URL"
@@ -356,46 +347,26 @@ install_es()
 
 plugin_cmd()
 {
-    if [[ "${ES_VERSION}" == \2* ]]; then
-      echo /usr/share/elasticsearch/bin/plugin
-    else
-      echo /usr/share/elasticsearch/bin/elasticsearch-plugin
-    fi
+    echo /usr/share/elasticsearch/bin/elasticsearch-plugin
 }
 
 install_xpack()
 {
-    if [[ "${ES_VERSION}" == \2* ]]; then
-      log "[install_xpack] Installing X-Pack plugins Security, Marvel, Watcher"
-      $(plugin_cmd) install license
-      $(plugin_cmd) install shield
-      $(plugin_cmd) install watcher
-      $(plugin_cmd) install marvel-agent
-      log "[install_xpack] Installed X-Pack plugins Security, Marvel, Watcher"
-      if dpkg --compare-versions "$ES_VERSION" ">=" "2.3.0"; then
-        log "[install_xpack] Installing X-Pack plugin Graph"
-        $(plugin_cmd) install graph
-        log "[install_xpack] Installed X-Pack plugin Graph"
-      fi
-    else
-      $(plugin_cmd) install x-pack --batch
-    fi
+    log "[install_xpack] Installing X-Pack plugins"
+    $(plugin_cmd) install x-pack --batch
+    log "[install_xpack] Installed X-Pack plugins"
 }
 
 install_azure_cloud_plugin()
 {
     log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
-    if [[ "${ES_VERSION}" == \2* ]]; then
-    	  $(plugin_cmd) install cloud-azure
-    else
-        $(plugin_cmd) install repository-azure --batch
-    fi
+    $(plugin_cmd) install repository-azure --batch
     log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
 }
 
 install_additional_plugins()
 {
-    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure repository-azure"
+    SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure x-pack repository-azure"
     log "[install_additional_plugins] Installing additional plugins"
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
@@ -403,13 +374,9 @@ install_additional_plugins()
             log "[install_additional_plugins] Skipping plugin $PLUGIN"
         else
             log "[install_additional_plugins] Installing plugin $PLUGIN"
-            if [[ "${ES_VERSION}" == \2* ]]; then
-                $(plugin_cmd) install $PLUGIN
-            else
-                $(plugin_cmd) install $PLUGIN --batch
-                log "[install_additional_plugins] Add plugin $PLUGIN to mandatory plugins"
-                MANDATORY_PLUGINS+="$PLUGIN,"
-            fi
+            $(plugin_cmd) install $PLUGIN --batch
+            log "[install_additional_plugins] Add plugin $PLUGIN to mandatory plugins"
+            MANDATORY_PLUGINS+="$PLUGIN,"
             log "[install_additional_plugins] Installed plugin $PLUGIN"
         fi
     done
@@ -421,43 +388,7 @@ install_additional_plugins()
 
 security_cmd()
 {
-    if [[ "${ES_VERSION}" == \2* ]]; then
-      echo /usr/share/elasticsearch/bin/shield/esusers
-    else
-      echo /usr/share/elasticsearch/bin/x-pack/users
-    fi
-}
-
-apply_security_settings_2x()
-{
-    local SEC_FILE=/etc/elasticsearch/shield/roles.yml
-    if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
-      log "[apply_security_settings]  Check that $SEC_FILE contains anonymous_user role"
-      if ! grep -q "anonymous_user:" "$SEC_FILE"; then
-          log "[apply_security_settings]  No anonymous_user role. Adding now"
-          {
-              echo -e ""
-              echo -e "# anonymous user role."
-              echo -e "anonymous_user:"
-              echo -e "  cluster:"
-              echo -e "    - cluster:monitor/main"
-          } >> $SEC_FILE
-          log "[apply_security_settings]  anonymous_user role added"
-      fi
-      log "[apply_security_settings]  Finished checking roles.yml for anonymous_user role"
-    fi
-
-    log "[apply_security_settings] Start adding es_admin"
-    $(security_cmd) useradd "es_admin" -p "${USER_ADMIN_PWD}" -r admin
-    log "[instalapply_security_settingsl_plugins] Finished adding es_admin"
-
-    log "[apply_security_settings]  Start adding es_read"
-    $(security_cmd) useradd "es_read" -p "${USER_READ_PWD}" -r user
-    log "[apply_security_settings]  Finished adding es_read"
-
-    log "[apply_security_settings]  Start adding es_kibana"
-    $(security_cmd) useradd "es_kibana" -p "${USER_KIBANA_PWD}" -r kibana4_server
-    log "[apply_security_settings]  Finished adding es_kibana"
+    echo /usr/share/elasticsearch/bin/x-pack/users
 }
 
 node_is_up()
@@ -543,7 +474,7 @@ apply_security_settings()
       local XPACK_USER_ENDPOINT="http://localhost:9200/_xpack/security/user"
       local XPACK_ROLE_ENDPOINT="http://localhost:9200/_xpack/security/role"
 
-      #update builtin `elastic` account. Takes the role of `es_admin` in 2.x clusters
+      #update builtin `elastic` account.
       local ADMIN_JSON=$(printf '{"password":"%s"}\n' $USER_ADMIN_PWD)
       echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
@@ -576,7 +507,7 @@ apply_security_settings()
         log "[apply_security_settings] updated builtin logstash_system user password"
       fi
 
-      #create a readonly role that mimics the `user` role in the old shield plugin for es 2.x for `es_read`
+      #create a readonly role that mimics the `user` role in the old shield plugin
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'
       {
         "cluster": [ "monitor" ],
@@ -686,15 +617,7 @@ configure_elasticsearch_yaml()
     fi
 
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
-
-    if [[ "${ES_VERSION}" == \2* ]]; then
-        echo "discovery.zen.ping.multicast.enabled: false" >> $ES_CONF
-        echo "network.host: _non_loopback_" >> $ES_CONF
-        echo "marvel.agent.enabled: true" >> $ES_CONF
-    else
-        echo "network.host: [_site_, _local_]" >> $ES_CONF
-    fi
-
+    echo "network.host: [_site_, _local_]" >> $ES_CONF
     echo "node.max_local_storage_nodes: 1" >> $ES_CONF
 
     # Configure mandatory plugins
@@ -718,18 +641,6 @@ configure_elasticsearch_yaml()
 
     # Configure Anonymous access
     if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
-      if [[ "${ES_VERSION}" == \2* ]]; then
-        {
-            echo -e ""
-            echo -e "# anonymous access"
-            echo -e "shield.authc:"
-            echo -e "  anonymous:"
-            echo -e "    username: anonymous_user"
-            echo -e "    roles: anonymous_user"
-            echo -e "    authz_exception: false"
-            echo -e ""
-        } >> $ES_CONF
-      else
         {
             echo -e ""
             echo -e "# anonymous access"
@@ -740,7 +651,6 @@ configure_elasticsearch_yaml()
             echo -e "    authz_exception: false"
             echo -e ""
         } >> $ES_CONF
-      fi
     fi
 
     # Additional yaml configuration
@@ -779,13 +689,8 @@ configure_elasticsearch_yaml()
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
-    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-        log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
-        echo "bootstrap.memory_lock: true" >> $ES_CONF
-    else
-        log "[configure_elasticsearch_yaml] Setting bootstrap.mlockall: true"
-        echo "bootstrap.mlockall: true" >> $ES_CONF
-    fi
+    log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
+    echo "bootstrap.memory_lock: true" >> $ES_CONF
 }
 
 configure_elasticsearch()
@@ -797,31 +702,10 @@ configure_elasticsearch()
       ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
     fi
 
-    if [[ "${ES_VERSION}" == \2* ]]; then
-      configure_elasticsearch2 $ES_HEAP
-    else
-      configure_elasticsearch5plus $ES_HEAP
-    fi
+    log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP"
+    sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
+    sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     log "[configure_elasticsearch] configured elasticsearch default configuration"
-}
-
-configure_elasticsearch2()
-{
-    log "[configure_elasticsearch] Configure elasticsearch 2.x heap size - $1"
-    echo "ES_HEAP_SIZE=$1m" >> /etc/default/elasticsearch
-
-    # Allow dots in field names in 2.4.0+
-    if dpkg --compare-versions "$ES_VERSION" ">=" "2.4.0"; then
-      log "[configure_elasticsearch] Configure allow dots in field names"
-      echo "ES_JAVA_OPTS=-Dmapper.allow_dots_in_name=true" >> /etc/default/elasticsearch
-    fi
-}
-
-configure_elasticsearch5plus()
-{
-    log "[configure_elasticsearch] Configure elasticsearch heap size - $1"
-    sed -i -e "s/^\-Xmx.*/-Xmx$1m/" /etc/elasticsearch/jvm.options
-    sed -i -e "s/^\-Xms.*/-Xms$1m/" /etc/elasticsearch/jvm.options
 }
 
 configure_os_properties()
@@ -857,13 +741,7 @@ configure_os_properties()
 install_yamllint()
 {
     log "[install_yamllint] installing yamllint"
-    if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
-      (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
-    else
-      # Install yamllint via pip for Ubuntu 14.04
-      (apt-get -yq install python-pip || (sleep 15; apt-get -yq install python-pip))
-      pip install yamllint
-    fi
+    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
     log "[install_yamllint] installed yamllint"
 }
 
@@ -916,19 +794,11 @@ port_forward()
     log "[port_forward] installing iptables-persistent"
     (apt-get -yq install iptables-persistent || (sleep 15; apt-get -yq install iptables-persistent))
 
-    # iptables-persistent is different on 16 compared to 14
-    if [[ "${UBUNTU_VERSION}" == "16"* ]]; then
-      service netfilter-persistent save
-      service netfilter-persistent start
-      # add netfilter-persistent to startup before elasticsearch
-      update-rc.d netfilter-persistent defaults 90 15
-    else
-      #persist the rules to file
-      service iptables-persistent save
-      service iptables-persistent start
-      # add iptables-persistent to startup before elasticsearch
-      update-rc.d iptables-persistent defaults 90 15
-    fi
+    # persist iptables changes
+    service netfilter-persistent save
+    service netfilter-persistent start
+    # add netfilter-persistent to startup before elasticsearch
+    update-rc.d netfilter-persistent defaults 90 15
 
     log "[port_forward] installed iptables-persistent"
     log "[port_forward] port forwarding configured"
@@ -970,11 +840,8 @@ setup_data_disk
 
 if [ ${INSTALL_XPACK} -ne 0 ]; then
     install_xpack
-    # in 2.x we use the file realm so we can apply security config before boot up
-    if [[ "${ES_VERSION}" == \2* ]]; then
-        apply_security_settings_2x
     # in 6.x we need to set up the bootstrap.password in the keystore to use when setting up users
-    elif [[ "${ES_VERSION}" == \6* ]]; then
+    if [[ "${ES_VERSION}" == \6* ]]; then
         setup_bootstrap_password
     fi
 fi
@@ -999,8 +866,8 @@ port_forward
 
 start_monit
 
-# In 5.x+ we have to patch roles and users through the REST API which is a tad trickier
-if [[ ${INSTALL_XPACK} -ne 0 && "${ES_VERSION}" =~ ^5.*|^6.* ]]; then
+# patch roles and users through the REST API which is a tad trickier
+if [[ ${INSTALL_XPACK} -ne 0 ]]; then
   wait_for_started
   apply_security_settings
 fi
