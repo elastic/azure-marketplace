@@ -25,11 +25,11 @@
     }
   },
   "variables": {
-    "namespace" : "[parameters('vm').namespace]"
+    "namespace": "[parameters('vm').namespace]"
   },
   "resources": [
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), 'av-set')]",
       "location": "[parameters('vm').shared.location]",
@@ -39,13 +39,16 @@
       "properties": {
         "platformUpdateDomainCount": 3,
         "platformFaultDomainCount": 3
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn" : [
+      "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
       ],
       "copy": {

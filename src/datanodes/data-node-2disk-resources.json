@@ -91,6 +91,9 @@
       "properties": {
         "platformUpdateDomainCount": 20,
         "platformFaultDomainCount": 3
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {
@@ -149,8 +152,8 @@
                   "name": "datadisk1",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
+                  "managedDisk": {
+                    "storageAccountType": "[parameters('storageSettings').accountType]"
                   },
                   "caching": "None",
                   "createOption": "Empty"
@@ -159,8 +162,8 @@
                   "name": "datadisk2",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 1,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
+                  "managedDisk": {
+                    "storageAccountType": "[parameters('storageSettings').accountType]"
                   },
                   "caching": "None",
                   "createOption": "Empty"
