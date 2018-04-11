@@ -145,7 +145,7 @@
               "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'data-')]",
               "installScript": "[parameters('osSettings').extensionSettings.data]",
               "size": "[parameters('topologySettings').vmSizeDataNodes]",
-              "storageAccountType": "[parameters('topologySettings').vmDataNodeStorageAccount]",
+              "storageAccountType": "[parameters('topologySettings').vmDataNodeStorageAccountType]",
               "count": "[parameters('topologySettings').vmDataNodeCount]",
               "useSharedStorageAccount": "No",
               "useBackendPools": "Yes",
