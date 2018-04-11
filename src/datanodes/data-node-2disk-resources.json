@@ -149,7 +149,7 @@
             "value": {
               "disks": [
                 {
-                  "name": "datadisk1",
+                  "name": "[concat(variables('namespace'), copyindex(), '-datadisk1')]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
                   "managedDisk": {
@@ -159,7 +159,7 @@
                   "createOption": "Empty"
                 },
                 {
-                  "name": "datadisk2",
+                  "name": "[concat(variables('namespace'), copyindex(), '-datadisk2')]",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 1,
                   "managedDisk": {
