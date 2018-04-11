@@ -1155,6 +1155,7 @@
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
       "vmSizeDataNodes": "[parameters('vmSizeDataNodes')]",
+      "vmDataNodeStorageAccount": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')]]",
       "vmHostNamePrefix": "[parameters('vmHostNamePrefix')]",
       "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
       "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",

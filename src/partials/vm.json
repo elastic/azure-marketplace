@@ -116,7 +116,7 @@
           "osDisk": {
             "name": "[concat(variables('namespace'), parameters('index'), '-osdisk')]",
             "managedDisk":{
-              "storageAccountType":"Premium_LRS"
+              "storageAccountType":"[parameters('vm').storageAccountType]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
