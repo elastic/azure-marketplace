@@ -114,9 +114,9 @@
         "storageProfile": {
           "imageReference": "[parameters('vm').imageReference]",
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('vm').shared.storageAccountName), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), parameters('index'), '-osdisk.vhd')]"
+            "name": "[concat(variables('namespace'), parameters('index'), '-osdisk')]",
+            "managedDisk":{
+              "storageAccountType":"Premium_LRS"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"

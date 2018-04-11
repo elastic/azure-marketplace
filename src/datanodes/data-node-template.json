@@ -117,8 +117,8 @@
                   "name": "datadisk_INDEX_",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk_INDEX_' ,'.vhd')]"
+                  "managedDisk":{
+                    "storageAccountType":"[parameters('storageSettings').accountType]"
                   },
                   "caching": "None",
                   "createOption": "Empty"
