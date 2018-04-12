@@ -45,6 +45,10 @@
     "storage":{
       "value": "[reference(parameters('storageAccountName'))]",
       "type": "object"
+    },
+    "test":{
+      "value": "",
+      "type": "string"
     }
   }
 }
