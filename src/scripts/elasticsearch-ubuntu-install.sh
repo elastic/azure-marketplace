@@ -296,37 +296,26 @@ install_java_package()
 # Install Oracle Java
 install_java()
 {
-    log "[install_java] Adding apt repository for java 8"
-    (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-    log "[install_java] updating apt-get"
-    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
-    log "[install_java] updated apt-get"
-    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
-    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
-    log "[install_java] Installing Java"
-    (install_java_package || (sleep 15; install_java_package))
-    command -v java >/dev/null 2>&1 || { sleep 15; rm /var/cache/oracle-jdk8-installer/jdk-*; apt-get install -f; }
+  log "[install_java] Update apt"
+  sudo apt-get update
 
-    #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
-    for i in $(seq 30); do
-      if $(command -v java >/dev/null 2>&1); then
-        log "[install_java] Installed java!"
-        return
-      else
-        sleep 5
-        rm /var/cache/oracle-jdk8-installer/jdk-*;
-        rm -f /var/lib/dpkg/info/oracle-java8-installer*
-        rm /etc/apt/sources.list.d/*java*
-        apt-get -yq purge oracle-java8-installer*
-        apt-get -yq autoremove
-        apt-get -yq clean
-        (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-        apt-get -yq update
-        install_java_package --reinstall
-        log "[install_java] Seeing if java is Installed after nuclear retry ${i}/30"
-      fi
-    done
-    command -v java >/dev/null 2>&1 || { log "Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
+  log "[install_java] Installing OpenJDK 8"
+  sudo apt-get install openjdk-8-jre -y
+  command -v java >/dev/null 2>&1 || { sleep 15; sudo apt autoremove openjdk-8-jre -y; sudo apt-get install openjdk-8-jre -y; }
+
+  #if the previus did not install correctly we go nuclear, otherwise this loop will early exit
+  for i in $(seq 30); do
+    if $(command -v java >/dev/null 2>&1); then
+      log "[install_java] Installed java!"
+      return
+    else
+      sleep 5
+      sudo apt autoremove openjdk-8-jre -y 
+      sudo apt-get install openjdk-8-jre -y
+      log "[install_java] Seeing if java is Installed after nuclear retry ${i}/30"
+    fi
+  done
+  command -v java >/dev/null 2>&1 || { log "Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
 }
 
 # Install Elasticsearch
