@@ -200,10 +200,6 @@
     "jumpboxssh": {
       "value": "[reference('elasticsearch-nodes').outputs.jumpboxssh.value]",
       "type": "string"
-    },
-    "extensionSettings": {
-      "value": "[variables('extensionSettings')]",
-      "type": "object"
     }
   }
 }
