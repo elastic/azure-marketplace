@@ -1322,7 +1322,11 @@
             "value": "[variables('networkSettings')]"
           },
           "azureCloudStorageAccount": {
-            "value": "[variables('azureCloudStorageAccount')]"
+            "value": {
+              "name": "[variables('commonVmSettings').storageAccountName]",
+              "key": "[reference('shared').output.sharedStorageAccountKey.value]",
+              "install": "[parameters('azureCloudPlugin')]"
+            }
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
