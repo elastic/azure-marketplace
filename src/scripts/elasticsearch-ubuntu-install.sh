@@ -116,7 +116,7 @@ STORAGE_KEY=""
 UBUNTU_VERSION=$(lsb_release -sr)
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -181,6 +181,9 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:Xxyzldjh optname; do
       ;;
     k) #azure storage account key for azure cloud plugin
       STORAGE_KEY="${OPTARG}"
+      ;;
+    E) #azure storage account endpoint suffix
+      STORAGE_SUFFIX="${OPTARG}"
       ;;
     h) #show help
       help
@@ -704,11 +707,12 @@ configure_elasticsearch_yaml()
     fi
 
     # Configure Azure Cloud plugin
-    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
+    if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" && -n "$STORAGE_SUFFIX"]]; then
       if [[ "${ES_VERSION}" == \6* ]]; then
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in keystore"
         echo "$STORAGE_ACCOUNT" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.account -xf
         echo "$STORAGE_KEY" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.key -xf
+        echo "azure.client.default.endpoint_suffix: $STORAGE_SUFFIX" >> $ES_CONF
       else
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in $ES_CONF"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> $ES_CONF

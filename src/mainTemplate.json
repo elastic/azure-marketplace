@@ -1325,7 +1325,7 @@
             "value": {
               "name": "[variables('commonVmSettings').storageAccountName]",
               "key": "[reference('shared').outputs.sharedStorageAccountKey.value]",
-              "prefix": "[reference('shared').outputs.sharedStorageAccountPrefix.value]",
+              "suffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]",
               "install": "[parameters('azureCloudPlugin')]"
             }
           },
