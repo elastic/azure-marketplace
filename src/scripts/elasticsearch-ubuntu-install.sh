@@ -755,7 +755,8 @@ configure_elasticsearch_yaml()
         SKIP_LINES+="node.master node.data discovery.zen.minimum_master_nodes network.host "
         SKIP_LINES+="discovery.zen.ping.multicast.enabled marvel.agent.enabled "
         SKIP_LINES+="node.max_local_storage_nodes plugin.mandatory cloud.azure.storage.default.account "
-        SKIP_LINES+="cloud.azure.storage.default.key xpack.security.authc shield.authc"
+        SKIP_LINES+="cloud.azure.storage.default.key xpack.security.authc shield.authc "
+        SKIP_LINES+="azure.client.default.endpoint_suffix"
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION")
