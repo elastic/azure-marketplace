@@ -40,5 +40,11 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "storage":{
+      "value": "[reference(parameters('storageAccountName'))]",
+      "type": "object"
+    }
+  }
 }
