@@ -45,6 +45,10 @@
     "sharedStorageAccountKey":{
       "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
       "type": "string"
+    },
+    "sharedStorageAccountPrefix": {
+      "value": "[replace(replace(reference(parameters('storageAccountName')).primaryEndpoints.blob, concat('https://', parameters('storageAccountName'), '.'), ''), '/', '')]",
+      "type": "string"
     }
   }
 }
