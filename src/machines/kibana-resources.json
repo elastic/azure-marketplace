@@ -89,17 +89,19 @@
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
         "ssh": {
-          "publicKeys": [ {
-            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
-            "keyData": "[parameters('credentials').sshPublicKey]"
-          } ]
+          "publicKeys": [
+            {
+              "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+              "keyData": "[parameters('credentials').sshPublicKey]"
+            }
+          ]
         }
       }
     },
     "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]",
     "httpsOpts": {
-      "Yes" : "https://",
-      "No" : "http://"
+      "Yes": "https://",
+      "No": "http://"
     },
     "https": "[variables('httpsOpts')[parameters('https')]]"
   },
@@ -157,7 +159,7 @@
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
           "domainNameLabel": "[concat('kb-', uniqueString(resourceGroup().id))]"
-      }
+        }
       }
     },
     {
@@ -193,7 +195,7 @@
       }
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('namespace')]",
       "location": "[parameters('location')]",
@@ -212,8 +214,8 @@
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
             "name": "osdisk",
-            "vhd": {
-              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), '2016-01-01').primaryEndpoints.blob, 'vhds/', parameters('namespace'), '-osdisk.vhd')]"
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
