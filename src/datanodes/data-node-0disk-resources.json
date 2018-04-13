@@ -36,7 +36,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
       "location": "[parameters('vm').shared.location]",
@@ -49,7 +49,10 @@
       },
       "properties": {
         "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 3
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {

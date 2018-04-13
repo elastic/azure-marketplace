@@ -32,52 +32,11 @@
   },
   "variables": {
     "namespace": "[parameters('vm').namespace]",
-    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
-    "nodesPerStorageAccount": "[parameters('storageSettings').nodesPerStorageAccount]",
-    "storageAccountPrefix": [
-      "0",
-      "6",
-      "c",
-      "i",
-      "o",
-      "u",
-      "1",
-      "7",
-      "d",
-      "j",
-      "p",
-      "v",
-      "2",
-      "8",
-      "e",
-      "k",
-      "q",
-      "w",
-      "3",
-      "9",
-      "f",
-      "l",
-      "r",
-      "x",
-      "4",
-      "a",
-      "g",
-      "m",
-      "s",
-      "y",
-      "5",
-      "b",
-      "h",
-      "n",
-      "t",
-      "z"
-    ],
-    "storageAccountPrefixCount": "[length(variables('storageAccountPrefix'))]",
-    "newStorageAccountNamePrefix": "[uniqueString(resourceGroup().id, deployment().name)]"
+    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]"
   },
   "resources": [
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
       "location": "[parameters('vm').shared.location]",
@@ -90,7 +49,10 @@
       },
       "properties": {
         "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 3
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {
@@ -149,9 +111,7 @@
                   "name": "datadisk1",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 0,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk1' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -159,9 +119,7 @@
                   "name": "datadisk2",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 1,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk2' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -169,9 +127,7 @@
                   "name": "datadisk3",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 2,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk3' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -179,9 +135,7 @@
                   "name": "datadisk4",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 3,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk4' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -189,9 +143,7 @@
                   "name": "datadisk5",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 4,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk5' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -199,9 +151,7 @@
                   "name": "datadisk6",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 5,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk6' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -209,9 +159,7 @@
                   "name": "datadisk7",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 6,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk7' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 },
@@ -219,9 +167,7 @@
                   "name": "datadisk8",
                   "diskSizeGB": "[parameters('storageSettings').diskSize]",
                   "lun": 7,
-                  "vhd": {
-                    "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/',concat(variables('storageAccountPrefix')[mod(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('storageAccountPrefix')[div(div(copyIndex(),variables('nodesPerStorageAccount')),variables('storageAccountPrefixCount'))],variables('newStorageAccountNamePrefix'),add(1,div(copyIndex(),variables('nodesPerStorageAccount'))))), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), copyindex(),'-data-disk8' ,'.vhd')]"
-                  },
+                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
                   "caching": "None",
                   "createOption": "Empty"
                 }
