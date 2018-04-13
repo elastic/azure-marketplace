@@ -49,7 +49,7 @@
       },
       "properties": {
         "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 2
+        "platformFaultDomainCount": 3
       },
       "sku": {
         "name": "Aligned"

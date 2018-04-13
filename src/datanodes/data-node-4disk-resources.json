@@ -32,7 +32,8 @@
   },
   "variables": {
     "namespace": "[parameters('vm').namespace]",
-    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]"
+    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
+    "diskCount": 4
   },
   "resources": [
     {
@@ -49,7 +50,7 @@
       },
       "properties": {
         "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 2
+        "platformFaultDomainCount": 3
       },
       "sku": {
         "name": "Aligned"
@@ -106,38 +107,20 @@
           },
           "dataDisks": {
             "value": {
-              "disks": [
+              "copy": [
                 {
-                  "name": "datadisk1",
-                  "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                  "lun": 0,
-                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
-                  "caching": "None",
-                  "createOption": "Empty"
-                },
-                {
-                  "name": "datadisk2",
-                  "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                  "lun": 1,
-                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
-                  "caching": "None",
-                  "createOption": "Empty"
-                },
-                {
-                  "name": "datadisk3",
-                  "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                  "lun": 2,
-                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
-                  "caching": "None",
-                  "createOption": "Empty"
-                },
-                {
-                  "name": "datadisk4",
-                  "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                  "lun": 3,
-                  "managedDisk": {                     "storageAccountType": "[parameters('storageSettings').accountType]"                   },
-                  "caching": "None",
-                  "createOption": "Empty"
+                  "name": "disks",
+                  "count": "[variables('diskCount')]",
+                  "input": {
+                    "name": "[concat(variables('namespace'), copyindex(), '-datadisk', copyIndex('disks', 1))]",
+                    "diskSizeGB": "[parameters('storageSettings').diskSize]",
+                    "lun": "[copyIndex('disks')]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('storageSettings').accountType]"
+                    },
+                    "caching": "None",
+                    "createOption": "Empty"
+                  }
                 }
               ]
             }

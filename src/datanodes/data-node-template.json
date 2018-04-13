@@ -32,7 +32,8 @@
   },
   "variables": {
     "namespace": "[parameters('vm').namespace]",
-    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]"
+    "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
+    "diskCount": 40
   },
   "resources": [
     {
@@ -84,16 +85,20 @@
           },
           "dataDisks": {
             "value": {
-              "disks": [
+              "copy": [
                 {
-                  "name": "datadisk_INDEX_",
-                  "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                  "lun": 0,
-                  "managedDisk": {
-                    "storageAccountType": "[parameters('storageSettings').accountType]"
-                  },
-                  "caching": "None",
-                  "createOption": "Empty"
+                  "name": "disks",
+                  "count": "[variables('diskCount')]",
+                  "input": {
+                    "name": "[concat(variables('namespace'), copyindex(), '-datadisk', copyIndex('disks', 1))]",
+                    "diskSizeGB": "[parameters('storageSettings').diskSize]",
+                    "lun": "[copyIndex('disks')]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('storageSettings').accountType]"
+                    },
+                    "caching": "None",
+                    "createOption": "Empty"
+                  }
                 }
               ]
             }
