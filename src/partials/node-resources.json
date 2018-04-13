@@ -79,7 +79,6 @@
               "size": "[parameters('topologySettings').vmSizeMasterNodes]",
               "storageAccountType":"Standard_LRS",
               "count": 3,
-              "useSharedStorageAccount": "Yes",
               "useBackendPools": "No",
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]"
@@ -114,7 +113,6 @@
               "size": "[parameters('topologySettings').vmSizeClientNodes]",
               "count": "[parameters('topologySettings').vmClientNodeCount]",
               "storageAccountType":"Standard_LRS",
-              "useSharedStorageAccount": "Yes",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]"
@@ -148,7 +146,6 @@
               "size": "[parameters('topologySettings').vmSizeDataNodes]",
               "storageAccountType": "[parameters('topologySettings').vmDataNodeStorageAccountType]",
               "count": "[parameters('topologySettings').vmDataNodeCount]",
-              "useSharedStorageAccount": "No",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]"
