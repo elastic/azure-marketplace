@@ -70,7 +70,7 @@ var bootstrap = (cb) => {
   var versions = _.keys(allowedValues.versions);
   var defaultVersion = _.last(versions);
   git.branch(function (branch) {
-    artifactsBaseUrl = "https://raw.githubusercontent.com/panyang1217/azure-marketplace/"+ branch + "/src";
+    artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
     log("Using template: " + templateUri, false);
     armTests = _(fs.readdirSync("arm-tests"))
