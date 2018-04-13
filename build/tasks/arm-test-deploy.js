@@ -159,6 +159,5 @@ var deployTemplate = (test, cb) => {
 }
 
 gulp.task("deploy-test", function(cb) {
-  //login((test) => validateTemplate(test, (test) => deployTemplate(test, () => logout(cb))));
-  login((test) => deployTemplate(test, () => logout(cb)));
+  login((test) => validateTemplate(test, (test) => deployTemplate(test, () => logout(cb))));
 });
