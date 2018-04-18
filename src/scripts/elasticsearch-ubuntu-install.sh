@@ -343,13 +343,17 @@ install_es()
 {
     DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
 
-    log "[install_es] Installing Elasticsearch Version - $ES_VERSION"
+    log "[install_es] Installing Elasticsearch $ES_VERSION"
     log "[install_es] Download location - $DOWNLOAD_URL"
-    wget -q "$DOWNLOAD_URL" -O elasticsearch.deb
-    log "[install_es] Downloaded elasticsearch $ES_VERSION"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] Error downloading Elasticsearch $ES_VERSION"
+        exit $EXIT_CODE
+    fi
+    log "[install_es] Downloaded Elasticsearch $ES_VERSION"
     dpkg -i elasticsearch.deb
-    log "[install_es] Installed Elasticsearch Version - $ES_VERSION"
-
+    log "[install_es] Installed Elasticsearch $ES_VERSION"
     log "[install_es] Disable Elasticsearch System-V style init scripts (will be using monit)"
     update-rc.d elasticsearch disable
 }
