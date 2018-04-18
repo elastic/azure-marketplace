@@ -59,10 +59,6 @@
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v2.4.6",
-                  "value": "2.4.6"
-                },
-                {
                   "label": "v5.0.2",
                   "value": "5.0.2"
                 },
@@ -665,7 +661,7 @@
                   "password": "(es_admin or elastic) password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "In Elasticsearch 5.x+, this is the password for the built-in 'elastic' user. In 2.x, this is the 'es_admin' user",
+                "toolTip": "Password for the built-in 'elastic' user",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -713,7 +709,7 @@
                   "password": "(es_kibana or kibana) Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "In Elasticsearch 5.x+, this is the password for the built-in 'kibana' user. In 2.x, this is the 'es_kibana' user",
+                "toolTip": "Password for the built-in 'kibana' user.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -737,7 +733,7 @@
                   "password": "logstash_system Password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "In Elasticsearch 5.2.0+, this is the password for the built-in 'logstash_system' user.",
+                "toolTip": "Password for the built-in 'logstash_system' user. Only used for 5.2.0+",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",

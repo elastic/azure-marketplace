@@ -23,12 +23,13 @@ It will always bootstrap a cluster complete with a trial license of Elastic's co
 
 Did you know that you can apply for a **free basic license**? Go check out our [subscription options](https://www.elastic.co/subscriptions)
 
-Deploying through the Marketplace is great and easy way to get your feet wet for a first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy 
+Deploying through the Marketplace is great and easy way to get your feet wet for a first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy
 the templates directly though the Azure CLI or PowerShell SDKs. <a href="#command-line-deploy">Check out the examples.</a>
 
 ---
 
 ### VERY IMPORTANT
+
 **This template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer. It is strongly recommended that you secure
 communication before using in production.**
 
@@ -45,21 +46,28 @@ You can view the UI in developer mode by [clicking here](https://portal.azure.co
 
 ## Reporting bugs
 
-Have a look at this [screenshot](images/error-output.png) to see how you can navigate to the deployment error status message.
-Please create an issue with that message and in which resource it occured on our [github issues](https://github.com/elastic/azure-marketplace/issues) 
+Have a look at this [screenshot](images/error-output.png) to see how you can
+navigate to the deployment error status message.
+Please create an issue with that message and in which resource it occured on our
+[github issues](https://github.com/elastic/azure-marketplace/issues)
 
 ## ARM template
 
-The output from the Azure Marketplace UI is fed directly to the ARM deployment template. You can use the ARM template on its own without going through the MarketPlace. In fact, there are many features in the ARM template that are not exposed within the Marketplace such as configuring
+The output from the Azure Marketplace UI is fed directly to the ARM deployment
+template. You can use the ARM template on its own without going through the
+MarketPlace. In fact, there are many features in the ARM template that are
+not exposed within the Marketplace such as configuring
 
-- Azure Storage account to use for Snapshot/Restore
-- Application Gateway to use for TLS and SSL offload
-- The number and size of disks to attach to each data node VM
+* Azure Storage account to use for Snapshot/Restore
+* Application Gateway to use for TLS and SSL offload
+* The number and size of disks to attach to each data node VM
 
-Check out our [examples repository](https://github.com/elastic/azure-marketplace-examples) for examples of common scenarios and also take a look at the following blog posts for further information
+Check out our [examples repository](https://github.com/elastic/azure-marketplace-examples)
+for examples of common scenarios and also take a look at the following blog
+posts for further information
 
-- [Spinning up a cluster with Elastic's Azure Marketplace template](https://www.elastic.co/blog/spinning-up-a-cluster-with-elastics-azure-marketplace-template)
-- [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
+* [Spinning up a cluster with Elastic's Azure Marketplace template](https://www.elastic.co/blog/spinning-up-a-cluster-with-elastics-azure-marketplace-template)
+* [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
 
 ### Parameters
 
@@ -109,7 +117,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>xpackPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <see href="https://www.elastic.co/products/x-pack">X-Pack</a>
+    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
     plugins: Monitoring, Security, Alerting, Graph (Elasticsearch 2.3.0+) and Machine Learning (5.5.0+).
     </td><td><code>Yes</code></td></tr>
 
@@ -128,8 +136,8 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP that
-    has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>xpackPlugins</code> then 
-    a trial license of the commercial <see href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor (Kibana 4.x)</a> are also installed.
+    has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>xpackPlugins</code> then
+    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor (Kibana 4.x)</a> are also installed.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
@@ -164,13 +172,13 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>vmDataDiskCount</td><td>int</td>
     <td>Number of disks to attach to each data node in RAID 0 setup. 
-    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>. 
-    If the number of disks selected is more than can be attached to the data node VM size, 
+    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>.
+    If the number of disks selected is more than can be attached to the data node VM size,
     the maximum number of disks that can be attached for the data node VM size will be used. Equivalent to
-    taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code> 
+    taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code>
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
-    <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data. 
+    <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data.
     <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
     to understand the trade-offs in using it for storage.</strong>
     </li>
@@ -179,7 +187,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>vmDataDiskSize</td><td>string</td>
     <td>The disk size of each attached disk. Choose <code>Large</code> (1023Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
-    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a> 
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a>
     storage disk types, respectively.
     </td>
   </td><td><code>Large</code></td></tr>
@@ -205,8 +213,8 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
-    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backendpool of the loadbalancer but 
-    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <emphasis>gather</emphasis> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backendpool).
+    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backendpool of the loadbalancer but
+    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backendpool).
     </td><td><code>0</code></td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
@@ -215,11 +223,11 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
-    <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#ubuntu">avoid any of the following usernames for Ubuntu</a> 
+    <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#ubuntu">avoid any of the following usernames for Ubuntu</a>
     </td><td><code>""</code></td></tr>
 
   <tr><td>authenticationType</td><td>string</td>
-    <td>The authentication type for the Admin user. Either <code>password</code> or <code>sshPublicKey</code>  
+    <td>The authentication type for the Admin user. Either <code>password</code> or <code>sshPublicKey</code>
     </td><td><code>password</code></td></tr>
 
   <tr><td>adminPassword</td><td>securestring</td>
@@ -238,10 +246,9 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
 
   <tr><td>securityAdminPassword</td><td>securestring</td>
     <td>Security password Admin user.
-    <ul>
-    <li>for 5.x+, built-in <code>elastic</code> user</li>
-    <li>for 2.x, the <code>es_admin</code> user, with <code>admin</code> role</li>
-    </ul>
+    <br />
+    This is the built-in <code>elastic</code> user.
+    <br />
     must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
@@ -250,11 +257,10 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityKibanaPassword</td><td>securestring</td>
-    <td>Security password Kibana. 
-    <ul>
-    <li>for 5.x+, built-in <code>kibana</code> user</li>
-    <li>for 2.x, the <code>es_kibana</code> user with <code>kibana4_server role</code></li>
-    </ul>
+    <td>Security password Kibana.
+    <br />
+     This is the built-in <code>kibana</code> user.
+    <br />
      must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
@@ -299,7 +305,7 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>es-subnet</code></td></tr>
 
   <tr><td>vNetNewClusterSubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the subnet. 
+    <td>The address space of the subnet.
     <strong>Required when creating a <code>new</code> Virtual Network</strong>
     </td><td><code>10.0.0.0/25</code></td></tr>
 
@@ -310,47 +316,47 @@ Check out our [examples repository](https://github.com/elastic/azure-marketplace
     </td><td><code>es-gateway-subnet</code></td></tr>
 
   <tr><td>vNetNewAppGatewaySubnetAddressPrefix</td><td>string</td>
-    <td>The address space of the Application Gateway subnet. 
+    <td>The address space of the Application Gateway subnet.
     <strong>Required when creating a <code>new</code> Virtual Network and selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>10.0.0.128/28</code></td></tr>
 
    <tr><td>appGatewayTier</td><td>string</td>
     <td>The tier of the Application Gateway, either <code>Standard</code> or <code>WAF</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
-    </td><td><code>Standard</code></td></tr>   
+    </td><td><code>Standard</code></td></tr>
 
    <tr><td>appGatewaySku</td><td>string</td>
     <td>The size of the Application Gateway. Choose <code>Small</code>, <code>Medium</code> or <code>Large</code>. 
     When choosing appGatewayTier <code>WAF</code>, the size must be at least <code>Medium</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
-    </td><td><code>Medium</code></td></tr> 
+    </td><td><code>Medium</code></td></tr>
 
    <tr><td>appGatewayCount</td><td>int</td>
     <td>The number instances of the Application Gateway. Can be a value between <code>1</code> and <code>10</code>.
     A minimum of <code>2</code> is recommended for production.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
-    </td><td><code>2</code></td></tr> 
+    </td><td><code>2</code></td></tr>
 
    <tr><td>appGatewayCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the PFX certificate for the Application Gateway. 
     This certificate is used to secure HTTPS connections to and from the Application Gateway.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
-    </td><td><code>""</code></td></tr>   
+    </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayCertPassword</td><td>securestring</td>
     <td>The password for the PFX certificate for the Application Gateway. Defaults to <code>""</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
-    </td><td><code>""</code></td></tr> 
-    
+    </td><td><code>""</code></td></tr>
+
    <tr><td>appGatewayWafStatus</td><td>string</td>
     <td>The firewall status of the Application Gateway, either <code>Enabled</code> or <code>Disabled</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
-    </td><td><code>Enabled</code></td></tr> 
+    </td><td><code>Enabled</code></td></tr>
 
    <tr><td>appGatewayWafMode</td><td>string</td>
     <td>The firewall mode of the Application Gateway, either <code>Detection</code> or <code>Prevention</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
-    </td><td><code>Detection</code></td></tr>   
+    </td><td><code>Detection</code></td></tr>
 
   <tr><td>userCompany</td><td>string</td>
     <td>The name of your company.
@@ -499,6 +505,6 @@ Targeting a specific template version is recommended for repeatable deployments.
 
 The above button will take you to the autogenerated web based UI based on the parameters from the ARM template.
 
-# License
+## License
 
 This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based heavily on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)

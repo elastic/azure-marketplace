@@ -1,0 +1,24 @@
+{
+  "default": true,
+  "MD033": {
+    "allowed_elements": [
+      "table",
+      "tr",
+      "th",
+      "td",
+      "a",
+      "code",
+      "ul",
+      "li",
+      "br",
+      "p",
+      "strong",
+      "em",
+      "img"
+    ]
+  },
+  "MD013": false,
+  "MD029": {
+    "style": "one_or_ordered"
+  }
+}
