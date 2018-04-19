@@ -115,21 +115,28 @@ done
 # Parameter state changes
 #########################
 
-log "installing Kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
-log "installing X-Pack plugins is set to: $INSTALL_XPACK"
+log "Installing Kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
+log "Installing X-Pack plugins is set to: $INSTALL_XPACK"
 log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
 # Installation steps as functions
 #########################
 
-download_install_deb()
+download_kibana()
 {
-    log "[download_install_deb] starting download of package"
+    log "[download_kibana] Download Kibana $KIBANA_VERSION"
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-amd64.deb"
-    curl -o "kibana-$KIBANA_VERSION.deb" "$DOWNLOAD_URL"
-    log "[download_install_deb] installing downloaded package"
+    log "[download_kibana] Download location $DOWNLOAD_URL"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O "kibana-$KIBANA_VERSION.deb"
+    local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[download_kibana] Error downloading Kibana $KIBANA_VERSION"
+        exit $EXIT_CODE
+    fi
+    log "[download_kibana] Installing Kibana $KIBANA_VERSION"
     dpkg -i "kibana-$KIBANA_VERSION.deb"
+    log "[download_kibana] Installed Kibana $KIBANA_VERSION"
 }
 
 ## Security
@@ -137,7 +144,7 @@ download_install_deb()
 
 install_pwgen()
 {
-    log "[install_pwgen] installing pwgen tool if needed"
+    log "[install_pwgen] Installing pwgen tool if needed"
     if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
       (apt-get -yq install pwgen || (sleep 15; apt-get -yq install pwgen))
     fi
@@ -148,7 +155,7 @@ configuration_and_plugins()
     # backup the current config
     mv /etc/kibana/kibana.yml /etc/kibana/kibana.yml.bak
 
-    log "[configuration_and_plugins] configuring kibana.yml"
+    log "[configuration_and_plugins] Configuring kibana.yml"
     local KIBANA_CONF=/etc/kibana/kibana.yml
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
@@ -169,24 +176,25 @@ configuration_and_plugins()
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
+      log "[configuration_and_plugins] X-Pack Security encryption key generated"
       ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-      log "[configuration_and_plugins] x-pack security encryption key generated"
+      log "[configuration_and_plugins] X-Pack Reporting encryption key generated"
 
-      log "[configuration_and_plugins] installing x-pack plugin"
+      log "[configuration_and_plugins] Installing X-Pack plugin"
       /usr/share/kibana/bin/kibana-plugin install x-pack
-      log "[configuration_and_plugins] installed x-pack plugin"
+      log "[configuration_and_plugins] Installed X-Pack plugin"
     fi
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
       mkdir -p /etc/kibana/ssl
-      log "[configuration_and_plugins] save kibana cert blob to file"
+      log "[configuration_and_plugins] Save kibana cert blob to file"
       echo ${SSL_CERT} | base64 -d | tee /etc/kibana/ssl/kibana.crt
-      log "[configuration_and_plugins] save kibana key blob to file"
+      log "[configuration_and_plugins] Save kibana key blob to file"
       echo ${SSL_KEY} | base64 -d | tee /etc/kibana/ssl/kibana.key
 
-      log "[configuration_and_plugins] configuring encrypted communication"
+      log "[configuration_and_plugins] Configuring encrypted communication"
 
       if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
           echo "server.ssl.enabled: true" >> $KIBANA_CONF
@@ -201,15 +209,15 @@ configuration_and_plugins()
           echo "server.ssl.cert: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
       fi
 
-      log "[configuration_and_plugins] configured encrypted communication"
+      log "[configuration_and_plugins] Configured encrypted communication"
     fi
 }
 
 install_start_service()
 {
-    log "[install_start_service] configuring service for kibana to run at start"
+    log "[install_start_service] Configuring service for kibana to run at start"
     update-rc.d kibana defaults 95 10
-    log "[install_start_service] starting kibana!"
+    log "[install_start_service] Starting kibana!"
     service kibana start
 }
 
@@ -222,7 +230,7 @@ log "[apt-get] updating apt-get"
 log "[apt-get] updated apt-get"
 
 log "[install_sequence] Starting installation"
-download_install_deb
+download_kibana
 configuration_and_plugins
 install_start_service
 log "[install_sequence] Finished installation"
