@@ -17,20 +17,20 @@ For more details around developing the template, take a look at the [Development
 
 ## Azure Marketplace
 
-The Azure Marketplace Elasticsearch offering offers a simplified UI over the full power of the ARM template. 
+The Azure Marketplace Elasticsearch offering offers a simplified UI and installation experience over the full power of the ARM template. 
 
 It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack plugins](https://www.elastic.co/products/x-pack).
 
-Did you know that you can apply for a **free basic license**? Go check out our [subscription options](https://www.elastic.co/subscriptions)
+Did you know that you can apply for a **free Basic X-Pack license**? Go check out our [subscription options](https://www.elastic.co/subscriptions)
 
-Deploying through the Marketplace is great and easy way to get your feet wet for a first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy
-the templates directly though the Azure CLI or PowerShell SDKs. <a href="#command-line-deploy">Check out the examples.</a>
+Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy
+the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a href="#command-line-deploy">Check out the examples.</a>
 
 ---
 
 ### VERY IMPORTANT
 
-**This template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer. It is strongly recommended that you secure
+**By default, this template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer. It is strongly recommended that you secure
 communication before using in production.**
 
 You can secure external access to the cluster with TLS by using `gateway` as the `loadBalancerType` and supplying a PFX certificate with the `appGatewayCertBlob` parameter. This sets
@@ -55,14 +55,14 @@ Please create an issue with that message and in which resource it occured on our
 
 The output from the Azure Marketplace UI is fed directly to the ARM deployment
 template. You can use the ARM template on its own without going through the
-MarketPlace. In fact, there are many features in the ARM template that are
+Marketplace. In fact, there are many features in the ARM template that are
 not exposed within the Marketplace such as configuring
 
-* Azure Storage account to use for Snapshot/Restore
+* Azure Storage account to use with Azure Repository plugin for Snapshot/Restore
 * Application Gateway to use for TLS and SSL offload
 * The number and size of disks to attach to each data node VM
 
-Check out our [examples repository](https://github.com/elastic/azure-marketplace-examples)
+Check out our [**examples repository**](https://github.com/elastic/azure-marketplace-examples)
 for examples of common scenarios and also take a look at the following blog
 posts for further information
 
@@ -118,11 +118,11 @@ posts for further information
 
   <tr><td>xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    plugins: Monitoring, Security, Alerting, Graph (Elasticsearch 2.3.0+) and Machine Learning (5.5.0+).
+    plugins: Monitoring, Security, Alerting, Graph and Machine Learning (5.5.0+). If also installing Kibana, it will have Reporting and Profiler installed.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
-    <td>Additional elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
+    <td>Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalYaml</td><td>string</td>
@@ -135,9 +135,9 @@ posts for further information
     </td><td><code>0</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP that
-    has Kibana installed on it. If you have opted to also install the Elasticsearch plugins using <code>xpackPlugins</code> then
-    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins as well as <a href="https://www.elastic.co/guide/en/sense/current/introduction.html">Sense Editor (Kibana 4.x)</a> are also installed.
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP address that
+    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
@@ -157,7 +157,7 @@ posts for further information
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
     <br /><br />
-    NOTE: If you are deploying Kibana, the Kibana virtual machine can act
+    <strong>NOTE:</strong> If you are deploying Kibana, the Kibana virtual machine can act
     as a jumpbox.
   </td><td><code>No</code></td></tr>
 
@@ -178,7 +178,7 @@ posts for further information
     taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code>
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
-    <li>When 0 disks are selected, no disks will be attached to each data node; instead, the temporary disk will be used to store Elasticsearch data.
+    <li>When 0 disks are selected, no disks will be attached to each data node. Instead, the temporary disk will be used to store Elasticsearch data.
     <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
     to understand the trade-offs in using it for storage.</strong>
     </li>
@@ -388,7 +388,7 @@ posts for further information
 
 You can deploy using the template directly from Github using the Azure CLI or Azure PowerShell
 
-#### Azure CLI
+#### Azure CLI 1.0
 
 1. Log into Azure
 
@@ -464,7 +464,7 @@ The `--parameters-file` can specify a different location for the items that get 
   New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
   ```
 
-5. Use our template directly from Github
+5. Use our template directly from GitHub
 
   ```powershell
   New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
@@ -472,17 +472,19 @@ The `--parameters-file` can specify a different location for the items that get 
 
 ### Targeting a specific template version
 
-You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template. 
+You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
 
-For example, to target the `5.0.1` tag release with PowerShell
+**Targeting a specific template version is recommended for repeatable deployments.** 
+
+For example, to target the [`6.2.2` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.2)
 
 ```powershell
-$templateVersion = "5.0.1"
+$templateVersion = "6.2.2"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
 $clusterParameters = @{
-    "artifactsBaseUrl"= $templateBaseUrl
-    "esVersion" = "5.0.0"
+    "artifactsBaseUrl" = $templateBaseUrl
+    "esVersion" = "6.2.2"
     "adminUsername" = "russ"
     "adminPassword" = "Password1234"
     "securityAdminPassword" = "Password123"
@@ -495,8 +497,6 @@ New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
 New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
 ```
 
-Targeting a specific template version is recommended for repeatable deployments.
-
 ### Web based deploy
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
@@ -507,4 +507,4 @@ The above button will take you to the autogenerated web based UI based on the pa
 
 ## License
 
-This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based heavily on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)
+This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)

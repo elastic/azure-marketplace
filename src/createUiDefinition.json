@@ -660,40 +660,16 @@
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "Superuser Account",
+            "label": "Elastic User",
             "elements": [
               {
                 "name": "securityAdminPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "(es_admin or elastic) password",
+                  "password": "'elastic' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password for the built-in 'elastic' user",
-                "constraints": {
-                  "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
-                },
-                "options": {
-                  "hideConfirmation": false
-                }
-              }
-            ]
-          },
-          {
-            "name": "es_read",
-            "type": "Microsoft.Common.Section",
-            "label": "es_read User",
-            "elements": [
-              {
-                "name": "securityReadPassword",
-                "type": "Microsoft.Common.PasswordBox",
-                "label": {
-                  "password": "es_read Password",
-                  "confirmPassword": "Confirm password"
-                },
-                "toolTip": "Password to use for the 'es_read' user.",
+                "toolTip": "Password for the built-in 'elastic' user. This is a built-in superuser account with unlimited access",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -714,10 +690,10 @@
                 "name": "securityKibanaPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "(es_kibana or kibana) Password",
+                  "password": "'kibana' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password for the built-in 'kibana' user.",
+                "toolTip": "Password for the built-in 'kibana' user. This is a built-in account that Kibana uses to communicate with Elasticsearch",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",
@@ -738,10 +714,34 @@
                 "name": "securityLogstashPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "logstash_system Password",
+                  "password": "'logstash_system' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password for the built-in 'logstash_system' user. Only used for 5.2.0+",
+                "toolTip": "Password for the built-in 'logstash_system' user. This is a built-in account that Logstash uses to communicate with Elasticsearch. Only used for 5.2.0+",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{6,}",
+                  "validationMessage": "Password must be at least 6 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_read",
+            "type": "Microsoft.Common.Section",
+            "label": "es_read (read only) User",
+            "elements": [
+              {
+                "name": "securityReadPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "'es_read' user password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the 'es_read' user. This is a user account configured with limited read-only access",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",

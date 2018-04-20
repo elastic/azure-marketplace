@@ -76,7 +76,7 @@
       ],
       "defaultValue": "No",
       "metadata": {
-        "description": "Choose whether to install Azure Cloud plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore"
+        "description": "Choose whether to install Azure Repository plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore"
       }
     },
     "azureCloudStorageAccountName": {
@@ -84,14 +84,14 @@
       "defaultValue": "",
       "maxLength": 24,
       "metadata": {
-        "description": "The name of an existing storage account to use for snapshots with Azure Cloud plugin. Must be between 3 and 24 alphanumeric lowercase or characters or numbers."
+        "description": "The name of an existing storage account to use for snapshots with Azure Repository plugin. Must be between 3 and 24 alphanumeric lowercase or characters or numbers."
       }
     },
     "azureCloudStorageAccountKey": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The access key of an existing storage account to use for snapshots with Azure Cloud plugin"
+        "description": "The access key of an existing storage account to use for snapshots with Azure Repository plugin"
       }
     },
     "xpackPlugins": {
@@ -102,7 +102,7 @@
       ],
       "defaultValue": "Yes",
       "metadata": {
-        "description": "Install the Commercial X-Pack Plugins - Monitoring, Security, Alerting, Graph* (Elasticsearch 2.3.0+), Machine Learning* (Elasticsearch 5.5.0+), and if installing Kibana, Reporting and Profiler"
+        "description": "Install the Commercial X-Pack Plugins - Monitoring, Security, Alerting, Graph, Machine Learning* (Elasticsearch 5.5.0+), and if installing Kibana, Reporting and Profiler"
       }
     },
     "esAdditionalPlugins": {
@@ -227,7 +227,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Optionally add a virtual machine to the deployment which can be used to connect and manage virtual machines within the cluster"
+        "description": "Optionally add a virtual machine to the deployment which can be used to connect and manage virtual machines within the cluster. Not required if installing Kibana, as Kibana can be used as a jumpbox"
       }
     },
     "vmHostNamePrefix": {
@@ -357,7 +357,7 @@
         "No"
       ],
       "metadata": {
-        "description": "Make all data nodes master-eligible. This can be useful for small elasticsearch cluster deployments, but for larger deployments it is recommended to use dedicated master nodes"
+        "description": "Make all data nodes master-eligible. This can be useful for small Elasticsearch cluster deployments, but for larger deployments it is recommended to use dedicated master nodes"
       }
     },
     "vmSizeMasterNodes": {
