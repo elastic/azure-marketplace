@@ -67,8 +67,7 @@ var bootstrapTest = (t, defaultVersion) =>
 
 var bootstrap = (cb) => {
   var allowedValues = require('../allowedValues.json');
-  var versions = _.keys(allowedValues.versions);
-  var defaultVersion = _.last(versions);
+  var defaultVersion = _.last(allowedValues.versions);
   git.branch(function (branch) {
     artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
@@ -110,7 +109,7 @@ var bailOut = (error, rg)  => {
   if (!error) return;
   if (!rg) log(error)
   else log("resourcegroup: " + rg + " - " + error)
-  
+
   var cb = () => logout(() => { throw error; })
 
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
