@@ -373,11 +373,11 @@ install_xpack()
     log "[install_xpack] Installed X-Pack plugins"
 }
 
-install_azure_cloud_plugin()
+install_repository_azure_plugin()
 {
-    log "[install_azure_cloud_plugin] Installing plugin Cloud-Azure"
+    log "[install_repository_azure_plugin] Installing plugin repository-azure"
     $(plugin_cmd) install repository-azure --batch
-    log "[install_azure_cloud_plugin] Installed plugin Cloud-Azure"
+    log "[install_repository_azure_plugin] Installed plugin repository-azure"
 }
 
 install_additional_plugins()
@@ -874,7 +874,7 @@ if [[ ! -z "${INSTALL_ADDITIONAL_PLUGINS// }" ]]; then
 fi
 
 if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
-    install_azure_cloud_plugin
+    install_repository_azure_plugin
 fi
 
 install_monit
