@@ -567,9 +567,15 @@ apply_security_settings()
     fi
 }
 
+create_keystore_if_not_exists()
+{
+  [[ -f /etc/elasticsearch/elasticsearch.keystore ]] || (/usr/share/elasticsearch/bin/elasticsearch-keystore create)
+}
+
 setup_bootstrap_password()
 {
   log "[setup_bootstrap_password] adding bootstrap.password to keystore"
+  create_keystore_if_not_exists
   echo "$BOOTSTRAP_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add bootstrap.password -xf
   log "[setup_bootstrap_password] added bootstrap.password to keystore"
 }
@@ -646,6 +652,7 @@ configure_elasticsearch_yaml()
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" ]]; then
       if [[ "${ES_VERSION}" == \6* ]]; then
         log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in keystore"
+        create_keystore_if_not_exists
         echo "$STORAGE_ACCOUNT" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.account -xf
         echo "$STORAGE_KEY" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.key -xf
       else
