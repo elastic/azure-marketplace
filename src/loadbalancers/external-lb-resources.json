@@ -24,6 +24,13 @@
       }
     }
   },
+  "variables": {
+    "httpsOpts": {
+      "Yes" : "https://",
+      "No" : "http://"
+    },
+    "https": "[variables('httpsOpts')[parameters('networkSettings').https]]"
+  },
   "resources": [
     {
       "apiVersion": "2015-06-15",
@@ -180,7 +187,7 @@
   ],
   "outputs" : {
     "fqdn": {
-      "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses','es-external-lb-ip'), '2016-03-30').dnsSettings.fqdn, ':9200')]",
+      "value": "[concat(variables('https'), reference('es-external-lb-ip').dnsSettings.fqdn, ':9200')]",
       "type": "string"
     }
   }

@@ -27,6 +27,8 @@ help()
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
     echo "    -Y      <yaml\nyaml> additional yaml configuration"
+    echo "    -H      PKCS#12 archive (.pfx) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -G      Password for PKCS#12 archive (.pfx) certificate used to secure Elasticsearch HTTP layer"
     echo "    -h      view this help content"
 }
 
@@ -72,6 +74,8 @@ SSL_CERT=""
 SSL_KEY=""
 SSL_PASSPHRASE=""
 YAML_CONFIGURATION=""
+HTTP_CERT=""
+HTTP_CERT_PASSWORD=""
 
 #Loop through options passed
 while getopts :n:v:u:S:C:K:P:Y:lh optname; do
@@ -100,6 +104,12 @@ while getopts :n:v:u:S:C:K:P:Y:lh optname; do
       ;;
     P) #kibana ssl key passphrase
       SSL_PASSPHRASE="${OPTARG}"
+      ;;
+    H) #Elasticsearch certificate
+      HTTP_CERT="${OPTARG}"
+      ;;
+    G) #Elasticsearch certificate password
+      HTTP_CERT_PASSWORD="${OPTARG}"
       ;;
     Y) #kibana additional yml configuration
       YAML_CONFIGURATION="${OPTARG}"
@@ -193,7 +203,7 @@ configuration_and_plugins()
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
-      mkdir -p /etc/kibana/ssl
+      [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
       log "[configuration_and_plugins] Save kibana cert blob to file"
       echo ${SSL_CERT} | base64 -d | tee /etc/kibana/ssl/kibana.crt
       log "[configuration_and_plugins] Save kibana key blob to file"
@@ -217,6 +227,29 @@ configuration_and_plugins()
       log "[configuration_and_plugins] Configured encrypted communication"
     fi
 
+    # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed
+    # (x-pack installed implies it's also installed for Elasticsearch)
+    if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+      # convert PKCS#12 certificate to PEM format
+      [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
+      log "[configuration_and_plugins] Save Elasticsearch cert blob to file"
+      echo ${HTTP_CERT} | base64 -d | tee /etc/kibana/ssl/elasticsearch-http.pfx
+      local PASSWORD_SWITCH=""
+      if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
+        PASSWORD_SWITCH="-passin 'pass:${HTTP_CERT_PASSWORD}'"
+      fi
+      log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
+      openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys $PASSWORD_SWITCH
+      log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
+      openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes $PASSWORD_SWITCH
+      log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
+      openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain $PASSWORD_SWITCH
+
+      echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
+      echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
+      echo "elasticsearch.ssl.certificateAuthorities: [ \"/etc/kibana/ssl/elasticsearch-http-ca.crt\" ]" >> $KIBANA_CONF
+    fi
+
     # Additional yaml configuration
     if [[ -n "$YAML_CONFIGURATION" ]]; then
         log "[configuration_and_plugins] include additional yaml configuration"
@@ -224,6 +257,7 @@ configuration_and_plugins()
         SKIP_LINES+="server.ssl.key server.ssl.cert server.ssl.enabled "
         SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
         SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
+        SKIP_LINES+="elasticsearch.ssl.certificate elasticsearch.ssl.key elasticsearch.ssl.certificateAuthorities "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION")

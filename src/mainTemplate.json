@@ -134,6 +134,34 @@
         "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB)."
       }
     },
+    "esHttpCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx) certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esHttpCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.pfx) certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esTransportCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx) certificate used to secure Transport layer of Elasticsearch"
+      }
+    },
+    "esTransportCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.pfx) certificate used to secure Transport layer of Elasticsearch"
+      }
+    },
     "kibana": {
       "type": "string",
       "defaultValue": "Yes",
@@ -795,6 +823,10 @@
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "yamlConfiguration": "[parameters('esAdditionalYaml')]",
       "heapSize": "[parameters('esHeapSize')]",
+      "httpCertBlob": "[parameters('esHttpCertBlob')]",
+      "httpCertPassword": "[parameters('esHttpCertPassword')]",
+      "transportCertBlob": "[parameters('esTransportCertBlob')]",
+      "transportCertPassword": "[parameters('esTransportCertPassword')]",
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
@@ -1112,6 +1144,7 @@
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
+      "https": "[if(and(greater(length(parameters('esHttpCertBlob')), 0), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]",
       "subnet": {
         "name": "[parameters('vNetClusterSubnetName')]",
         "addressPrefix": "[parameters('vNetNewClusterSubnetAddressPrefix')]",

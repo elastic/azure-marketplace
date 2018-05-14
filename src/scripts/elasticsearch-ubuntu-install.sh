@@ -38,6 +38,11 @@ help()
     echo "-L <plugin;plugin> install additional plugins"
     echo "-C <yaml\nyaml> additional yaml configuration"
 
+    echo "-H base64 encoded PKCS#12 archive (.pfx) certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.pfx) certificate used to secure the HTTP layer"
+    echo "-T base64 encoded PKCS#12 archive (.pfx) certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.pfx) certificate used to secure the transport layer"
+
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
@@ -85,7 +90,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.2.2"
+ES_VERSION="6.2.4"
 ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
@@ -113,8 +118,13 @@ INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
+HTTP_CERT=""
+HTTP_CERT_PASSWORD=""
+TRANSPORT_CERT=""
+TRANSPORT_CERT_PASSWORD=""
+
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -164,6 +174,18 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:Xxyzldjh optname; do
       ;;
     C) #additional yaml configuration
       YAML_CONFIGURATION="${OPTARG}"
+      ;;
+    H) #HTTP cert blob
+      HTTP_CERT="${OPTARG}"
+      ;;
+    G) #HTTP cert password
+      HTTP_CERT_PASSWORD="${OPTARG}"
+      ;;
+    T) #Transport cert blob
+      TRANSPORT_CERT="${OPTARG}"
+      ;;
+    W) #Transport cert password
+      TRANSPORT_CERT_PASSWORD="${OPTARG}"
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
@@ -649,6 +671,50 @@ configure_elasticsearch_yaml()
     if [[ -n "${MANDATORY_PLUGINS}" ]]; then
         log "[configure_elasticsearch_yaml] Set plugin.mandatory to $MANDATORY_PLUGINS"
         echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> $ES_CONF
+    fi
+
+    # Configure HTTPS if cert supplied
+    if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+      [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
+      log "[configure_elasticsearch_yaml] Save HTTP cert blob to file"
+      echo ${HTTP_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-http.pfx
+
+      log "[configure_elasticsearch_yaml] Configuring HTTP layer encryption"
+
+      echo "xpack.security.http.ssl.enabled: true" >> $ES_CONF
+      echo "xpack.security.http.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
+      echo "xpack.security.http.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
+
+      if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
+        log "[configure_elasticsearch_yaml] Configure HTTP certificate password in keystore"
+        create_keystore_if_not_exists
+        echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password -xf
+        echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password -xf
+      fi
+
+      log "[configure_elasticsearch_yaml] Configured HTTP layer encryption"
+    fi
+
+    # Configure Transport if cert supplied
+    if [[ -n "${TRANSPORT_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+      [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
+      log "[configure_elasticsearch_yaml] Save Transport cert blob to file"
+      echo ${TRANSPORT_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-transport.pfx
+
+      log "[configure_elasticsearch_yaml] Configuring Transport layer encryption"
+
+      echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
+      echo "xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
+      echo "xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
+
+      if [[ -n "${TRANSPORT_CERT_PASSWORD}" ]]; then
+        log "[configure_elasticsearch_yaml] Configure Transport certificate password in keystore"
+        create_keystore_if_not_exists
+        echo "$TRANSPORT_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password -xf
+        echo "$TRANSPORT_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password -xf
+      fi
+
+      log "[configure_elasticsearch_yaml] Configured Transport layer encryption"
     fi
 
     # Configure Azure Cloud plugin
