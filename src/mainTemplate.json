@@ -93,6 +93,13 @@
         "description": "The access key of an existing storage account to use for snapshots with Azure Cloud plugin"
       }
     },
+    "azureCloudStorageAccountSuffix": {
+      "type": "string",
+      "defaultValue": "core.windows.net",
+      "metadata": {
+        "description": "The suffix of an existing storage account to use for snapshots with Azure Cloud plugin"
+      }
+    },
     "xpackPlugins": {
       "type": "string",
       "allowedValues": [
@@ -778,6 +785,7 @@
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
+      "suffix": "[parameters('azureCloudStorageAccountSuffix')]",
       "install": "[parameters('azureCloudPlugin')]"
     },
     "esToKibanaMapping": {
@@ -1322,12 +1330,7 @@
             "value": "[variables('networkSettings')]"
           },
           "azureCloudStorageAccount": {
-            "value": {
-              "name": "[variables('commonVmSettings').storageAccountName]",
-              "key": "[reference('shared').outputs.sharedStorageAccountKey.value]",
-              "suffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]",
-              "install": "[parameters('azureCloudPlugin')]"
-            }
+            "value": "[variables('azureCloudStorageAccount')]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
