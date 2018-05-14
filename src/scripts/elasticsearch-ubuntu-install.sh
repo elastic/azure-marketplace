@@ -681,6 +681,10 @@ configure_elasticsearch_yaml()
 
       log "[configure_elasticsearch_yaml] Configuring HTTP layer encryption"
 
+      # A user may provide a certificate that would fail full verification mode,
+      # so default to which verifies that the provided certificate is signed
+      # by a trusted authority (CA), but does not perform any hostname verification.
+      echo "xpack.ssl.verification_mode: certificate" >> $ES_CONF
       echo "xpack.security.http.ssl.enabled: true" >> $ES_CONF
       echo "xpack.security.http.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
       echo "xpack.security.http.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
@@ -702,8 +706,8 @@ configure_elasticsearch_yaml()
       echo ${TRANSPORT_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-transport.pfx
 
       log "[configure_elasticsearch_yaml] Configuring Transport layer encryption"
-
       echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
+      echo "xpack.security.transport.ssl.verification_mode: certificate " >> $ES_CONF
       echo "xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
       echo "xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
 
