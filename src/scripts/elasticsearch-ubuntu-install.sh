@@ -38,10 +38,10 @@ help()
     echo "-L <plugin;plugin> install additional plugins"
     echo "-C <yaml\nyaml> additional yaml configuration"
 
-    echo "-H base64 encoded PKCS#12 archive (.pfx) certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.pfx) certificate used to secure the HTTP layer"
-    echo "-T base64 encoded PKCS#12 archive (.pfx) certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.pfx) certificate used to secure the transport layer"
+    echo "-H base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
+    echo "-T base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.pfx/.p12) certificate used to secure the transport layer"
 
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
@@ -679,33 +679,30 @@ configure_elasticsearch_yaml()
     if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
       [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
       log "[configure_elasticsearch_yaml] Save HTTP cert blob to file"
-      echo ${HTTP_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-http.pfx
+      echo ${HTTP_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-http.p12
 
       log "[configure_elasticsearch_yaml] Configuring HTTP layer encryption"
 
       # A user may provide a certificate that would fail full verification mode,
-      # so default to which verifies that the provided certificate is signed
+      # so default to mode which verifies that the provided certificate is signed
       # by a trusted authority (CA), but does not perform any hostname verification.
       echo "xpack.ssl.verification_mode: certificate" >> $ES_CONF
       echo "xpack.security.http.ssl.enabled: true" >> $ES_CONF
-      echo "xpack.security.http.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
-      echo "xpack.security.http.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-http.pfx" >> $ES_CONF
+      echo "xpack.security.http.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-http.p12" >> $ES_CONF
+      echo "xpack.security.http.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-http.p12" >> $ES_CONF
 
       if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
         log "[configure_elasticsearch_yaml] Configure HTTP certificate password in keystore"
         create_keystore_if_not_exists
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password -xf
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password -xf
-        log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
-      else
-        log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-        openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain
       fi
 
-      # use HTTPS for calls to localhost and pass cacert flag to curl
+      # use HTTPS for calls to localhost when TLS configured on HTTP layer
       PROTOCOL="https"
-      CURL_SWITCH="--cacert /etc/elasticsearch/ssl/elasticsearch-http-ca.crt"
+      # use the insecure flag to make calls to localhost to bootstrap cluster. curl checks
+      # that the certificate subject name matches the host name when using --cacert
+      CURL_SWITCH="-k"
 
       log "[configure_elasticsearch_yaml] Configured HTTP layer encryption"
     fi
@@ -714,13 +711,13 @@ configure_elasticsearch_yaml()
     if [[ -n "${TRANSPORT_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
       [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
       log "[configure_elasticsearch_yaml] Save Transport cert blob to file"
-      echo ${TRANSPORT_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-transport.pfx
+      echo ${TRANSPORT_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-transport.p12
 
       log "[configure_elasticsearch_yaml] Configuring Transport layer encryption"
       echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
       echo "xpack.security.transport.ssl.verification_mode: certificate " >> $ES_CONF
-      echo "xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
-      echo "xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-transport.pfx" >> $ES_CONF
+      echo "xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-transport.p12" >> $ES_CONF
+      echo "xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-transport.p12" >> $ES_CONF
 
       if [[ -n "${TRANSPORT_CERT_PASSWORD}" ]]; then
         log "[configure_elasticsearch_yaml] Configure Transport certificate password in keystore"
@@ -769,8 +766,11 @@ configure_elasticsearch_yaml()
         SKIP_LINES+="node.master node.data discovery.zen.minimum_master_nodes network.host "
         SKIP_LINES+="discovery.zen.ping.multicast.enabled marvel.agent.enabled "
         SKIP_LINES+="node.max_local_storage_nodes plugin.mandatory cloud.azure.storage.default.account "
-        SKIP_LINES+="cloud.azure.storage.default.key xpack.security.authc shield.authc "
-        SKIP_LINES+="azure.client.default.endpoint_suffix"
+        SKIP_LINES+="cloud.azure.storage.default.key azure.client.default.endpoint_suffix xpack.security.authc "
+        SKIP_LINES+="xpack.ssl.verification_mode xpack.security.http.ssl.enabled "
+        SKIP_LINES+="xpack.security.http.ssl.keystore.path xpack.security.http.ssl.truststore.path "
+        SKIP_LINES+="xpack.security.transport.ssl.enabled xpack.security.transport.ssl.verification_mode "
+        SKIP_LINES+="xpack.security.transport.ssl.keystore.path xpack.security.transport.ssl.truststore.path "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION")

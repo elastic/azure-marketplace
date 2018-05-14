@@ -27,8 +27,8 @@ help()
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
     echo "    -Y      <yaml\nyaml> additional yaml configuration"
-    echo "    -H      PKCS#12 archive (.pfx) certificate used to secure Elasticsearch HTTP layer"
-    echo "    -G      Password for PKCS#12 archive (.pfx) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -H      PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -G      Password for PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
     echo "    -h      view this help content"
 }
 
@@ -233,22 +233,13 @@ configuration_and_plugins()
       # convert PKCS#12 certificate to PEM format
       [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
       log "[configuration_and_plugins] Save Elasticsearch cert blob to file"
-      echo ${HTTP_CERT} | base64 -d | tee /etc/kibana/ssl/elasticsearch-http.pfx
-      if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
-        log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
-        echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
-        log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
-        echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
-        log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-        echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
-      else
-        log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
-        openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys
-        log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
-        openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes
-        log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-        openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.pfx -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain
-      fi
+      echo ${HTTP_CERT} | base64 -d | tee /etc/kibana/ssl/elasticsearch-http.p12
+      log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
+      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
+      log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
+      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
+      log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
+      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
 
       echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
       echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
