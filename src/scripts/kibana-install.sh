@@ -78,7 +78,7 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 
 #Loop through options passed
-while getopts :n:v:u:S:C:K:P:Y:lh optname; do
+while getopts :n:v:u:S:C:K:P:Y:H:G:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
