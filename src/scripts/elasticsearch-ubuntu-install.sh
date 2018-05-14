@@ -697,7 +697,7 @@ configure_elasticsearch_yaml()
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password -xf
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password -xf
         log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-        openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin "pass:${HTTP_CERT_PASSWORD}"
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
       else
         log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
         openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain
