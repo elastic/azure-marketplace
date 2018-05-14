@@ -151,7 +151,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\"')]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\" -Y \"', parameters('topologySettings').kibanaYaml,'\"')]"
           }
         }
       }

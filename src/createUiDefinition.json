@@ -1050,6 +1050,7 @@
       "kibanaKeyBlob": "",
       "kibanaCertBlob": "",
       "kibanaKeyPassphrase": "",
+      "kibanaAdditionalYaml": "",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
       "vmDataDiskCount": 40,

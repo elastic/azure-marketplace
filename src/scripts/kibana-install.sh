@@ -26,6 +26,7 @@ help()
     echo "    -C      kibana cert to encrypt communication between the browser and Kibana"
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
+    echo "    -Y      <yaml\nyaml> additional yaml configuration"
     echo "    -h      view this help content"
 }
 
@@ -70,9 +71,10 @@ USER_KIBANA_PWD="changeme"
 SSL_CERT=""
 SSL_KEY=""
 SSL_PASSPHRASE=""
+YAML_CONFIGURATION=""
 
 #Loop through options passed
-while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
+while getopts :n:v:u:S:C:K:P:Y:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -98,6 +100,9 @@ while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
       ;;
     P) #kibana ssl key passphrase
       SSL_PASSPHRASE="${OPTARG}"
+      ;;
+    Y) #kibana additional yml configuration
+      YAML_CONFIGURATION="${OPTARG}"
       ;;
     h) #show help
       help
@@ -211,6 +216,46 @@ configuration_and_plugins()
 
       log "[configuration_and_plugins] Configured encrypted communication"
     fi
+
+    # Additional yaml configuration
+    if [[ -n "$YAML_CONFIGURATION" ]]; then
+        log "[configuration_and_plugins] include additional yaml configuration"
+        local SKIP_LINES="elasticsearch.username elasticsearch.password "
+        SKIP_LINES+="server.ssl.key server.ssl.cert server.ssl.enabled "
+        SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
+        SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
+        local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
+        IFS=$'\n'
+        for LINE in $(echo -e "$YAML_CONFIGURATION")
+        do
+            if [[ -n "$LINE" ]]; then
+                if [[ $LINE =~ $SKIP_REGEX ]]; then
+                    log "[configuration_and_plugins] Skipping line '$LINE'"
+                else
+                    log "[configuration_and_plugins] Adding line '$LINE' to $KIBANA_CONF"
+                    echo -e "$LINE" >> $KIBANA_CONF
+                fi
+            fi
+        done
+        unset IFS
+        log "[configuration_and_plugins] included additional yaml configuration"
+        log "[configuration_and_plugins] run yaml lint on configuration"
+        install_yamllint
+        LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $KIBANA_CONF; exit ${PIPESTATUS[0]})
+        EXIT_CODE=$?
+        log "[configuration_and_plugins] ran yaml lint (exit code $EXIT_CODE) $LINT"
+        if [ $EXIT_CODE -ne 0 ]; then
+            log "[configuration_and_plugins] errors in yaml configuration. exiting"
+            exit 11
+        fi
+    fi
+}
+
+install_yamllint()
+{
+    log "[install_yamllint] installing yamllint"
+    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
+    log "[install_yamllint] installed yamllint"
 }
 
 install_start_service()

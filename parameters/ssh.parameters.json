@@ -15,6 +15,7 @@
   "kibanaCertBlob":{"value":""},
   "kibanaKeyBlob":{"value":""},
   "kibanaKeyPassphrase":{"value":""},
+  "kibanaAdditionalYaml": { "value":""},
   "jumpbox":{"value":"No"},
   "vmHostNamePrefix":{"value":""},
   "vmSizeDataNodes":{"value":"Standard_D1"},
