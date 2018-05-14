@@ -122,6 +122,8 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 TRANSPORT_CERT=""
 TRANSPORT_CERT_PASSWORD=""
+PROTOCOL="http"
+CURL_SWITCH=""
 
 #Loop through options passed
 while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:Xxyzldjh optname; do
@@ -434,7 +436,7 @@ security_cmd()
 
 node_is_up()
 {
-  curl --output /dev/null --silent --head --fail http://localhost:9200 -u elastic:$1 -H 'Content-Type: application/json'
+  curl --output /dev/null --silent --head --fail $PROTOCOL://localhost:9200 -u elastic:$1 -H 'Content-Type: application/json' $CURL_SWITCH
   return $?
 }
 
@@ -448,7 +450,7 @@ elastic_user_exists()
   fi
 
   exec 17>&1
-  http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' http://localhost:9200/.security/$USER_TYPENAME/elastic -u elastic:$1 | tee /dev/fd/17 | tail -n 1)
+  http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' $PROTOCOL://localhost:9200/.security/$USER_TYPENAME/elastic -u elastic:$1 $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
   curl_error_code=$?
   exec 17>&-
   if [ $http_code -eq 200 ]; then
@@ -488,7 +490,7 @@ curl_ignore_409 () {
 _curl_with_error_code () {
     local curl_error_code http_code
     exec 17>&1
-    http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' "$@" | tee /dev/fd/17 | tail -n 1)
+    http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' "$@" $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
     curl_error_code=$?
     exec 17>&-
     if [ $http_code -eq 409 ]; then
@@ -512,15 +514,15 @@ apply_security_settings()
     else
       log "[apply_security_settings] start updating roles and users"
 
-      local XPACK_USER_ENDPOINT="http://localhost:9200/_xpack/security/user"
-      local XPACK_ROLE_ENDPOINT="http://localhost:9200/_xpack/security/role"
+      local XPACK_USER_ENDPOINT="$PROTOCOL://localhost:9200/_xpack/security/user"
+      local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/_xpack/security/role"
 
       #update builtin `elastic` account.
       local ADMIN_JSON=$(printf '{"password":"%s"}\n' $USER_ADMIN_PWD)
       echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
         #Make sure another deploy did not already change the elastic password
-        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" 'http://localhost:9200/'
+        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
         if [[ $? != 0 ]]; then
           log "[apply_security_settings] could not update the builtin elastic user"
           exit 10
@@ -694,7 +696,16 @@ configure_elasticsearch_yaml()
         create_keystore_if_not_exists
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password -xf
         echo "$HTTP_CERT_PASSWORD" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.http.ssl.truststore.secure_password -xf
+        log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
+        openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin "pass:${HTTP_CERT_PASSWORD}"
+      else
+        log "[configure_elasticsearch_yaml] Create elasticsearch-http-ca.crt from PKCS#12 archive"
+        openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.pfx -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain
       fi
+
+      # use HTTPS for calls to localhost and pass cacert flag to curl
+      PROTOCOL="https"
+      CURL_SWITCH="--cacert /etc/elasticsearch/ssl/elasticsearch-http-ca.crt"
 
       log "[configure_elasticsearch_yaml] Configured HTTP layer encryption"
     fi
