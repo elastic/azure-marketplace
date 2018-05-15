@@ -53,7 +53,7 @@
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
-    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-', string(parameters('topologySettings').dataNodeStorageSettings.dataDisks), 'disk-resources.json')]"
+    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-template.json')]"
   },
   "resources": [
     {
