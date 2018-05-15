@@ -232,21 +232,21 @@ configuration_and_plugins()
     if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
       # convert PKCS#12 certificate to PEM format
       [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
-      log "[configuration_and_plugins] Save Elasticsearch cert blob to file"
+      log "[configuration_and_plugins] Converting PKCS#12 archive for Elasticsearch to PEM format"
       echo ${HTTP_CERT} | base64 -d | tee /etc/kibana/ssl/elasticsearch-http.p12
       log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
-      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
+      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
       log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
-      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
+      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
       log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-      echo "${HTTP_CERT_PASSWORD}" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
+      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
       log "[configuration_and_plugins] Configuring cert for Elasticsearch"
-      echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
       echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
 
       if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
+        echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
         # A user may provide a certificate that would fail full verification mode,
-        # so default to mode which verifies that the provided certificate is signed
+        # so default to certificate mode which verifies that the provided certificate is signed
         # by a trusted authority (CA), but does not perform any hostname verification.
         echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
         echo "elasticsearch.ssl.certificateAuthorities: [ \"/etc/kibana/ssl/elasticsearch-http-ca.crt\" ]" >> $KIBANA_CONF
@@ -255,16 +255,19 @@ configuration_and_plugins()
           echo "elasticsearch.ssl.keyPassphrase: \"$HTTP_CERT_PASSWORD\"" >> $KIBANA_CONF
         fi
       else
+        echo "elasticsearch.ssl.cert: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
         echo "elasticsearch.ssl.ca: /etc/kibana/ssl/elasticsearch-http-ca.crt" >> $KIBANA_CONF
+        # disable verification as it performs hostname verification, which will
+        # likely fail for the certificate supplied and connecting through an internal IP address
+        echo "elasticsearch.ssl.verify: false" >> $KIBANA_CONF
 
-        # remove the passphrase from the key. Kibana 5.2.0 and older do not support
+        # remove the passphrase from the key. Kibana 5.2.0 and older do not support a passphrase
         if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-          echo "${HTTP_CERT_PASSWORD}" | openssl rsa -in /etc/kibana/ssl/elasticsearch-http.key -out /etc/kibana/ssl/elasticsearch-http.key -passin stdin
+          echo "$HTTP_CERT_PASSWORD" | openssl rsa -in /etc/kibana/ssl/elasticsearch-http.key -out /etc/kibana/ssl/elasticsearch-http.key -passin stdin
         fi
       fi
 
       log "[configuration_and_plugins] Configured cert for Elasticsearch"
-      rm /etc/kibana/ssl/elasticsearch-http.p12
     fi
 
     # Additional yaml configuration
@@ -275,7 +278,7 @@ configuration_and_plugins()
         SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
         SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
         SKIP_LINES+="elasticsearch.ssl.certificate elasticsearch.ssl.key elasticsearch.ssl.certificateAuthorities "
-        SKIP_LINES+="elasticsearch.ssl.ca "
+        SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION")
