@@ -240,7 +240,7 @@ configuration_and_plugins()
       echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
       log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
       echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
-      log "[configuration_and_plugins] Configuring cert for Elasticsearch"
+      log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
       echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
 
       if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
@@ -263,11 +263,13 @@ configuration_and_plugins()
 
         # remove the passphrase from the key. Kibana 5.2.0 and older do not support a passphrase
         if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
+          log "[configuration_and_plugins] Removing passphrase from /etc/kibana/ssl/elasticsearch-http.key"
           echo "$HTTP_CERT_PASSWORD" | openssl rsa -in /etc/kibana/ssl/elasticsearch-http.key -out /etc/kibana/ssl/elasticsearch-http.key -passin stdin
+          log "[configuration_and_plugins] Removed passphrase from /etc/kibana/ssl/elasticsearch-http.key"
         fi
       fi
 
-      log "[configuration_and_plugins] Configured cert for Elasticsearch"
+      log "[configuration_and_plugins] Configured TLS for Elasticsearch"
     fi
 
     # Additional yaml configuration
