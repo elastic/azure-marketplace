@@ -238,14 +238,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the certificate (.crt) to secure HTTP communication between the browser and Kibana."
+        "description": "A Base-64 encoded form of the PEM certificate (.crt) to secure HTTP communication between the browser and Kibana."
       }
     },
     "kibanaKeyBlob": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the private key (.key) to secure HTTP communication between the browser and Kibana."
+        "description": "A Base-64 encoded form of the PEM private key (.key) to secure HTTP communication between the browser and Kibana."
       }
     },
     "kibanaKeyPassphrase": {
