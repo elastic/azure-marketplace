@@ -30,10 +30,23 @@ the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a hr
 
 ### VERY IMPORTANT
 
-**By default, this template does not configure SSL/TLS for communication with Elasticsearch through an external load balancer. It is strongly recommended that you secure
+**By default, this template does not configure** 
+
+- **TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
+- **TLS for communication between Elasticsearch nodes via the Transport layer**
+- **TLS for communication beween the browser and Kibana**
+
+**It is strongly recommended that you secure
 communication before using in production.**
 
-You can secure external access to the cluster with TLS by using `gateway` as the `loadBalancerType` and supplying a PFX certificate with the `appGatewayCertBlob` parameter. This sets
+You can secure external access to the cluster with TLS by either
+
+1. using `external` as the `loadBalancerType` and supplying a PKCS#12 archive certificate with the
+`esHttpCertBlob` parameter to secure the HTTP layer, and supplying a PKCS#12 archive certificate with the `esTransportCertBlob` parameter to secure the Transport layer. Both parameters require that X-Pack plugin be installed.
+
+or
+
+2. using `gateway` as the `loadBalancerType` and supplying a PKCS#12 archive certificate with the `appGatewayCertBlob` parameter. This sets
 the cluster up to use [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/) for load balancing and SSL offload.
 
 You can secure external access from the browser to Kibana with TLS by supplying a certificate and private key with `kibanaCertBlob` and `kibanaKeyBlob`, respectively.
