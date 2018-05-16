@@ -283,16 +283,15 @@ configuration_and_plugins()
         SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
-        for LINE in $(echo -e "$YAML_CONFIGURATION")
-        do
-            if [[ -n "$LINE" ]]; then
-                if [[ $LINE =~ $SKIP_REGEX ]]; then
-                    log "[configuration_and_plugins] Skipping line '$LINE'"
-                else
-                    log "[configuration_and_plugins] Adding line '$LINE' to $KIBANA_CONF"
-                    echo -e "$LINE" >> $KIBANA_CONF
-                fi
-            fi
+        for LINE in $(echo -e "$YAML_CONFIGURATION"); do
+          if [[ -n "$LINE" ]]; then
+              if [[ $LINE =~ $SKIP_REGEX ]]; then
+                  log "[configuration_and_plugins] Skipping line '$LINE'"
+              else
+                  log "[configuration_and_plugins] Adding line '$LINE' to $KIBANA_CONF"
+                  echo "$LINE" >> $KIBANA_CONF
+              fi
+          fi
         done
         unset IFS
         log "[configuration_and_plugins] included additional yaml configuration"

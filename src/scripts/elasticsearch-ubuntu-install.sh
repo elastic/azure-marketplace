@@ -813,16 +813,15 @@ configure_elasticsearch_yaml()
         SKIP_LINES+="xpack.security.transport.ssl.keystore.path xpack.security.transport.ssl.truststore.path "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
-        for LINE in $(echo -e "$YAML_CONFIGURATION")
-        do
-            if [[ -n "$LINE" ]]; then
-                if [[ $LINE =~ $SKIP_REGEX ]]; then
-                    log "[configure_elasticsearch_yaml] Skipping line '$LINE'"
-                else
-                    log "[configure_elasticsearch_yaml] Adding line '$LINE' to $ES_CONF"
-                    echo -e "$LINE" >> $ES_CONF
-                fi
-            fi
+        for LINE in $(echo -e "$YAML_CONFIGURATION"); do
+          if [[ -n "$LINE" ]]; then
+              if [[ $LINE =~ $SKIP_REGEX ]]; then
+                  log "[configure_elasticsearch_yaml] Skipping line '$LINE'"
+              else
+                  log "[configure_elasticsearch_yaml] Adding line '$LINE' to $ES_CONF"
+                  echo "$LINE" >> $ES_CONF
+              fi
+          fi
         done
         unset IFS
         log "[configure_elasticsearch_yaml] included additional yaml configuration"
