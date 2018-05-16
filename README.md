@@ -134,6 +134,22 @@ posts for further information
     Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
+  <tr><td>esHttpCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esHttpCertPassword</td><td>securestring</td>
+    <td>The password for the PKCS#12 archive (.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be encrypted. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esTransportCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esTransportCertPassword</td><td>securestring</td>
+    <td>The password for the PKCS#12 archive (.pfx) certificate to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be encrypted. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP address that
     has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
@@ -146,13 +162,16 @@ posts for further information
     </td><td><code>Standard_A2</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the certificate (.crt) to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
+    <td>A Base-64 encoded form of the certificate (.crt) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaKeyBlob</td><td>securestring</td>
-    <td>A Base-64 encoded form of the private key (.key) to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
+    <td>A Base-64 encoded form of the private key (.key) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
-    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+</td><td><code>""</code></td></tr>
+    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. <strong>Supported only in 5.3.0+</strong></td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaAdditionalYaml</td><td>string</td>
+    <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
