@@ -31,6 +31,7 @@ help()
     echo "    -G      Password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure Elasticsearch HTTP layer"
     echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Elasticsearch HTTP layer"
     echo "    -J      Password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Elasticsearch HTTP layer"
+    echo "    -U      Public domain name (and optional port) for this instance of Kibana to configure SAML Single-Sign-On"
     echo "    -h      view this help content"
 }
 
@@ -80,9 +81,10 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 HTTP_CACERT=""
 HTTP_CACERT_PASSWORD=""
+SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
+while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:U:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -120,6 +122,9 @@ while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
       ;;
     J) #Elasticsearch CA certificate password
       HTTP_CACERT_PASSWORD="${OPTARG}"
+      ;;
+    U) #Service Provider URI
+      SAML_SP_URI="${OPTARG}"
       ;;
     Y) #kibana additional yml configuration
       YAML_CONFIGURATION="${OPTARG}"
@@ -277,6 +282,33 @@ configuration_and_plugins()
       log "[configuration_and_plugins] Configured TLS for Elasticsearch"
     fi
 
+    # Configure SAML Single-Sign-On
+    if [[ -n "$SAML_SP_URI" && ${INSTALL_XPACK} -ne 0 ]]; then
+      log "[configuration_and_plugins] Configuring Kibana for SAML Single-Sign-On"
+      # Allow both saml and basic realms
+      echo "xpack.security.authProviders: [ saml,basic ]" >> $KIBANA_CONF
+      echo "server.xsrf.whitelist: [ /api/security/v1/saml ]" >> $KIBANA_CONF
+
+      local PROTOCOL="`echo $SAML_SP_URI | grep '://' | sed -e's,^\(.*://\).*,\1,g'`"
+      local HOSTNAME_AND_PORT=`echo $SAML_SP_URI | sed -e s,$PROTOCOL,,g`
+      local HOSTNAME=`echo $HOSTNAME_AND_PORT | sed -e s,.*@,,g | cut -d: -f1`
+      local PORT=`echo $HOSTNAME_AND_PORT | grep : | cut -d: -f2`
+      if [[ -z "$PORT" ]]; then
+        if [[ "$PROTOCOL" == "https://" ]]; then
+          PORT=443
+        else
+          PORT=80
+        fi
+      fi
+
+      # Kibana is reached through a Public IP address (or a provided URI)
+      # so needs to be configured with this for SAML SSO
+      echo "xpack.security.public.protocol: ${PROTOCOL%://}" >> $KIBANA_CONF
+      echo "xpack.security.public.hostname: \"${HOSTNAME%/}\"" >> $KIBANA_CONF
+      echo "xpack.security.public.port: ${PORT%/}" >> $KIBANA_CONF
+      log "[configuration_and_plugins] Configured Kibana for SAML Single-Sign-On"
+    fi
+
     # Additional yaml configuration
     if [[ -n "$YAML_CONFIGURATION" ]]; then
         log "[configuration_and_plugins] include additional yaml configuration"
@@ -286,6 +318,8 @@ configuration_and_plugins()
         SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
         SKIP_LINES+="elasticsearch.ssl.certificate elasticsearch.ssl.key elasticsearch.ssl.certificateAuthorities "
         SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
+        SKIP_LINES+="xpack.security.authProviders server.xsrf.whitelist "
+        SKIP_LINES+="xpack.security.public.protocol xpack.security.public.hostname xpack.security.public.port "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION"); do

@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
-      "type": "string",
-      "metadata": {
-        "description": "Base uri of resources"
-      }
-    },
     "location": {
       "type": "string",
       "metadata": {
@@ -18,37 +12,6 @@
       "type": "string",
       "metadata": {
         "description": "The unique namespace for the Kibana VM"
-      }
-    },
-    "networkSettings": {
-      "type": "object",
-      "metadata": {
-        "description": "Network settings"
-      }
-    },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
-      }
-    },
-    "credentials": {
-      "type": "secureObject",
-      "metadata": {
-        "description": "Credentials information block"
-      }
-    },
-    "osSettings": {
-      "type": "object",
-      "metadata": {
-        "description": "Platform and OS settings"
-      }
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_A1",
-      "metadata": {
-        "description": "Size of the Kibana VM"
       }
     },
     "https": {
@@ -72,7 +35,36 @@
       }
     }
   },
-  "variables": {},
-  "resources": [],
-  "outputs": {}
+  "variables": {
+    "namespace": "[parameters('namespace')]",
+    "publicIpName": "[concat(variables('namespace'), '-ip')]",
+    "httpsOpts": {
+      "Yes" : "https://",
+      "No" : "http://"
+    },
+    "https": "[variables('httpsOpts')[parameters('https')]]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIpName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat('kb-', uniqueString(resourceGroup().id))]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "fqdn": {
+      "value": "[concat(variables('https'), reference(variables('publicIpName')).dnsSettings.fqdn, ':5601')]",
+      "type": "string"
+    }
+  }
 }

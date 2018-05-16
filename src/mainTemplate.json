@@ -180,6 +180,20 @@
         "description": "The password for the generated certificate used to secure Transport layer of Elasticsearch"
       }
     },
+    "samlMetadataUri": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The URI from which the metadata file for the Identity Provider can be retrieved to configure SAML Single-Sign-On"
+      }
+    },
+    "samlServiceProviderUri": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The public URI for the Service Provider to configure SAML Single-Sign-On. If samlMetadataUri is provided but a value is not provided for samlServiceProviderUri, the public domain name for the Kibana instance will be used"
+      }
+    },
     "kibana": {
       "type": "string",
       "defaultValue": "Yes",
@@ -859,7 +873,9 @@
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
       "securityLogstashPwd": "[parameters('securityLogstashPassword')]",
-      "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]"
+      "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]",
+      "samlMetadataUri": "[parameters('samlMetadataUri')]",
+      "samlServiceProviderUri": "[parameters('samlServiceProviderUri')]"
     },
     "phoneHomeSettings": {
       "email": "[parameters('userEmail')]",
@@ -1206,7 +1222,12 @@
       "firewallMode": "[parameters('appGatewayWafMode')]",
       "backendCert": "[parameters('appGatewayEsHttpCertBlob')]",
       "backendProtocol": "[if(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), 'Https', 'Http')]"
-    }
+    },
+    "kibanaIpTemplates": {
+      "No": "empty/empty-kibana-ip-resources.json",
+      "Yes": "ips/kibana-ip-resources.json"
+    },
+    "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]"
   },
   "resources": [
     {
@@ -1254,6 +1275,32 @@
       }
     },
     {
+      "name": "kibana-ip",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('kibanaIpTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[variables('commonVmSettings').location]"
+          },
+          "namespace": {
+            "value": "[concat(variables('commonVmSettings').namespacePrefix, 'kibana')]"
+          },
+          "https": {
+            "value": "[variables('topologySettings').kibanaHttps]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        }
+      }
+    },
+    {
       "name": "loadbalancer",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
@@ -1285,7 +1332,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]"
+        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
+        "[concat('Microsoft.Resources/deployments/', 'kibana-ip')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -1315,6 +1363,9 @@
           "azureCloudStorageAccount": {
             "value": "[variables('azureCloudStorageAccount')]"
           },
+          "kibanaIp": {
+            "value": "[reference('kibana-ip').outputs.fqdn.value]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -1328,7 +1379,7 @@
       "type": "string"
     },
     "kibana": {
-      "value": "[reference('virtual-machines').outputs.kibana.value]",
+      "value": "[reference('kibana-ip').outputs.fqdn.value]",
       "type": "string"
     },
     "jumpboxssh": {

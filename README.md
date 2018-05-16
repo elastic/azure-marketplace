@@ -5,19 +5,9 @@ This repository consists of:
 * [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.
 * [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. This file produces an output JSON that the ARM template can accept as input parameters.
 
-## Building
-
-After pulling the source, call `npm install` once to pull in all devDependencies.
-
-You may edit [build/allowedValues.json](build/allowedValues.json), which the build will use to patch the ARM template and Marketplace UI definition.
-
-Run `npm run build`; this will validate EditorConfig settings, JSON files, patch the allowedValues and create a zip in the `dist` folder.
-
-For more details around developing the template, take a look at the [Development README](build/README.md)
-
 ## Azure Marketplace
 
-The Azure Marketplace Elasticsearch offering offers a simplified UI and installation experience over the full power of the ARM template. 
+The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
 It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack plugins](https://www.elastic.co/products/x-pack).
 
@@ -63,7 +53,7 @@ Marketplace. In fact, there are many features in the ARM template that are
 not exposed within the Marketplace such as configuring
 
 * Azure Storage account to use with Azure Repository plugin for Snapshot/Restore
-* Application Gateway to use for TLS and SSL offload
+* Application Gateway to use for SSL/TLS and SSL offload
 * The number and size of disks to attach to each data node VM
 
 Check out our [**examples repository**](https://github.com/elastic/azure-marketplace-examples)
@@ -79,15 +69,15 @@ The ARM template accepts a _lot_ of parameters, although many of them are option
 in conjunction with other parameters.
 
 <table>
-  <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
+  <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Requirements</th><th>Default Value</th></tr>
 
   <tr><td>artifactsBaseUrl</td><td>string</td>
     <td>The base url of the Elastic ARM template.
-    </td><td>Raw content of the current branch</td></tr>
+    </td><td><strong>Required</strong></td><td>Raw content of the current branch</td></tr>
 
   <tr><td>esVersion</td><td>string</td>
-    <td>A valid supported Elasticsearch version. See <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json#L15">this list for supported versions</a>
-    </td><td>The latest version of Elasticsearch supported by the ARM template version</td></tr>
+    <td>A valid supported Elasticsearch version for the target template version. See <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json">this list for supported versions</a>
+    </td><td><strong>Required</strong></td><td>Latest version supported by target template version</td></tr>
 
   <tr><td>esClusterName</td><td>string</td>
     <td> The name of the Elasticsearch cluster. <strong>Required</strong>
@@ -100,7 +90,7 @@ in conjunction with other parameters.
     <li>By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
     load balancer.</li>
     <li>By choosing <code>gateway</code>, <a href="https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-introduction">Application Gateway</a> will be deployed for load balancing, 
-    allowing a PFX certificate to be supplied for transport layer security to and from Application Gateway, and providing SSL offload. 
+    allowing a PKCS#12 archive (.pfx/.p12) containing the certificate and key to be supplied for SSL/TLS to and from Application Gateway, and providing SSL offload.
     An internal load balancer will also deployed. Application Gateway and Kibana communicate with the cluster through the internal
     load balancer.</li>
     </ul>
@@ -133,7 +123,7 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalYaml</td><td>string</td>
-    <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"action.auto_create_index: .security\nindices.queries.cache.size: 5%"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
+    <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHeapSize</td><td>integer</td>
@@ -169,6 +159,22 @@ in conjunction with other parameters.
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
     <td>The password to protect the generated PKCS#12 archive on each node. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>samlMetadataUri</td><td>string</td>
+    <td>The URI from which the metadata file for the Identity Provider can be retrieved to configure SAML Single-Sign-On. For Azure Active Directory, this can be found in the Single-Sign-On settings of the Enterprise Application, and will look something like <code>https://login.microsoftonline.com/&lt;guid&gt;/federationmetadata/2007-06/federationmetadata.xml?appid=&lt;guid&gt;</code><ul>
+    <li><strong>Supported only for Elasticsearch 6.2.0+</strong></li>
+    <li><strong>Kibana must be installed</strong></li>
+    <li><strong>X-Pack plugin must be installed with a level of license that enables the SAML realm.</strong></li>
+    <li><strong>SSL/TLS must be configured for HTTP layer of Elasticsearch</strong></li></ul>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>samlServiceProviderUri</td><td>string</td>
+    <td>The public URI for the Service Provider to configure SAML Single-Sign-On. If <code>samlMetadataUri</code> is provided but no value is provided for <code>samlServiceProviderUri</code>, the public domain name for the deployed Kibana instance will be used.<ul>
+    <li><strong>Supported only for Elasticsearch 6.2.0+</strong></li>
+    <li><strong>Kibana must be installed</strong></li>
+    <li><strong>X-Pack plugin must be installed with a level of license that enables the SAML realm.</strong></li>
+    <li><strong>SSL/TLS must be configured for HTTP layer of Elasticsearch</strong></li></ul>
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
@@ -218,7 +224,7 @@ in conjunction with other parameters.
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
     <li>When 0 disks are selected, no disks will be attached to each data node. Instead, the temporary disk will be used to store Elasticsearch data.
-    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a>
+    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
     to understand the trade-offs in using it for storage.</strong>
     </li>
     </ul>
@@ -440,7 +446,7 @@ parameters from the ARM template.
 
 You can deploy using the template directly from Github using the Azure CLI or Azure PowerShell
 
-#### Azure CLI 1.0
+### Azure CLI 1.0
 
 1. Log into Azure
 
@@ -460,16 +466,10 @@ You can deploy using the template directly from Github using the Azure CLI or Az
   azure group create <name> <location>
   ```
 
-4. Use our published template directly using `--template-uri`
+4. Use our template directly from GitHub using `--template-uri`
 
 ```sh
 azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/tls/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
-```
-
-or if your are executing commands from a clone of this repo using `--template-file`
-
-```sh
-azure group deployment create --template-file src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
 ```
 
 where `<name>` refers to the resource group you just created.
@@ -478,7 +478,32 @@ where `<name>` refers to the resource group you just created.
 
 The `--parameters-file` can specify a different location for the items that get provisioned inside of the resource group. Make sure these are the same prior to deploying if you need them to be. Omitting location from the parameters file is another way to make sure the resources get deployed in the same location as the resource group.
 
-#### Azure PowerShell
+### Azure CLI 2.0
+
+1. Log into Azure
+
+```sh
+  az login
+```
+2. Create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
+
+  ```sh
+  az group create --name <name> --location <location>
+  ```
+
+3. Use our template directly from GitHub using `--template-uri`
+
+```sh
+az group deployment create \
+  --name deployment-name \
+  --resource-group <name> \
+  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/sso/src/mainTemplate.json \
+  --parameters @parameters/password.parameters.json
+```
+
+where `<name>` refers to the resource group you just created.
+
+### Azure PowerShell
 
 1. Log into Azure
 
@@ -522,11 +547,11 @@ The `--parameters-file` can specify a different location for the items that get 
   New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/tls/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
 
-### Targeting a specific template version
+## Targeting a specific template version
 
 You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
 
-**Targeting a specific template version is recommended for repeatable deployments.**
+**Targeting a specific template version is recommended for repeatable deployments in production.**
 
 For example, to target the [`6.2.4` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.4)
 
@@ -534,6 +559,7 @@ For example, to target the [`6.2.4` tag release with PowerShell](https://github.
 $templateVersion = "6.2.4"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
+# minimum parameters required to deploy
 $clusterParameters = @{
     "artifactsBaseUrl" = $templateBaseUrl
     "esVersion" = "6.2.4"
@@ -545,8 +571,12 @@ $clusterParameters = @{
     "securityLogstashPassword" = "Password123"
 }
 
-New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
-New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
+$resourceGroup = "my-azure-cluster"
+$location = "Australia Southeast"
+$name = "my-azure-cluster"
+
+New-AzureRmResourceGroup -Name $resourceGroup -Location $location
+New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
 ```
 
 ## Configuring TLS
@@ -595,10 +625,10 @@ If you choose `external` as the value for `loadBalancerType`, you must either
 * supply a PKCS#12 archive containing the key and certificate with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
-Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
-One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 
 **_or_**
+   <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
+</a>
 
 * supply a PKCS#12 archive containing the key and certificate with the `esHttpCaCertBlob` parameter (and optional 
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate

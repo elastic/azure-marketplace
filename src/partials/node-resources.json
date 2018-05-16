@@ -406,10 +406,6 @@
     }
   ],
   "outputs": {
-    "kibana": {
-      "value": "[reference('kibana').outputs.fqdn.value]",
-      "type": "string"
-    },
     "jumpboxssh": {
       "value": "[reference('jumpbox').outputs.ssh.value]",
       "type": "string"

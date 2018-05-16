@@ -1029,6 +1029,8 @@
       "esTransportCaCertBlob": "",
       "esTransportCaCertPassword": "",
       "esTransportCertPassword": "",
+      "samlMetadataUri": "",
+      "samlServiceProviderUri": "",
       "esHeapSize": 0,
       "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
