@@ -2,6 +2,7 @@ var config = require('../.test.json');
 var gulp = require("gulp");
 const execFile = require('child_process').execFile;
 var fs = require('fs');
+var path = require('path');
 var _ = require('lodash');
 var dateFormat = require("dateformat");
 var git = require('git-rev')
@@ -12,10 +13,9 @@ var request = require('request');
 var hostname = require("os").hostname();
 var operatingSystem = require("os").platform();
 var compareVersions = require('compare-versions');
+var argv = require('yargs').argv;
 
-var azureCli = "../node_modules/.bin/azure";
-if (operatingSystem === "win32")
-  azureCli = "..\\node_modules\\.bin\\azure.cmd";
+var azureCli = (operatingSystem === "win32")? "..\\node_modules\\.bin\\azure.cmd" : "../node_modules/.bin/azure";
 var artifactsBaseUrl = "";
 var templateUri = "";
 var armTests = {};
@@ -42,6 +42,15 @@ var exampleParameters = require("../../parameters/password.parameters.json");
 var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
+
+  // replace cert parameters with values with base64 encoded certs
+  ["esHttpCertBlob","esTransportCertBlob","kibanaCertBlob","kibanaKeyBlob","appGatewayCertBlob"].forEach(k => {
+    if (test.parameters[k] && test.parameters[k].value) {
+      var cert = fs.readFileSync("certs/" + test.parameters[k].value);
+      test.parameters[k].value = new Buffer(cert).toString("base64");
+    }
+  });
+
   log(t, `parameters: ${JSON.stringify(test.parameters, null, 2)}`);
   var testParameters = merge.recursive(true, exampleParameters, test.parameters);
   testParameters.artifactsBaseUrl.value = artifactsBaseUrl;
@@ -55,19 +64,35 @@ var bootstrapTest = (t, defaultVersion) =>
   testParameters.securityLogstashPassword.value = config.deployments.securityPassword;
   testParameters.esVersion.value = defaultVersion;
 
+  // Some parameters are longer than the max allowed characters for cmd on Windows.
+  // Persist to file and pass the file path for parameters
+  var resourceGroup = "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var testParametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
+  fs.writeFileSync(testParametersFile, JSON.stringify(testParameters, null, 2));
+
   return {
-    resourceGroup: "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
+    resourceGroup: resourceGroup,
     location: test.location,
     isValid: test.isValid,
     why: test.why,
     deploy: test.deploy,
-    params: testParameters
+    params: testParameters,
+    paramsFile: testParametersFile
   }
 }
 
 var bootstrap = (cb) => {
   var allowedValues = require('../allowedValues.json');
-  var defaultVersion = _.last(allowedValues.versions);
+  var defaultVersion = argv.version ?
+    argv.version == "random" ?
+      _.sample(allowedValues.versions)
+      : argv.version
+    : _.last(allowedValues.versions);
+
+  if (!_.includes(allowedValues.versions, defaultVersion)){
+    return bailOut(new Error("No version in allowedValues.versions matching " + defaultVersion));
+  }
+
   git.branch(function (branch) {
     artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
@@ -186,13 +211,12 @@ var validateTemplates = function(cb) {
 
 var validateTemplate = (test, cb) => {
   var t = armTests[test];
-  var p = JSON.stringify(t.params);
   var rg = t.resourceGroup;
   createResourceGroup(test, () => {
     var validateGroup = [ 'group', 'template', 'validate',
       '--resource-group', rg,
       '--template-uri', templateUri,
-      '--parameters', p,
+      '--parameters-file', t.paramsFile,
       '--json'
     ];
     log(`validating ${test} in resource group: ${rg}`);
@@ -253,10 +277,10 @@ var sanityCheckDeployment = (test, stdout, cb) => {
 
   if (stdout) {
     var outputs = JSON.parse(stdout).properties.outputs;
-    if (outputs.loadbalancer.value !== "N/A")
+  if (outputs.loadbalancer.value !== "N/A")
       checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
-    if (outputs.kibana.value !== "N/A")
-      checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
+  if (outputs.kibana.value !== "N/A")
+    checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
   }
 
   if (t.params.loadBalancerType.value === "gateway")
@@ -360,12 +384,11 @@ var sanityCheckKibana = (test, url, cb) => {
 var deployTemplate = (test, cb) => {
   var t = armTests[test];
   if (!t.isValid || !t.deploy) return;
-  var p = JSON.stringify(t.params)
   var rg = t.resourceGroup;
   var deployGroup = [ 'group', 'deployment', 'create',
     '--resource-group', rg,
     '--template-uri', templateUri,
-    '--parameters', p,
+    '--parameters-file', t.paramsFile,
     '--quiet',
     '--json'
   ];
@@ -389,7 +412,6 @@ gulp.task("test", ["clean"], function(cb) {
 
 gulp.task("deploy-all", ["clean"], function(cb) {
   login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
-  //login(() => validateTemplates(() => deployTemplates(() => () => logout(cb))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
