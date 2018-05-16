@@ -8,7 +8,7 @@
 		"loadBalancerType":{"value":"internal"},
     "kibana":{"value":"Yes"},
     "kibanaAdditionalYaml":{"value":"server.name: \"My server\"\nkibana.index: \".my-kibana-index\""},
-    "esAdditionalYaml":{"value":"action.auto_create_index: .security\nindices.queries.cache.size: 5%"},
+    "esAdditionalYaml":{"value":"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"},
 		"jumpbox":{"value":"No"},
 		"vmSizeKibana":{"value":"Standard_DS1_v2"},
 		"vmSizeDataNodes":{"value":"Standard_DS1_v2"},
