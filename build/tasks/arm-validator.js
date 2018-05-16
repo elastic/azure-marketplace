@@ -325,8 +325,17 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
-  var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
-  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword }, strictSSL: false };
+  var opts = { json: true, auth: { username: "elastic", password: config.deployments.securityPassword } };
+
+  if (t.params.esHttpCertBlob) {
+    if (t.params.esHttpCertPassword) {
+      opts = merge.recursive(true, opts, { pfx: fs.readFileSync("certs/cert-with-password.pfx"), passphrase: t.params.esHttpCertPassword });
+    }
+    else {
+      opts = merge.recursive(true, opts, { pfx: fs.readFileSync("certs/cert-no-password.pfx") });
+    }
+  }
+
   request(url, opts, (error, response, body) => {
     if (!error && response.statusCode == 200) {
       log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
@@ -365,8 +374,17 @@ var sanityCheckKibana = (test, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   log(`checking kibana at ${url} in resource group: ${rg}`);
-  var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
-  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword } };
+  var opts = { json: true, auth: { username: "elastic", password: config.deployments.securityPassword } };
+
+  if (t.params.kibanaCertBlob) {
+    if (t.params.kibanaKeyPassphrase) {
+      opts = merge.recursive(true, opts, { ca: fs.readFileSync("certs/ca-cert-with-password.crt"), passphrase: t.params.kibanaKeyPassphrase });
+    }
+    else {
+      opts = merge.recursive(true, opts, { ca: fs.readFileSync("certs/ca-cert-no-password.crt") });
+    }
+  }
+
   request(`${url}/api/status`, opts, function (error, response, body) {
     var state = (body)
       ? body.status && body.status.overall

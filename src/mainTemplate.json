@@ -138,28 +138,28 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx) certificate used to secure HTTP layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esHttpCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx) certificate used to secure HTTP layer of Elasticsearch"
+        "description": "The password for the PKCS#12 archive (.pfx/.p12) certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esTransportCertBlob": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx) certificate used to secure Transport layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "esTransportCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx) certificate used to secure Transport layer of Elasticsearch"
+        "description": "The password for the PKCS#12 archive (.pfx/.p12) certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "kibana": {
