@@ -93,11 +93,14 @@ var bootstrap = (cb) => {
     return bailOut(new Error("No version in allowedValues.versions matching " + defaultVersion));
   }
 
+  var templateMatcher = new RegExp(argv.test || ".*");
+
   git.branch(function (branch) {
     artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
     log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))
+      .filter(t => templateMatcher.test(t))
       .indexBy((f) => f)
       .mapValues(t => bootstrapTest(t, defaultVersion))
       .value();
