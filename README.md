@@ -55,7 +55,7 @@ You can secure external access from the browser to Kibana with TLS by supplying 
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fsso%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fsso%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Ftls%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Ftls%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -443,7 +443,7 @@ You can deploy using the template directly from Github using the Azure CLI or Az
 4. Use our published template directly using `--template-uri`
 
 ```sh
-azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/sso/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
+azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/feature/tls/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
 ```
 
 or if your are executing commands from a clone of this repo using `--template-file`
@@ -476,7 +476,7 @@ The `--parameters-file` can specify a different location for the items that get 
 
   ```powershell
   $clusterParameters = @{
-      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/feature/sso/src"
+      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/feature/tls/src"
       "esVersion" = "6.2.1"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
@@ -499,7 +499,7 @@ The `--parameters-file` can specify a different location for the items that get 
 5. Use our template directly from GitHub
 
   ```powershell
-  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/sso/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
+  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/tls/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
 
 ### Targeting a specific template version
@@ -531,7 +531,7 @@ New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName 
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Fsso%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Ftls%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
