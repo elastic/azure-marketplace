@@ -94,6 +94,13 @@
         "description": "The access key of an existing storage account to use for snapshots with Azure Repository plugin"
       }
     },
+    "azureCloudStorageAccountSuffix": {
+      "type": "string",
+      "defaultValue": "core.windows.net",
+      "metadata": {
+        "description": "The suffix of an existing storage account to use for snapshots with Azure Cloud plugin"
+      }
+    },
     "xpackPlugins": {
       "type": "string",
       "allowedValues": [
@@ -779,6 +786,7 @@
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
+      "suffix": "[parameters('azureCloudStorageAccountSuffix')]",
       "install": "[parameters('azureCloudPlugin')]"
     },
     "esSettings": {
@@ -1132,6 +1140,7 @@
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
       "vmSizeDataNodes": "[parameters('vmSizeDataNodes')]",
+      "vmDataNodeStorageAccountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
       "vmHostNamePrefix": "[parameters('vmHostNamePrefix')]",
       "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
       "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",

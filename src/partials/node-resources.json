@@ -53,7 +53,7 @@
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
-    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-', string(parameters('topologySettings').dataNodeStorageSettings.dataDisks), 'disk-resources.json')]"
+    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'datanodes/data-node-template.json')]"
   },
   "resources": [
     {
@@ -77,8 +77,8 @@
               "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'master-')]",
               "installScript": "[parameters('osSettings').extensionSettings.master]",
               "size": "[parameters('topologySettings').vmSizeMasterNodes]",
+              "storageAccountType":"Standard_LRS",
               "count": 3,
-              "useSharedStorageAccount": "Yes",
               "useBackendPools": "No",
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]"
@@ -112,7 +112,7 @@
               "installScript": "[parameters('osSettings').extensionSettings.client]",
               "size": "[parameters('topologySettings').vmSizeClientNodes]",
               "count": "[parameters('topologySettings').vmClientNodeCount]",
-              "useSharedStorageAccount": "Yes",
+              "storageAccountType":"Standard_LRS",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]"
@@ -144,8 +144,8 @@
               "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'data-')]",
               "installScript": "[parameters('osSettings').extensionSettings.data]",
               "size": "[parameters('topologySettings').vmSizeDataNodes]",
+              "storageAccountType": "[parameters('topologySettings').vmDataNodeStorageAccountType]",
               "count": "[parameters('topologySettings').vmDataNodeCount]",
-              "useSharedStorageAccount": "No",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]"

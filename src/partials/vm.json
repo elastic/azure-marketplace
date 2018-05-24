@@ -28,8 +28,8 @@
     },
     "dataDisks": {
       "type": "object",
-      "defaultValue" : {
-        "disks" : []
+      "defaultValue": {
+        "disks": []
       },
       "metadata": {
         "description": "additional data disks to attach"
@@ -46,7 +46,7 @@
     }
   },
   "variables": {
-    "namespace" : "[parameters('vm').namespace]",
+    "namespace": "[parameters('vm').namespace]",
     "computername": "[concat(parameters('vm').namespace, parameters('index'))]",
     "password_osProfile": {
       "computername": "[variables('computername')]",
@@ -59,10 +59,12 @@
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
         "ssh": {
-          "publicKeys": [ {
-            "path": "[concat('/home/', parameters('vm').shared.credentials.adminUsername, '/.ssh/authorized_keys')]",
-            "keyData": "[parameters('vm').shared.credentials.sshPublicKey]"
-          } ]
+          "publicKeys": [
+            {
+              "path": "[concat('/home/', parameters('vm').shared.credentials.adminUsername, '/.ssh/authorized_keys')]",
+              "keyData": "[parameters('vm').shared.credentials.sshPublicKey]"
+            }
+          ]
         }
       }
     },
@@ -93,7 +95,7 @@
       }
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('namespace'), parameters('index'))]",
       "location": "[parameters('vm').shared.location]",
@@ -114,14 +116,14 @@
         "storageProfile": {
           "imageReference": "[parameters('vm').imageReference]",
           "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('vm').shared.storageAccountName), '2016-01-01').primaryEndpoints.blob, 'vhds/', variables('namespace'), parameters('index'), '-osdisk.vhd')]"
+            "name": "[concat(variables('namespace'), parameters('index'), '-osdisk')]",
+            "managedDisk": {
+              "storageAccountType": "[parameters('vm').storageAccountType]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
           },
-          "dataDisks" : "[parameters('dataDisks').disks]"
+          "dataDisks": "[parameters('dataDisks').disks]"
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -145,6 +147,5 @@
       ]
     }
   ],
-  "outputs": {
-  }
+  "outputs": {}
 }

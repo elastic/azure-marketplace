@@ -84,8 +84,10 @@ var login = (cb) => bootstrap(() => {
   var login = [ 'login', '--service-principal',
     '--username', config.arm.clientId,
     '--password', config.arm.clientSecret,
-    '--tenant', config.arm.tenantId
+    '--tenant', config.arm.tenantId,
+    '-e', config.arm.environment
   ];
+
   log("logging into azure cli tooling")
   var child = execFile(azureCli, login, (error, stdout, stderr) => {
     if (error || stderr) return bailOutNoCleanUp(error || new Error(stderr));
