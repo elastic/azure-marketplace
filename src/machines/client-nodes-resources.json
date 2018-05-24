@@ -36,7 +36,10 @@
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "properties": {},
+      "properties": {
+        "platformUpdateDomainCount": 20,
+        "platformFaultDomainCount": 3
+      },
       "sku": {
         "name": "Aligned"
       }

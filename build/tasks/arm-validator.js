@@ -42,7 +42,7 @@ var exampleParameters = require("../../parameters/password.parameters.json");
 var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
-  log(t, "parameters: " + JSON.stringify(test.parameters, null, 2));
+  log(t, `parameters: ${JSON.stringify(test.parameters, null, 2)}`);
   var testParameters = merge.recursive(true, exampleParameters, test.parameters);
   testParameters.artifactsBaseUrl.value = artifactsBaseUrl;
   testParameters.adminUsername.value = config.deployments.username;
@@ -71,7 +71,7 @@ var bootstrap = (cb) => {
   git.branch(function (branch) {
     artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
     templateUri = artifactsBaseUrl + "/mainTemplate.json";
-    log("Using template: " + templateUri, false);
+    log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))
       .indexBy((f) => f)
       .mapValues(t => bootstrapTest(t, defaultVersion))
@@ -110,7 +110,7 @@ var bailOutNoCleanUp = (error)  => {
 var bailOut = (error, rg)  => {
   if (!error) return;
   if (!rg) log(error)
-  else log("resourcegroup: " + rg + " - " + error)
+  else log(`resourcegroup: ${rg} - ${error}`)
 
   var cb = () => logout(() => { throw error; })
 
@@ -122,14 +122,14 @@ var bailOut = (error, rg)  => {
 var deleteGroups = function (groups, cb) {
   var deleted = 0;
   var allDeleted = () => { if (++deleted == groups.length) cb(); };
-  log("deleting "+groups.length+" resource groups");
+  log(`deleting ${groups.length} resource groups`);
   if (groups.length == 0) cb();
   else groups.forEach(n=> {
     var groupDelete = [ 'group', 'delete', n, '-q', '--json', '--nowait'];
-    log("deleting resource group: " + n);
+    log(`deleting resource group: ${n}`);
     execFile(azureCli, groupDelete, (error, stdout, stderr) => {
       if (error || stderr) return bailOut(error || new Error(stderr), n);
-      log("deleted resource group: " + n, false);
+      log(`deleted resource group: ${n}`, false);
       allDeleted();
     });
   });
@@ -142,7 +142,7 @@ var deleteAllTestGroups = function (cb) {
     if (error || stderr) return bailOut(error || new Error(stderr));
     var result = JSON.parse(stdout);
     var testGroups = _(result).map(g=>g.name).filter(n=>n.match(/^test\-/)).value();
-    log("found lingering resource groups: " + testGroups, false);
+    log(`found lingering resource groups: ${testGroups}`, false);
     deleteGroups(testGroups, cb);
   });
 }
@@ -150,7 +150,7 @@ var deleteAllTestGroups = function (cb) {
 var deleteCurrentTestGroups = function(cb)
 {
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  log("deleting current run groups: " + groups, true);
+  log(`deleting current run groups: ${groups}`, true);
   deleteGroups(groups, cb);
 }
 
@@ -158,12 +158,12 @@ var createResourceGroup = (test, cb) => {
   var rg = armTests[test].resourceGroup;
   var location = armTests[test].location;
   var createGroup = [ 'group', 'create', rg, location, '--json'];
-  log("creating resource group: " + rg);
+  log(`creating resource group: ${rg}`);
   execFile(azureCli, createGroup, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr), rg);
-    log(test, "createGroupResult: " + stdout);
+    log(test, `createGroupResult: ${stdout}`);
     var result = JSON.parse(stdout);
-    if (result.properties.provisioningState != "Succeeded") return bailOut(new Error("failed to create resourceGroup: " + rg));
+    if (result.properties.provisioningState != "Succeeded") return bailOut(new Error(`failed to create resourceGroup: ${rg}`));
     cb();
   });
 }
@@ -174,11 +174,11 @@ var validateTemplates = function(cb) {
   var allValidated = () => {
     if (++validated == groups.length)
     {
-      log("all " + groups.length + " arm test scenarios validated");
+      log(`all ${groups.length} arm test scenarios validated`);
       cb();
     }
   };
-  log("start validating " + groups.length + " arm test scenarios");
+  log(`start validating ${groups.length} arm test scenarios`);
   _.keys(armTests).forEach((t) => {
     validateTemplate(t, allValidated)
   });
@@ -195,12 +195,12 @@ var validateTemplate = (test, cb) => {
       '--parameters', p,
       '--json'
     ];
-    log("validating "+ test +" in resource group: " + rg);
+    log(`validating ${test} in resource group: ${rg}`);
     execFile(azureCli, validateGroup, (error, stdout, stderr) => {
-      log(test, "Expected result: " + t.isValid + " because " + t.why);
-      log(test, "validateResult:" + (stdout || stderr));
+      log(test, `Expected result: ${t.isValid} because ${t.why}`);
+      log(test, `validateResult:${stdout || stderr}`);
       if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr), rg);
-      else if (!t.isValid && !(error || stderr)) return bailOut(new Error("expected " + test + "to result in an error because " + t.why), rg);
+      else if (!t.isValid && !(error || stderr)) return bailOut(new Error(`expected ${test} to result in an error because ${t.why}`), rg);
       cb();
     });
   })
@@ -212,11 +212,11 @@ var deployTemplates = function(cb) {
   var allDeployed = () => {
     if (++deployed == validGroups.length)
     {
-      log("all " + validGroups.length + " valid arm test scenarios deployed");
+      log(`all ${validGroups.length} valid arm test scenarios deployed`);
       cb();
     }
   };
-  log("start deploying " + validGroups.length + " valid arm test scenarios");
+  log(`start deploying ${validGroups.length} valid arm test scenarios`);
   _.keys(armTests).forEach((t) => {
     deployTemplate(t, allDeployed)
   });
@@ -230,75 +230,104 @@ var showOperationList = (test, cb) => {
     'mainTemplate',
     '--json'
   ];
-  log("getting operation list result for deployment in resource group: " + rg);
+  log(`getting operation list result for deployment in resource group: ${rg}`);
   execFile(azureCli, operationList, (error, stdout, stderr) => {
-    log(test, "operationListResult:" + (stdout || stderr));
+    log(test, `operationListResult: ${stdout || stderr}`);
     if (error || stderr) return bailOut(error || new Error(stderr), rg);
     var errors = _(JSON.parse(stdout))
       .filter(f=>f.properties.provisioningState !== "Succeeded")
       .map(f=>f.properties.statusMessage)
       .value();
     errors.forEach(e => {
-      log(test + "resulted in error: " + JSON.stringify(e, null, 2));
+      log(`${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
     })
     cb();
   });
 }
 
-var sanityCheckOutput = (test, stdout, cb) => {
-  if (!stdout) return cb();
-  var outputs = JSON.parse(stdout).properties.outputs;
+var sanityCheckDeployment = (test, stdout, cb) => {
   var checks = [];
   var checked = 0;
   var allChecked = () => { if (++checked == checks.length) cb(); };
-  if (outputs.loadbalancer.value !== "N/A")
-    checks.push(()=> sanityCheckExternalLoadBalancer(test, outputs.loadbalancer.value, allChecked));
-  if (outputs.kibana.value !== "N/A")
-    checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
+  var t = armTests[test];
+
+  if (stdout) {
+    var outputs = JSON.parse(stdout).properties.outputs;
+    if (outputs.loadbalancer.value !== "N/A")
+      checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
+    if (outputs.kibana.value !== "N/A")
+      checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
+  }
+
+  if (t.params.loadBalancerType.value === "gateway")
+    checks.push(()=> sanityCheckApplicationGateway(test, allChecked));
+
   //TODO check with ssh2 in case we are using internal loadbalancer
   if (checks.length > 0) checks.forEach(check => check());
   else cb();
 }
 
-var sanityCheckExternalLoadBalancer = (test, url, cb) => {
+var sanityCheckApplicationGateway = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
-  log("checking external loadbalancer "+ url +" in resource group: " + rg);
+  var appGateway = "application gateway";
+
+  var operationList = [ 'network', 'public-ip', 'show',
+    '--name',
+    'es-app-gateway-ip',
+    '--resource-group',
+    rg,
+    '--json'
+  ];
+
+  log(`getting the public IP for ${appGateway} in: ${rg}`);
+  execFile(azureCli, operationList, (error, stdout, stderr) => {
+    log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
+    if (error || stderr) {
+      log(`getting public ip for ${appGateway} in ${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      cb();
+    }
+
+    var result = JSON.parse(stdout);
+    var url = `https://${result.dnsSettings.fqdn}:9200`;
+    sanityCheckExternalLoadBalancer(test, appGateway, url, cb);
+  });
+}
+
+var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
+  var t = armTests[test];
+  var rg = t.resourceGroup;
+  log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
   var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
-  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword } };
+  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword }, strictSSL: false };
   request(url, opts, (error, response, body) => {
     if (!error && response.statusCode == 200) {
-      log(test, "loadBalancerResponse: " + JSON.stringify(body, null, 2));
-      request(url + "/_cluster/health", opts, (error, response, body) => {
+      log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
+      request(`${url}/_cluster/health`, opts, (error, response, body) => {
         var status = (body) ? body.status : "unknown";
         if (!error && response.statusCode == 200 && status === "green") {
-          log("cluster is up and running in resource group: " + rg);
-          log(test, "clusterHealthResponse: " + JSON.stringify(body, null, 2));
+          log(`cluster is up and running in resource group: ${rg}`);
+          log(test, `clusterHealthResponse: ${JSON.stringify(body, null, 2)}`);
           var expectedTotalNodes = 3 + t.params.vmDataNodeCount.value + t.params.vmClientNodeCount.value;
           if (t.params.dataNodesAreMasterEligible.value == "Yes") expectedTotalNodes -= 3;
 
-          var m = "expecting " + expectedTotalNodes + " total nodes in resource group: " + rg + " and found:" + body.number_of_nodes;
-          log(m);
+          log(`expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
           //if (body.number_of_nodes != expectedTotalNodes) return bailOut(new Error(m));
 
-          var m = "expecting " + t.params.vmDataNodeCount.value + " data nodes in resource group: " + rg + " and found:" + body.number_of_data_nodes;
-          log(m);
+          log(`expecting ${t.params.vmDataNodeCount.value} data nodes in resource group: ${rg} and found: ${body.number_of_data_nodes}`);
           //if (body.number_of_data_nodes != t.params.vmDataNodeCount.value) return bailOut(new Error(m));
           cb();
         }
         else {
-          log("cluster is NOT up and running in resource group: " + rg);
-          var m = "clusterHealthResponse: status: " + status + " error: " + error;
-          log(test, m);
+          log(`cluster is NOT up and running in resource group: ${rg}`);
+          log(test, `clusterHealthResponse: status: ${status} error: ${error}`);
           //bailout(error || new error(m));
           cb();
         }
       });
     }
-    else
-    {
-      var m = "loadbalancerResponse:  error: " + error;
-      log(test, m);
+    else {
+      log(test, `loadbalancerResponse:  error: ${error}`);
       //bailout(error || new error(m));
       cb();
     }
@@ -308,8 +337,10 @@ var sanityCheckExternalLoadBalancer = (test, url, cb) => {
 var sanityCheckKibana = (test, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
-  log("checking kibana at "+ url +" in resource group: " + rg);
-  request(url + "/api/status", { json: true, }, function (error, response, body) {
+  log(`checking kibana at ${url} in resource group: ${rg}`);
+  var superuser = compareVersions(t.params.esVersion.value,'5.0.0') >= 0 ? "elastic" : "es_admin";
+  var opts = { json: true, auth: { username: superuser, password: config.deployments.securityPassword } };
+  request(`${url}/api/status`, opts, function (error, response, body) {
     var state = (body)
       ? body.status && body.status.overall
         ? body.status.overall.state
@@ -318,12 +349,12 @@ var sanityCheckKibana = (test, url, cb) => {
             : "unknown"
       : "unknown";
 
-    log("kibana is running in resource group: " + rg + " with state:" + state);
-    log(test, "kibanaResponse: " + JSON.stringify((body && body.status) ? body.status : {}, null, 2));
+    log(`kibana is running in resource group: ${rg} with state: ${state}`);
+    log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
     //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
     //There is no guarantee kibana is not provisioned before the cluster is up
     cb();
-  })
+  });
 }
 
 var deployTemplate = (test, cb) => {
@@ -338,15 +369,14 @@ var deployTemplate = (test, cb) => {
     '--quiet',
     '--json'
   ];
-  log("deploying "+ test +" in resource group: " + rg);
+  log(`deploying ${test} in resource group: ${rg}`);
   execFile(azureCli, deployGroup, (error, stdout, stderr) => {
-    log(test, "deployResult: " + (stdout || stderr));
-    if (error || stderr)
-    {
+    log(test, `deployResult: ${stdout || stderr}`);
+    if (error || stderr) {
       showOperationList(test, ()=> bailOut(error || new Error(stderr), rg));
       return;
     }
-    sanityCheckOutput(test, stdout, cb);
+    sanityCheckDeployment(test, stdout, cb);
   });
 }
 
