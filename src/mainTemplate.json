@@ -94,6 +94,13 @@
         "description": "The access key of an existing storage account to use for snapshots with Azure Repository plugin"
       }
     },
+    "azureCloudStorageAccountSuffix": {
+      "type": "string",
+      "defaultValue": "core.windows.net",
+      "metadata": {
+        "description": "The suffix of an existing storage account to use for snapshots with Azure Cloud plugin"
+      }
+    },
     "xpackPlugins": {
       "type": "string",
       "allowedValues": [
@@ -304,16 +311,7 @@
     "vmDataDiskCount": {
       "type": "int",
       "defaultValue": 40,
-      "allowedValues": [
-        0,
-        1,
-        2,
-        4,
-        8,
-        16,
-        32,
-        40
-      ],
+      "minValue": 0,
       "metadata": {
         "description": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the data node VM size, the maximum number of disks that can be attached will be used. If 1 disk is selected, it is not RAIDed. If 0 disks are selected, the temporary disk will be used to store Elasticsearch data. IMPORTANT: The temporary disk is ephemeral in nature so be sure you know the trade-offs when choosing 0 disks."
       }
@@ -779,6 +777,7 @@
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
       "key": "[parameters('azureCloudStorageAccountKey')]",
+      "suffix": "[parameters('azureCloudStorageAccountSuffix')]",
       "install": "[parameters('azureCloudPlugin')]"
     },
     "esSettings": {
@@ -1061,60 +1060,9 @@
       "[variables('lbBackEndPoolsRemoved')]"
     ],
     "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
-    "nodesPerStorageMapping": {
-      "Standard_LRS_Small_1": 40,
-      "Standard_LRS_Small_2": 20,
-      "Standard_LRS_Small_4": 10,
-      "Standard_LRS_Small_8": 5,
-      "Standard_LRS_Small_16": 2,
-      "Standard_LRS_Small_32": 1,
-      "Standard_LRS_Small_40": 1,
-      "Standard_LRS_Small_0": 0,
-      "Standard_LRS_Medium_1": 40,
-      "Standard_LRS_Medium_2": 20,
-      "Standard_LRS_Medium_4": 10,
-      "Standard_LRS_Medium_8": 5,
-      "Standard_LRS_Medium_16": 2,
-      "Standard_LRS_Medium_32": 1,
-      "Standard_LRS_Medium_40": 1,
-      "Standard_LRS_Medium_0": 0,
-      "Standard_LRS_Large_1": 40,
-      "Standard_LRS_Large_2": 20,
-      "Standard_LRS_Large_4": 10,
-      "Standard_LRS_Large_8": 5,
-      "Standard_LRS_Large_16": 2,
-      "Standard_LRS_Large_32": 1,
-      "Standard_LRS_Large_40": 1,
-      "Standard_LRS_Large_0": 0,
-      "Premium_LRS_Small_1": 250,
-      "Premium_LRS_Small_2": 125,
-      "Premium_LRS_Small_4": 62,
-      "Premium_LRS_Small_8": 31,
-      "Premium_LRS_Small_16": 15,
-      "Premium_LRS_Small_32": 7,
-      "Premium_LRS_Small_40": 6,
-      "Premium_LRS_Small_0": 0,
-      "Premium_LRS_Medium_1": 60,
-      "Premium_LRS_Medium_2": 30,
-      "Premium_LRS_Medium_4": 15,
-      "Premium_LRS_Medium_8": 7,
-      "Premium_LRS_Medium_16": 3,
-      "Premium_LRS_Medium_32": 1,
-      "Premium_LRS_Medium_40": 1,
-      "Premium_LRS_Medium_0": 0,
-      "Premium_LRS_Large_1": 34,
-      "Premium_LRS_Large_2": 17,
-      "Premium_LRS_Large_4": 8,
-      "Premium_LRS_Large_8": 4,
-      "Premium_LRS_Large_16": 2,
-      "Premium_LRS_Large_32": 1,
-      "Premium_LRS_Large_40": 1,
-      "Premium_LRS_Large_0": 0
-    },
     "storageAccountOverrides": {
       "Default": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
-      "Standard": "Standard_LRS",
-      "Premium": "Premium_LRS"
+      "Standard": "Standard_LRS"
     },
     "resolvedStorageAccountType": "[variables('storageAccountOverrides')[parameters('storageAccountType')]]",
     "tmpVmSizeDataDisks": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].dataDisks]",
@@ -1122,16 +1070,13 @@
       "[parameters('vmDataDiskCount')]",
       "[variables('tmpVmSizeDataDisks')]"
     ],
-    "smallestDataDiskOption": "[min(variables('dataDiskOptions'))]",
-    "numberOfDataDisks": "[div(add(add(0, variables('smallestDataDiskOption')), int(replace(string(sub(0, variables('smallestDataDiskOption'))), '-', ''))), 2)]",
-    "nodesPerStorageAccount": "[variables('nodesPerStorageMapping')[concat(variables('resolvedStorageAccountType'), '_', parameters('vmDataDiskSize'), '_', string(variables('numberOfDataDisks')))]]",
-    "nodesPerStorageAccountDiv": "[div(add(add(1, variables('nodesPerStorageAccount')), int(replace(string(sub(1, variables('nodesPerStorageAccount'))), '-', ''))), 2)]",
-    "storageAccountsCount": "[add(div(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')), mod(add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),2), add(mod(parameters('vmDataNodeCount'), variables('nodesPerStorageAccountDiv')),1)))]",
+    "resolvedDataDiskCount": "[min(variables('dataDiskOptions'))]",
     "kibanaHttps": "[if(and(greater(length(parameters('kibanaKeyBlob')), 0), greater(length(parameters('kibanaCertBlob')), 0)), 'Yes', 'No')]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
       "vmSizeDataNodes": "[parameters('vmSizeDataNodes')]",
+      "vmDataNodeStorageAccountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
       "vmHostNamePrefix": "[parameters('vmHostNamePrefix')]",
       "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
       "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",
@@ -1145,11 +1090,9 @@
       "kibanaHttps": "[variables('kibanaHttps')]",
       "jumpbox": "[parameters('jumpbox')]",
       "dataNodeStorageSettings": {
-        "count": "[variables('storageAccountsCount')]",
-        "nodesPerStorageAccount": "[variables('nodesPerStorageAccount')]",
         "accountType": "[variables('resolvedStorageAccountType')]",
         "diskSize": "[variables('dataDiskSizes')[parameters('vmDataDiskSize')]]",
-        "dataDisks": "[variables('numberOfDataDisks')]"
+        "dataDisks": "[variables('resolvedDataDiskCount')]"
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
       "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]",

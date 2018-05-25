@@ -171,15 +171,15 @@ posts for further information
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmDataDiskCount</td><td>int</td>
-    <td>Number of disks to attach to each data node in RAID 0 setup. 
-    Must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>4</code>, <code>8</code>, <code>16</code>, <code>32</code>, <code>40</code>.
-    If the number of disks selected is more than can be attached to the data node VM size,
-    the maximum number of disks that can be attached for the data node VM size will be used. Equivalent to
-    taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code>
+    <td>Number of managed disks to attach to each data node in RAID 0 setup.
+    Must be equal to or greater than <code>0</code>.
+    <p>If the number of disks selected is more than can be attached to the data node VM (sku) size,
+    the maximum number of disks that can be attached for the data node VM (sku) size will be used. Equivalent to
+    taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code></p>
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
     <li>When 0 disks are selected, no disks will be attached to each data node. Instead, the temporary disk will be used to store Elasticsearch data.
-    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
+    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a>
     to understand the trade-offs in using it for storage.</strong>
     </li>
     </ul>

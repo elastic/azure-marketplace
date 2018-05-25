@@ -25,7 +25,6 @@
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
-  "dataDisks" : [1, 2, 4, 8, 16, 32, 40],
   "diskSizes" : ["Small", "Medium", "Large"],
   "vmSizes": [
     ["Standard_A0", 1, "Standard", false],

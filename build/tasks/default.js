@@ -5,7 +5,7 @@ var zip = require("gulp-zip");
 var addsrc = require('gulp-add-src');
 var timestamp = require("./lib/timestamp");
 
-gulp.task("default", ["sanity-checks", "patch", "generate-data-nodes-resource"], function() {
+gulp.task("default", ["sanity-checks", "patch"], function() {
   var stream = gulp.src(["../src/**/*.json"])
     .pipe(jsonlint())
     .pipe(jsonlint.reporter())
