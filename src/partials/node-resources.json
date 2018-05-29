@@ -206,7 +206,8 @@
         "platformFaultDomainCount": 2
       }
     },
-    "normalizedLocation": "[replace(toLower(parameters('commonVmSettings').location), ' ', '')]"
+    "normalizedLocation": "[replace(toLower(parameters('commonVmSettings').location), ' ', '')]",
+    "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
   },
   "resources": [
     {
@@ -236,7 +237,7 @@
               "useBackendPools": "No",
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
             }
           },
           "elasticTags": {
@@ -272,7 +273,7 @@
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
             }
           },
           "elasticTags": {
@@ -307,7 +308,7 @@
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
             }
           },
           "storageSettings": {
