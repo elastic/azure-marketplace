@@ -3,22 +3,22 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "templateBaseUrl": {
-        "type": "string",
-        "metadata": {
-            "description": "The base url for templates"
-        }
+      "type": "string",
+      "metadata": {
+        "description": "The base url for templates"
+      }
     },
     "osSettings": {
-        "type": "object",
-        "metadata": {
-            "description" : "Operating system settings"
-        }
+      "type": "object",
+      "metadata": {
+        "description": "Operating system settings"
+      }
     },
     "commonVmSettings": {
-        "type": "object",
-        "metadata": {
-            "description" : "Shared VM settings"
-        }
+      "type": "object",
+      "metadata": {
+        "description": "Shared VM settings"
+      }
     },
     "topologySettings": {
       "type": "object",
@@ -53,7 +53,160 @@
       "Yes": "machines/kibana-resources.json"
     },
     "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
-    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'machines/data-nodes-resources.json')]"
+    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'machines/data-nodes-resources.json')]",
+    "locations": {
+      "eastus": {
+        "platformFaultDomainCount": 3
+      },
+      "eastus2": {
+        "platformFaultDomainCount": 3
+      },
+      "centralus": {
+        "platformFaultDomainCount": 3
+      },
+      "northcentralus": {
+        "platformFaultDomainCount": 3
+      },
+      "southcentralus": {
+        "platformFaultDomainCount": 3
+      },
+      "westcentralus": {
+        "platformFaultDomainCount": 2
+      },
+      "westus": {
+        "platformFaultDomainCount": 3
+      },
+      "westus2": {
+        "platformFaultDomainCount": 2
+      },
+      "canadaeast": {
+        "platformFaultDomainCount": 2
+      },
+      "canadacentral": {
+        "platformFaultDomainCount": 2
+      },
+      "brazilsouth": {
+        "platformFaultDomainCount": 2
+      },
+      "northeurope": {
+        "platformFaultDomainCount": 3
+      },
+      "westeurope": {
+        "platformFaultDomainCount": 3
+      },
+      "francecentral": {
+        "platformFaultDomainCount": 2
+      },
+      "francesouth": {
+        "platformFaultDomainCount": 2
+      },
+      "ukwest": {
+        "platformFaultDomainCount": 2
+      },
+      "uksouth": {
+        "platformFaultDomainCount": 2
+      },
+      "germanycentral": {
+        "platformFaultDomainCount": 2
+      },
+      "germanynortheast": {
+        "platformFaultDomainCount": 2
+      },
+      "germanynorth": {
+        "platformFaultDomainCount": 2
+      },
+      "germanywestcentral": {
+        "platformFaultDomainCount": 2
+      },
+      "switzerlandnorth": {
+        "platformFaultDomainCount": 2
+      },
+      "switzerlandwest": {
+        "platformFaultDomainCount": 2
+      },
+      "southeastasia": {
+        "platformFaultDomainCount": 2
+      },
+      "eastasia": {
+        "platformFaultDomainCount": 2
+      },
+      "australiaeast": {
+        "platformFaultDomainCount": 2
+      },
+      "australiasoutheast": {
+        "platformFaultDomainCount": 2
+      },
+      "australiacentral": {
+        "platformFaultDomainCount": 2
+      },
+      "australiacentral2": {
+        "platformFaultDomainCount": 2
+      },
+      "chinaeast": {
+        "platformFaultDomainCount": 2
+      },
+      "chinanorth": {
+        "platformFaultDomainCount": 2
+      },
+      "centralindia": {
+        "platformFaultDomainCount": 2
+      },
+      "westindia": {
+        "platformFaultDomainCount": 2
+      },
+      "southindia": {
+        "platformFaultDomainCount": 2
+      },
+      "japaneast": {
+        "platformFaultDomainCount": 2
+      },
+      "japanwest": {
+        "platformFaultDomainCount": 2
+      },
+      "koreacentral": {
+        "platformFaultDomainCount": 2
+      },
+      "koreasouth": {
+        "platformFaultDomainCount": 2
+      },
+      "southafricawest": {
+        "platformFaultDomainCount": 2
+      },
+      "southafricanorth": {
+        "platformFaultDomainCount": 2
+      },
+      "uaecentral": {
+        "platformFaultDomainCount": 2
+      },
+      "uaenorth": {
+        "platformFaultDomainCount": 2
+      },
+      "usgovvirginia": {
+        "platformFaultDomainCount": 2
+      },
+      "usgoviowa": {
+        "platformFaultDomainCount": 2
+      },
+      "usgovarizona": {
+        "platformFaultDomainCount": 2
+      },
+      "usgovtexas": {
+        "platformFaultDomainCount": 2
+      },
+      "usdodeast": {
+        "platformFaultDomainCount": 2
+      },
+      "usdodcentral": {
+        "platformFaultDomainCount": 2
+      },
+      "usseceast": {
+        "platformFaultDomainCount": 2
+      },
+      "ussecwest": {
+        "platformFaultDomainCount": 2
+      }
+    },
+    "normalizedLocation": "[replace(toLower(parameters('commonVmSettings').location), ' ', '')]"
   },
   "resources": [
     {
@@ -61,8 +214,7 @@
       "name": "master-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn": [
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -70,18 +222,21 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
           "vm": {
             "value": {
               "shared": "[parameters('commonVmSettings')]",
               "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'master-')]",
               "installScript": "[parameters('osSettings').extensionSettings.master]",
               "size": "[parameters('topologySettings').vmSizeMasterNodes]",
-              "storageAccountType":"Standard_LRS",
+              "storageAccountType": "Standard_LRS",
               "count": 3,
               "useBackendPools": "No",
               "backendPools": [],
-              "imageReference": "[parameters('osSettings').imageReference]"
+              "imageReference": "[parameters('osSettings').imageReference]",
+              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
             }
           },
           "elasticTags": {
@@ -95,8 +250,7 @@
       "name": "client-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn": [
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -104,7 +258,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
           "vm": {
             "value": {
               "shared": "[parameters('commonVmSettings')]",
@@ -112,10 +268,11 @@
               "installScript": "[parameters('osSettings').extensionSettings.client]",
               "size": "[parameters('topologySettings').vmSizeClientNodes]",
               "count": "[parameters('topologySettings').vmClientNodeCount]",
-              "storageAccountType":"Standard_LRS",
+              "storageAccountType": "Standard_LRS",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
-              "imageReference": "[parameters('osSettings').imageReference]"
+              "imageReference": "[parameters('osSettings').imageReference]",
+              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
             }
           },
           "elasticTags": {
@@ -128,8 +285,7 @@
       "name": "data-nodes",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn": [
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -137,7 +293,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": { "value": "[parameters('templateBaseUrl')]" },
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
           "vm": {
             "value": {
               "shared": "[parameters('commonVmSettings')]",
@@ -148,7 +306,8 @@
               "count": "[parameters('topologySettings').vmDataNodeCount]",
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
-              "imageReference": "[parameters('osSettings').imageReference]"
+              "imageReference": "[parameters('osSettings').imageReference]",
+              "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
             }
           },
           "storageSettings": {
@@ -164,8 +323,7 @@
       "name": "jumpbox",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn": [
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -204,8 +362,7 @@
       "name": "kibana",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-02-01",
-      "dependsOn": [
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
