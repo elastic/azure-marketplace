@@ -8,6 +8,7 @@ jsonfile.spaces = 2;
 
 var mainTemplate = "../src/mainTemplate.json";
 var uiTemplate = "../src/createUiDefinition.json";
+var nodeResources = "../src/partials/node-resources.json";
 
 var allowedValues = require('../allowedValues.json');
 var versions = allowedValues.versions;
@@ -32,96 +33,105 @@ var userJobTitles = allowedValues.userJobTitle
 
 gulp.task("patch", function(cb) {
 
-  jsonfile.readFile(mainTemplate, function(err, obj) {
-    var diskSizes = allowedValues.diskSizes;
+  jsonfile.readFile(nodeResources, function(err, resources) {
 
-    obj.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
-      return {
-        tier: v[0],
-        dataDisks: v[1],
-        storageAccountType: v[2] + "_LRS"
-      }
-    })).indexBy(function (v) {
-      var tier = v.tier;
-      delete v.tier;
-      return tier;
-    });
+    resources.variables.locations = allowedValues.locations;
 
-    obj.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
-    obj.parameters.esVersion.allowedValues = versions;
-    obj.parameters.esVersion.defaultValue = _.last(versions);
-    obj.parameters.vmSizeDataNodes.allowedValues = vmSizes;
-    obj.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
-    obj.parameters.vmDataDiskSize.allowedValues = diskSizes;
-    obj.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
-    obj.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
-    obj.parameters.vmSizeClientNodes.allowedValues = vmSizes;
-    obj.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+    jsonfile.writeFile(nodeResources, resources, function(err) {
 
-    jsonfile.writeFile(mainTemplate, obj, function (err) {
-      jsonfile.readFile(uiTemplate, function(err, obj) {
+      jsonfile.readFile(mainTemplate, function(err, main) {
+        var diskSizes = allowedValues.diskSizes;
 
-        //patch allowed versions on the cluster step
-        var clusterStep = _.find(obj.parameters.steps, function (step) {
-          return step.name == "clusterSettingsStep";
-        });
-        var versionControl = _.find(clusterStep.elements, function (el) {
-          return el.name == "esVersion";
-        });
-        versionControl.constraints.allowedValues = _.map(versions, function(v) {
-          return { label: "v" + v, value : v};
-        });
-        versionControl.defaultValue = "v" + _.last(versions);
-
-        //patch allowedVMSizes on the nodesStep
-        var nodesStep = _.find(obj.parameters.steps, function (step) { return step.name == "nodesStep"; });
-
-        var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
-        var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
-        var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
-
-        var externalAccessStep = _.find(obj.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
-        var userInformationStep =  _.find(obj.parameters.steps, function (step) { return step.name == "userInformationStep"; });
-
-        var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
-        var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
-        var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-        var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
-        var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
-          delete control.constraints.allowedValues;
-          control.constraints.allowedSizes = allowedSizes;
-          if (patchRecommended) {
-            var sizes = recommendedSizes.slice();
-            if (recommendedSize) {
-              var fromIndex = sizes.indexOf(recommendedSize);
-              if (fromIndex == -1) {
-                throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
-              }
-              sizes.splice(fromIndex);
-              sizes.unshift(recommendedSize);
-            }
-
-            control.recommendedSizes = sizes;
+        main.variables.dataSkuSettings = _(_.map(allowedValues.vmSizes, function(v) {
+          return {
+            tier: v[0],
+            dataDisks: v[1],
+            storageAccountType: v[2] + "_LRS"
           }
-        }
-        patchVmSizes(masterSizeControl, vmSizes);
-        patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
-        patchVmSizes(clientSizeControl, vmSizes);
-        patchVmSizes(kibanaSizeControl, kibanaVmSizes);
+        })).indexBy(function (v) {
+          var tier = v.tier;
+          delete v.tier;
+          return tier;
+        });
 
-        var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
-        dataNodeCountControl.constraints.allowedValues = dataNodeValues;
-        var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
-        clientNodeCountControl.constraints.allowedValues = clientNodeValues;
+        main.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
+        main.parameters.esVersion.allowedValues = versions;
+        main.parameters.esVersion.defaultValue = _.last(versions);
+        main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
+        main.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
+        main.parameters.vmDataDiskSize.allowedValues = diskSizes;
+        main.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
+        main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
+        main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
+        main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
 
-        var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
-        userJobFunctionsControl.constraints.allowedValues = userJobTitles;
-        userJobFunctionsControl.defaultValue = userJobTitles[0].label;
+        jsonfile.writeFile(mainTemplate, main, function (err) {
+          jsonfile.readFile(uiTemplate, function(err, ui) {
 
-        jsonfile.writeFile(uiTemplate, obj, function (err) {
-          cb();
+            //patch allowed versions on the cluster step
+            var clusterStep = _.find(ui.parameters.steps, function (step) {
+              return step.name == "clusterSettingsStep";
+            });
+            var versionControl = _.find(clusterStep.elements, function (el) {
+              return el.name == "esVersion";
+            });
+            versionControl.constraints.allowedValues = _.map(versions, function(v) {
+              return { label: "v" + v, value : v};
+            });
+            versionControl.defaultValue = "v" + _.last(versions);
+
+            //patch allowedVMSizes on the nodesStep
+            var nodesStep = _.find(ui.parameters.steps, function (step) { return step.name == "nodesStep"; });
+
+            var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
+            var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
+            var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
+
+            var externalAccessStep = _.find(ui.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
+            var userInformationStep =  _.find(ui.parameters.steps, function (step) { return step.name == "userInformationStep"; });
+
+            var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
+            var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
+            var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
+            var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+            var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
+              delete control.constraints.allowedValues;
+              control.constraints.allowedSizes = allowedSizes;
+              if (patchRecommended) {
+                var sizes = recommendedSizes.slice();
+                if (recommendedSize) {
+                  var fromIndex = sizes.indexOf(recommendedSize);
+                  if (fromIndex == -1) {
+                    throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
+                  }
+                  sizes.splice(fromIndex);
+                  sizes.unshift(recommendedSize);
+                }
+
+                control.recommendedSizes = sizes;
+              }
+            }
+            patchVmSizes(masterSizeControl, vmSizes);
+            patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
+            patchVmSizes(clientSizeControl, vmSizes);
+            patchVmSizes(kibanaSizeControl, kibanaVmSizes);
+
+            var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
+            dataNodeCountControl.constraints.allowedValues = dataNodeValues;
+            var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
+            clientNodeCountControl.constraints.allowedValues = clientNodeValues;
+
+            var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
+            userJobFunctionsControl.constraints.allowedValues = userJobTitles;
+            userJobFunctionsControl.defaultValue = userJobTitles[0].label;
+
+            jsonfile.writeFile(uiTemplate, ui, function (err) {
+              cb();
+            });
+          });
         });
       });
+
     });
   });
 });
