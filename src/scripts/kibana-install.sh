@@ -249,7 +249,7 @@ configuration_and_plugins()
         # so default to certificate mode which verifies that the provided certificate is signed
         # by a trusted authority (CA), but does not perform any hostname verification.
         echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
-        echo "elasticsearch.ssl.certificateAuthorities: [ \"/etc/kibana/ssl/elasticsearch-http-ca.crt\" ]" >> $KIBANA_CONF
+        echo "elasticsearch.ssl.certificateAuthorities: [ /etc/kibana/ssl/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
 
         if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
           echo "elasticsearch.ssl.keyPassphrase: \"$HTTP_CERT_PASSWORD\"" >> $KIBANA_CONF

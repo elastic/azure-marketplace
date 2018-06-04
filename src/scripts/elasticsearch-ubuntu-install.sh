@@ -679,7 +679,8 @@ configure_elasticsearch_yaml()
     if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
       [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
       log "[configure_elasticsearch_yaml] Save HTTP cert blob to file"
-      echo ${HTTP_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-http.p12
+      local HTTP_CERT_PATH=/etc/elasticsearch/ssl/elasticsearch-http.p12
+      echo ${HTTP_CERT} | base64 -d | tee $HTTP_CERT_PATH
 
       log "[configure_elasticsearch_yaml] Configuring HTTP layer encryption"
       # A user may provide a certificate that would fail full verification mode,
@@ -690,8 +691,8 @@ configure_elasticsearch_yaml()
 
       if [[ "${ES_VERSION}" == \6* ]]; then
         # Elasticsearch 6.x supports PKCS#12 archives
-        echo "xpack.security.http.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-http.p12" >> $ES_CONF
-        echo "xpack.security.http.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-http.p12" >> $ES_CONF
+        echo "xpack.security.http.ssl.keystore.path: $HTTP_CERT_PATH" >> $ES_CONF
+        echo "xpack.security.http.ssl.truststore.path: $HTTP_CERT_PATH" >> $ES_CONF
 
         if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
           log "[configure_elasticsearch_yaml] Configure HTTP archive password in keystore"
@@ -701,13 +702,13 @@ configure_elasticsearch_yaml()
         fi
       else
         log "[configure_elasticsearch_yaml] Converting PKCS#12 HTTP archive to PEM format"
-        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.p12 -out /etc/elasticsearch/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
-        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.p12 -out /etc/elasticsearch/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
-        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-http.p12 -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
 
         echo "xpack.security.http.ssl.certificate: /etc/elasticsearch/ssl/elasticsearch-http.crt" >> $ES_CONF
         echo "xpack.security.http.ssl.key: /etc/elasticsearch/ssl/elasticsearch-http.key" >> $ES_CONF
-        echo "xpack.security.http.ssl.certificate_authorities: [ \"/etc/elasticsearch/ssl/elasticsearch-http-ca.crt\" ]" >> $ES_CONF
+        echo "xpack.security.http.ssl.certificate_authorities: [ /etc/elasticsearch/ssl/elasticsearch-http-ca.crt ]" >> $ES_CONF
 
         if dpkg --compare-versions "$ES_VERSION" ">=" "5.6.0"; then
           log "[configure_elasticsearch_yaml] Configure HTTP certificate password in keystore"
@@ -731,15 +732,16 @@ configure_elasticsearch_yaml()
     if [[ -n "${TRANSPORT_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
       [ -d /etc/elasticsearch/ssl ] || mkdir -p /etc/elasticsearch/ssl
       log "[configure_elasticsearch_yaml] Save Transport cert blob to file"
-      echo ${TRANSPORT_CERT} | base64 -d | tee /etc/elasticsearch/ssl/elasticsearch-transport.p12
+      local TRANSPORT_CERT_PATH=/etc/elasticsearch/ssl/elasticsearch-transport.p12
+      echo ${TRANSPORT_CERT} | base64 -d | tee $TRANSPORT_CERT_PATH
 
       log "[configure_elasticsearch_yaml] Configuring Transport layer encryption"
       echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
       echo "xpack.security.transport.ssl.verification_mode: certificate " >> $ES_CONF
 
       if [[ "${ES_VERSION}" == \6* ]]; then
-        echo "xpack.security.transport.ssl.keystore.path: /etc/elasticsearch/ssl/elasticsearch-transport.p12" >> $ES_CONF
-        echo "xpack.security.transport.ssl.truststore.path: /etc/elasticsearch/ssl/elasticsearch-transport.p12" >> $ES_CONF
+        echo "xpack.security.transport.ssl.keystore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
+        echo "xpack.security.transport.ssl.truststore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
 
         if [[ -n "${TRANSPORT_CERT_PASSWORD}" ]]; then
           log "[configure_elasticsearch_yaml] Configure Transport archive password in keystore"
@@ -749,13 +751,13 @@ configure_elasticsearch_yaml()
         fi
       else
         log "[configure_elasticsearch_yaml] Converting PKCS#12 Transport archive to PEM format"
-        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-transport.p12 -out /etc/elasticsearch/ssl/elasticsearch-transport.crt -clcerts -nokeys -passin stdin
-        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-transport.p12 -out /etc/elasticsearch/ssl/elasticsearch-transport.key -nocerts -nodes -passin stdin
-        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in /etc/elasticsearch/ssl/elasticsearch-transport.p12 -out /etc/elasticsearch/ssl/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
+        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-transport.crt -clcerts -nokeys -passin stdin
+        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-transport.key -nocerts -nodes -passin stdin
+        echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out /etc/elasticsearch/ssl/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
 
         echo "xpack.security.transport.ssl.certificate: /etc/elasticsearch/ssl/elasticsearch-transport.crt" >> $ES_CONF
         echo "xpack.security.transport.ssl.key: /etc/elasticsearch/ssl/elasticsearch-transport.key" >> $ES_CONF
-        echo "xpack.security.transport.ssl.certificate_authorities: [ \"/etc/elasticsearch/ssl/elasticsearch-transport-ca.crt\" ]" >> $ES_CONF
+        echo "xpack.security.transport.ssl.certificate_authorities: [ /etc/elasticsearch/ssl/elasticsearch-transport-ca.crt ]" >> $ES_CONF
 
         if dpkg --compare-versions "$ES_VERSION" ">=" "5.6.0"; then
           log "[configure_elasticsearch_yaml] Configure Transport certificate password in keystore"
