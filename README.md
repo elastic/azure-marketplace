@@ -426,6 +426,41 @@ where `<name>` refers to the resource group you just created.
 
 The `--parameters-file` can specify a different location for the items that get provisioned inside of the resource group. Make sure these are the same prior to deploying if you need them to be. Omitting location from the parameters file is another way to make sure the resources get deployed in the same location as the resource group.
 
+#### Azure CLI 2.0
+
+1. Log into Azure
+
+```sh
+az login
+```
+
+2. Create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
+
+```sh
+az group create --name <name> --location <location>
+```
+
+3. Use our published template directly using `--template-uri`
+
+```sh
+az group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json --parameters parameters/password.parameters.json --resource-group <name>
+```
+
+or if your are executing commands from a clone of this repo using `--template-file`
+
+```sh
+az group deployment create --template-file src/mainTemplate.json --parameters parameters/password.parameters.json --resource-group <name>
+
+```
+
+where `<name>` refers to the resource group you just created.
+
+**NOTE**
+
+The `--parameters-file` can specify a different location for the items that get provisioned inside of the resource group. Make sure these are the same prior to deploying if you need them to be. Omitting location from the parameters file is another way to make sure the resources get deployed in the same location as the resource group.
+
+
+
 #### Azure PowerShell
 
 1. Log into Azure
