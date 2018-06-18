@@ -53,6 +53,14 @@ help()
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
+    echo "-E set the endpoint suffix for azure cloud plugin"
+
+    echo "-w mount azure file storage"
+    echo "-r set the storage account for azure file storage"
+    echo "-b set the key for the storage account for azure file storage"
+    echo "-u set the endpoint suffix for azure file storage"
+    echo "-q set the quota in GB for azure file storage"
+    echo "-i set the share name for azure file storage"
 
     echo "-h view this help content"
 }
@@ -107,6 +115,9 @@ CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
 
+# temp disk /dev/sdb1 is mounted on /mnt on Azure linux VMs
+TEMPDISK="/mnt"
+
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
@@ -123,6 +134,7 @@ SEED_PASSWORD="changeme"
 INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
+STORAGE_SUFFIX=""
 
 HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
@@ -139,8 +151,16 @@ TRANSPORT_CERT_PASSWORD=""
 SAML_METADATA_URI=""
 SAML_SP_URI=""
 
+AZURE_FILE_STORAGE=0
+AZURE_FILE_STORAGE_ACCOUNT=""
+AZURE_FILE_STORAGE_ACCOUNT_KEY=""
+AZURE_FILE_STORAGE_ENDPOINT_SUFFIX="core.windows.net"
+AZURE_FILE_STORAGE_QUOTA=0
+AZURE_FILE_STORAGE_SHARE="${HOSTNAME}"
+AZURE_FILE_STORAGE_MOUNT="/afs"
+
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:r:b:u:q:i:H:G:T:W:V:J:N:D:O:P:wxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -236,6 +256,24 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname
     E) #azure storage account endpoint suffix
       STORAGE_SUFFIX="${OPTARG}"
       ;;
+    w) # mount azure file storage
+      AZURE_FILE_STORAGE=1
+      ;;
+    r) #storage account for azure file storage
+      AZURE_FILE_STORAGE_ACCOUNT="${OPTARG}"
+      ;;
+    b) # key for the storage account for azure file storage
+      AZURE_FILE_STORAGE_ACCOUNT_KEY="${OPTARG}"
+      ;;
+    u) # endpoint suffix for azure file storage
+      AZURE_FILE_STORAGE_ENDPOINT_SUFFIX="${OPTARG}"
+      ;;
+    q) # quota in GB for azure file storage
+      AZURE_FILE_STORAGE_QUOTA=${OPTARG}
+      ;;
+    i) # share name for azure file storage
+      AZURE_FILE_STORAGE_SHARE="${OPTARG}"
+      ;;
     h) #show help
       help
       exit 2
@@ -277,6 +315,21 @@ log "cluster install X-Pack plugin is set to $INSTALL_XPACK"
 # Installation steps as functions
 #########################
 
+setup_azure_file_share()
+{
+  log "[setup_azure_file_share] setting up azure file share"
+  bash azure-file-share.sh -A "$AZURE_FILE_STORAGE_ACCOUNT" -K "$AZURE_FILE_STORAGE_ACCOUNT_KEY" \
+    -N "$AZURE_FILE_STORAGE_SHARE" -q $AZURE_FILE_STORAGE_QUOTA -e "$AZURE_FILE_STORAGE_ENDPOINT_SUFFIX" -b "$AZURE_FILE_STORAGE_MOUNT"
+
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    log "[setup_azure_file_share] returned non-zero exit code: $EXIT_CODE"
+    exit $EXIT_CODE
+  fi
+
+  log "[setup_azure_file_share] finished set up azure file share"
+}
+
 # Format data disks (Find data disks then partition, format, and mount them as seperate drives)
 format_data_disks()
 {
@@ -288,7 +341,7 @@ format_data_disks()
     else
         log "[format_data_disks] data node, data disks may be attached"
         log "[format_data_disks] starting partition and format attached disks"
-        # using the -s paramater causing disks under /datadisks/* to be raid0'ed
+        # using the -s parameter causing disks under /datadisks/* to be raid0'ed
         bash vm-disk-utils-0.1.sh -s
         EXIT_CODE=$?
         if [ $EXIT_CODE -ne 0 ]; then
@@ -308,8 +361,12 @@ setup_data_disk()
         mkdir -p "$RAIDDISK/elasticsearch/data"
         chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
         chmod 755 "$RAIDDISK/elasticsearch"
+    elif [ -d "$AZURE_FILE_STORAGE_MOUNT" ]; then
+        log "[setup_data_disk] Configuring disk $AZURE_FILE_STORAGE_MOUNT/elasticsearch/data"
+        mkdir -p "$AZURE_FILE_STORAGE_MOUNT/elasticsearch/data"
+        chown -R elasticsearch:elasticsearch "$AZURE_FILE_STORAGE_MOUNT/elasticsearch"
+        chmod 755 "$AZURE_FILE_STORAGE_MOUNT/elasticsearch"
     elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
-        local TEMPDISK="/mnt"
         log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
         mkdir -p "$TEMPDISK/elasticsearch/data"
         chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
@@ -327,13 +384,14 @@ check_data_disk()
         log "[check_data_disk] data node checking data directory"
         if [ -d "/datadisks" ]; then
             log "[check_data_disk] data disks attached and mounted at /datadisks"
-        elif [ -d "/mnt/elasticsearch/data" ]; then
-            log "[check_data_disk] data directory at /mnt/elasticsearch/data"
+        elif [ -d "$TEMPDISK/elasticsearch/data" ]; then
+            log "[check_data_disk] Data directory at $TEMPDISK/elasticsearch/data"
+        elif [ -d "$AZURE_FILE_STORAGE_MOUNT/elasticsearch/data" ]; then
+            log "[check_data_disk] Data directory at $AZURE_FILE_STORAGE_MOUNT/elasticsearch/data"
         else
             #this could happen when the temporary disk is lost and a new one mounted
-            local TEMPDISK="/mnt"
-            log "[check_data_disk] no data directory at /mnt/elasticsearch/data dir"
-            log "[check_data_disk] configuring disk $TEMPDISK/elasticsearch/data"
+            log "[check_data_disk] No data directory at $TEMPDISK/elasticsearch/data dir"
+            log "[check_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
             mkdir -p "$TEMPDISK/elasticsearch/data"
             chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
             chmod 755 "$TEMPDISK/elasticsearch"
@@ -341,57 +399,10 @@ check_data_disk()
     fi
 }
 
-# Update the oracle-java8-installer to patch download of Java 8u171 to 8u181.
-# 8u171 download is now archived
-# TODO: Remove this once oracle-java8-installer package is updated
-install_java_package()
-{
-  apt-get -yq $@ install oracle-java8-installer || true \
-  && pushd /var/lib/dpkg/info \
-  && log "[install_java_package] update oracle-java8-installer to 8u181" \
-  && sed -i 's|JAVA_VERSION=8u171|JAVA_VERSION=8u181|' oracle-java8-installer.* \
-  && sed -i 's|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/|' oracle-java8-installer.* \
-  && sed -i 's|SHA256SUM_TGZ="b6dd2837efaaec4109b36cfbb94a774db100029f98b0d78be68c27bec0275982"|SHA256SUM_TGZ="1845567095bfbfebd42ed0d09397939796d05456290fb20a83c476ba09f991d3"|' oracle-java8-installer.* \
-  && sed -i 's|J_DIR=jdk1.8.0_171|J_DIR=jdk1.8.0_181|' oracle-java8-installer.* \
-  && popd \
-  && log "[install_java_package] updated oracle-java8-installer" \
-  && apt-get -yq $@ install oracle-java8-installer
-}
-
 # Install Oracle Java
 install_java()
 {
-    log "[install_java] adding apt repository for Java 8"
-    (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-    log "[install_java] updating apt-get"
-    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
-    log "[install_java] updated apt-get"
-    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
-    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
-    log "[install_java] installing Java"
-    (install_java_package || (sleep 15; install_java_package))
-    command -v java >/dev/null 2>&1 || { sleep 15; rm /var/cache/oracle-jdk8-installer/jdk-*; apt-get install -f; }
-
-    #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
-    for i in $(seq 30); do
-      if $(command -v java >/dev/null 2>&1); then
-        log "[install_java] installed Java!"
-        return
-      else
-        sleep 5
-        rm /var/cache/oracle-jdk8-installer/jdk-*;
-        rm -f /var/lib/dpkg/info/oracle-java8-installer*
-        rm /etc/apt/sources.list.d/*java*
-        apt-get -yq purge oracle-java8-installer*
-        apt-get -yq autoremove
-        apt-get -yq clean
-        (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-        apt-get -yq update
-        install_java_package --reinstall
-        log "[install_java] seeing if Java is installed after nuclear retry ${i}/30"
-      fi
-    done
-    command -v java >/dev/null 2>&1 || { log "[install_java] Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
+    bash install-java.sh
 }
 
 # Install Elasticsearch
@@ -601,6 +612,7 @@ apply_security_settings()
         exit 10
       fi
       log "[apply_security_settings] added es_read account"
+
       log "[apply_security_settings] updated roles and users"
     fi
 }
@@ -946,7 +958,6 @@ configure_elasticsearch_yaml()
     # Set cluster and machine names - just use hostname for our node.name
     echo "cluster.name: \"$CLUSTER_NAME\"" >> $ES_CONF
     echo "node.name: \"${HOSTNAME}\"" >> $ES_CONF
-
     # put log files on the OS disk in a writable location
     echo "path.logs: /var/log/elasticsearch" >> $ES_CONF
 
@@ -957,8 +968,10 @@ configure_elasticsearch_yaml()
     local DATAPATH_CONFIG=/var/lib/elasticsearch
     if [ -d /datadisks ]; then
         DATAPATH_CONFIG=/datadisks/disk1/elasticsearch/data
+    elif [ -d "$AZURE_FILE_STORAGE_MOUNT" ]; then
+        DATAPATH_CONFIG="$AZURE_FILE_STORAGE_MOUNT/elasticsearch/data"
     elif [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
-        DATAPATH_CONFIG=/mnt/elasticsearch/data
+        DATAPATH_CONFIG="$TEMPDISK/elasticsearch/data"
     fi
 
     # configure path.data
@@ -971,6 +984,7 @@ configure_elasticsearch_yaml()
 
     # Configure Elasticsearch node type
     log "[configure_elasticsearch_yaml] configure master/client/data node type flags only master-$MASTER_ONLY_NODE only data-$DATA_ONLY_NODE"
+
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
         log "[configure_elasticsearch_yaml] configure node as master only"
         echo "node.master: true" >> $ES_CONF
@@ -1255,6 +1269,10 @@ if monit status elasticsearch >& /dev/null; then
 fi
 
 format_data_disks
+
+if [ ${AZURE_FILE_STORAGE} -ne 0 -a ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
+    setup_azure_file_share
+fi
 
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null

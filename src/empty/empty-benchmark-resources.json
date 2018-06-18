@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "vm configuration"
+      }
+    },
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings"
+      }
+    },
+    "osSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Platform and OS settings"
+      }
+    },
+    "credentials": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Credential information block"
+      }
+    },
+    "storageSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Storage Account Settings"
+      }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
+  },
+  "variables": {},
+  "resources": [],
+  "outputs": {
+    "ssh": {
+      "value": "N/A",
+      "type": "string"
+    }
+  }
+}

@@ -34,9 +34,9 @@
     },
     "azureCloudStorageAccount": {
       "type": "secureObject",
-      "metadata": {
-          "description": "The storage settings for the Azure Cloud plugin"
-      }
+        "metadata": {
+            "description": "The storage settings for the Azure Cloud plugin"
+        }
     },
     "kibanaIp": {
       "type": "string",
@@ -48,6 +48,12 @@
       "type": "secureObject",
       "metadata": {
         "description": "The shared storage settings"
+      }
+    },
+    "azureFilesSettings": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "The settings for Azure Files Storage"
       }
     },
     "elasticTags": {
@@ -87,12 +93,20 @@
       "Yes": "l"
     },
     "installPluginsShortOpt": "[variables('installPluginsShortOpts')[parameters('esSettings').installPlugins]]",
-    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), 'n ')]",
-    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', variables('azureCloudStorageName'), '\" -k \"', variables('azureCloudStorageKey'), '\" -E \"', variables('azureCloudStorageSuffix'), '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\" -O \"', parameters('esSettings').samlMetadataUri, '\" -P \"', variables('kibanaDomainName'), '\"')]",
+	  "azureFileStorageOpts": {
+      "No": "",
+      "Yes": "w"
+    },
+    "azureFileStorageOpt": "[variables('azureFileStorageOpts')[parameters('azureFilesSettings').install]]",
+    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('azureFileStorageOpt'), 'n ')]",
+    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', variables('azureCloudStorageName'), '\" -k \"', variables('azureCloudStorageKey'), '\" -E \"', variables('azureCloudStorageSuffix'), '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\" -O \"', parameters('esSettings').samlMetadataUri, '\" -P \"', variables('kibanaDomainName'), '\" -r \"', parameters('azureFilesSettings').storageAccountName, '\" -b \"', parameters('azureFilesSettings').storageAccountKey, '\" -u \"', parameters('azureFilesSettings').endpointSuffix, '\" -q ', parameters('azureFilesSettings').quota)]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
+      "[concat(parameters('templateBaseUrl'), 'scripts/benchmark-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/install-java.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/azure-file-share.sh')]"
     ],
     "ubuntuSkus": {
       "5": "16.04-LTS",
@@ -144,6 +158,18 @@
             "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
+        "benchmark": {
+          "publisher": "Microsoft.Azure.Extensions",
+          "type": "CustomScript",
+          "typeHandlerVersion": "2.0",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": "[variables('ubuntuScripts')]"
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('bash benchmark-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]"
+          }
+        },
         "kibana": {
           "publisher": "Microsoft.Azure.Extensions",
           "type": "CustomScript",
@@ -187,6 +213,9 @@
           "networkSettings": {
             "value": "[parameters('networkSettings')]"
           },
+          "azureFilesSettings": {
+            "value": "[parameters('azureFilesSettings')]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -197,6 +226,10 @@
   "outputs": {
     "jumpboxssh": {
       "value": "[reference('elasticsearch-nodes').outputs.jumpboxssh.value]",
+      "type": "string"
+    },
+    "benchmarkssh": {
+      "value": "[reference('elasticsearch-nodes').outputs.benchmarkssh.value]",
       "type": "string"
     }
   }

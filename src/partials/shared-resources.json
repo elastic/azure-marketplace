@@ -42,12 +42,12 @@
     }
   ],
   "outputs": {
-    "sharedStorageAccountKey":{
+    "storageAccountKey":{
       "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2017-10-01').keys[0].value]",
       "type": "string"
     },
-    "sharedStorageAccountSuffix": {
-      "value": "[replace(replace(reference(parameters('storageAccountName')).primaryEndpoints.blob, concat('https://', parameters('storageAccountName'), '.blob.'), ''), '/', '')]",
+    "endpointSuffix": {
+      "value": "[trim(replace(replace(reference(parameters('storageAccountName')).primaryEndpoints.blob, concat('https://', parameters('storageAccountName'), '.blob.'), ''), '/', ''))]",
       "type": "string"
     }
   }

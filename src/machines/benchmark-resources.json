@@ -1,0 +1,224 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Base uri of resources"
+      }
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "vm configuration"
+      }
+    },
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings"
+      }
+    },
+    "osSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Platform and OS settings"
+      }
+    },
+    "credentials": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "Credential information block"
+      }
+    },
+    "storageSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Storage Account Settings"
+      }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
+  },
+  "variables": {
+    "namespace": "[parameters('vm').namespace]",
+    "subnetId": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]",
+    "publicIpName": "[concat(variables('namespace'), '-ip')]",
+    "securityGroupName": "[concat(variables('namespace'), '-nsg')]",
+    "nicName": "[concat(variables('namespace'), '-nic')]",
+    "password_osProfile": {
+      "computername": "[variables('namespace')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "adminPassword": "[parameters('credentials').password]"
+    },
+    "sshPublicKey_osProfile": {
+      "computername": "[variables('namespace')]",
+      "adminUsername": "[parameters('credentials').adminUsername]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [ {
+            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('credentials').sshPublicKey]"
+          } ]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('securityGroupName')]",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "Allows SSH traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('osSettings').managementPort]",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIpName')]",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('namespace'), '-', uniqueString(resourceGroup().id))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpName'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetId')]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-12-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('namespace')]",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vm').size]"
+        },
+        "osProfile": "[variables('osProfile')]",
+        "storageProfile": {
+          "imageReference": "[parameters('vm').imageReference]",
+          "osDisk": {
+            "name": "[concat(variables('namespace'), '-osdisk')]",
+            "managedDisk": {
+              "storageAccountType": "[parameters('vm').storageAccountType]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "copy": [
+            {
+              "name": "dataDisks",
+              "count": "[parameters('storageSettings').dataDisks]",
+              "input": {
+                "name": "[concat(variables('namespace'), '-datadisk', copyIndex('dataDisks', 1))]",
+                "diskSizeGB": "[parameters('storageSettings').diskSize]",
+                "lun": "[copyIndex('dataDisks')]",
+                "managedDisk": {
+                  "storageAccountType": "[parameters('vm').storageAccountType]"
+                },
+                "caching": "None",
+                "createOption": "Empty"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(variables('namespace'), '/script')]",
+          "apiVersion": "2016-03-30",
+          "location": "[parameters('vm').shared.location]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'))]"
+          ],
+          "properties": "[parameters('vm').installScript]"
+        }
+      ]
+    }
+
+  ],
+  "outputs": {
+    "ssh": {
+      "value": "[concat(parameters('credentials').adminUsername, '@',reference(variables('publicIpName')).dnsSettings.fqdn)]",
+      "type": "string"
+    }
+  }
+}

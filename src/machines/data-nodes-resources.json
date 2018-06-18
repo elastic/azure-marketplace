@@ -20,6 +20,12 @@
         "description": "Storage Account Settings"
       }
     },
+    "azureFilesSettings": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "The settings for Azure Files Storage"
+      }
+    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -33,6 +39,7 @@
   "variables": {
     "namespace": "[parameters('vm').namespace]",
     "avSetCount": "[add(div(sub(parameters('vm').count, 1), 100), 1)]",
+    "attachDisks": "[and(greater(parameters('storageSettings').dataDisks, 0), not(equals(parameters('azureFilesSettings').install, 'Yes')))]",
     "diskCount": "[if(greater(parameters('storageSettings').dataDisks, 0), parameters('storageSettings').dataDisks, 1)]"
   },
   "resources": [
@@ -57,7 +64,7 @@
       }
     },
     {
-      "condition": "[greater(parameters('storageSettings').dataDisks, 0)]",
+      "condition": "[variables('attachDisks')]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
@@ -114,7 +121,7 @@
       }
     },
     {
-      "condition": "[equals(parameters('storageSettings').dataDisks, 0)]",
+      "condition": "[not(variables('attachDisks'))]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-nodisks-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",

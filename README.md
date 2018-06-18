@@ -51,7 +51,7 @@ Transport Layer Security.
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fbenchmarking%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fbenchmarking%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -194,7 +194,7 @@ in conjunction with other parameters.
   <tr><td>esHttpCaCertPassword</td><td>securestring</td>
     <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
-  
+
   <tr><td>esTransportCaCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
@@ -465,7 +465,7 @@ in conjunction with other parameters.
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fbenchmarking%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -485,9 +485,9 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 
 1. Log into Azure
 
-```sh
+  ```sh
   az login
-```
+  ```
 2. Create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
 
   ```sh
@@ -499,7 +499,7 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 ```sh
 az group deployment create \
   --resource-group <name> \
-  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json \
+  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/benchmarking/src/mainTemplate.json \
   --parameters @parameters/password.parameters.json
 ```
 
@@ -523,7 +523,7 @@ where `<name>` refers to the resource group you just created.
 
   ```powershell
   $clusterParameters = @{
-      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"
+      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/benchmarking/src"
       "esVersion" = "6.3.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
@@ -546,7 +546,7 @@ where `<name>` refers to the resource group you just created.
 5. Use our template directly from GitHub
 
   ```powershell
-  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
+  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/benchmarking/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
 
 ## Targeting a specific template version

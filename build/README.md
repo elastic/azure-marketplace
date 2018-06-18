@@ -126,3 +126,115 @@ The automated ui tests are not (yet) part of the main test command to run them:
 ```bash
 npm run headless
 ```
+
+## Benchmarking
+
+[Rally](https://github.com/elastic/rally) can be deployed onto a separate VM in
+conjunction with deploying a cluster, to allow rally benchmarking tracks to
+be run against the cluster. An example deployment with PowerShell
+
+```powershell
+$location = "Australia Southeast"
+# Use the benchmarking branch, which contains the template changes to
+# also deploy a benchmarking VM
+$templateVersion = "benchmarking"
+$templateUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
+$elasticTemplate = "$templateUrl/mainTemplate.json"
+$resourceGroup = "benchmark-premium"
+$name = $resourceGroup
+
+$clusterParameters = @{
+    "artifactsBaseUrl"= $templateUrl
+    "esVersion" = "6.2.4"
+    "esClusterName" = $name
+    # A single attached disk per data node
+    "vmDataDiskCount" = 1
+    "vmDataNodeCount" = 3
+    "vmSizeDataNodes" = "Standard_DS1_v2"
+    "vmSizeMasterNodes" = "Standard_DS1"
+    "dataNodesAreMasterEligible" = "Yes"
+    "kibana" = "No"
+    "storageAccountType" = "Default"
+    "benchmark" = "Yes"
+    "loadBalancerType" = "external"
+    "xpackPlugins" = "Yes"
+    "adminUsername" = "russ"
+    "authenticationType" = "password"
+    "adminPassword" = "Password1234"
+    "securityBootstrapPassword" = "Password123"
+    "securityAdminPassword" = "Password123"
+    "securityReadPassword" = "Password123"
+    "securityKibanaPassword" = "Password123"
+    "securityLogstashPassword" = "Password123"
+    # disable ml, alerting and monitoring X-Pack features
+    "esAdditionalYaml" = "xpack.ml.enabled: false\nxpack.monitoring.enabled: false\nxpack.watcher.enabled: false"
+}
+
+New-AzureRmResourceGroup -Name $resourceGroup -Location $location
+New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup `
+    -TemplateUri $elasticTemplate -TemplateParameterObject $clusterParameters
+```
+
+It's important to deploy a sufficiently powerful benchmark VM with good disk IOPS,
+to ensure that rally itself is not a bottleneck in a benchmarking run. The default
+SKU size for the benchmarking VM is `Standard_DS4_v2` with 16 Premium managed disks in
+RAID 0.
+
+Once the deployment has finished, ssh into the benchmark VM
+
+```sh
+ssh <admin>@<benchmark public ip>
+```
+
+configure rally for benchmarking
+
+```sh
+esrally configure
+nano ~/.rally/rally.ini
+```
+
+set `root.dir` and `src.root.dir` to use the managed disks, and optionally change
+`env.name` to something meaningful
+
+```sh
+[system]
+env.name = premium-disks
+
+[node]
+root.dir = /datadisks/disk1/.rally/benchmarks
+src.root.dir = /datadisks/disk1/.rally/benchmarks/src
+```
+
+if capturing metrics in Elasticsearch, include these details. For example,
+for storing reports in [Elastic's Elasticsearch Service](https://www.elastic.co/cloud/elasticsearch-service)
+
+```sh
+[reporting]
+datastore.type = elasticsearch
+datastore.host = <id>.<location>.aws.found.io
+datastore.port = 9243
+datastore.secure = True
+datastore.user = <username>
+datastore.password = <password>
+```
+
+and save the configuration file.
+
+Now to run a benchmark; In this example
+
+1. [the `pmc` track is used](https://github.com/elastic/rally-tracks/tree/master/pmc)
+which is a reasonable track for benchmarking indexing latency and throughput
+2. The addresses to all data nodes are provided
+3. Rally is configured to abort when there is a request error
+
+```sh
+esrally --pipeline=benchmark-only --target-hosts=data-0:9200,data-1:9200,data-2:9200 \
+        --client-options="basic_auth_user:'elastic',basic_auth_password:'Password123',timeout:300" \
+        --on-error=abort --track=pmc --challenge=append-no-conflicts-index-only
+```
+
+Results can be further annotated by passing user tags on the command line. For example, `--user-tag="storage:local-ssd"`. 
+
+Consult the [command line reference](https://esrally.readthedocs.io/en/latest/command_line_reference.html) for further details.
+
+Once the benchmark has finished, the high level overview will be output to stdout, with more detail captured in Elasticsearch (if configured as a datastore) or in `~/.rally/benchmarks/races`.

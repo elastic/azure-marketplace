@@ -32,6 +32,12 @@
         "description": "Network settings"
       }
     },
+    "azureFilesSettings": {
+      "type": "secureObject",
+      "metadata": {
+        "description": "The settings for Azure Files Storage"
+      }
+    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -48,6 +54,11 @@
       "Yes": "machines/jumpbox-resources.json"
     },
     "jumpboxTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('jumpboxTemplates')[parameters('topologySettings').jumpbox])]",
+    "benchmarkTemplates": {
+      "No": "empty/empty-benchmark-resources.json",
+      "Yes": "machines/benchmark-resources.json"
+    },
+    "benchmarkTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('benchmarkTemplates')[parameters('topologySettings').benchmark])]",
     "kibanaTemplates": {
       "No": "empty/empty-kibana-resources.json",
       "Yes": "machines/kibana-resources.json"
@@ -314,6 +325,9 @@
           "storageSettings": {
             "value": "[parameters('topologySettings').dataNodeStorageSettings]"
           },
+          "azureFilesSettings": {
+            "value": "[parameters('azureFilesSettings')]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -352,6 +366,50 @@
           },
           "osSettings": {
             "value": "[parameters('osSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "benchmark",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-02-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('benchmarkTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "vm": {
+            "value": {
+              "shared": "[parameters('commonVmSettings')]",
+              "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'benchmark')]",
+              "installScript": "[parameters('osSettings').extensionSettings.benchmark]",
+              "size": "[parameters('topologySettings').vmSizeBenchmark]",
+              "storageAccountType": "Premium_LRS",
+              "imageReference": "[parameters('osSettings').imageReference]",
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
+            }
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          },
+          "credentials": {
+            "value": "[parameters('commonVmSettings').credentials]"
+          },
+          "storageSettings": {
+            "value": "[parameters('topologySettings').benchmarkNodeStorageSettings]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
@@ -405,6 +463,10 @@
   "outputs": {
     "jumpboxssh": {
       "value": "[reference('jumpbox').outputs.ssh.value]",
+      "type": "string"
+    },
+    "benchmarkssh": {
+      "value": "[reference('benchmark').outputs.ssh.value]",
       "type": "string"
     }
   }
