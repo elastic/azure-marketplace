@@ -428,9 +428,13 @@ plugin_cmd()
 
 install_xpack()
 {
-    log "[install_xpack] installing X-Pack plugins"
-    $(plugin_cmd) install x-pack --batch
-    log "[install_xpack] installed X-Pack plugins"
+    if dpkg --compare-versions "$ES_VERSION" "<" "6.3.0"; then
+      log "[install_xpack] installing X-Pack plugins"
+      $(plugin_cmd) install x-pack --batch
+      log "[install_xpack] installed X-Pack plugins"
+    else
+      log "[install_xpack] X-Pack bundled by default. Skip installing"
+    fi
 }
 
 install_repository_azure_plugin()
@@ -1015,8 +1019,16 @@ configure_elasticsearch_yaml()
       fi
     fi
 
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
+        log "[configure_elasticsearch_yaml] Set generated license type to trial"
+        echo "xpack.license.self_generated.type: trial" >> $ES_CONF
+        log "[configure_elasticsearch_yaml] Set X-Pack Security enabled"
+        echo "xpack.security.enabled: true" >> $ES_CONF
+    fi
+
     # Configure Anonymous access
     if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
+        log "[configure_elasticsearch_yaml] Set anonymous access"
         {
             echo -e ""
             echo -e "# anonymous access"
