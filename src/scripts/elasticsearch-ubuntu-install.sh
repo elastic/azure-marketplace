@@ -1020,8 +1020,10 @@ configure_elasticsearch_yaml()
     fi
 
     if [ ${INSTALL_XPACK} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Set generated license type to trial"
-        echo "xpack.license.self_generated.type: trial" >> $ES_CONF
+        if dpkg --compare-versions "$ES_VERSION" ">=" "6.3.0"; then
+            log "[configure_elasticsearch_yaml] Set generated license type to trial"
+            echo "xpack.license.self_generated.type: trial" >> $ES_CONF
+        fi
         log "[configure_elasticsearch_yaml] Set X-Pack Security enabled"
         echo "xpack.security.enabled: true" >> $ES_CONF
     fi
