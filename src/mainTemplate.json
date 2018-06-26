@@ -117,7 +117,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments"
+        "description": "Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;ingest-geoip"
       }
     },
     "esAdditionalYaml": {
@@ -134,6 +134,17 @@
         "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB)."
       }
     },
+    "esHttpSecurity": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Configure SSL/TLS to secure the HTTP layer of Elasticsearch. If no value is specified for esHttpCertBlob, a self-signed certificate will be generated on each Elasticsearch node"
+      }
+    },
     "esHttpCertBlob": {
       "type": "string",
       "defaultValue": "",
@@ -148,18 +159,50 @@
         "description": "The password for the PKCS#12 archive (.pfx/.p12) certificate used to secure HTTP layer of Elasticsearch"
       }
     },
-    "esTransportCertBlob": {
+    "esHttpCaCertBlob": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate used to secure Transport layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esHttpCaCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.pfx/.p12) CA certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esTransportSecurity": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Configure SSL/TLS to secure the Transport layer of Elasticsearch. If no value is specified for esTransportCaCertBlob, a self-signed certificate will be generated on each Elasticsearch node"
+      }
+    },
+    "esTransportCaCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch"
+      }
+    },
+    "esTransportCaCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "esTransportCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx/.p12) certificate used to secure Transport layer of Elasticsearch"
+        "description": "The password for the generated certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "kibana": {
@@ -709,14 +752,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx) certificate for the Application Gateway. This certificate is used to secure HTTPS connections to the Application Gateway"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway. This certificate is used to secure HTTPS connections to the Application Gateway"
       }
     },
     "appGatewayCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx) certificate for the Application Gateway."
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway."
       }
     },
     "appGatewayWafStatus": {
@@ -739,6 +782,13 @@
       ],
       "metadata": {
         "description": "The firewall mode of the Application Gateway. Required when selecting Application Gateway for load balancing and using WAF tier."
+      }
+    },
+    "appGatewayEsHttpCertPublicKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Base-64 encoded public key (.cer) for the certificate used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
     },
     "userCompany": {
@@ -823,9 +873,14 @@
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "yamlConfiguration": "[parameters('esAdditionalYaml')]",
       "heapSize": "[parameters('esHeapSize')]",
+      "httpSecurity": "[parameters('esHttpSecurity')]",
       "httpCertBlob": "[parameters('esHttpCertBlob')]",
       "httpCertPassword": "[parameters('esHttpCertPassword')]",
-      "transportCertBlob": "[parameters('esTransportCertBlob')]",
+      "httpCaCertBlob": "[parameters('esHttpCaCertBlob')]",
+      "httpCaCertPassword": "[parameters('esHttpCaCertPassword')]",
+      "transportSecurity": "[parameters('esTransportSecurity')]",
+      "transportCaCertBlob": "[parameters('esTransportCaCertBlob')]",
+      "transportCaCertPassword": "[parameters('esTransportCaCertPassword')]",
       "transportCertPassword": "[parameters('esTransportCertPassword')]",
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
@@ -1175,7 +1230,9 @@
       "certBlob": "[parameters('appGatewayCertBlob')]",
       "certPassword": "[parameters('appGatewayCertPassword')]",
       "firewallStatus": "[parameters('appGatewayWafStatus')]",
-      "firewallMode": "[parameters('appGatewayWafMode')]"
+      "firewallMode": "[parameters('appGatewayWafMode')]",
+      "backendCertPublicKey": "[parameters('appGatewayEsHttpCertPublicKey')]",
+      "backendProtocol": "[if(equals(parameters('esHttpSecurity'), 'Yes'), 'Https', 'Http')]"
     }
   },
   "resources": [

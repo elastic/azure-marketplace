@@ -33,6 +33,17 @@ help()
     echo "-l install plugins"
     echo "-L <plugin;plugin> install additional plugins"
 
+    echo "-F Enable SSL/TLS for the HTTP layer"
+    echo "-H base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
+    echo "-V base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+    echo "-J password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+
+    echo "-Q Enable SSL/TLS for the transport layer"
+    echo "-T base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
+    echo "-N password for the generated certificate used to secure the transport layer"
+
     echo "-U api url"
     echo "-I marketing id"
     echo "-c company name"
@@ -82,9 +93,15 @@ USER_KIBANA_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 ANONYMOUS_ACCESS=0
 
+HTTP_SECURITY=0
 HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
-TRANSPORT_CERT=""
+HTTP_CACERT=""
+HTTP_CACERT_PASSWORD=""
+
+TRANSPORT_SECURITY=0
+TRANSPORT_CACERT=""
+TRANSPORT_CACERT_PASSWORD=""
 TRANSPORT_CERT_PASSWORD=""
 
 API_URL=""
@@ -99,7 +116,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:FQXxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -144,16 +161,31 @@ while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:Xxyzldjh 
     C) #additional yaml configuration
       YAML_CONFIGURATION="${OPTARG}"
       ;;
+    F) #Enable SSL/TLS for HTTP layer
+      HTTP_SECURITY=1
+      ;;
     H) #HTTP cert blob
       HTTP_CERT="${OPTARG}"
       ;;
     G) #HTTP cert password
       HTTP_CERT_PASSWORD="${OPTARG}"
       ;;
-    T) #Transport cert blob
-      TRANSPORT_CERT="${OPTARG}"
+    V) #HTTP CA cert
+      HTTP_CACERT="${OPTARG}"
       ;;
-    W) #Transport cert password
+    J) #HTTP CA cert password
+      HTTP_CACERT_PASSWORD="${OPTARG}"
+      ;;
+    Q) #Enable SSL/TLS for transport layer
+      TRANSPORT_SECURITY=1
+      ;;
+    T) #Transport CA cert blob
+      TRANSPORT_CACERT="${OPTARG}"
+      ;;
+    W) #Transport CA cert password
+      TRANSPORT_CACERT_PASSWORD="${OPTARG}"
+      ;;
+    N) #Transport cert password
       TRANSPORT_CERT_PASSWORD="${OPTARG}"
       ;;
     a) #azure storage account for azure cloud plugin
@@ -239,8 +271,16 @@ if [ $ANONYMOUS_ACCESS -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -X"
 fi
 
+if [ $HTTP_SECURITY -eq 1 ]; then
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -F"
+fi
+
+if [ $TRANSPORT_SECURITY -eq 1 ]; then
+  INSTALL_SWITCHES="$INSTALL_SWITCHES -Q"
+fi
+
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -T "$TRANSPORT_CERT" -W "$TRANSPORT_CERT_PASSWORD" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -V "$HTTP_CACERT" -J "$HTTP_CACERT_PASSWORD" -T "$TRANSPORT_CACERT" -W "$TRANSPORT_CACERT_PASSWORD" -N "$TRANSPORT_CERT_PASSWORD" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

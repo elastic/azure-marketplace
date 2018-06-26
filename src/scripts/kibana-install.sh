@@ -211,7 +211,7 @@ configuration_and_plugins()
 
       log "[configuration_and_plugins] Configuring encrypted communication"
 
-      if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
+      if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
           echo "server.ssl.enabled: true" >> $KIBANA_CONF
           echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
           echo "server.ssl.certificate: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
@@ -243,7 +243,7 @@ configuration_and_plugins()
       log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
       echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
 
-      if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
+      if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
         echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
         # A user may provide a certificate that would fail full verification mode,
         # so default to certificate mode which verifies that the provided certificate is signed
