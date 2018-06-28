@@ -253,6 +253,12 @@
         "Standard_DS13_v2",
         "Standard_DS14_v2",
         "Standard_DS15_v2",
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_D32s_v3",
+        "Standard_D64s_v3",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -363,6 +369,12 @@
         "Standard_DS13_v2",
         "Standard_DS14_v2",
         "Standard_DS15_v2",
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_D32s_v3",
+        "Standard_D64s_v3",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -476,6 +488,12 @@
         "Standard_DS13_v2",
         "Standard_DS14_v2",
         "Standard_DS15_v2",
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_D32s_v3",
+        "Standard_D64s_v3",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -547,6 +565,12 @@
         "Standard_DS13_v2",
         "Standard_DS14_v2",
         "Standard_DS15_v2",
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3",
+        "Standard_D16s_v3",
+        "Standard_D32s_v3",
+        "Standard_D64s_v3",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -1067,6 +1091,30 @@
       },
       "Standard_DS15_v2": {
         "dataDisks": 40,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D2s_v3": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D4s_v3": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D8s_v3": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D16s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D32s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D64s_v3": {
+        "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F1": {
