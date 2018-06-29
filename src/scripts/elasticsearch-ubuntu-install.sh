@@ -738,10 +738,12 @@ configure_http_tls()
       if [[ -f $HTTP_CERT_PATH ]]; then
           # dealing with PKCS#12 archive
           echo "xpack.security.http.ssl.keystore.path: $HTTP_CERT_PATH" >> $ES_CONF
+          echo "xpack.security.http.ssl.truststore.path: $HTTP_CERT_PATH" >> $ES_CONF
           if [[ -n "${HTTP_CERT_PASSWORD}" ]]; then
             log "[configure_http_tls] Configure HTTP cert password in keystore"
             create_keystore_if_not_exists
             echo "$HTTP_CERT_PASSWORD" | $KEY_STORE add xpack.security.http.ssl.keystore.secure_password -xf
+            echo "$HTTP_CERT_PASSWORD" | $KEY_STORE add xpack.security.http.ssl.truststore.secure_password -xf
           fi
       else
           # dealing with PEM certs
@@ -780,6 +782,7 @@ configure_http_tls()
       fi
     fi
 
+    chown -R elasticsearch:elasticsearch $SSL_PATH
     # use HTTPS for calls to localhost when TLS configured on HTTP layer
     PROTOCOL="https"
     # use the insecure flag to make calls to https://localhost:9200 to bootstrap cluster. curl checks
@@ -892,18 +895,22 @@ configure_transport_tls()
       if [[ -f $TRANSPORT_CERT_PATH ]]; then
           echo "xpack.security.transport.ssl.keystore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
           echo "xpack.security.transport.ssl.truststore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
-          create_keystore_if_not_exists
-          log "[configure_transport_tls] Configure Transport cert password in keystore"
-          echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.keystore.secure_password -xf
-          echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.truststore.secure_password -xf
+          if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
+              create_keystore_if_not_exists
+              log "[configure_transport_tls] Configure Transport cert password in keystore"
+              echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.keystore.secure_password -xf
+              echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.truststore.secure_password -xf
+          fi
       else
           # dealing with PEM certs
           echo "xpack.security.transport.ssl.certificate: $SSL_PATH/elasticsearch-transport.crt" >> $ES_CONF
           echo "xpack.security.transport.ssl.key: $SSL_PATH/elasticsearch-transport.key" >> $ES_CONF
           echo "xpack.security.transport.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-transport-ca.crt ]" >> $ES_CONF
-          log "[configure_transport_tls] Configure Transport cert password in keystore"
-          create_keystore_if_not_exists
-          echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
+          if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
+              log "[configure_transport_tls] Configure Transport cert password in keystore"
+              create_keystore_if_not_exists
+              echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
+          fi
       fi
     else
       if [[ -f $TRANSPORT_CERT_PATH ]]; then
@@ -916,16 +923,19 @@ configure_transport_tls()
       echo "xpack.security.transport.ssl.certificate: $SSL_PATH/elasticsearch-transport.crt" >> $ES_CONF
       echo "xpack.security.transport.ssl.key: $SSL_PATH/elasticsearch-transport.key" >> $ES_CONF
       echo "xpack.security.transport.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-transport-ca.crt ]" >> $ES_CONF
-      if dpkg --compare-versions "$ES_VERSION" "ge" "5.6.0"; then
-        log "[configure_transport_tls] Configure Transport cert password in keystore"
-        create_keystore_if_not_exists
-        echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
-      else
-        log "[configure_transport_tls] Configure Transport cert password in config"
-        echo "xpack.security.transport.ssl.key_passphrase: \"$TRANSPORT_CERT_PASSWORD\"" >> $ES_CONF
+      if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
+          if dpkg --compare-versions "$ES_VERSION" "ge" "5.6.0"; then
+              log "[configure_transport_tls] Configure Transport cert password in keystore"
+              create_keystore_if_not_exists
+              echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
+          else
+              log "[configure_transport_tls] Configure Transport cert password in config"
+              echo "xpack.security.transport.ssl.key_passphrase: \"$TRANSPORT_CERT_PASSWORD\"" >> $ES_CONF
+          fi
       fi
     fi
 
+    chown -R elasticsearch:elasticsearch $SSL_PATH
     log "[configure_transport_tls] Configured SSL/TLS for Transport layer"
 }
 
@@ -1000,7 +1010,7 @@ configure_elasticsearch_yaml()
         fi
 
     # Configure TLS for Transport layer
-    if [[ ${TRANSPORT_SECURITY} -ne 0 ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ ${TRANSPORT_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
         configure_transport_tls $ES_CONF
         fi
 

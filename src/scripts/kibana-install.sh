@@ -27,8 +27,10 @@ help()
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
     echo "    -Y      <yaml\nyaml> additional yaml configuration"
-    echo "    -H      PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
     echo "    -G      Password for PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+    echo "    -J      Password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
     echo "    -h      view this help content"
 }
 
@@ -65,7 +67,7 @@ fi
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="6.2.1"
+KIBANA_VERSION="6.2.4"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
@@ -78,7 +80,7 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 
 #Loop through options passed
-while getopts :n:v:u:S:C:K:P:Y:H:G:lh optname; do
+while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -110,6 +112,12 @@ while getopts :n:v:u:S:C:K:P:Y:H:G:lh optname; do
       ;;
     G) #Elasticsearch certificate password
       HTTP_CERT_PASSWORD="${OPTARG}"
+      ;;
+    H) #Elasticsearch CA certificate
+      HTTP_CACERT="${OPTARG}"
+      ;;
+    G) #Elasticsearch CA certificate password
+      HTTP_CACERT_PASSWORD="${OPTARG}"
       ;;
     Y) #kibana additional yml configuration
       YAML_CONFIGURATION="${OPTARG}"
@@ -167,11 +175,13 @@ install_pwgen()
 
 configuration_and_plugins()
 {
+    local KIBANA_CONF=/etc/kibana/kibana.yml
+    local SSL_PATH=/etc/kibana/ssl
     # backup the current config
-    mv /etc/kibana/kibana.yml /etc/kibana/kibana.yml.bak
+    mv $KIBANA_CONF $KIBANA_CONF.bak
 
     log "[configuration_and_plugins] Configuring kibana.yml"
-    local KIBANA_CONF=/etc/kibana/kibana.yml
+
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
@@ -203,72 +213,115 @@ configuration_and_plugins()
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
-      [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
-      log "[configuration_and_plugins] Save kibana cert blob to file"
-      echo ${SSL_CERT} | base64 -d | tee /etc/kibana/ssl/kibana.crt
-      log "[configuration_and_plugins] Save kibana key blob to file"
-      echo ${SSL_KEY} | base64 -d | tee /etc/kibana/ssl/kibana.key
+      [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
+      log "[configuration_and_plugins] Save kibana cert to file"
+      echo ${SSL_CERT} | base64 -d | tee $SSL_PATH/kibana.crt
+      log "[configuration_and_plugins] Save kibana key to file"
+      echo ${SSL_KEY} | base64 -d | tee $SSL_PATH/kibana.key
 
-      log "[configuration_and_plugins] Configuring encrypted communication"
-
+      log "[configuration_and_plugins] Configuring SSL/TLS to Kibana"
       if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
           echo "server.ssl.enabled: true" >> $KIBANA_CONF
-          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
-          echo "server.ssl.certificate: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
-
+          echo "server.ssl.key: $SSL_PATH/kibana.key" >> $KIBANA_CONF
+          echo "server.ssl.certificate: $SSL_PATH/kibana.crt" >> $KIBANA_CONF
           if [[ -n "${SSL_PASSPHRASE}" ]]; then
               echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
           fi
       else
-          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
-          echo "server.ssl.cert: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
+          echo "server.ssl.key: $SSL_PATH/kibana.key" >> $KIBANA_CONF
+          echo "server.ssl.cert: $SSL_PATH/kibana.crt" >> $KIBANA_CONF
+          if [[ -n "${SSL_PASSPHRASE}" ]]; then
+              log "[configuration_and_plugins] Kibana < 5.3.0 does not support encrypted private key"
+              log "[configuration_and_plugins] Using passphrase to decrypt private key"
+              echo "$SSL_PASSPHRASE" | openssl rsa -in $SSL_PATH/kibana.key -out $SSL_PATH/kibana-decrypted.key -passin stdin
+              log "[configuration_and_plugins] Decrypted private key"
+              mv $SSL_PATH/kibana-decrypted.key $SSL_PATH/kibana.key
+          fi
       fi
 
-      log "[configuration_and_plugins] Configured encrypted communication"
+      log "[configuration_and_plugins] Configured SSL/TLS to Kibana"
     fi
 
     # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
     # Kibana x-pack installed implies it's also installed for Elasticsearch
-    if [[ -n "${HTTP_CERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
-      # convert PKCS#12 certificate to PEM format
-      [ -d /etc/kibana/ssl ] || mkdir -p /etc/kibana/ssl
-      log "[configuration_and_plugins] Converting PKCS#12 archive for Elasticsearch to PEM format"
-      echo ${HTTP_CERT} | base64 -d | tee /etc/kibana/ssl/elasticsearch-http.p12
-      log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
-      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
-      log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
-      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
-      log "[configuration_and_plugins] Create elasticsearch-http-ca.crt from PKCS#12 archive"
-      echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
-      log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
-      echo "elasticsearch.ssl.key: /etc/kibana/ssl/elasticsearch-http.key" >> $KIBANA_CONF
+    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+      [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
+      if [[ -n "${HTTP_CERT}" ]]; then
+        # convert PKCS#12 certificate to PEM format
+        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch HTTP to file"
+        echo ${HTTP_CERT} | base64 -d | tee $SSL_PATH/elasticsearch-http.p12
+        # TODO: log "[configuration_and_plugins] Create elasticsearch-http.crt from PKCS#12 archive"
+        # TODO: echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.crt -clcerts -nokeys -passin stdin
+        # TODO: log "[configuration_and_plugins] Create elasticsearch-http.key from PKCS#12 archive"
+        # TODO: echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in /etc/kibana/ssl/elasticsearch-http.p12 -out /etc/kibana/ssl/elasticsearch-http.key -nocerts -nodes -passin stdin
+        log "[configuration_and_plugins] Extract CA cert from PKCS#12 archive for Elasticsearch HTTP"
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
 
-      if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
-        echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
-        # A user may provide a certificate that would fail full verification mode,
-        # so default to certificate mode which verifies that the provided certificate is signed
-        # by a trusted authority (CA), but does not perform any hostname verification.
-        echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
-        echo "elasticsearch.ssl.certificateAuthorities: [ /etc/kibana/ssl/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
+        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        # TODO: echo "elasticsearch.ssl.key: $SSL_PATH/elasticsearch-http.key" >> $KIBANA_CONF
 
-        if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-          echo "elasticsearch.ssl.keyPassphrase: \"$HTTP_CERT_PASSWORD\"" >> $KIBANA_CONF
+        if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
+          # TODO: echo "elasticsearch.ssl.certificate: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
+          # A user may provide a certificate that would fail full verification mode,
+          # so default to certificate mode which verifies that the provided certificate is signed
+          # by a trusted authority (CA), but does not perform any hostname verification.
+
+          if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
+              log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verificationMode: none"
+              echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
+          else
+              log "[configuration_and_plugins] CA cert extracted from HTTP cert. Setting verificationMode: full"
+              echo "elasticsearch.ssl.verificationMode: full" >> $KIBANA_CONF
+              echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
+          fi
+
+          # TODO: if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
+          # TODO:   echo "elasticsearch.ssl.keyPassphrase: \"$HTTP_CERT_PASSWORD\"" >> $KIBANA_CONF
+          # TODO: fi
+        else
+          # TODO: echo "elasticsearch.ssl.cert: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
+          echo "elasticsearch.ssl.ca: $SSL_PATH/elasticsearch-http-ca.crt" >> $KIBANA_CONF
+          # disable verification as it performs hostname verification, which will
+          # likely fail for the certificate supplied and connecting through an internal IP address
+          echo "elasticsearch.ssl.verify: false" >> $KIBANA_CONF
+
+          # remove the passphrase from the key. Kibana 5.2.0 and older do not support a passphrase
+          # TODO: if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
+          # TODO:   log "[configuration_and_plugins] Removing passphrase from $SSL_PATH/elasticsearch-http.key"
+          # TODO:   echo "$HTTP_CERT_PASSWORD" | openssl rsa -in /etc/kibana/ssl/elasticsearch-http.key -out /etc/kibana/ssl/elasticsearch-http.key -passin stdin
+          # TODO:   log "[configuration_and_plugins] Removed passphrase from $SSL_PATH/elasticsearch-http.key"
+          # TODO: fi
         fi
       else
-        echo "elasticsearch.ssl.cert: /etc/kibana/ssl/elasticsearch-http.crt" >> $KIBANA_CONF
-        echo "elasticsearch.ssl.ca: /etc/kibana/ssl/elasticsearch-http-ca.crt" >> $KIBANA_CONF
-        # disable verification as it performs hostname verification, which will
-        # likely fail for the certificate supplied and connecting through an internal IP address
-        echo "elasticsearch.ssl.verify: false" >> $KIBANA_CONF
+        # convert PKCS#12 certificate to PEM format
+        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch CA to file"
+        echo ${HTTP_CACERT} | base64 -d | tee $SSL_PATH/elasticsearch-http-ca.p12
+        log "[configuration_and_plugins] Convert PKCS#12 archive for Elasticsearch CA to PEM format"
+        echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http-ca.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
 
-        # remove the passphrase from the key. Kibana 5.2.0 and older do not support a passphrase
-        if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-          log "[configuration_and_plugins] Removing passphrase from /etc/kibana/ssl/elasticsearch-http.key"
-          echo "$HTTP_CERT_PASSWORD" | openssl rsa -in /etc/kibana/ssl/elasticsearch-http.key -out /etc/kibana/ssl/elasticsearch-http.key -passin stdin
-          log "[configuration_and_plugins] Removed passphrase from /etc/kibana/ssl/elasticsearch-http.key"
+        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
+          if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
+              log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verificationMode: none"
+              echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
+          else
+              log "[configuration_and_plugins] CA cert extracted from HTTP cert. Setting verificationMode: full"
+              echo "elasticsearch.ssl.verificationMode: full" >> $KIBANA_CONF
+              log "[configuration_and_plugins] Set CA cert in certificate authorities"
+              echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
+          fi
+        else
+          if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
+              log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verify: false"
+              echo "elasticsearch.ssl.verify: false" >> $KIBANA_CONF
+          else
+              log "[configuration_and_plugins] CA cert extracted from HTTP cert. Setting verify: true"
+              echo "elasticsearch.ssl.verify: true" >> $KIBANA_CONF
+              log "[configuration_and_plugins] Set CA cert as certificate authority"
+              echo "elasticsearch.ssl.ca: $SSL_PATH/elasticsearch-http-ca.crt" >> $KIBANA_CONF
+          fi
         fi
       fi
-
       log "[configuration_and_plugins] Configured TLS for Elasticsearch"
     fi
 
