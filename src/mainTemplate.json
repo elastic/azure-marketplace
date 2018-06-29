@@ -188,7 +188,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch. Required if esTransportSecurity is 'Yes'"
       }
     },
     "esTransportCaCertPassword": {

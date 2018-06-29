@@ -85,7 +85,7 @@ then
   log "${HOSTNAME} found in /etc/hosts"
 else
   log "${HOSTNAME} not found in /etc/hosts"
-  # Append it to the hsots file if not there
+  # Append it to the hosts file if not there
   echo "127.0.0.1 ${HOSTNAME}" >> /etc/hosts
   log "hostname ${HOSTNAME} added to /etc/hosts"
 fi
@@ -664,7 +664,7 @@ configure_http_tls()
           fi
 
           log "[configure_http_tls] Generate HTTP cert for node using $CERTUTIL"
-          $CERTUTIL cert --name $HTTP_CERT_FILENAME --dns "${HOSTNAME}" --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" $CERTUTIL_HTTP_CACERT_PATH_OPTIONS
+          $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" $CERTUTIL_HTTP_CACERT_PATH_OPTIONS
           log "[configure_http_tls] Generated HTTP cert for node"
 
       elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
@@ -677,6 +677,8 @@ configure_http_tls()
               echo -e "  - name: \"$HOSTNAME\""
               echo -e "    dns:"
               echo -e "      - \"$HOSTNAME\""
+              echo -e "    ip:"
+              echo -e "      - \"$(hostname -I)\""
               echo -e "    filename: \"elasticsearch-http\""
           } >> $SSL_PATH/elasticsearch-http.yml
 
@@ -803,10 +805,13 @@ configure_transport_tls()
     local KEY_STORE=$BIN_DIR/elasticsearch-keystore
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
-    # Use CA cert to generate cert, if supplied
+    # Use CA cert to generate certs
     if [[ -n "${TRANSPORT_CACERT}" ]]; then
       log "[configure_transport_tls] Save Transport CA cert blob to file"
       echo ${TRANSPORT_CACERT} | base64 -d | tee $TRANSPORT_CACERT_PATH
+    else
+      log "[configure_transport_tls] No CA cert blob supplied so cannot generate cert"
+      exit 12
     fi
 
     # Generate certs with certutil or certgen
@@ -816,14 +821,8 @@ configure_transport_tls()
             CERTUTIL=$BIN_DIR/x-pack/certutil
         fi
 
-        local CERTUTIL_TRANSPORT_CACERT_PATH_OPTIONS=""
-        if [[ -f $TRANSPORT_CACERT_PATH ]]; then
-          CERTUTIL_TRANSPORT_CACERT_PATH_OPTIONS="--ca $TRANSPORT_CACERT_PATH --ca-pass \"$TRANSPORT_CACERT_PASSWORD\""
-        fi
-
         log "[configure_transport_tls] Generate Transport cert for node using $CERTUTIL"
-        $CERTUTIL cert --name $TRANSPORT_CERT_FILENAME --dns "${HOSTNAME}" --out $TRANSPORT_CERT_PATH --pass "$TRANSPORT_CERT_PASSWORD" $CERTUTIL_TRANSPORT_CACERT_PATH_OPTIONS
-        log "[configure_transport_tls] Generated Transport cert for node"
+        $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $TRANSPORT_CERT_PATH --pass "$TRANSPORT_CERT_PASSWORD" --ca $TRANSPORT_CACERT_PATH --ca-pass "$TRANSPORT_CACERT_PASSWORD"
 
     elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
         local CERTGEN=$BIN_DIR/elasticsearch-certgen
@@ -835,43 +834,21 @@ configure_transport_tls()
             echo -e "  - name: \"$HOSTNAME\""
             echo -e "    dns:"
             echo -e "      - \"$HOSTNAME\""
+            echo -e "    ip:"
+            echo -e "      - \"$(hostname -I)\""
             echo -e "    filename: \"elasticsearch-transport\""
         } >> $SSL_PATH/elasticsearch-transport.yml
 
-        # Convert the CA PKCS#12 archive to cert and private key to use with certgen
-        local CERTGEN_TRANSPORT_CACERT_PATH_OPTIONS=""
-        if [[ -n "$TRANSPORT_CACERT_PASSWORD" ]]; then
-            # whether a CA cert is supplied or we're generating one, use the CA password, if supplied
-            CERTGEN_TRANSPORT_CACERT_PATH_OPTIONS="--pass \"$TRANSPORT_CACERT_PASSWORD\""
-        fi
-
-        if [[ -f "${TRANSPORT_CACERT_PATH}" ]]; then
             log "[configure_transport_tls] Converting PKCS#12 Transport CA archive to PEM format"
             echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
             echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
-            CERTGEN_TRANSPORT_CACERT_PATH_OPTIONS="$CERTGEN_TRANSPORT_CACERT_PATH_OPTIONS --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key"
-        fi
 
         log "[configure_transport_tls] Generate Transport cert for node using $CERTGEN"
-        $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip $CERTGEN_TRANSPORT_CACERT_PATH_OPTIONS
-        log "[configure_transport_tls] Generated Transport cert for node"
+        $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key --pass "$TRANSPORT_CACERT_PASSWORD"
 
         install_unzip
         log "[configure_transport_tls] Unzip Transport cert"
         unzip $SSL_PATH/elasticsearch-transport.zip
-        log "[configure_transport_tls] Unzipped Transport cert"
-
-        # If no CA was used to generate the cert, the CA will have been generated
-        if [[ -f $SSL_PATH/ca/ca.crt && ! -f $SSL_PATH/elasticsearch-transport-ca.crt ]]; then
-            log "[configure_transport_tls] Move Transport CA cert"
-            mv $SSL_PATH/ca/ca.crt $SSL_PATH/elasticsearch-transport-ca.crt
-        fi
-
-        if [[ -f $SSL_PATH/ca/ca.key && ! -f $SSL_PATH/elasticsearch-transport-ca.key ]]; then
-            log "[configure_transport_tls] Move Transport CA key"
-            mv $SSL_PATH/ca/ca.key $SSL_PATH/elasticsearch-transport-ca.key
-        fi
-
         log "[configure_transport_tls] Move Transport cert"
         mv $SSL_PATH/elasticsearch-transport/elasticsearch-transport.crt $SSL_PATH/elasticsearch-transport.crt
         log "[configure_transport_tls] Move Transport key"
@@ -1004,16 +981,6 @@ configure_elasticsearch_yaml()
         echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> $ES_CONF
     fi
 
-    # Configure SSL/TLS for HTTP layer
-    if [[ ${HTTP_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
-        configure_http_tls $ES_CONF
-        fi
-
-    # Configure TLS for Transport layer
-    if [[ ${TRANSPORT_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
-        configure_transport_tls $ES_CONF
-        fi
-
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" && -n "$STORAGE_SUFFIX" ]]; then
       if [[ "${ES_VERSION}" == \6* ]]; then
@@ -1084,6 +1051,16 @@ configure_elasticsearch_yaml()
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
     log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
     echo "bootstrap.memory_lock: true" >> $ES_CONF
+
+    # Configure SSL/TLS for HTTP layer
+    if [[ ${HTTP_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+        configure_http_tls $ES_CONF
+    fi
+
+    # Configure TLS for Transport layer
+    if [[ ${TRANSPORT_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+        configure_transport_tls $ES_CONF
+    fi
 }
 
 configure_elasticsearch()
