@@ -635,7 +635,7 @@ configure_http_tls()
     local SSL_PATH=/etc/elasticsearch/ssl
     local HTTP_CERT_FILENAME=elasticsearch-http.p12
     local HTTP_CERT_PATH=$SSL_PATH/$HTTP_CERT_FILENAME
-    local HTTP_CACERT_FILENAME=elasticsearch-ca-http.p12
+    local HTTP_CACERT_FILENAME=elasticsearch-http-ca.p12
     local HTTP_CACERT_PATH=$SSL_PATH/$HTTP_CACERT_FILENAME
     local BIN_DIR=/usr/share/elasticsearch/bin
     local KEY_STORE=$BIN_DIR/elasticsearch-keystore
@@ -658,13 +658,12 @@ configure_http_tls()
               CERTUTIL=$BIN_DIR/x-pack/certutil
           fi
 
-          local CERTUTIL_HTTP_CACERT_PATH_OPTIONS=""
-          if [[ -f $SSL_PATH/$HTTP_CACERT_FILENAME ]]; then
-            CERTUTIL_HTTP_CACERT_PATH_OPTIONS="--ca $HTTP_CACERT_PATH --ca-pass \"$HTTP_CACERT_PASSWORD\""
-          fi
-
           log "[configure_http_tls] Generate HTTP cert for node using $CERTUTIL"
-          $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" $CERTUTIL_HTTP_CACERT_PATH_OPTIONS
+          if [[ -f $HTTP_CACERT_PATH ]]; then
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
+          else
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD"
+          fi
           log "[configure_http_tls] Generated HTTP cert for node"
 
       elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
@@ -685,11 +684,10 @@ configure_http_tls()
           # Convert the CA PKCS#12 archive to cert and private key to use with certgen
           local CERTGEN_HTTP_CACERT_PATH_OPTIONS=""
           if [[ -n "$HTTP_CACERT_PASSWORD" ]]; then
-              # whether a CA cert is supplied or we're generating one, use the CA password, if supplied
               CERTGEN_HTTP_CACERT_PATH_OPTIONS="--pass \"$HTTP_CACERT_PASSWORD\""
           fi
 
-          if [[ -f "${HTTP_CACERT_PATH}" ]]; then
+          if [[ -f "$HTTP_CACERT_PATH" ]]; then
               log "[configure_http_tls] Converting PKCS#12 HTTP CA archive to PEM format"
               echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.key -nocerts -nodes -passin stdin
               echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
