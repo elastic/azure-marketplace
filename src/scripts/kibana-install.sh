@@ -274,7 +274,7 @@ configuration_and_plugins()
         log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch CA to file"
         echo ${HTTP_CACERT} | base64 -d | tee $SSL_PATH/elasticsearch-http-ca.p12
         log "[configuration_and_plugins] Convert PKCS#12 archive for Elasticsearch CA to PEM format"
-        echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http-ca.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
+        echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http-ca.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
 
         log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
         if dpkg --compare-versions "$KIBANA_VERSION" "ge" "5.3.0"; then
@@ -282,8 +282,8 @@ configuration_and_plugins()
               log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verification mode to none"
               echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
           else
-              log "[configuration_and_plugins] CA cert extracted from HTTP cert. Setting verification mode to certificate"
-              echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
+              log "[configuration_and_plugins] CA cert extracted from HTTP cert. Setting verification mode to full"
+              echo "elasticsearch.ssl.verificationMode: full" >> $KIBANA_CONF
               log "[configuration_and_plugins] Set CA cert in certificate authorities"
               echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
           fi
