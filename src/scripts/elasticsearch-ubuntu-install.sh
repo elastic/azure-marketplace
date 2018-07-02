@@ -664,9 +664,9 @@ configure_http_tls()
 
           log "[configure_http_tls] Generate HTTP cert for node using $CERTUTIL"
           if [[ -f $HTTP_CACERT_PATH ]]; then
-            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip "$(hostname -I),$INTERNAL_LOADBALANCER_IP" --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I),$INTERNAL_LOADBALANCER_IP --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
           else
-            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip "$(hostname -I),$INTERNAL_LOADBALANCER_IP" --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD"
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I),$INTERNAL_LOADBALANCER_IP --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD"
           fi
           log "[configure_http_tls] Generated HTTP cert for node"
 

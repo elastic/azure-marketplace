@@ -78,6 +78,8 @@ SSL_PASSPHRASE=""
 YAML_CONFIGURATION=""
 HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
+HTTP_CACERT=""
+HTTP_CACERT_PASSWORD=""
 
 #Loop through options passed
 while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
@@ -113,10 +115,10 @@ while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
     G) #Elasticsearch certificate password
       HTTP_CERT_PASSWORD="${OPTARG}"
       ;;
-    H) #Elasticsearch CA certificate
+    V) #Elasticsearch CA certificate
       HTTP_CACERT="${OPTARG}"
       ;;
-    G) #Elasticsearch CA certificate password
+    J) #Elasticsearch CA certificate password
       HTTP_CACERT_PASSWORD="${OPTARG}"
       ;;
     Y) #kibana additional yml configuration
@@ -297,6 +299,7 @@ configuration_and_plugins()
           fi
         fi
       fi
+      chown -R kibana: $SSL_PATH
       log "[configuration_and_plugins] Configured TLS for Elasticsearch"
     fi
 
