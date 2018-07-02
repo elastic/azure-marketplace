@@ -129,6 +129,7 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 HTTP_CACERT=""
 HTTP_CACERT_PASSWORD=""
+INTERNAL_LOADBALANCER_IP=""
 PROTOCOL="http"
 CURL_SWITCH=""
 
@@ -138,7 +139,7 @@ TRANSPORT_CACERT_PASSWORD=""
 TRANSPORT_CERT_PASSWORD=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:FQXxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:FQXxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -188,6 +189,9 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:FQXxyzldjh optname; d
       ;;
     C) #additional yaml configuration
       YAML_CONFIGURATION="${OPTARG}"
+      ;;
+    D) #internal load balancer IP
+      INTERNAL_LOADBALANCER_IP="${OPTARG}"
       ;;
     F) #Enable SSL/TLS for HTTP layer
       HTTP_SECURITY=1
@@ -660,9 +664,9 @@ configure_http_tls()
 
           log "[configure_http_tls] Generate HTTP cert for node using $CERTUTIL"
           if [[ -f $HTTP_CACERT_PATH ]]; then
-            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip "$(hostname -I),$INTERNAL_LOADBALANCER_IP" --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
           else
-            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD"
+            $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip "$(hostname -I),$INTERNAL_LOADBALANCER_IP" --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD"
           fi
           log "[configure_http_tls] Generated HTTP cert for node"
 
@@ -678,6 +682,7 @@ configure_http_tls()
               echo -e "      - \"$HOSTNAME\""
               echo -e "    ip:"
               echo -e "      - \"$(hostname -I)\""
+              echo -e "      - \"$INTERNAL_LOADBALANCER_IP\""
               echo -e "    filename: \"elasticsearch-http\""
           } >> $SSL_PATH/elasticsearch-http.yml
 
@@ -837,9 +842,9 @@ configure_transport_tls()
             echo -e "    filename: \"elasticsearch-transport\""
         } >> $SSL_PATH/elasticsearch-transport.yml
 
-            log "[configure_transport_tls] Converting PKCS#12 Transport CA archive to PEM format"
-            echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
-            echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
+        log "[configure_transport_tls] Converting PKCS#12 Transport CA archive to PEM format"
+        echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
+        echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
 
         log "[configure_transport_tls] Generate Transport cert for node using $CERTGEN"
         $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key --pass "$TRANSPORT_CACERT_PASSWORD"

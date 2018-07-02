@@ -33,6 +33,7 @@ help()
     echo "-l install plugins"
     echo "-L <plugin;plugin> install additional plugins"
 
+    echo "-D Internal Load balancer IP. Used as an IP SAN when generating certs with HTTP CA"
     echo "-F Enable SSL/TLS for the HTTP layer"
     echo "-H base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
     echo "-G password for PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
@@ -98,6 +99,7 @@ HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 HTTP_CACERT=""
 HTTP_CACERT_PASSWORD=""
+INTERNAL_LOADBALANCER_IP=""
 
 TRANSPORT_SECURITY=0
 TRANSPORT_CACERT=""
@@ -116,7 +118,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:FQXxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:FQXxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -160,6 +162,9 @@ while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:FQX
       ;;
     C) #additional yaml configuration
       YAML_CONFIGURATION="${OPTARG}"
+      ;;
+    D) #internal load balancer IP
+      INTERNAL_LOADBALANCER_IP="${OPTARG}"
       ;;
     F) #Enable SSL/TLS for HTTP layer
       HTTP_SECURITY=1
@@ -280,7 +285,7 @@ if [ $TRANSPORT_SECURITY -eq 1 ]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -V "$HTTP_CACERT" -J "$HTTP_CACERT_PASSWORD" -T "$TRANSPORT_CACERT" -W "$TRANSPORT_CACERT_PASSWORD" -N "$TRANSPORT_CERT_PASSWORD" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -V "$HTTP_CACERT" -J "$HTTP_CACERT_PASSWORD" -T "$TRANSPORT_CACERT" -W "$TRANSPORT_CACERT_PASSWORD" -N "$TRANSPORT_CERT_PASSWORD" -D "$INTERNAL_LOADBALANCER_IP" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"
