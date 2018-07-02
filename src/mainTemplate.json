@@ -1199,7 +1199,7 @@
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
-      "https": "[if(and(greater(length(parameters('esHttpCertBlob')), 0), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]",
+      "https": "[if(and(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]",
       "subnet": {
         "name": "[parameters('vNetClusterSubnetName')]",
         "addressPrefix": "[parameters('vNetNewClusterSubnetAddressPrefix')]",
