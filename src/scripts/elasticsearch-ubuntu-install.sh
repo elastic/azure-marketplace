@@ -682,7 +682,7 @@ configure_http_tls()
               echo -e "    dns:"
               echo -e "      - \"$HOSTNAME\""
               echo -e "    ip:"
-              echo -e "      - \"$(hostname -I)\""
+              echo -e "      - \"$(hostname -I | xargs)\""
               echo -e "      - \"$INTERNAL_LOADBALANCER_IP\""
               echo -e "    filename: \"elasticsearch-http\""
           } >> $SSL_PATH/elasticsearch-http.yml
@@ -820,13 +820,13 @@ configure_transport_tls()
             echo -e "    dns:"
             echo -e "      - \"$HOSTNAME\""
             echo -e "    ip:"
-            echo -e "      - \"$(hostname -I)\""
+            echo -e "      - \"$(hostname -I | xargs)\""
             echo -e "    filename: \"elasticsearch-transport\""
         } >> $SSL_PATH/elasticsearch-transport.yml
 
         log "[configure_transport_tls] Converting PKCS#12 Transport CA archive to PEM format"
         echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
-        echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
+        echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -clcerts -nokeys -chain -passin stdin
 
         log "[configure_transport_tls] Generate Transport cert for node using $CERTGEN"
         $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key --pass "$TRANSPORT_CACERT_PASSWORD"
