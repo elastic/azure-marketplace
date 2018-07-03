@@ -649,6 +649,16 @@ configure_http_tls()
     local HTTP_CACERT_PATH=$SSL_PATH/$HTTP_CACERT_FILENAME
     local BIN_DIR=/usr/share/elasticsearch/bin
     local KEY_STORE=$BIN_DIR/elasticsearch-keystore
+
+    # check if any certs already exist on disk
+    if [[ -f $HTTP_CERT_PATH ]]; then
+        log "[configure_http_tls] HTTP cert already exists"
+        return 0
+    elif [[ -f $HTTP_CACERT_PATH ]]; then
+        log "[configure_http_tls] HTTP CA already exists"
+        return 0
+    fi
+
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
     # Use HTTP cert if supplied, otherwise generate one
@@ -698,7 +708,7 @@ configure_http_tls()
 
           install_unzip
           log "[configure_http_tls] Unzip HTTP cert"
-          unzip $SSL_PATH/elasticsearch-http.zip
+          unzip $SSL_PATH/elasticsearch-http.zip -d $SSL_PATH
           log "[configure_http_tls] Unzipped HTTP cert"
 
           log "[configure_http_tls] Move HTTP cert"
@@ -788,6 +798,13 @@ configure_transport_tls()
     local TRANSPORT_CACERT_PATH=$SSL_PATH/$TRANSPORT_CACERT_FILENAME
     local BIN_DIR=/usr/share/elasticsearch/bin
     local KEY_STORE=$BIN_DIR/elasticsearch-keystore
+
+    # check if any cert already exists on disk
+    if [[ -f $TRANSPORT_CACERT_PATH ]]; then
+        log "[configure_http_tls] Transport CA already exists"
+        return 0
+    fi
+
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
     # Use CA cert to generate certs
@@ -833,7 +850,7 @@ configure_transport_tls()
 
         install_unzip
         log "[configure_transport_tls] Unzip Transport cert"
-        unzip $SSL_PATH/elasticsearch-transport.zip
+        unzip $SSL_PATH/elasticsearch-transport.zip -d $SSL_PATH
         log "[configure_transport_tls] Move Transport cert"
         mv $SSL_PATH/elasticsearch-transport/elasticsearch-transport.crt $SSL_PATH/elasticsearch-transport.crt
         log "[configure_transport_tls] Move Transport key"
