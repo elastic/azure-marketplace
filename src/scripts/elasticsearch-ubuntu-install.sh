@@ -689,7 +689,7 @@ configure_http_tls()
 
           log "[configure_http_tls] Converting PKCS#12 HTTP CA archive to PEM format"
           echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.key -nocerts -nodes -passin stdin
-          echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
+          echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
 
           log "[configure_http_tls] Generate HTTP cert for node using $CERTGEN"
           $CERTGEN --in $SSL_PATH/elasticsearch-http.yml --out $SSL_PATH/elasticsearch-http.zip \
@@ -708,7 +708,7 @@ configure_http_tls()
 
           # Encrypt the private key if there's a password
           if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-            log "[configure_http_tls] Encrypt HTTP key"
+            log "[configure_http_tls] Encrypt HTTP private key"
             echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passin stdin
             mv $SSL_PATH/elasticsearch-http-encrypted.key $SSL_PATH/elasticsearch-http.key
           fi
