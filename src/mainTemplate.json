@@ -18,6 +18,13 @@
         "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
       }
     },
+    "usageTrackingGuid": {
+      "type": "object",
+      "defaultValue": "pid-b2c934e3-29f3-4194-bfd2-4f1370b78e0c",
+      "metadata": {
+        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    },
     "esVersion": {
       "type": "string",
       "defaultValue": "6.2.4",
@@ -1138,6 +1145,19 @@
     }
   },
   "resources": [
+    {
+      "name": "[parameters('usageTrackingGuid')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
     {
       "name": "shared",
       "type": "Microsoft.Resources/deployments",
