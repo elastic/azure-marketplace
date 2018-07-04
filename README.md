@@ -147,6 +147,10 @@ posts for further information
     Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
+  <tr><td>esHttpSecurity</td><td>string</td>
+    <td><code>Yes</code> or <code>No</code> whether to configure SSL/TLS for the HTTP layer of Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>No</code></td></tr>
+
   <tr><td>esHttpCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
@@ -155,12 +159,28 @@ posts for further information
     <td>The password for the PKCS#12 archive (.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be encrypted. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
-  <tr><td>esTransportCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+  <tr><td>esHttpCaCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to use to generate certificates to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esHttpCaCertPassword</td><td>securestring</td>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+  
+  <tr><td>esTransportSecurity</td><td>string</td>
+    <td><code>Yes</code> or <code>No</code> whether to configure SSL/TLS for the Transport layer of Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>No</code></td></tr>
+
+  <tr><td>esTransportCaCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to use to generate certificates to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>esTransportCaCertPassword</td><td>securestring</td>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.pfx) certificate to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be encrypted. <strong>X-Pack plugin must be installed</strong>
+    <td>The password to encrypt each generated certificate to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
@@ -370,14 +390,18 @@ posts for further information
     </td><td><code>2</code></td></tr>
 
    <tr><td>appGatewayCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PFX certificate for the Application Gateway. 
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway.
     This certificate is used to secure HTTPS connections to and from the Application Gateway.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayCertPassword</td><td>securestring</td>
-    <td>The password for the PFX certificate for the Application Gateway. Defaults to <code>""</code>.
+    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway. Defaults to <code>""</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>appGatewayEsHttpCertPublicKey</td><td>securestring</td>
+    <td>The Base-64 encoded public key (.cer) for the certificate used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Required if using <code>esHttpCertBlob</code> to secure the HTTP layer of Elasticsearch and selecting <code>gateway</code> for load balancing. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayWafStatus</td><td>string</td>
