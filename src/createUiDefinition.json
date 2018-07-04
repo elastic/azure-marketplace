@@ -59,18 +59,6 @@
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v5.0.2",
-                  "value": "5.0.2"
-                },
-                {
-                  "label": "v5.1.2",
-                  "value": "5.1.2"
-                },
-                {
-                  "label": "v5.2.2",
-                  "value": "5.2.2"
-                },
-                {
                   "label": "v5.3.2",
                   "value": "5.3.2"
                 },
