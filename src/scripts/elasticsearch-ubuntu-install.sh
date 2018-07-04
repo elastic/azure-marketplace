@@ -863,11 +863,11 @@ configure_transport_tls()
           mv $SSL_PATH/elasticsearch-transport-encrypted.key $SSL_PATH/elasticsearch-transport.key
         fi
     else
-        log "[configure_transport_tls] No certutil or certgen tool could be found to generate a Transport cert"
+        log "[configure_transport_tls] no certutil or certgen tool could be found to generate a transport cert"
         exit 12
     fi
 
-    log "[configure_transport_tls] Configuring SSL/TLS for Transport layer"
+    log "[configure_transport_tls] configuring SSL/TLS for transport layer"
     echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
 
     if [[ "${ES_VERSION}" == \6* ]]; then
@@ -886,14 +886,14 @@ configure_transport_tls()
           echo "xpack.security.transport.ssl.key: $SSL_PATH/elasticsearch-transport.key" >> $ES_CONF
           echo "xpack.security.transport.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-transport-ca.crt ]" >> $ES_CONF
           if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
-              log "[configure_transport_tls] Configure Transport cert password in keystore"
+              log "[configure_transport_tls] configure transport cert password in keystore"
               create_keystore_if_not_exists
               echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
           fi
       fi
     else
       if [[ -f $TRANSPORT_CERT_PATH ]]; then
-          log "[configure_transport_tls] Converting PKCS#12 Transport archive to PEM format"
+          log "[configure_transport_tls] converting PKCS#12 transport archive to PEM"
           echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out $SSL_PATH/elasticsearch-transport.crt -clcerts -nokeys -passin stdin
           echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out $SSL_PATH/elasticsearch-transport.key -nocerts -nodes -passin stdin
           echo "$TRANSPORT_CERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -cacerts -nokeys -chain -passin stdin
@@ -904,18 +904,18 @@ configure_transport_tls()
       echo "xpack.security.transport.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-transport-ca.crt ]" >> $ES_CONF
       if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
           if dpkg --compare-versions "$ES_VERSION" "ge" "5.6.0"; then
-              log "[configure_transport_tls] Configure Transport cert password in keystore"
+              log "[configure_transport_tls] configure transport cert password in keystore"
               create_keystore_if_not_exists
               echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
           else
-              log "[configure_transport_tls] Configure Transport cert password in config"
+              log "[configure_transport_tls] configure transport cert password in config"
               echo "xpack.security.transport.ssl.key_passphrase: \"$TRANSPORT_CERT_PASSWORD\"" >> $ES_CONF
           fi
       fi
     fi
 
     chown -R elasticsearch:elasticsearch $SSL_PATH
-    log "[configure_transport_tls] Configured SSL/TLS for Transport layer"
+    log "[configure_transport_tls] configured SSL/TLS for Transport layer"
 }
 
 ## Configuration
@@ -946,29 +946,29 @@ configure_elasticsearch_yaml()
     fi
 
     # configure path.data
-    log "[configure_elasticsearch_yaml] Update configuration with data path list of $DATAPATH_CONFIG"
+    log "[configure_elasticsearch_yaml] update configuration with data path list of $DATAPATH_CONFIG"
     echo "path.data: $DATAPATH_CONFIG" >> $ES_CONF
 
     # Configure discovery
-    log "[configure_elasticsearch_yaml] Update configuration with hosts configuration of $UNICAST_HOSTS"
+    log "[configure_elasticsearch_yaml] update configuration with hosts configuration of $UNICAST_HOSTS"
     echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> $ES_CONF
 
     # Configure Elasticsearch node type
-    log "[configure_elasticsearch_yaml] Configure master/client/data node type flags only master-$MASTER_ONLY_NODE only data-$DATA_ONLY_NODE"
+    log "[configure_elasticsearch_yaml] configure master/client/data node type flags only master-$MASTER_ONLY_NODE only data-$DATA_ONLY_NODE"
     if [ ${MASTER_ONLY_NODE} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Configure node as master only"
+        log "[configure_elasticsearch_yaml] configure node as master only"
         echo "node.master: true" >> $ES_CONF
         echo "node.data: false" >> $ES_CONF
     elif [ ${DATA_ONLY_NODE} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Configure node as data only"
+        log "[configure_elasticsearch_yaml] configure node as data only"
         echo "node.master: false" >> $ES_CONF
         echo "node.data: true" >> $ES_CONF
     elif [ ${CLIENT_ONLY_NODE} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Configure node as client only"
+        log "[configure_elasticsearch_yaml] configure node as client only"
         echo "node.master: false" >> $ES_CONF
         echo "node.data: false" >> $ES_CONF
     else
-        log "[configure_elasticsearch_yaml] Configure node as master and data"
+        log "[configure_elasticsearch_yaml] configure node as master and data"
         echo "node.master: true" >> $ES_CONF
         echo "node.data: true" >> $ES_CONF
     fi
@@ -979,20 +979,20 @@ configure_elasticsearch_yaml()
 
     # Configure mandatory plugins
     if [[ -n "${MANDATORY_PLUGINS}" ]]; then
-        log "[configure_elasticsearch_yaml] Set plugin.mandatory to $MANDATORY_PLUGINS"
+        log "[configure_elasticsearch_yaml] set plugin.mandatory to $MANDATORY_PLUGINS"
         echo "plugin.mandatory: ${MANDATORY_PLUGINS%?}" >> $ES_CONF
     fi
 
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" && -n "$STORAGE_SUFFIX" ]]; then
       if [[ "${ES_VERSION}" == \6* ]]; then
-        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in keystore"
+        log "[configure_elasticsearch_yaml] configure storage for repository-azure plugin in keystore"
         create_keystore_if_not_exists
         echo "$STORAGE_ACCOUNT" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.account -xf
         echo "$STORAGE_KEY" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.key -xf
         echo "azure.client.default.endpoint_suffix: $STORAGE_SUFFIX" >> $ES_CONF
       else
-        log "[configure_elasticsearch_yaml] Configure storage for Azure Cloud in $ES_CONF"
+        log "[configure_elasticsearch_yaml] configure storage for repository-azure plugin in $ES_CONF"
         echo "cloud.azure.storage.default.account: ${STORAGE_ACCOUNT}" >> $ES_CONF
         echo "cloud.azure.storage.default.key: ${STORAGE_KEY}" >> $ES_CONF
       fi
@@ -1051,7 +1051,7 @@ configure_elasticsearch_yaml()
     fi
 
     # Swap is disabled by default in Ubuntu Azure VMs, no harm in adding memory lock
-    log "[configure_elasticsearch_yaml] Setting bootstrap.memory_lock: true"
+    log "[configure_elasticsearch_yaml] setting bootstrap.memory_lock: true"
     echo "bootstrap.memory_lock: true" >> $ES_CONF
 
     # Configure SSL/TLS for HTTP layer
