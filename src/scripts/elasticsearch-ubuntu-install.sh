@@ -715,7 +715,7 @@ configure_http_tls()
           # Encrypt the private key if there's a password
           if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
             log "[configure_http_tls] encrypt HTTP private key"
-            echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passin stdin
+            echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passout stdin
             mv $SSL_PATH/elasticsearch-http-encrypted.key $SSL_PATH/elasticsearch-http.key
           fi
       else
@@ -771,7 +771,7 @@ configure_http_tls()
       if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
           # Encrypt the private key if there's a password
           log "[configure_http_tls] Encrypt HTTP private key"
-          echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passin stdin
+          echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passout stdin
           mv $SSL_PATH/elasticsearch-http-encrypted.key $SSL_PATH/elasticsearch-http.key
 
           if dpkg --compare-versions "$ES_VERSION" "ge" "5.6.0"; then
@@ -865,8 +865,8 @@ configure_transport_tls()
 
         # Encrypt the private key if there's a password
         if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
-          log "[configure_transport_tls] Encrypt Transport key"
-          echo "$TRANSPORT_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-transport.key -out $SSL_PATH/elasticsearch-transport-encrypted.key -passin stdin
+          log "[configure_transport_tls] encrypt Transport key"
+          echo "$TRANSPORT_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-transport.key -out $SSL_PATH/elasticsearch-transport-encrypted.key -passout stdin
           mv $SSL_PATH/elasticsearch-transport-encrypted.key $SSL_PATH/elasticsearch-transport.key
         fi
     else
