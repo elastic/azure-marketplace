@@ -565,16 +565,14 @@ apply_security_settings()
       fi
       log "[apply_security_settings] updated builtin kibana user password"
 
-      if dpkg --compare-versions "$ES_VERSION" "ge" "5.2.0"; then
-        #update builtin `logstash_system` account
-        local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
-        echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
-        if [[ $? != 0 ]];  then
-          log "[apply_security_settings] could not update the builtin logstash_system user"
-          exit 10
-        fi
-        log "[apply_security_settings] updated builtin logstash_system user password"
+      #update builtin `logstash_system` account
+      local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
+      echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
+      if [[ $? != 0 ]];  then
+        log "[apply_security_settings] could not update the builtin logstash_system user"
+        exit 10
       fi
+      log "[apply_security_settings] updated builtin logstash_system user password"
 
       #create a readonly role that mimics the `user` role in the old shield plugin
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'
