@@ -5,10 +5,13 @@
 	"location" : "westeurope",
 	"parameters" : {
     "loadBalancerType":{"value":"external"},
+    "esHttpSecurity": {"value":"Yes"},
     "esHttpCertBlob":{"value":"cert-with-password.pfx"},
     "esHttpCertPassword":{"value":"Password123"},
+    "esTransportSecurity": {"value":"Yes"},
     "esTransportCaCertBlob":{"value":"cert-with-password.pfx"},
     "esTransportCaCertPassword":{"value":"Password123"},
+    "esTransportCertPassword":{"value":"Password1234"},
     "kibana":{"value":"Yes"},
     "kibanaCertBlob":{"value":"cert-with-password.crt"},
     "kibanaKeyBlob":{"value":"cert-with-password.key"},
