@@ -332,14 +332,23 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
-  var opts = { json: true, auth: { username: "elastic", password: config.deployments.securityPassword } };
+  var opts = {
+    json: true,
+    auth: { username: "elastic", password: config.deployments.securityPassword },
+    agentOptions: { checkServerIdentity: _.noop }
+  };
 
-  if (t.params.esHttpCertBlob) {
-    if (t.params.esHttpCertPassword) {
-      opts = merge.recursive(true, opts, { pfx: fs.readFileSync("certs/cert-with-password.pfx"), passphrase: t.params.esHttpCertPassword });
+  if (t.params.esHttpCertBlob && t.params.esHttpCertBlob.value) {
+    if (t.params.esHttpCertPassword && t.params.esHttpCertPassword.value) {
+      opts = merge.recursive(true, opts, {
+        pfx: fs.readFileSync("certs/cert-with-password.pfx"),
+        passphrase: t.params.esHttpCertPassword.value,
+      });
     }
     else {
-      opts = merge.recursive(true, opts, { pfx: fs.readFileSync("certs/cert-no-password.pfx") });
+      opts = merge.recursive(true, opts, {
+        pfx: fs.readFileSync("certs/cert-no-password.pfx")
+      });
     }
   }
 
@@ -381,15 +390,16 @@ var sanityCheckKibana = (test, url, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   log(`checking kibana at ${url} in resource group: ${rg}`);
-  var opts = { json: true, auth: { username: "elastic", password: config.deployments.securityPassword } };
+  var opts = {
+    json: true,
+    auth: { username: "elastic", password: config.deployments.securityPassword },
+    agentOptions: { checkServerIdentity: _.noop }
+  };
 
-  if (t.params.kibanaCertBlob) {
-    if (t.params.kibanaKeyPassphrase) {
-      opts = merge.recursive(true, opts, { ca: fs.readFileSync("certs/ca-cert-with-password.crt"), passphrase: t.params.kibanaKeyPassphrase });
-    }
-    else {
-      opts = merge.recursive(true, opts, { ca: fs.readFileSync("certs/ca-cert-no-password.crt") });
-    }
+  if (t.params.kibanaCertBlob && t.params.kibanaCertBlob.value) {
+    opts.ca = (t.params.kibanaKeyPassphrase && t.params.kibanaKeyPassphrase.value) ?
+      fs.readFileSync("certs/cert-with-password-ca.crt") :
+      fs.readFileSync("certs/cert-no-password-ca.crt");
   }
 
   request(`${url}/api/status`, opts, function (error, response, body) {
