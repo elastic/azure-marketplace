@@ -271,9 +271,9 @@ if [[ "${ES_VERSION}" == \6* && ${INSTALL_XPACK} -ne 0 ]]; then
     SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi
 
-log "Bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
-log "Cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
-log "Cluster install X-Pack plugin is set to $INSTALL_XPACK"
+log "bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
+log "cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
+log "cluster install X-Pack plugin is set to $INSTALL_XPACK"
 
 #########################
 # Installation steps as functions
@@ -306,7 +306,7 @@ setup_data_disk()
 {
     if [ -d "/datadisks" ]; then
         local RAIDDISK="/datadisks/disk1"
-        log "[setup_data_disk] Configuring disk $RAIDDISK/elasticsearch/data"
+        log "[setup_data_disk] configuring disk $RAIDDISK/elasticsearch/data"
         mkdir -p "$RAIDDISK/elasticsearch/data"
         chown -R elasticsearch:elasticsearch "$RAIDDISK/elasticsearch"
         chmod 755 "$RAIDDISK/elasticsearch"
@@ -318,7 +318,7 @@ setup_data_disk()
         chmod 755 "$TEMPDISK/elasticsearch"
     else
         #If we do not find folders/disks in our data disk mount directory then use the defaults
-        log "[setup_data_disk] Configured data directory does not exist for ${HOSTNAME}. using defaults"
+        log "[setup_data_disk] configured data directory does not exist for ${HOSTNAME}. using defaults"
     fi
 }
 
@@ -328,14 +328,14 @@ check_data_disk()
     if [ ${MASTER_ONLY_NODE} -eq 0 -a ${CLIENT_ONLY_NODE} -eq 0 ]; then
         log "[check_data_disk] data node checking data directory"
         if [ -d "/datadisks" ]; then
-            log "[check_data_disk] Data disks attached and mounted at /datadisks"
+            log "[check_data_disk] data disks attached and mounted at /datadisks"
         elif [ -d "/mnt/elasticsearch/data" ]; then
-            log "[check_data_disk] Data directory at /mnt/elasticsearch/data"
+            log "[check_data_disk] data directory at /mnt/elasticsearch/data"
         else
             #this could happen when the temporary disk is lost and a new one mounted
             local TEMPDISK="/mnt"
-            log "[check_data_disk] No data directory at /mnt/elasticsearch/data dir"
-            log "[setup_data_disk] Configuring disk $TEMPDISK/elasticsearch/data"
+            log "[check_data_disk] no data directory at /mnt/elasticsearch/data dir"
+            log "[check_data_disk] configuring disk $TEMPDISK/elasticsearch/data"
             mkdir -p "$TEMPDISK/elasticsearch/data"
             chown -R elasticsearch:elasticsearch "$TEMPDISK/elasticsearch"
             chmod 755 "$TEMPDISK/elasticsearch"
@@ -350,34 +350,34 @@ install_java_package()
 {
   apt-get -yq $@ install oracle-java8-installer || true \
   && pushd /var/lib/dpkg/info \
-  && log "[install_java_package] Update oracle-java8-installer to 8u172" \
+  && log "[install_java_package] update oracle-java8-installer to 8u172" \
   && sed -i 's|JAVA_VERSION=8u161|JAVA_VERSION=8u172|' oracle-java8-installer.* \
   && sed -i 's|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u161-b12/2f38c3b165be4555a1fa6e98c45e0808/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u172-b11/a58eab1ec242421181065cdc37240b08/|' oracle-java8-installer.* \
   && sed -i 's|SHA256SUM_TGZ="6dbc56a0e3310b69e91bb64db63a485bd7b6a8083f08e48047276380a0e2021e"|SHA256SUM_TGZ="28a00b9400b6913563553e09e8024c286b506d8523334c93ddec6c9ec7e9d346"|' oracle-java8-installer.* \
   && sed -i 's|J_DIR=jdk1.8.0_161|J_DIR=jdk1.8.0_172|' oracle-java8-installer.* \
   && popd \
-  && log "[install_java_package] Updated oracle-java8-installer" \
+  && log "[install_java_package] updated oracle-java8-installer" \
   && apt-get -yq $@ install oracle-java8-installer
 }
 
 # Install Oracle Java
 install_java()
 {
-    log "[install_java] Adding apt repository for java 8"
+    log "[install_java] adding apt repository for Java 8"
     (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
     log "[install_java] updating apt-get"
     (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
     log "[install_java] updated apt-get"
     echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
     echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
-    log "[install_java] Installing Java"
+    log "[install_java] installing Java"
     (install_java_package || (sleep 15; install_java_package))
     command -v java >/dev/null 2>&1 || { sleep 15; rm /var/cache/oracle-jdk8-installer/jdk-*; apt-get install -f; }
 
     #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
     for i in $(seq 30); do
       if $(command -v java >/dev/null 2>&1); then
-        log "[install_java] Installed java!"
+        log "[install_java] installed Java!"
         return
       else
         sleep 5
@@ -390,10 +390,10 @@ install_java()
         (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
         apt-get -yq update
         install_java_package --reinstall
-        log "[install_java] Seeing if java is Installed after nuclear retry ${i}/30"
+        log "[install_java] seeing if Java is installed after nuclear retry ${i}/30"
       fi
     done
-    command -v java >/dev/null 2>&1 || { log "Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
+    command -v java >/dev/null 2>&1 || { log "[install_java] Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
 }
 
 # Install Elasticsearch
@@ -401,18 +401,18 @@ install_es()
 {
     DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
 
-    log "[install_es] Installing Elasticsearch $ES_VERSION"
-    log "[install_es] Download location - $DOWNLOAD_URL"
+    log "[install_es] installing Elasticsearch $ES_VERSION"
+    log "[install_es] download location - $DOWNLOAD_URL"
     wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O elasticsearch.deb
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
-        log "[install_es] Error downloading Elasticsearch $ES_VERSION"
+        log "[install_es] error downloading Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
-    log "[install_es] Downloaded Elasticsearch $ES_VERSION"
+    log "[install_es] downloaded Elasticsearch $ES_VERSION"
     dpkg -i elasticsearch.deb
-    log "[install_es] Installed Elasticsearch $ES_VERSION"
-    log "[install_es] Disable Elasticsearch System-V style init scripts (will be using monit)"
+    log "[install_es] installed Elasticsearch $ES_VERSION"
+    log "[install_es] disable Elasticsearch System-V style init scripts (will be using monit to manage Elasticsearch service)"
     update-rc.d elasticsearch disable
 }
 
@@ -426,16 +426,16 @@ plugin_cmd()
 
 install_xpack()
 {
-    log "[install_xpack] Installing X-Pack plugins"
+    log "[install_xpack] installing X-Pack plugins"
     $(plugin_cmd) install x-pack --batch
-    log "[install_xpack] Installed X-Pack plugins"
+    log "[install_xpack] installed X-Pack plugins"
 }
 
 install_repository_azure_plugin()
 {
-    log "[install_repository_azure_plugin] Installing plugin repository-azure"
+    log "[install_repository_azure_plugin] installing plugin repository-azure"
     $(plugin_cmd) install repository-azure --batch
-    log "[install_repository_azure_plugin] Installed plugin repository-azure"
+    log "[install_repository_azure_plugin] installed plugin repository-azure"
 }
 
 install_additional_plugins()
@@ -445,16 +445,16 @@ install_additional_plugins()
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
         if [[ $SKIP_PLUGINS =~ $PLUGIN ]]; then
-            log "[install_additional_plugins] Skipping plugin $PLUGIN"
+            log "[install_additional_plugins] skipping plugin $PLUGIN"
         else
-            log "[install_additional_plugins] Installing plugin $PLUGIN"
+            log "[install_additional_plugins] installing plugin $PLUGIN"
             $(plugin_cmd) install $PLUGIN --batch
-            log "[install_additional_plugins] Add plugin $PLUGIN to mandatory plugins"
+            log "[install_additional_plugins] add plugin $PLUGIN to mandatory plugins"
             MANDATORY_PLUGINS+="$PLUGIN,"
-            log "[install_additional_plugins] Installed plugin $PLUGIN"
+            log "[install_additional_plugins] installed plugin $PLUGIN"
         fi
     done
-    log "[install_additional_plugins] Installed additional plugins"
+    log "[install_additional_plugins] installed additional plugins"
 }
 
 ## Security
@@ -496,11 +496,11 @@ wait_for_started()
   local TOTAL_RETRIES=60
   for i in $(seq $TOTAL_RETRIES); do
     if $(node_is_up "$SEED_PASSWORD" || node_is_up "$USER_ADMIN_PWD"); then
-      log "[wait_for_started] Node is up!"
+      log "[wait_for_started] node is up!"
       return
     else
       sleep 5
-      log "[wait_for_started] Seeing if node is up after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
+      log "[wait_for_started] seeing if node is up after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
     fi
   done
   log "[wait_for_started] never saw elasticsearch go up locally"
@@ -536,7 +536,7 @@ apply_security_settings()
     # if the node is up, check that the elastic user exists in the .security index if
     # the elastic user password is the same as the bootstrap password.
     if [[ $(node_is_up "$USER_ADMIN_PWD") && ("$USER_ADMIN_PWD" != "$SEED_PASSWORD" || $(elastic_user_exists "$USER_ADMIN_PWD")) ]]; then
-      log "[apply_security_settings] Can already ping node using user provided credentials, exiting early!"
+      log "[apply_security_settings] can already ping node using user provided credentials, exiting early!"
     else
       log "[apply_security_settings] start updating roles and users"
 
@@ -633,12 +633,6 @@ setup_bootstrap_password()
 
 configure_http_tls()
 {
-    # Use CA cert to generate certs
-    if [[ -z "${HTTP_CERT}" && -z "$HTTP_CACERT" ]]; then
-      log "[configure_transport_tls] no CA cert or cert blob supplied so cannot enable TLS for HTTP layer"
-      exit 12
-    fi
-
     local ES_CONF=$1
     local SSL_PATH=/etc/elasticsearch/ssl
     local HTTP_CERT_FILENAME=elasticsearch-http.p12
@@ -655,6 +649,11 @@ configure_http_tls()
     elif [[ -f $HTTP_CACERT_PATH ]]; then
         log "[configure_http_tls] HTTP CA already exists"
         return 0
+    fi
+
+    if [[ -z "${HTTP_CERT}" && -z "$HTTP_CACERT" ]]; then
+      log "[configure_transport_tls] no HTTP CA or cert blob supplied so cannot enable TLS for HTTP layer"
+      exit 12
     fi
 
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
@@ -699,10 +698,10 @@ configure_http_tls()
           echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.key -nocerts -nodes -passin stdin
           echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
 
-          log "[configure_http_tls] generate HTTP cert for node using $CERTGEN"
+          log "[configure_http_tls] generate HTTP cert using $CERTGEN"
           $CERTGEN --in $SSL_PATH/elasticsearch-http.yml --out $SSL_PATH/elasticsearch-http.zip \
               --cert $SSL_PATH/elasticsearch-http-ca.crt --key $SSL_PATH/elasticsearch-http-ca.key --pass "$HTTP_CACERT_PASSWORD"
-          log "[configure_http_tls] generated HTTP cert for node"
+          log "[configure_http_tls] generated HTTP cert"
 
           install_unzip
           log "[configure_http_tls] unzip HTTP cert"
@@ -770,7 +769,7 @@ configure_http_tls()
 
       if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
           # Encrypt the private key if there's a password
-          log "[configure_http_tls] Encrypt HTTP private key"
+          log "[configure_http_tls] encrypt HTTP private key"
           echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passout stdin
           mv $SSL_PATH/elasticsearch-http-encrypted.key $SSL_PATH/elasticsearch-http.key
 
@@ -791,7 +790,7 @@ configure_http_tls()
     # use the insecure flag to make calls to https://localhost:9200 to bootstrap cluster. curl checks
     # that the certificate subject name matches the host name when using --cacert which may not be true
     CURL_SWITCH="-k"
-    log "[configure_http_tls] Configured SSL/TLS for HTTP layer"
+    log "[configure_http_tls] configured SSL/TLS for HTTP layer"
 }
 
 configure_transport_tls()
@@ -811,16 +810,16 @@ configure_transport_tls()
         return 0
     fi
 
-    [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
-
-    # Use CA cert to generate certs
-    if [[ -n "${TRANSPORT_CACERT}" ]]; then
-      log "[configure_transport_tls] save Transport CA cert blob to file"
-      echo ${TRANSPORT_CACERT} | base64 -d | tee $TRANSPORT_CACERT_PATH
-    else
-      log "[configure_transport_tls] no CA cert blob supplied so cannot enable TLS for Transport layer"
+    if [[ -z "$TRANSPORT_CACERT" ]]; then
+      log "[configure_transport_tls] no CA blob supplied so cannot enable TLS for Transport layer"
       exit 12
     fi
+
+    [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
+
+    # Use CA to generate certs
+    log "[configure_transport_tls] save Transport CA blob to file"
+    echo ${TRANSPORT_CACERT} | base64 -d | tee $TRANSPORT_CACERT_PATH
 
     # Generate certs with certutil or certgen
     if [[ -f $BIN_DIR/elasticsearch-certutil || -f $BIN_DIR/x-pack/certutil ]]; then
@@ -829,9 +828,9 @@ configure_transport_tls()
             CERTUTIL=$BIN_DIR/x-pack/certutil
         fi
 
-        log "[configure_transport_tls] generate Transport cert for node using $CERTUTIL"
+        log "[configure_transport_tls] generate Transport cert using $CERTUTIL"
         $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $TRANSPORT_CERT_PATH --pass "$TRANSPORT_CERT_PASSWORD" --ca $TRANSPORT_CACERT_PATH --ca-pass "$TRANSPORT_CACERT_PASSWORD"
-        log "[configure_transport_tls] generated Transport cert for node"
+        log "[configure_transport_tls] generated Transport cert"
 
     elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
         local CERTGEN=$BIN_DIR/elasticsearch-certgen
@@ -848,11 +847,11 @@ configure_transport_tls()
             echo -e "    filename: \"elasticsearch-transport\""
         } >> $SSL_PATH/elasticsearch-transport.yml
 
-        log "[configure_transport_tls] convert PKCS#12 transport CA to PEM"
+        log "[configure_transport_tls] convert PKCS#12 Transport CA to PEM"
         echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
         echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -clcerts -nokeys -chain -passin stdin
 
-        log "[configure_transport_tls] generate Transport cert for node using $CERTGEN"
+        log "[configure_transport_tls] generate Transport cert using $CERTGEN"
         $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key --pass "$TRANSPORT_CACERT_PASSWORD"
 
         install_unzip
