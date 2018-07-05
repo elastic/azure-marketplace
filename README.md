@@ -32,24 +32,15 @@ the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a hr
 
 **By default, this template does not configure** 
 
-- **TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
-- **TLS for communication between Elasticsearch nodes via the Transport layer**
-- **TLS for communication beween the browser and Kibana**
+* **TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
+* **TLS for communication with Elasticsearch via the HTTP layer through Application Gateway**
+* **TLS for communication between Elasticsearch nodes via the Transport layer**
+* **TLS for communication beween the browser and Kibana**
 
-**It is strongly recommended that you secure
-communication before using in production.**
+**It is strongly recommended that you secure communication before using in production.**
 
-You can secure external access to the cluster with TLS by either
-
-1. using `external` as the `loadBalancerType` and supplying a PKCS#12 archive certificate with the
-`esHttpCertBlob` parameter to secure the HTTP layer, and supplying a PKCS#12 archive certificate with the `esTransportCertBlob` parameter to secure the Transport layer. Both parameters require that X-Pack plugin be installed.
-
-or
-
-2. using `gateway` as the `loadBalancerType` and supplying a PKCS#12 archive certificate with the `appGatewayCertBlob` parameter. This sets
-the cluster up to use [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/) for load balancing and SSL offload.
-
-You can secure external access from the browser to Kibana with TLS by supplying a certificate and private key with `kibanaCertBlob` and `kibanaKeyBlob`, respectively.
+Check out the [Configuring TLS](#configuring-tls) section for securing communication with
+Transport Layer Security.
 
 ---
 
@@ -84,6 +75,9 @@ posts for further information
 
 ### Parameters
 
+The ARM template accepts a _lot_ of parameters, although many of them are optional and only used
+in conjunction with other parameters.
+
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
 
@@ -96,7 +90,7 @@ posts for further information
     </td><td>The latest version of Elasticsearch supported by the ARM template version</td></tr>
 
   <tr><td>esClusterName</td><td>string</td>
-    <td> The name of the Elasticsearch cluster. Required
+    <td> The name of the Elasticsearch cluster. <strong>Required</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>loadBalancerType</td><td>string</td>
@@ -143,20 +137,22 @@ posts for further information
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHeapSize</td><td>integer</td>
-    <td>The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB). 
-    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
+    <td>The size, <em>in megabytes</em>, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB). 
+    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
   <tr><td>esHttpSecurity</td><td>string</td>
-    <td><code>Yes</code> or <code>No</code> whether to configure SSL/TLS for the HTTP layer of Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>Either <code>Yes</code> or <code>No</code> to configure SSL/TLS for the HTTP layer of Elasticsearch. <strong>X-Pack plugin must be installed and either <code>esHttpCertBlob</code> or <code>esHttpCaCertBlob</code> provided</strong></strong>
     </td><td><code>No</code></td></tr>
 
   <tr><td>esHttpCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be encrypted. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be encrypted. <br /><br />
+    If using <code>esHttpCaCertBlob</code>, this password will be used to encrypt the private key of generated certificates.
+    <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertBlob</td><td>string</td>
@@ -168,7 +164,7 @@ posts for further information
     </td><td><code>""</code></td></tr>
   
   <tr><td>esTransportSecurity</td><td>string</td>
-    <td><code>Yes</code> or <code>No</code> whether to configure SSL/TLS for the Transport layer of Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>Either <code>Yes</code> or <code>No</code> to configure SSL/TLS for the Transport layer of Elasticsearch. <strong>X-Pack plugin must be installed and <code>esTransportCaCertBlob</code> provided</strong>
     </td><td><code>No</code></td></tr>
 
   <tr><td>esTransportCaCertBlob</td><td>string</td>
@@ -184,8 +180,7 @@ posts for further information
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with a public IP address that
-    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
     a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
     </td><td><code>Yes</code></td></tr>
 
@@ -201,7 +196,7 @@ posts for further information
     <td>A Base-64 encoded form of the private key (.key) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
-    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted. <strong>Supported only in 5.3.0+</strong></td><td><code>""</code></td></tr>
+    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaAdditionalYaml</td><td>string</td>
     <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
@@ -223,7 +218,7 @@ posts for further information
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmDataDiskCount</td><td>int</td>
-    <td>Number of managed disks to attach to each data node in RAID 0 setup.
+    <td>Number of <a href="https://azure.microsoft.com/en-au/services/managed-disks/">managed disks</a> to attach to each data node in RAID 0 setup.
     Must be equal to or greater than <code>0</code>.
     <p>If the number of disks selected is more than can be attached to the data node VM (sku) size,
     the maximum number of disks that can be attached for the data node VM (sku) size will be used. Equivalent to
@@ -235,7 +230,7 @@ posts for further information
     to understand the trade-offs in using it for storage.</strong>
     </li>
     </ul>
-    </td><td><code>40</code><br />i.e. the max supported disks for data node VM size</td></tr>
+    </td><td><a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes">Maximum number supported disks for data node VM size</a></td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
     <td>The disk size of each attached disk. Choose <code>Large</code> (1023Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
@@ -401,7 +396,7 @@ posts for further information
     </td><td><code>""</code></td></tr>
 
   <tr><td>appGatewayEsHttpCertPublicKey</td><td>securestring</td>
-    <td>The Base-64 encoded public key (.cer) for the certificate used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Required if using <code>esHttpCertBlob</code> to secure the HTTP layer of Elasticsearch and selecting <code>gateway</code> for load balancing. <strong>X-Pack plugin must be installed</strong>
+    <td>The Base-64 encoded public key (.cer) for the certificate used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Required when using <code>esHttpCertBlob</code> to secure the HTTP layer of Elasticsearch and selecting <code>gateway</code> for load balancing. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayWafStatus</td><td>string</td>
@@ -439,6 +434,15 @@ posts for further information
     </td><td><code>""</code></td></tr>
 
 </table>
+
+### Web based deploy
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Ftls%2Fsrc%2FmainTemplate.json" target="_blank">
+   <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+The above button will take you to the autogenerated web based UI based on the 
+parameters from the ARM template.
 
 ### Command line deploy
 
@@ -553,13 +557,137 @@ New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
 New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
 ```
 
-### Web based deploy
+## Configuring TLS
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Ffeature%2Ftls%2Fsrc%2FmainTemplate.json" target="_blank">
-   <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
-</a>
+It is strongly recommended that you secure communication when using the template
+in production. X-Pack Security can provide Authentication and Role Based Access control,
+and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
 
-The above button will take you to the autogenerated web based UI based on the parameters from the ARM template.
+### TLS for Kibana
+
+You can secure external access from the browser to Kibana with TLS by supplying
+a certificate and private key in PEM format with `kibanaCertBlob` and
+`kibanaKeyBlob` parameters, respectively.
+
+### TLS for Elasticsearch Transport layer
+
+You can secure communication between nodes in the cluster with TLS on the
+Transport layer. Configuring TLS for the Transport layer requires
+`xPackPlugins` and `esTransportSecurity` be set to `Yes`.
+
+### TLS for Elasticsearch HTTP layer
+
+You can secure external access to the cluster with TLS with an external
+loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
+`xPackPlugins` and `esHttpSecurity` be set to `Yes`.
+
+#### External load balancer
+
+If you choose `external` as the value for `loadBalancerType`, you can either
+
+* supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
+passphrase with `esHttpCertPassword`) containing the certs and private key to
+secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
+Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
+A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+
+**_or_**
+
+* supply a PKCS#12 archive with the `esHttpCaCertBlob` parameter (and optional 
+passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
+a certificate for each node within the cluster to secure the HTTP layer.
+Kibana will be configured to trust the CA and perform hostname verification for presented
+certificates. A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+
+#### Application Gateway
+
+If you choose `gateway` as the value for `loadBalancerType`, you must
+
+* supply a PKCS#12 archive certificate with the `appGatewayCertBlob` parameter (and optional 
+passphrase with `appGatewayCertPassword`) to secure communication to Application Gateway.
+A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+
+[Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/)
+performs SSL offload, so communication from Application Gateway to
+Elasticsearch is not encypted with TLS by default. To secure this communication, you can
+
+* supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
+passphrase with `esHttpCertPassword`) containing the certs and private key to
+secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
+Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
+A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html), and you must
+specify a `--dns <name>` argument with a name that matches that in the `--name <name>` argument.
+
+**_and_**
+
+* supply the public key in CER format for the certificate within the PKCS#12 archive
+passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertPublicKey` parameter.
+Application Gateway whitelists certificates used by VMs in the backend pool. This can
+be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using openssl
+
+```sh
+openssl pkcs12 -in http_cert.p12 -out public_key.cer -clcerts -nokeys
+```
+
+and providing the passphrase for the archive when prompted.
+
+---
+
+**IMPORTANT**: When configuring [end-to-end encryption with Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-end-to-end-ssl-powershell),
+the certificate to secure the HTTP layer **must** include a x509v3 Subject Alternative Name
+extension with a DNS entry that matches the Subject CN, to work with Application
+Gateway's whitelisting mechanism. This can be checked using `openssl`
+
+```sh
+openssl x509 -in public_key.cer -text -noout
+```
+
+which will output something similar to
+
+```text
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            // omitted for brevity ...
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=Elastic Certificate Tool Autogenerated CA
+        Validity
+            Not Before: Jul  5 02:37:40 2018 GMT
+            Not After : Jul  4 02:37:40 2021 GMT
+        Subject: CN=custom
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    // omitted for brevity ...
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier:
+                // omitted for brevity ...
+            X509v3 Authority Key Identifier:
+                // omitted for brevity ...
+
+            X509v3 Subject Alternative Name:
+                DNS:custom
+            X509v3 Basic Constraints:
+                CA:FALSE
+    Signature Algorithm: sha256WithRSAEncryption
+         // omitted for brevity ...
+```
+
+_Without_ this, Application Gateway will return [502 Bad Gateway errors](https://docs.microsoft.com/en-gb/azure/application-gateway/application-gateway-troubleshooting-502) 
+as the health probe for the backend pool will fail when the whitelisted certificate does
+not contain this.
+You can typically understand if there is a problem with the key format when
+
+1. TLS has been configured on the HTTP layer
+2. Kibana is able to communicate to the cluster correctly _but_ Application Gateway returns 502 errors.
+
+This may not always be the case, but can be indicative. You should also check the Backend Health
+of the Application Gateway in the Azure portal.
+
+---
 
 ## License
 

@@ -6,7 +6,7 @@
 	"parameters" : {
     "loadBalancerType":{"value":"external"},
     "esHttpCertBlob":{"value":"cert-no-password.pfx"},
-    "esTransportCertBlob":{"value":"cert-no-password.pfx"},
+    "esTransportCaCertBlob":{"value":"ca-cert-no-password.pfx"},
     "kibana":{"value":"Yes"},
     "kibanaCertBlob": {"value":"cert-no-password.crt"},
     "kibanaKeyBlob": {"value":"cert-no-password.key"},

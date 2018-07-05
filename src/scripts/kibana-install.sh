@@ -27,10 +27,10 @@ help()
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
     echo "    -Y      <yaml\nyaml> additional yaml configuration"
-    echo "    -H      base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
-    echo "    -G      Password for PKCS#12 archive (.pfx/.p12) certificate used to secure Elasticsearch HTTP layer"
-    echo "    -V      base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
-    echo "    -J      Password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -G      Password for PKCS#12 archive (.p12/.pfx) certificate used to secure Elasticsearch HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
+    echo "    -J      Password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
     echo "    -h      view this help content"
 }
 

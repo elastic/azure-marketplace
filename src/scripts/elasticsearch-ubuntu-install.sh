@@ -39,14 +39,14 @@ help()
     echo "-C <yaml\nyaml> additional yaml configuration"
 
     echo "-F Enable SSL/TLS for the HTTP layer"
-    echo "-H base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
+    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
+    echo "-J password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
 
     echo "-Q Enable SSL/TLS for the transport layer"
-    echo "-T base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
+    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
     echo "-N password for the generated certificate used to secure the transport layer"
 
     echo "-j install azure cloud plugin for snapshot and restore"
@@ -690,6 +690,9 @@ configure_http_tls()
               echo -e "      - \"$HOSTNAME\""
               echo -e "    ip:"
               echo -e "      - \"$(hostname -I | xargs)\""
+              # include the load balancer IP within the certificate, allowing
+              # full verification mode in Kibana when accessing cluster through
+              # internal loadbalancer
               echo -e "      - \"$INTERNAL_LOADBALANCER_IP\""
               echo -e "    filename: \"elasticsearch-http\""
           } >> $SSL_PATH/elasticsearch-http.yml

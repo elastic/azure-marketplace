@@ -35,14 +35,14 @@ help()
 
     echo "-D Internal Load balancer IP. Used as an IP SAN when generating certs with HTTP CA"
     echo "-F Enable SSL/TLS for the HTTP layer"
-    echo "-H base64 encoded PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.pfx/.p12) certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the HTTP layer"
+    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
+    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
+    echo "-J password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
 
     echo "-Q Enable SSL/TLS for the transport layer"
-    echo "-T base64 encoded PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.pfx/.p12) CA certificate used to secure the transport layer"
+    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
     echo "-N password for the generated certificate used to secure the transport layer"
 
     echo "-U api url"

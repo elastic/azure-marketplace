@@ -146,28 +146,28 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) certificate used to secure HTTP layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esHttpCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx/.p12) certificate used to secure HTTP layer of Elasticsearch"
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esHttpCaCertBlob": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure HTTP layer of Elasticsearch"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) CA certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esHttpCaCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx/.p12) CA certificate used to secure HTTP layer of Elasticsearch"
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) CA certificate used to secure HTTP layer of Elasticsearch"
       }
     },
     "esTransportSecurity": {
@@ -185,14 +185,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch. Required if esTransportSecurity is 'Yes'"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) CA certificate used to secure Transport layer of Elasticsearch. Required if esTransportSecurity is 'Yes'"
       }
     },
     "esTransportCaCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PKCS#12 archive (.pfx/.p12) CA certificate used to secure Transport layer of Elasticsearch"
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) CA certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "esTransportCertPassword": {
@@ -292,7 +292,7 @@
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+"
+        "description": "The passphrase to decrypt the private key. Optional as the key may not be encrypted."
       }
     },
     "kibanaAdditionalYaml": {

@@ -44,7 +44,14 @@ var bootstrapTest = (t, defaultVersion) =>
   var test = require("../arm-tests/" + t);
 
   // replace cert parameters with values with base64 encoded certs
-  ["esHttpCertBlob","esTransportCertBlob","kibanaCertBlob","kibanaKeyBlob","appGatewayCertBlob"].forEach(k => {
+  [
+    "esHttpCertBlob",
+    "esHttpCaCertBlob",
+    "esTransportCaCertBlob",
+    "kibanaCertBlob",
+    "kibanaKeyBlob",
+    "appGatewayCertBlob",
+    "appGatewayEsHttpCertPublicKey"].forEach(k => {
     if (test.parameters[k] && test.parameters[k].value) {
       var cert = fs.readFileSync("certs/" + test.parameters[k].value);
       test.parameters[k].value = new Buffer(cert).toString("base64");
