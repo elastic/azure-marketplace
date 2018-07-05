@@ -9,7 +9,7 @@
     "esHttpCertBlob":{"value":"cert-with-password.pfx"},
     "esHttpCertPassword":{"value":"Password123"},
     "esTransportSecurity": {"value":"Yes"},
-    "esTransportCaCertBlob":{"value":"cert-with-password.pfx"},
+    "esTransportCaCertBlob":{"value":"ca-cert-with-password.pfx"},
     "esTransportCaCertPassword":{"value":"Password123"},
     "esTransportCertPassword":{"value":"Password1234"},
     "kibana":{"value":"Yes"},
