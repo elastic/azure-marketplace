@@ -39,7 +39,7 @@ the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a hr
 
 **It is strongly recommended that you secure communication before using in production.**
 
-Check out the [Configuring TLS](#configuring-tls) section for securing communication with
+Please read the [Configuring TLS](#configuring-tls) section for securing communication with
 Transport Layer Security.
 
 ---
@@ -573,7 +573,21 @@ a certificate and private key in PEM format with `kibanaCertBlob` and
 
 You can secure communication between nodes in the cluster with TLS on the
 Transport layer. Configuring TLS for the Transport layer requires
-`xPackPlugins` and `esTransportSecurity` be set to `Yes`.
+`xPackPlugins` and `esTransportSecurity` be set to `Yes`. 
+
+You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
+passphrase with `esTransportCaCertPassword`) containing the CA which should be used to generate
+a certificate for each node within the cluster. An optional
+passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
+on each node.
+
+A PKCS#12 archive for the CA can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). The simplest command to generate a CA cert is
+
+```sh
+certutil ca
+```
+
+and follow the instructions.
 
 ### TLS for Elasticsearch HTTP layer
 
@@ -583,13 +597,13 @@ loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
 
 #### External load balancer
 
-If you choose `external` as the value for `loadBalancerType`, you can either
+If you choose `external` as the value for `loadBalancerType`, you must either
 
 * supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
-A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 
 **_or_**
 
@@ -609,7 +623,7 @@ A PKCS#12 archive can be generated using [Elastic's certutil command](https://ww
 
 [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/)
 performs SSL offload, so communication from Application Gateway to
-Elasticsearch is not encypted with TLS by default. To secure this communication, you can
+Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
 
 * supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
@@ -625,13 +639,11 @@ passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertPublicKey
 Application Gateway whitelists certificates used by VMs in the backend pool. This can
 be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using openssl
 
-```sh
-openssl pkcs12 -in http_cert.p12 -out public_key.cer -clcerts -nokeys
-```
+    ```sh
+    openssl pkcs12 -in http_cert.p12 -out public_key.cer -clcerts -nokeys
+    ```
 
-and providing the passphrase for the archive when prompted.
-
----
+    and provide the passphrase for the archive when prompted.
 
 **IMPORTANT**: When configuring [end-to-end encryption with Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-end-to-end-ssl-powershell),
 the certificate to secure the HTTP layer **must** include a x509v3 Subject Alternative Name
@@ -676,18 +688,16 @@ Certificate:
          // omitted for brevity ...
 ```
 
-_Without_ this, Application Gateway will return [502 Bad Gateway errors](https://docs.microsoft.com/en-gb/azure/application-gateway/application-gateway-troubleshooting-502) 
+_Without_ this, Application Gateway will return [502 Bad Gateway errors](https://docs.microsoft.com/en-gb/azure/application-gateway/application-gateway-troubleshooting-502),
 as the health probe for the backend pool will fail when the whitelisted certificate does
-not contain this.
+not contain this certificate extension.
 You can typically understand if there is a problem with the key format when
 
 1. TLS has been configured on the HTTP layer
 2. Kibana is able to communicate to the cluster correctly _but_ Application Gateway returns 502 errors.
 
-This may not always be the case, but can be indicative. You should also check the Backend Health
+This may not always be the case, but can be indicative. You should also check the description for Backend Health
 of the Application Gateway in the Azure portal.
-
----
 
 ## License
 

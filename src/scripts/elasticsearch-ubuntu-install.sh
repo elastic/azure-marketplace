@@ -667,6 +667,14 @@ configure_http_tls()
       log "[configure_http_tls] save HTTP CA cert blob to file"
       echo ${HTTP_CACERT} | base64 -d | tee $HTTP_CACERT_PATH
 
+      # Check the cert is a CA
+      echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -clcerts -nokeys -passin stdin \
+        | openssl x509 -text -noout | grep "CA:TRUE"
+      if [[ $? -ne 0 ]]; then
+          log "[configure_http_tls] HTTP CA blob is not a Certificate Authority (CA)"
+          exit 12
+      fi
+
       if [[ -f $BIN_DIR/elasticsearch-certutil || -f $BIN_DIR/x-pack/certutil ]]; then
           local CERTUTIL=$BIN_DIR/elasticsearch-certutil
           if [[ ! -f $CERTUTIL ]]; then
@@ -823,6 +831,14 @@ configure_transport_tls()
     # Use CA to generate certs
     log "[configure_transport_tls] save Transport CA blob to file"
     echo ${TRANSPORT_CACERT} | base64 -d | tee $TRANSPORT_CACERT_PATH
+
+    # Check the cert is a CA
+    echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -clcerts -nokeys -passin stdin \
+      | openssl x509 -text -noout | grep "CA:TRUE"
+    if [[ $? -ne 0 ]]; then
+        log "[configure_transport_tls] Transport CA blob is not a Certificate Authority (CA)"
+        exit 12
+    fi
 
     # Generate certs with certutil or certgen
     if [[ -f $BIN_DIR/elasticsearch-certutil || -f $BIN_DIR/x-pack/certutil ]]; then
