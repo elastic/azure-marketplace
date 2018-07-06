@@ -581,10 +581,10 @@ a certificate for each node within the cluster. An optional
 passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
 on each node.
 
-A PKCS#12 archive for the CA can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). The simplest command to generate a CA cert is
+A new CA PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). The simplest command to generate a CA cert is
 
 ```sh
-certutil ca
+./certutil ca
 ```
 
 and follow the instructions.
@@ -637,7 +637,8 @@ specify a `--dns <name>` argument with a name that matches that in the `--name <
 * supply the public key in CER format for the certificate within the PKCS#12 archive
 passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertPublicKey` parameter.
 Application Gateway whitelists certificates used by VMs in the backend pool. This can
-be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using openssl
+be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using
+[`openssl pkcs12`](https://www.openssl.org/docs/man1.0.2/apps/pkcs12.html)
 
     ```sh
     openssl pkcs12 -in http_cert.p12 -out public_key.cer -clcerts -nokeys
@@ -648,7 +649,8 @@ be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using op
 **IMPORTANT**: When configuring [end-to-end encryption with Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-end-to-end-ssl-powershell),
 the certificate to secure the HTTP layer **must** include a x509v3 Subject Alternative Name
 extension with a DNS entry that matches the Subject CN, to work with Application
-Gateway's whitelisting mechanism. This can be checked using `openssl`
+Gateway's whitelisting mechanism. This can be checked using
+[`openssl x509`](https://www.openssl.org/docs/man1.0.2/apps/x509.html)
 
 ```sh
 openssl x509 -in public_key.cer -text -noout
