@@ -185,8 +185,19 @@ var deleteAllTestGroups = function (cb) {
 var deleteCurrentTestGroups = function(cb)
 {
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  log(`deleting current run groups: ${groups}`, true);
-  deleteGroups(groups, cb);
+  if (typeof argv.nodestroy !== undefined) {
+      log(`not destroying ${groups.length} resource groups as --nodestroy parameter passed.`, false);
+      log("----------------------------------------------");
+      log("| DELETE THESE RESOURCE GROUPS WHEN FINISHED |");
+      log("|                                            |")
+      log("| $ npm run azure-cleanup                    |")
+      log("----------------------------------------------");
+      cb();
+  }
+  else {
+      log(`deleting current run groups: ${groups}`, true);
+      deleteGroups(groups, cb);
+  }
 }
 
 var createResourceGroup = (test, cb) => {
