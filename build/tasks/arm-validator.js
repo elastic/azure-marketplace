@@ -338,11 +338,16 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
     agentOptions: { checkServerIdentity: _.noop }
   };
 
-  if (t.params.esHttpCertBlob && t.params.esHttpCertBlob.value) {
-    if (t.params.esHttpCertPassword && t.params.esHttpCertPassword.value) {
+  var certParams = {
+    blob: (loadbalancerType === "application gateway") ? "appGatewayCertBlob": "esHttpCertBlob",
+    passphrase: (loadbalancerType === "application gateway") ? "appGatewayCertPassword": "esHttpCertPassword",
+  };
+
+  if (t.params[certParams.blob] && t.params[certParams.blob].value) {
+    if (t.params[certParams.passphrase] && t.params[certParams.passphrase].value) {
       opts = merge.recursive(true, opts, {
         pfx: fs.readFileSync("certs/cert-with-password.pfx"),
-        passphrase: t.params.esHttpCertPassword.value,
+        passphrase: t.params[certParams.passphrase].value,
       });
     }
     else {

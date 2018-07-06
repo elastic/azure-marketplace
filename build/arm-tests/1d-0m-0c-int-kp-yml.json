@@ -7,7 +7,7 @@
 	"parameters" : {
 		"loadBalancerType":{"value":"internal"},
     "kibana":{"value":"Yes"},
-    "kibanaAdditionalYaml":{"value":"server.name: \"My server\"\nkibana.index: \".my-kibana-index\""},
+    "kibanaAdditionalYaml":{"value":"server.name: \"My server\"\nserver.defaultRoute: \"/app/kibana\""},
     "esAdditionalYaml":{"value":"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"},
 		"jumpbox":{"value":"No"},
 		"vmSizeKibana":{"value":"Standard_DS1_v2"},
