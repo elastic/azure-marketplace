@@ -150,8 +150,8 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be encrypted. <br /><br />
-    If using <code>esHttpCaCertBlob</code>, this password will be used to encrypt the private key of generated certificates.
+    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be protected with a password. <br /><br />
+    If using <code>esHttpCaCertBlob</code>, this password will be used to protect the generated PKCS#12 archive on each node.
     <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
@@ -176,7 +176,7 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
-    <td>The password to encrypt each generated certificate to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>The password to protect the generated PKCS#12 archive on each node. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
@@ -581,7 +581,8 @@ a certificate for each node within the cluster. An optional
 passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
 on each node.
 
-A new CA PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). The simplest command to generate a CA cert is
+One way to generate a PKCS#12 archive containing a CA cert is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). 
+The simplest command to generate a CA cert is
 
 ```sh
 ./certutil ca
@@ -603,7 +604,7 @@ If you choose `external` as the value for `loadBalancerType`, you must either
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
-A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
+One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 
 **_or_**
 
@@ -611,7 +612,7 @@ A PKCS#12 archive can be generated using [Elastic's certutil command](https://ww
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
 a certificate for each node within the cluster to secure the HTTP layer.
 Kibana will be configured to trust the CA and perform hostname verification for presented
-certificates. A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
 
 #### Application Gateway
 
@@ -619,7 +620,7 @@ If you choose `gateway` as the value for `loadBalancerType`, you must
 
 * supply a PKCS#12 archive certificate with the `appGatewayCertBlob` parameter (and optional 
 passphrase with `appGatewayCertPassword`) to secure communication to Application Gateway.
-A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
 
 [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/)
 performs SSL offload, so communication from Application Gateway to
@@ -629,19 +630,19 @@ Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway m
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
-A PKCS#12 archive can be generated using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html), and you must
+One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html), and you must
 specify a `--dns <name>` argument with a name that matches that in the `--name <name>` argument.
 
 **_and_**
 
-* supply the public key in CER format for the certificate within the PKCS#12 archive
-passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertPublicKey` parameter.
+* supply the public certificate in CER format from the PKCS#12 archive
+passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertBlob` parameter.
 Application Gateway whitelists certificates used by VMs in the backend pool. This can
 be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using
 [`openssl pkcs12`](https://www.openssl.org/docs/man1.0.2/apps/pkcs12.html)
 
     ```sh
-    openssl pkcs12 -in http_cert.p12 -out public_key.cer -clcerts -nokeys
+    openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -clcerts -nokeys
     ```
 
     and provide the passphrase for the archive when prompted.
@@ -700,6 +701,41 @@ You can typically understand if there is a problem with the key format when
 
 This may not always be the case, but can be indicative. You should also check the description for Backend Health
 of the Application Gateway in the Azure portal.
+
+### Passing certificate parameters
+
+Parameters such as <code>esHttpCertBlob</code> and <code>kibanaCertBlob</code> must be provided in Base-64 encoded form. A Base-64 encoded value can be obtained using
+
+1. [base64](https://linux.die.net/man/1/base64) on Linux, or [openssl](https://www.openssl.org/docs/man1.0.2/apps/openssl.html) on Linux and MacOS
+
+    base64
+
+    ```sh
+    httpCert=$(base64 http-cert.p12) 
+    ```
+
+    openssl
+
+    ```sh
+    httpCert=$(openssl base64 -in http-cert.p12)
+    ```
+
+    and including the value assigned to <code>$httpCert</code> in the parameters.json file as the value for certificate parameter passed to the Azure CLI command
+
+2. PowerShell on Windows
+
+    ```powershell
+    $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("c:\http-cert.p12"))
+    ```
+
+    and then pass this in the template parameters object passed to the Azure PowerShell command
+
+    ```powershell
+    $clusterParameters = @{
+        # Other parameters skipped for brevity
+        "esHttpCertBlob"= $httpCert
+    }
+    ```
 
 ## License
 
