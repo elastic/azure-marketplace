@@ -395,8 +395,8 @@ in conjunction with other parameters.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr>
 
-  <tr><td>appGatewayEsHttpCertPublicKey</td><td>securestring</td>
-    <td>The Base-64 encoded public key (.cer) for the certificate used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Required when using <code>esHttpCertBlob</code> to secure the HTTP layer of Elasticsearch and selecting <code>gateway</code> for load balancing. <strong>X-Pack plugin must be installed</strong>
+  <tr><td>appGatewayEsHttpCertBlob</td><td>securestring</td>
+    <td>The Base-64 encoded public certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Required when using <code>esHttpCertBlob</code> to secure the HTTP layer of Elasticsearch and selecting <code>gateway</code> for load balancing. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayWafStatus</td><td>string</td>

@@ -31,23 +31,23 @@
       "Yes": [
         {
           "properties": {
-            "data": "[parameters('applicationGatewaySettings').backendCertPublicKey]"
+            "data": "[parameters('applicationGatewaySettings').backendCert]"
           },
-          "name": "appGatewayBackendCert"
+          "name": "esHttpCert"
         }
       ],
       "No": []
     },
-    "authenticationCerts": "[variables('authenticationCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCertPublicKey), 'No', 'Yes')]]",
+    "authenticationCerts": "[variables('authenticationCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
     "backendCertsOpts": {
       "Yes": [
         {
-          "id": "[concat(variables('applicationGatewayId'), '/authenticationCertificates/appGatewayBackendCert')]"
+          "id": "[concat(variables('applicationGatewayId'), '/authenticationCertificates/esHttpCert')]"
         }
       ],
       "No": []
     },
-    "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCertPublicKey), 'No', 'Yes')]]"
+    "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]"
   },
   "resources": [
     {

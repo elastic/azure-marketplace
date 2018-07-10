@@ -1073,7 +1073,7 @@
       "appGatewayCount": 1,
       "appGatewayCertBlob": "",
       "appGatewayCertPassword": "",
-      "appGatewayEsHttpCertPublicKey": "",
+      "appGatewayEsHttpCertBlob": "",
       "appGatewayWafStatus": "Disabled",
       "appGatewayWafMode": "Detection",
       "location": "[location()]",

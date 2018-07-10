@@ -51,7 +51,7 @@ var bootstrapTest = (t, defaultVersion) =>
     "kibanaCertBlob",
     "kibanaKeyBlob",
     "appGatewayCertBlob",
-    "appGatewayEsHttpCertPublicKey"].forEach(k => {
+    "appGatewayEsHttpCertBlob"].forEach(k => {
     if (test.parameters[k] && test.parameters[k].value) {
       var cert = fs.readFileSync("certs/" + test.parameters[k].value);
       test.parameters[k].value = new Buffer(cert).toString("base64");

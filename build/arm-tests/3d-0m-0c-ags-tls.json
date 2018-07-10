@@ -35,7 +35,7 @@
 		"appGatewayCount": {"value":1},
 		"appGatewayCertBlob": {"value":"cert-with-password.pfx"},
     "appGatewayCertPassword": {"value":"Password123"},
-    "appGatewayEsHttpCertPublicKey": {"value":"cert-no-password.crt"},
+    "appGatewayEsHttpCertBlob": {"value":"cert-no-password.crt"},
 		"appGatewayWafStatus": {"value":"Disabled"},
 		"appGatewayWafMode": {"value":"Detection"},
 		"userCompany": { "value": "" },

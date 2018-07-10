@@ -61,7 +61,7 @@
   "appGatewayCertPassword": {"value":""},
   "appGatewayWafStatus": {"value":"Disabled"},
   "appGatewayWafMode": {"value":"Detection"},
-  "appGatewayEsHttpCertPublicKey": { "value": ""},
+  "appGatewayEsHttpCertBlob": { "value": ""},
   "userCompany": { "value": "" },
   "userEmail": { "value": "" },
   "userFirstName": { "value": "" },
