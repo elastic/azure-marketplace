@@ -573,7 +573,7 @@ a certificate and private key in PEM format with `kibanaCertBlob` and
 
 You can secure communication between nodes in the cluster with TLS on the
 Transport layer. Configuring TLS for the Transport layer requires
-`xPackPlugins` and `esTransportSecurity` be set to `Yes`. 
+`xPackPlugins` and `esTransportSecurity` be set to `Yes`.
 
 You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
 passphrase with `esTransportCaCertPassword`) containing the CA which should be used to generate
@@ -581,8 +581,8 @@ a certificate for each node within the cluster. An optional
 passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
 on each node.
 
-One way to generate a PKCS#12 archive containing a CA cert is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html). 
-The simplest command to generate a CA cert is
+One way to generate a PKCS#12 archive containing a CA certificate and key is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
+The simplest command to generate a CA certificate is
 
 ```sh
 ./certutil ca
@@ -600,7 +600,7 @@ loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
 
 If you choose `external` as the value for `loadBalancerType`, you must either
 
-* supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
+* supply a PKCS#12 archive containing the key and certificate with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
@@ -608,7 +608,7 @@ One way to generate a PKCS#12 archive is using [Elastic's certutil command](http
 
 **_or_**
 
-* supply a PKCS#12 archive with the `esHttpCaCertBlob` parameter (and optional 
+* supply a PKCS#12 archive containing the key and certificate with the `esHttpCaCertBlob` parameter (and optional 
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
 a certificate for each node within the cluster to secure the HTTP layer.
 Kibana will be configured to trust the CA and perform hostname verification for presented
@@ -618,7 +618,7 @@ certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil
 
 If you choose `gateway` as the value for `loadBalancerType`, you must
 
-* supply a PKCS#12 archive certificate with the `appGatewayCertBlob` parameter (and optional 
+* supply a PKCS#12 archive containing the key and certificate with the `appGatewayCertBlob` parameter (and optional 
 passphrase with `appGatewayCertPassword`) to secure communication to Application Gateway.
 One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
 
@@ -626,7 +626,7 @@ One way to generate a PKCS#12 archive is using [Elastic's certutil command](http
 performs SSL offload, so communication from Application Gateway to
 Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
 
-* supply a PKCS#12 archive with the `esHttpCertBlob` parameter (and optional 
+* supply a PKCS#12 archive containing the key and certificate with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 Kibana will be configured to trust the certificate CA (if CA certs are present within the archive).
@@ -635,7 +635,7 @@ specify a `--dns <name>` argument with a name that matches that in the `--name <
 
 **_and_**
 
-* supply the public certificate in CER format from the PKCS#12 archive
+* supply the public certificate in PEM format from the PKCS#12 archive
 passed with `esHttpCertBlob` parameter, using the `appGatewayEsHttpCertBlob` parameter.
 Application Gateway whitelists certificates used by VMs in the backend pool. This can
 be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using
