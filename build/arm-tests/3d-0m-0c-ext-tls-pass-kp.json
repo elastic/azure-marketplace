@@ -6,6 +6,7 @@
 	"parameters" : {
     "loadBalancerType":{"value":"external"},
     "esHttpCertBlob":{"value":"cert-with-password.pfx"},
+    "esHttpCertPassword":{"value":"Password123"},
     "esTransportCaCertBlob":{"value":"ca-cert-with-password.pfx"},
     "esTransportCaCertPassword":{"value":"Password123"},
     "esTransportCertPassword":{"value":"Password1234"},
