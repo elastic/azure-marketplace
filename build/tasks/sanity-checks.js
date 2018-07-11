@@ -48,7 +48,7 @@ function checks(cb) {
         excludingDefault.push(p);
       });
       if (excludingDefault.length == 0) return;
-      errors.push(p.name + " parameters has different inputs than the main template parameters" + excludingDefault)
+      errors.push(p.name + " parameters has different inputs than the main template parameters: " + excludingDefault)
     });
   }
 

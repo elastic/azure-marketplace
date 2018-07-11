@@ -1,11 +1,19 @@
 {
 	"isValid" : true,
-	"deploy" : false,
+	"deploy" : true,
 	"why" : "",
 	"location" : "westeurope",
 	"parameters" : {
-		"loadBalancerType":{"value":"gateway"},
-		"kibana":{"value":"Yes"},
+    "loadBalancerType":{"value":"external"},
+    "esHttpCertBlob":{"value":"cert-with-password.pfx"},
+    "esHttpCertPassword":{"value":"Password123"},
+    "esTransportCaCertBlob":{"value":"ca-cert-with-password.pfx"},
+    "esTransportCaCertPassword":{"value":"Password123"},
+    "esTransportCertPassword":{"value":"Password1234"},
+    "kibana":{"value":"Yes"},
+    "kibanaCertBlob":{"value":"cert-with-password.crt"},
+    "kibanaKeyBlob":{"value":"cert-with-password.key"},
+    "kibanaKeyPassphrase": { "value": "Password123" },
 		"jumpbox":{"value":"No"},
 		"vmSizeKibana":{"value":"Standard_D1"},
 		"vmSizeDataNodes":{"value":"Standard_D1"},
@@ -17,7 +25,7 @@
 		"vmSizeMasterNodes":{"value":"Standard_DS2"},
 		"vmClientNodeCount":{"value":0},
 		"vmSizeClientNodes":{"value":"Standard_D1"},
-		"authenticationType":{"value":"sshPublicKey"},
+		"authenticationType":{"value":"password"},
 		"vNetName": {"value": "es-net"},
 		"vNetClusterSubnetName": {"value": "es-subnet"},
 		"vNetAppGatewaySubnetName": {"value": "es-app-gateway"},
@@ -30,8 +38,8 @@
 		"appGatewayTier": {"value":"Standard"},
 		"appGatewaySku": {"value":"Small"},
 		"appGatewayCount": {"value":1},
-		"appGatewayCertBlob": {"value":"cert-with-password.pfx"},
-		"appGatewayCertPassword": {"value":"Password123"},
+		"appGatewayCertBlob": {"value":""},
+		"appGatewayCertPassword": {"value":""},
 		"appGatewayWafStatus": {"value":"Disabled"},
 		"appGatewayWafMode": {"value":"Detection"},
 		"userCompany": { "value": "" },
@@ -39,6 +47,6 @@
 		"userFirstName": { "value": "" },
 		"userLastName": { "value": "" },
 		"userJobTitle": { "value": "Other" },
-		"userCountry": { "value": "" }
+    "userCountry": { "value": "" }
 	}
 }

@@ -27,6 +27,27 @@
   "variables": {
     "applicationGatewayName": "es-app-gateway",
     "applicationGatewayId": "[resourceId('Microsoft.Network/applicationGateways',variables('applicationGatewayName'))]",
+    "authenticationCertsOpts": {
+      "Yes": [
+        {
+          "properties": {
+            "data": "[parameters('applicationGatewaySettings').backendCert]"
+          },
+          "name": "esHttpCert"
+        }
+      ],
+      "No": []
+    },
+    "authenticationCerts": "[variables('authenticationCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
+    "backendCertsOpts": {
+      "Yes": [
+        {
+          "id": "[concat(variables('applicationGatewayId'), '/authenticationCertificates/esHttpCert')]"
+        }
+      ],
+      "No": []
+    },
+    "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
     "wafEnabledOptions": {
       "Enabled": true,
       "Disabled": false
@@ -123,7 +144,7 @@
       }
     },
     {
-      "apiVersion": "2016-08-01",
+      "apiVersion": "2017-06-01",
       "name": "es-app-gateway",
       "type": "Microsoft.Network/applicationGateways",
       "location": "[parameters('networkSettings').location]",
@@ -148,6 +169,7 @@
             }
           }
         ],
+        "authenticationCertificates": "[variables('authenticationCerts')]",
         "gatewayIPConfigurations": [
           {
             "name": "es-app-gateway-ip",
@@ -162,7 +184,7 @@
           {
             "name": "es-app-gateway-fip",
             "properties": {
-              "PublicIPAddress": {
+              "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses','es-app-gateway-ip')]"
               }
             }
@@ -172,7 +194,7 @@
           {
             "name": "es-app-gateway-fport",
             "properties": {
-              "Port": 9200
+              "port": 9200
             }
           }
         ],
@@ -180,9 +202,9 @@
           {
             "name": "LBBE",
             "properties": {
-              "BackendAddresses": [
+              "backendAddresses": [
                 {
-                  "IpAddress": "[parameters('networkSettings').subnet.loadBalancerIp]"
+                  "ipAddress": "[parameters('networkSettings').subnet.loadBalancerIp]"
                 }
               ]
             }
@@ -192,9 +214,10 @@
           {
             "name": "es-app-gateway-httpsettings",
             "properties": {
-              "Port": 9200,
-              "Protocol": "Http",
-              "CookieBasedAffinity": "Disabled"
+              "port": 9200,
+              "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+              "cookieBasedAffinity": "Disabled",
+              "authenticationCertificates": "[variables('backendCerts')]"
             }
           }
         ],
@@ -202,15 +225,15 @@
           {
             "name": "es-app-gateway-httplistener",
             "properties": {
-              "FrontendIPConfiguration": {
-                "Id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/es-app-gateway-fip')]"
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/es-app-gateway-fip')]"
               },
-              "FrontendPort": {
-                "Id": "[concat(variables('applicationGatewayId'), '/frontendPorts/es-app-gateway-fport')]"
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/es-app-gateway-fport')]"
               },
-              "Protocol": "Https",
-              "SslCertificate": {
-                "Id": "[concat(variables('applicationGatewayId'), '/sslCertificates/es-app-gateway-sslcert')]"
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/es-app-gateway-sslcert')]"
               }
             }
           }
@@ -219,7 +242,7 @@
           {
             "Name": "rule1",
             "properties": {
-              "RuleType": "Basic",
+              "ruleType": "Basic",
               "httpListener": {
                 "id": "[concat(variables('applicationGatewayId'), '/httpListeners/es-app-gateway-httplistener')]"
               },
@@ -233,6 +256,8 @@
           }
         ],
         "webApplicationFirewallConfiguration": {
+          "ruleSetType": "OWASP",
+          "ruleSetVersion": "3.0",
           "enabled": "[variables('wafEnabled')]",
           "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
         }

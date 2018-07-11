@@ -26,6 +26,11 @@ help()
     echo "    -C      kibana cert to encrypt communication between the browser and Kibana"
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
     echo "    -P      kibana key passphrase to decrypt the private key (optional as the key may not be encrypted)"
+    echo "    -Y      <yaml\nyaml> additional yaml configuration"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure Elasticsearch HTTP layer"
+    echo "    -G      Password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure Elasticsearch HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Elasticsearch HTTP layer"
+    echo "    -J      Password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Elasticsearch HTTP layer"
     echo "    -h      view this help content"
 }
 
@@ -62,7 +67,7 @@ fi
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="6.2.1"
+KIBANA_VERSION="6.2.4"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
@@ -70,9 +75,14 @@ USER_KIBANA_PWD="changeme"
 SSL_CERT=""
 SSL_KEY=""
 SSL_PASSPHRASE=""
+YAML_CONFIGURATION=""
+HTTP_CERT=""
+HTTP_CERT_PASSWORD=""
+HTTP_CACERT=""
+HTTP_CACERT_PASSWORD=""
 
 #Loop through options passed
-while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
+while getopts :n:v:u:S:C:K:P:Y:H:G:V:J:lh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -98,6 +108,21 @@ while getopts :n:v:e:u:S:C:K:P:m:lh optname; do
       ;;
     P) #kibana ssl key passphrase
       SSL_PASSPHRASE="${OPTARG}"
+      ;;
+    H) #Elasticsearch certificate
+      HTTP_CERT="${OPTARG}"
+      ;;
+    G) #Elasticsearch certificate password
+      HTTP_CERT_PASSWORD="${OPTARG}"
+      ;;
+    V) #Elasticsearch CA certificate
+      HTTP_CACERT="${OPTARG}"
+      ;;
+    J) #Elasticsearch CA certificate password
+      HTTP_CACERT_PASSWORD="${OPTARG}"
+      ;;
+    Y) #kibana additional yml configuration
+      YAML_CONFIGURATION="${OPTARG}"
       ;;
     h) #show help
       help
@@ -152,11 +177,13 @@ install_pwgen()
 
 configuration_and_plugins()
 {
+    local KIBANA_CONF=/etc/kibana/kibana.yml
+    local SSL_PATH=/etc/kibana/ssl
     # backup the current config
-    mv /etc/kibana/kibana.yml /etc/kibana/kibana.yml.bak
+    mv $KIBANA_CONF $KIBANA_CONF.bak
 
     log "[configuration_and_plugins] Configuring kibana.yml"
-    local KIBANA_CONF=/etc/kibana/kibana.yml
+
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
@@ -171,7 +198,7 @@ configuration_and_plugins()
     # install x-pack
     if [ ${INSTALL_XPACK} -ne 0 ]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
-      echo "elasticsearch.password: $USER_KIBANA_PWD" >> $KIBANA_CONF
+      echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
@@ -188,29 +215,108 @@ configuration_and_plugins()
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
-      mkdir -p /etc/kibana/ssl
-      log "[configuration_and_plugins] Save kibana cert blob to file"
-      echo ${SSL_CERT} | base64 -d | tee /etc/kibana/ssl/kibana.crt
-      log "[configuration_and_plugins] Save kibana key blob to file"
-      echo ${SSL_KEY} | base64 -d | tee /etc/kibana/ssl/kibana.key
+      [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
+      log "[configuration_and_plugins] Save kibana cert to file"
+      echo ${SSL_CERT} | base64 -d | tee $SSL_PATH/kibana.crt
+      log "[configuration_and_plugins] Save kibana key to file"
+      echo ${SSL_KEY} | base64 -d | tee $SSL_PATH/kibana.key
 
-      log "[configuration_and_plugins] Configuring encrypted communication"
-
-      if dpkg --compare-versions "$KIBANA_VERSION" ">=" "5.3.0"; then
-          echo "server.ssl.enabled: true" >> $KIBANA_CONF
-          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
-          echo "server.ssl.certificate: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
-
-          if [[ -n "${SSL_PASSPHRASE}" ]]; then
-              echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
-          fi
-      else
-          echo "server.ssl.key: /etc/kibana/ssl/kibana.key" >> $KIBANA_CONF
-          echo "server.ssl.cert: /etc/kibana/ssl/kibana.crt" >> $KIBANA_CONF
+      log "[configuration_and_plugins] Configuring SSL/TLS to Kibana"
+      echo "server.ssl.enabled: true" >> $KIBANA_CONF
+      echo "server.ssl.key: $SSL_PATH/kibana.key" >> $KIBANA_CONF
+      echo "server.ssl.certificate: $SSL_PATH/kibana.crt" >> $KIBANA_CONF
+      if [[ -n "${SSL_PASSPHRASE}" ]]; then
+          echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
       fi
-
-      log "[configuration_and_plugins] Configured encrypted communication"
+      log "[configuration_and_plugins] Configured SSL/TLS to Kibana"
     fi
+
+    # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
+    # Kibana x-pack installed implies it's also installed for Elasticsearch
+    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+      [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
+
+      if [[ -n "${HTTP_CERT}" ]]; then
+        # convert PKCS#12 certificate to PEM format
+        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch HTTP to file"
+        echo ${HTTP_CERT} | base64 -d | tee $SSL_PATH/elasticsearch-http.p12
+        log "[configuration_and_plugins] Extract CA cert from PKCS#12 archive for Elasticsearch HTTP"
+        echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
+
+        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
+            log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verification mode to none"
+            echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
+        else
+            log "[configuration_and_plugins] CA cert extracted from HTTP PKCS#12 archive. Setting verification mode to certificate"
+            echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
+            echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
+        fi
+
+      else
+
+        # convert PKCS#12 CA certificate to PEM format
+        local HTTP_CACERT_FILENAME=elasticsearch-http-ca.p12
+        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch HTTP CA to file"
+        echo ${HTTP_CACERT} | base64 -d | tee $SSL_PATH/$HTTP_CACERT_FILENAME
+        log "[configuration_and_plugins] Convert PKCS#12 archive for Elasticsearch HTTP CA to PEM format"
+        echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/$HTTP_CACERT_FILENAME -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
+
+        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
+            log "[configuration_and_plugins] No CA cert extracted from HTTP CA. Setting verification mode to none"
+            echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
+        else
+            log "[configuration_and_plugins] CA cert extracted from HTTP CA PKCS#12 archive. Setting verification mode to full"
+            echo "elasticsearch.ssl.verificationMode: full" >> $KIBANA_CONF
+            log "[configuration_and_plugins] Set CA cert in certificate authorities"
+            echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
+        fi
+      fi
+      chown -R kibana: $SSL_PATH
+      log "[configuration_and_plugins] Configured TLS for Elasticsearch"
+    fi
+
+    # Additional yaml configuration
+    if [[ -n "$YAML_CONFIGURATION" ]]; then
+        log "[configuration_and_plugins] include additional yaml configuration"
+        local SKIP_LINES="elasticsearch.username elasticsearch.password "
+        SKIP_LINES+="server.ssl.key server.ssl.cert server.ssl.enabled "
+        SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
+        SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
+        SKIP_LINES+="elasticsearch.ssl.certificate elasticsearch.ssl.key elasticsearch.ssl.certificateAuthorities "
+        SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
+        local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
+        IFS=$'\n'
+        for LINE in $(echo -e "$YAML_CONFIGURATION"); do
+          if [[ -n "$LINE" ]]; then
+              if [[ $LINE =~ $SKIP_REGEX ]]; then
+                  log "[configuration_and_plugins] Skipping line '$LINE'"
+              else
+                  log "[configuration_and_plugins] Adding line '$LINE' to $KIBANA_CONF"
+                  echo "$LINE" >> $KIBANA_CONF
+              fi
+          fi
+        done
+        unset IFS
+        log "[configuration_and_plugins] included additional yaml configuration"
+        log "[configuration_and_plugins] run yaml lint on configuration"
+        install_yamllint
+        LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $KIBANA_CONF; exit ${PIPESTATUS[0]})
+        EXIT_CODE=$?
+        log "[configuration_and_plugins] ran yaml lint (exit code $EXIT_CODE) $LINT"
+        if [ $EXIT_CODE -ne 0 ]; then
+            log "[configuration_and_plugins] errors in yaml configuration. exiting"
+            exit 11
+        fi
+    fi
+}
+
+install_yamllint()
+{
+    log "[install_yamllint] installing yamllint"
+    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
+    log "[install_yamllint] installed yamllint"
 }
 
 install_start_service()

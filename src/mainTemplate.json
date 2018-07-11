@@ -22,9 +22,6 @@
       "type": "string",
       "defaultValue": "6.2.4",
       "allowedValues": [
-        "5.0.2",
-        "5.1.2",
-        "5.2.2",
         "5.3.2",
         "5.4.0",
         "5.4.2",
@@ -117,7 +114,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;mapper-attachments"
+        "description": "Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. analysis-icu;ingest-geoip"
       }
     },
     "esAdditionalYaml": {
@@ -132,6 +129,55 @@
       "defaultValue": 0,
       "metadata": {
         "description": "The size, in megabytes, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB)."
+      }
+    },
+    "esHttpCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esHttpCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esHttpCaCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esHttpCaCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure HTTP layer of Elasticsearch"
+      }
+    },
+    "esTransportCaCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Transport layer of Elasticsearch."
+      }
+    },
+    "esTransportCaCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure Transport layer of Elasticsearch"
+      }
+    },
+    "esTransportCertPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password for the generated certificate used to secure Transport layer of Elasticsearch"
       }
     },
     "kibana": {
@@ -210,21 +256,28 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the certificate (.crt) to secure HTTPS communications between the browser and Kibana."
+        "description": "A Base-64 encoded form of the PEM certificate (.crt) to secure HTTP communication between the browser and Kibana."
       }
     },
     "kibanaKeyBlob": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the private key (.key) to secure HTTPS communications between the browser and Kibana."
+        "description": "A Base-64 encoded form of the PEM private key (.key) to secure HTTP communication between the browser and Kibana."
       }
     },
     "kibanaKeyPassphrase": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The passphrase to decrypt the private key. Optional as the key may not be encrypted. Supported only in 5.3.0+"
+        "description": "The passphrase to decrypt the private key. Optional as the key may not be encrypted."
+      }
+    },
+    "kibanaAdditionalYaml": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Additional configuration for Kibana yaml configuration file. Each line must be separated by a newline character e.g. server.ssl.enabled: true\nkibana.defaultAppId: \"home\""
       }
     },
     "jumpbox": {
@@ -674,14 +727,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "A Base-64 encoded form of the PFX certificate for the Application Gateway. This certificate is used to secure HTTPS connections to the Application Gateway"
+        "description": "A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the key and certificate for the Application Gateway. This certificate is used to secure HTTPS connections to the Application Gateway"
       }
     },
     "appGatewayCertPassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The password for the PFX certificate for the Application Gateway."
+        "description": "The password for the PKCS#12 archive (.p12/.pfx) containing the key and certificate for the Application Gateway."
       }
     },
     "appGatewayWafStatus": {
@@ -704,6 +757,13 @@
       ],
       "metadata": {
         "description": "The firewall mode of the Application Gateway. Required when selecting Application Gateway for load balancing and using WAF tier."
+      }
+    },
+    "appGatewayEsHttpCertBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Base-64 encoded certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
     },
     "userCompany": {
@@ -788,6 +848,13 @@
       "installAdditionalPlugins": "[parameters('esAdditionalPlugins')]",
       "yamlConfiguration": "[parameters('esAdditionalYaml')]",
       "heapSize": "[parameters('esHeapSize')]",
+      "httpCertBlob": "[parameters('esHttpCertBlob')]",
+      "httpCertPassword": "[parameters('esHttpCertPassword')]",
+      "httpCaCertBlob": "[parameters('esHttpCaCertBlob')]",
+      "httpCaCertPassword": "[parameters('esHttpCaCertPassword')]",
+      "transportCaCertBlob": "[parameters('esTransportCaCertBlob')]",
+      "transportCaCertPassword": "[parameters('esTransportCaCertPassword')]",
+      "transportCertPassword": "[parameters('esTransportCertPassword')]",
       "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
@@ -1089,6 +1156,7 @@
       "kibanaKeyPassphrase": "[parameters('kibanaKeyPassphrase')]",
       "kibanaCertBlob": "[parameters('kibanaCertBlob')]",
       "kibanaHttps": "[variables('kibanaHttps')]",
+      "kibanaYaml": "[parameters('kibanaAdditionalYaml')]",
       "jumpbox": "[parameters('jumpbox')]",
       "dataNodeStorageSettings": {
         "accountType": "[variables('resolvedStorageAccountType')]",
@@ -1104,6 +1172,7 @@
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
+      "https": "[if(and(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]",
       "subnet": {
         "name": "[parameters('vNetClusterSubnetName')]",
         "addressPrefix": "[parameters('vNetNewClusterSubnetAddressPrefix')]",
@@ -1134,7 +1203,9 @@
       "certBlob": "[parameters('appGatewayCertBlob')]",
       "certPassword": "[parameters('appGatewayCertPassword')]",
       "firewallStatus": "[parameters('appGatewayWafStatus')]",
-      "firewallMode": "[parameters('appGatewayWafMode')]"
+      "firewallMode": "[parameters('appGatewayWafMode')]",
+      "backendCert": "[parameters('appGatewayEsHttpCertBlob')]",
+      "backendProtocol": "[if(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), 'Https', 'Http')]"
     }
   },
   "resources": [
