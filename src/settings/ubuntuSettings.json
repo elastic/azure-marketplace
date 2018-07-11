@@ -82,17 +82,7 @@
       "Yes": "X"
     },
     "enableAnonymousAccessOpt": "[variables('enableAnonymousAccessOpts')[parameters('topologySettings').enableAnonymousAccess]]",
-    "httpSecurityOpts": {
-      "No": "",
-      "Yes": "F"
-    },
-    "httpSecurityOpt": "[variables('httpSecurityOpts')[parameters('esSettings').httpSecurity]]",
-    "transportSecurityOpts": {
-      "No": "",
-      "Yes": "Q"
-    },
-    "transportSecurityOpt": "[variables('transportSecurityOpts')[parameters('esSettings').transportSecurity]]",
-    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), variables('httpSecurityOpt'), variables('transportSecurityOpt'), 'n ')]",
+    "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), 'n ')]",
     "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -E \"', parameters('azureCloudStorageAccount').suffix, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",

@@ -38,16 +38,14 @@ help()
     echo "-L <plugin;plugin> install additional plugins"
     echo "-C <yaml\nyaml> additional yaml configuration"
 
-    echo "-F Enable SSL/TLS for the HTTP layer"
-    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.p12/.pfx) certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the HTTP layer"
+    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
 
-    echo "-Q Enable SSL/TLS for the transport layer"
-    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.p12/.pfx) CA certificate used to secure the transport layer"
-    echo "-N password for the generated certificate used to secure the transport layer"
+    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
 
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
@@ -124,7 +122,6 @@ INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
 STORAGE_KEY=""
 
-HTTP_SECURITY=0
 HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
 HTTP_CACERT=""
@@ -133,13 +130,12 @@ INTERNAL_LOADBALANCER_IP=""
 PROTOCOL="http"
 CURL_SWITCH=""
 
-TRANSPORT_SECURITY=0
 TRANSPORT_CACERT=""
 TRANSPORT_CACERT_PASSWORD=""
 TRANSPORT_CERT_PASSWORD=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:FQXxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -193,9 +189,6 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:FQXxyzldjh optname;
     D) #internal load balancer IP
       INTERNAL_LOADBALANCER_IP="${OPTARG}"
       ;;
-    F) #Enable SSL/TLS for HTTP layer
-      HTTP_SECURITY=1
-      ;;
     H) #HTTP cert blob
       HTTP_CERT="${OPTARG}"
       ;;
@@ -207,9 +200,6 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:FQXxyzldjh optname;
       ;;
     J) #HTTP CA cert password
       HTTP_CACERT_PASSWORD="${OPTARG}"
-      ;;
-    Q) #Enable SSL/TLS for transport layer
-      TRANSPORT_SECURITY=1
       ;;
     T) #Transport CA cert blob
       TRANSPORT_CACERT="${OPTARG}"
@@ -651,11 +641,6 @@ configure_http_tls()
         return 0
     fi
 
-    if [[ -z "${HTTP_CERT}" && -z "$HTTP_CACERT" ]]; then
-      log "[configure_transport_tls] no HTTP CA or cert blob supplied so cannot enable TLS for HTTP layer"
-      exit 12
-    fi
-
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
     # Use HTTP cert if supplied, otherwise generate one
@@ -763,9 +748,9 @@ configure_http_tls()
           fi
       fi
     else
-      # Elasticsearch 5.x does not support PKCS#12 archive, so any passed or generated certs will need to be converted to PEM
+      # Elasticsearch 5.x does not support PKCS#12 archives, so any passed or generated certs will need to be converted to PEM
       if [[ -f $HTTP_CERT_PATH ]]; then
-          log "[configure_http_tls] convert PKCS#12 HTTP cert to PEM"
+          log "[configure_http_tls] convert PKCS#12 HTTP to PEM"
           echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http.crt -clcerts -nokeys -passin stdin
           echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http.key -nocerts -nodes -passin stdin
           echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
@@ -819,11 +804,6 @@ configure_transport_tls()
     if [[ -f $TRANSPORT_CACERT_PATH ]]; then
         log "[configure_http_tls] Transport CA already exists"
         return 0
-    fi
-
-    if [[ -z "$TRANSPORT_CACERT" ]]; then
-      log "[configure_transport_tls] no CA blob supplied so cannot enable TLS for Transport layer"
-      exit 12
     fi
 
     [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
@@ -948,8 +928,8 @@ configure_transport_tls()
 
 configure_elasticsearch_yaml()
 {
-    # Backup the current Elasticsearch configuration file
     local ES_CONF=/etc/elasticsearch/elasticsearch.yml
+    # Backup the current Elasticsearch configuration file
     mv $ES_CONF $ES_CONF.bak
 
     # Set cluster and machine names - just use hostname for our node.name
@@ -1080,12 +1060,12 @@ configure_elasticsearch_yaml()
     echo "bootstrap.memory_lock: true" >> $ES_CONF
 
     # Configure SSL/TLS for HTTP layer
-    if [[ ${HTTP_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ -n "${HTTP_CERT}" || -n "$HTTP_CACERT" && ${INSTALL_XPACK} -ne 0 ]]; then
         configure_http_tls $ES_CONF
     fi
 
     # Configure TLS for Transport layer
-    if [[ ${TRANSPORT_SECURITY} -ne 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ -n "${TRANSPORT_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
         configure_transport_tls $ES_CONF
     fi
 }

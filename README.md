@@ -141,10 +141,6 @@ in conjunction with other parameters.
     Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
-  <tr><td>esHttpSecurity</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to configure SSL/TLS for the HTTP layer of Elasticsearch. <strong>X-Pack plugin must be installed and either <code>esHttpCertBlob</code> or <code>esHttpCaCertBlob</code> provided</strong></strong>
-    </td><td><code>No</code></td></tr>
-
   <tr><td>esHttpCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
@@ -163,10 +159,6 @@ in conjunction with other parameters.
     <td>The password for the PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
   
-  <tr><td>esTransportSecurity</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to configure SSL/TLS for the Transport layer of Elasticsearch. <strong>X-Pack plugin must be installed and <code>esTransportCaCertBlob</code> provided</strong>
-    </td><td><code>No</code></td></tr>
-
   <tr><td>esTransportCaCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to use to generate certificates to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
@@ -534,17 +526,17 @@ The `--parameters-file` can specify a different location for the items that get 
 
 You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
 
-**Targeting a specific template version is recommended for repeatable deployments.** 
+**Targeting a specific template version is recommended for repeatable deployments.**
 
-For example, to target the [`6.2.2` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.2)
+For example, to target the [`6.2.4` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.4)
 
 ```powershell
-$templateVersion = "6.2.2"
+$templateVersion = "6.2.4"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
 $clusterParameters = @{
     "artifactsBaseUrl" = $templateBaseUrl
-    "esVersion" = "6.2.2"
+    "esVersion" = "6.2.4"
     "adminUsername" = "russ"
     "adminPassword" = "Password1234"
     "securityAdminPassword" = "Password123"
@@ -594,7 +586,7 @@ and follow the instructions.
 
 You can secure external access to the cluster with TLS with an external
 loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
-`xPackPlugins` and `esHttpSecurity` be set to `Yes`.
+`xPackPlugins` be set to `Yes`.
 
 #### External load balancer
 

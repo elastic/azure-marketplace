@@ -5,9 +5,7 @@
 	"location" : "westeurope",
 	"parameters" : {
     "loadBalancerType":{"value":"external"},
-    "esHttpSecurity": {"value":"Yes"},
     "esHttpCertBlob":{"value":"cert-with-password.pfx"},
-    "esHttpCertPassword":{"value":"Password123"},
     "esTransportSecurity": {"value":"Yes"},
     "esTransportCaCertBlob":{"value":"ca-cert-with-password.pfx"},
     "esTransportCaCertPassword":{"value":"Password123"},

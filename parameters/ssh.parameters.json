@@ -10,7 +10,6 @@
   "esAdditionalPlugins": { "value":""},
   "esAdditionalYaml": { "value":""},
   "esHeapSize": { "value":0},
-  "esHttpSecurity": { "value": "No"},
   "esHttpCertBlob": { "value":""},
   "esHttpCertPassword": { "value":""},
   "esHttpCaCertBlob": { "value":""},
