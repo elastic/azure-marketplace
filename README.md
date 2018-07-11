@@ -22,10 +22,10 @@ the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a hr
 
 **By default, this template does not configure** 
 
-* **TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
-* **TLS for communication with Elasticsearch via the HTTP layer through Application Gateway**
-* **TLS for communication between Elasticsearch nodes via the Transport layer**
-* **TLS for communication beween the browser and Kibana**
+* **SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
+* **SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway**
+* **SSL/TLS for communication between Elasticsearch nodes via the Transport layer**
+* **SSL/TLS for communication beween the browser and Kibana**
 
 **It is strongly recommended that you secure communication before using in production.**
 
@@ -69,22 +69,22 @@ The ARM template accepts a _lot_ of parameters, although many of them are option
 in conjunction with other parameters.
 
 <table>
-  <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Requirements</th><th>Default Value</th></tr>
+  <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
 
   <tr><td>artifactsBaseUrl</td><td>string</td>
     <td>The base url of the Elastic ARM template.
-    </td><td><strong>Required</strong></td><td>Raw content of the current branch</td></tr>
+    <strong>Required</strong></td><td>Raw content of the current branch</td></tr>
 
   <tr><td>esVersion</td><td>string</td>
-    <td>A valid supported Elasticsearch version for the target template version. See <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json">this list for supported versions</a>
-    </td><td><strong>Required</strong></td><td>Latest version supported by target template version</td></tr>
+    <td>A valid supported Elasticsearch version for the target template version. See <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json">this list for supported versions</a>.
+    <strong>Required</strong></td><td>Latest version supported by target template version</td></tr>
 
   <tr><td>esClusterName</td><td>string</td>
     <td> The name of the Elasticsearch cluster. <strong>Required</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>loadBalancerType</td><td>string</td>
-    <td> The load balancer to set up to access the cluster. Can be <code>internal</code>, <code>external</code> or <code>gateway</code>. 
+    <td> The load balancer to set up to access the cluster. Can be <code>internal</code>, <code>external</code> or <code>gateway</code>.
     <ul>
     <li>By choosing <code>internal</code>, only an internal load balancer is deployed. Useful when connecting to the cluster happens from inside the Virtual Network</li>
     <li>By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
@@ -123,12 +123,12 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalYaml</td><td>string</td>
-    <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
+    <td>Additional configuration for Elasticsearch yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHeapSize</td><td>integer</td>
     <td>The size, <em>in megabytes</em>, of memory to allocate on each Elasticsearch node for the JVM heap. If unspecified, 50% of the available memory will be allocated to Elasticsearch heap, up to a maximum of 31744MB (~32GB). 
-    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information.  <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
+    Take a look at <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html" target="_blank">the Elasticsearch documentation</a> for more information. <br /><br /> <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Elasticsearch VM SKU will fail the deployment.</strong>
     </td><td><code>0</code></td></tr>
 
   <tr><td>esHttpCertBlob</td><td>string</td>
@@ -627,8 +627,6 @@ passphrase with `esHttpCertPassword`) containing the certs and private key to
 secure the HTTP layer. This certificate will be used by all nodes within the cluster, and
 
 **_or_**
-   <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
-</a>
 
 * supply a PKCS#12 archive containing the key and certificate with the `esHttpCaCertBlob` parameter (and optional 
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
