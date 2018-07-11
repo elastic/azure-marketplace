@@ -565,7 +565,7 @@ a certificate and private key in PEM format with `kibanaCertBlob` and
 
 You can secure communication between nodes in the cluster with TLS on the
 Transport layer. Configuring TLS for the Transport layer requires
-`xPackPlugins` and `esTransportSecurity` be set to `Yes`.
+`xPackPlugins` be set to `Yes`.
 
 You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
 passphrase with `esTransportCaCertPassword`) containing the CA which should be used to generate
