@@ -26,12 +26,10 @@ For more details around developing the template, take a look at the [Development
 
 The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
-It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack plugins](https://www.elastic.co/products/x-pack).
+It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack features](https://www.elastic.co/products/x-pack).
 
-Did you know that you can apply for a **free Basic X-Pack license**? Go check out our [subscription options](https://www.elastic.co/subscriptions)
-
-Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy
-the templates directly from GitHub using the Azure CLI or PowerShell SDKs. <a href="#command-line-deploy">Check out the examples.</a>
+Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
+<a href="#command-line-deploy">Check out the examples.</a>
 
 ---
 
@@ -65,9 +63,9 @@ Please create an issue with that message and in which resource it occured on our
 ## ARM template
 
 The output from the Azure Marketplace UI is fed directly to the ARM deployment
-template. You can use the ARM template on its own without going through the
+template. You can use the ARM template independently, without going through the
 Marketplace. In fact, there are many features in the ARM template that are
-not exposed within the Marketplace such as configuring
+not exposed within the Marketplace UI, such as configuring
 
 * Azure Storage account to use with Azure Repository plugin for Snapshot/Restore
 * Application Gateway to use for SSL/TLS and SSL offload
@@ -80,7 +78,20 @@ posts for further information
 * [Spinning up a cluster with Elastic's Azure Marketplace template](https://www.elastic.co/blog/spinning-up-a-cluster-with-elastics-azure-marketplace-template)
 * [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
 
-### Parameters
+### X-Pack features
+
+Starting with Elasticsearch and Kibana 6.3.0, The template deploys with X-Pack features bundled as part of the deployment, and
+includes the free features under the [Basic license](https://www.elastic.co/subscriptions) level.
+The [`xpackPlugins`](#x-pack) parameter determines whether a self-generated trial license is applied,
+offering a trial period of 30 days of the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
+
+For Elasticsearch and Kibana prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
+and a self-generated trial license is applied. In difference to 6.3.0 however, a value of `No` for `xpackPlugins` means that 
+X-Pack plugins are not installed, and therefore does not provide the free features under the Basic license level, offering the Open Source features only.
+For these versions, you can install X-Pack plugins and [**register for a free Basic license** to apply to the deployment](https://register.elastic.co/), in 
+order to use the free features available under the Basic license level.
+
+## Parameters
 
 The ARM template accepts a _lot_ of parameters, although many of them are optional and only used
 in conjunction with other parameters.
@@ -101,7 +112,7 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>loadBalancerType</td><td>string</td>
-    <td> The load balancer to set up to access the cluster. Can be <code>internal</code>, <code>external</code> or <code>gateway</code>.
+    <td> The load balancer to set up to access the cluster. Can be <code>internal</code>, <code>external</code> or <code>gateway</code>. 
     <ul>
     <li>By choosing <code>internal</code>, only an internal load balancer is deployed. Useful when connecting to the cluster happens from inside the Virtual Network</li>
     <li>By choosing <code>external</code>, both internal and external load balancers will be deployed. Kibana communicates with the cluster through the internal
@@ -111,7 +122,7 @@ in conjunction with other parameters.
     An internal load balancer will also deployed. Application Gateway and Kibana communicate with the cluster through the internal
     load balancer.</li>
     </ul>
-    <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like
+    <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like 
     <a href="https://www.elastic.co/products/x-pack/security">X-Pack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
@@ -130,9 +141,15 @@ in conjunction with other parameters.
     <td> The access key of an existing storage account to use for snapshots with Azure Cloud plugin.
     </td><td><code>""</code></td></tr>
 
-  <tr><td>xpackPlugins</td><td>string</td>
+  <tr><td id="x-pack">xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    plugins. If also installing Kibana, X-Pack will also be installed for Kibana.
+    features such as <a href="https://www.elastic.co/products/x-pack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/x-pack/security">Security</a>, <a href="https://www.elastic.co/products/x-pack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/x-pack/graph">Graph</a>, <a href="https://www.elastic.co/products/x-pack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/x-pack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/x-pack/reporting">Reporting</a> and Profiler installed.
+    <br /><br />
+    A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
+    will include only the Open Source features.
+    <br /><br />
+    A value of <code>No</code> for Elasticsearch and Kibana 6.3.0+
+    will include the <a href="https://www.elastic.co/subscriptions">free Basic license features.</a>
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
@@ -190,18 +207,18 @@ in conjunction with other parameters.
     <td>The public URI for the Service Provider to configure SAML Single-Sign-On. If <code>samlMetadataUri</code> is provided but no value is provided for <code>samlServiceProviderUri</code>, the public domain name for the deployed Kibana instance will be used.<ul>
     <li><strong>Supported only for Elasticsearch 6.2.0+</strong></li>
     <li><strong>Kibana must be installed</strong></li>
-    <li><strong>X-Pack plugin must be installed with a level of license that enables the SAML realm.</strong></li>
     <li><strong>SSL/TLS must be configured for HTTP layer of Elasticsearch</strong></li></ul>
     </td><td><code>""</code></td></tr>
 
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
     a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
-    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
+    <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_A2</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
@@ -218,7 +235,6 @@ in conjunction with other parameters.
 
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
-    <br /><br />
     <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
     as a jumpbox.
   </td><td><code>No</code></td></tr>
@@ -235,13 +251,13 @@ in conjunction with other parameters.
   <tr><td>vmDataDiskCount</td><td>int</td>
     <td>Number of <a href="https://azure.microsoft.com/en-au/services/managed-disks/">managed disks</a> to attach to each data node in RAID 0 setup.
     Must be equal to or greater than <code>0</code>.
-    <p>If the number of disks selected is more than can be attached to the data node VM (sku) size,
+    <p>If the number of disks selected is more than can be attached to the data node VM (SKU) size,
     the maximum number of disks that can be attached for the data node VM (sku) size will be used. Equivalent to
     taking <code>min(vmDataDiskCount, max supported disks for data node VM size)</code></p>
     <ul>
     <li>When 1 disk is selected, the disk is not RAIDed.</li>
     <li>When 0 disks are selected, no disks will be attached to each data node. Instead, the temporary disk will be used to store Elasticsearch data.
-    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a> 
+    <strong>The temporary disk is ephemeral in nature and not persistent. Consult <a href="https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/">Microsoft Azure documentation on temporary disks</a>
     to understand the trade-offs in using it for storage.</strong>
     </li>
     </ul>
@@ -275,8 +291,8 @@ in conjunction with other parameters.
     </td><td><code>Standard_D1</code></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
-    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backendpool of the loadbalancer but
-    if you provision client nodes, these will be added to the load balancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
+    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
+    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
     </td><td><code>0</code></td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
@@ -539,7 +555,7 @@ where `<name>` refers to the resource group you just created.
   ```powershell
   $clusterParameters = @{
       "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"
-      "esVersion" = "6.2.1"
+      "esVersion" = "6.3.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
@@ -568,7 +584,7 @@ where `<name>` refers to the resource group you just created.
 
 You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
 
-**Targeting a specific template version is recommended for repeatable deployments in production.**
+**Targeting a specific template version is recommended for repeatable production deployments.**
 
 For example, to target the [`6.2.4` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.4)
 
