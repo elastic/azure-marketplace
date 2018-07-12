@@ -76,6 +76,13 @@
     ["Standard_DS14_v2", 32, "Premium", false],
     ["Standard_DS15_v2", 40, "Premium", false],
 
+    ["Standard_D2s_v3", 4, "Premium", false],
+    ["Standard_D4s_v3", 8, "Premium", false],
+    ["Standard_D8s_v3", 16, "Premium", false],
+    ["Standard_D16s_v3", 32, "Premium", false],
+    ["Standard_D32s_v3", 32, "Premium", false],
+    ["Standard_D64s_v3", 32, "Premium", false],
+
     ["Standard_F1", 2, "Standard", false],
     ["Standard_F2", 4, "Standard", false],
     ["Standard_F4", 8, "Standard", false],
