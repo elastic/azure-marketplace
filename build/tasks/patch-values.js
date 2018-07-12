@@ -3,6 +3,7 @@ var jsonfile = require('jsonfile');
 var _ = require('lodash');
 var replace = require('gulp-replace');
 var fs = require('fs');
+var argv = require('yargs').argv;
 
 jsonfile.spaces = 2;
 
@@ -64,6 +65,8 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+        main.parameters.elasticTags.defaultValue.tracking = (argv.tracking && argv.tracking.toLowerCase() === "marketplace") ?
+           allowedValues.trackingGuids.marketplace : allowedValues.trackingGuids.github;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {

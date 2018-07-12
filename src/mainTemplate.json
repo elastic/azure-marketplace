@@ -12,10 +12,11 @@
     "elasticTags": {
       "type": "object",
       "defaultValue": {
-        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9",
+        "tracking": "pid-B2C934E3-29F3-4194-BFD2-4F1370B78E0C"
       },
       "metadata": {
-        "description": "A unique identifier to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+        "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
       }
     },
     "esVersion": {
@@ -1280,6 +1281,19 @@
     "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]"
   },
   "resources": [
+    {
+      "name": "[parameters('elasticTags').tracking]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
     {
       "name": "shared",
       "type": "Microsoft.Resources/deployments",
