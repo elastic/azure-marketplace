@@ -5,6 +5,23 @@ This repository consists of:
 * [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.
 * [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. This file produces an output JSON that the ARM template can accept as input parameters.
 
+## Building
+
+After pulling the source, call the following _once_
+
+```sh
+npm install
+```
+
+to pull in all devDependencies. You may edit the[build/allowedValues.json](build/allowedValues.json) file, which the build uses to patch the ARM template and Marketplace UI definition. Then, run
+
+```sh
+npm run build
+```
+
+which will validate EditorConfig settings, lint JSON files, patch the template using `build/allowedValues.json`, and create a zip in the `dist` folder.
+For more details around developing the template, take a look at the [Development README](build/README.md)
+
 ## Azure Marketplace
 
 The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
