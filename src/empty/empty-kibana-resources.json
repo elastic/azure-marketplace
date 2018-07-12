@@ -51,17 +51,6 @@
         "description": "Size of the Kibana VM"
       }
     },
-    "https": {
-      "type": "string",
-      "defaultValue": "No",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Controls if the output address should be HTTP or HTTPS"
-      }
-    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -74,10 +63,5 @@
   },
   "variables": {},
   "resources": [],
-  "outputs": {
-    "fqdn": {
-      "value": "N/A",
-      "type": "string"
-    }
-  }
+  "outputs": {}
 }

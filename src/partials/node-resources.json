@@ -395,9 +395,6 @@
           "vmSize": {
             "value": "[parameters('topologySettings').vmSizeKibana]"
           },
-          "https": {
-            "value": "[parameters('topologySettings').kibanaHttps]"
-          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -406,10 +403,6 @@
     }
   ],
   "outputs": {
-    "kibana": {
-      "value": "[reference('kibana').outputs.fqdn.value]",
-      "type": "string"
-    },
     "jumpboxssh": {
       "value": "[reference('jumpbox').outputs.ssh.value]",
       "type": "string"

@@ -43,6 +43,9 @@ help()
     echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
     echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
 
+    echo "-O URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
+    echo "-P Public domain name (and optional port) for the instance of Kibana to configure SAML Single-Sign-On"
+
     echo "-U api url"
     echo "-I marketing id"
     echo "-c company name"
@@ -74,7 +77,7 @@ log "Begin execution of Data Node Install script extension"
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.2.2"
+ES_VERSION="6.2.4"
 ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
@@ -102,6 +105,9 @@ TRANSPORT_CACERT=""
 TRANSPORT_CACERT_PASSWORD=""
 TRANSPORT_CERT_PASSWORD=""
 
+SAML_METADATA_URI=""
+SAML_SP_URI=""
+
 API_URL=""
 MARKETING_ID=""
 COMPANY_NAME=""
@@ -114,7 +120,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -182,6 +188,12 @@ while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:X
       ;;
     N) #Transport cert password
       TRANSPORT_CERT_PASSWORD="${OPTARG}"
+      ;;
+    O) #SAML metadata URI
+      SAML_METADATA_URI="${OPTARG}"
+      ;;
+    P) #SAML Service Provider URI
+      SAML_SP_URI="${OPTARG}"
       ;;
     a) #azure storage account for azure cloud plugin
       STORAGE_ACCOUNT="${OPTARG}"
@@ -267,7 +279,7 @@ if [ $ANONYMOUS_ACCESS -eq 1 ]; then
 fi
 
 # install elasticsearch
-bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -V "$HTTP_CACERT" -J "$HTTP_CACERT_PASSWORD" -T "$TRANSPORT_CACERT" -W "$TRANSPORT_CACERT_PASSWORD" -N "$TRANSPORT_CERT_PASSWORD" -D "$INTERNAL_LOADBALANCER_IP" $INSTALL_SWITCHES
+bash elasticsearch-ubuntu-install.sh -n "$CLUSTER_NAME" -m $ES_HEAP -v "$ES_VERSION" -A "$USER_ADMIN_PWD" -R "$USER_READ_PWD" -K "$USER_KIBANA_PWD" -S "$USER_LOGSTASH_PWD" -B "$BOOTSTRAP_PASSWORD" -Z "$DATANODE_COUNT" -p "$NAMESPACE_PREFIX" -a "$STORAGE_ACCOUNT" -k "$STORAGE_KEY" -E "$STORAGE_SUFFIX" -L "$INSTALL_ADDITIONAL_PLUGINS" -C "$YAML_CONFIGURATION" -H "$HTTP_CERT" -G "$HTTP_CERT_PASSWORD" -V "$HTTP_CACERT" -J "$HTTP_CACERT_PASSWORD" -T "$TRANSPORT_CACERT" -W "$TRANSPORT_CACERT_PASSWORD" -N "$TRANSPORT_CERT_PASSWORD" -D "$INTERNAL_LOADBALANCER_IP"  -O "$SAML_METADATA_URI" -P "$SAML_SP_URI" $INSTALL_SWITCHES
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   log "installing Elasticsearch returned exit code $EXIT_CODE"

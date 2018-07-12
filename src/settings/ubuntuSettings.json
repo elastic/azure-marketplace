@@ -44,6 +44,12 @@
             "description": "The storage settings for the Azure Cloud plugin"
         }
     },
+    "kibanaIp": {
+      "type": "string",
+      "metadata": {
+          "description": "The public IP address for Kibana"
+      }
+    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -57,6 +63,7 @@
   "variables": {
     "nodesTemplateUrl": "[concat(parameters('templateBaseUrl'), 'partials/node-resources.json')]",
     "namespacePrefix": "[parameters('topologySettings').vmHostNamePrefix]",
+    "kibanaDomainName": "[if(not(empty(parameters('esSettings').samlMetadataUri)),if(not(empty(parameters('esSettings').samlServiceProviderUri)),parameters('esSettings').samlServiceProviderUri,parameters('kibanaIp')),'')]",
     "dataNodeShortOpts": {
       "No": "z",
       "Yes": ""
@@ -83,7 +90,7 @@
     },
     "enableAnonymousAccessOpt": "[variables('enableAnonymousAccessOpts')[parameters('topologySettings').enableAnonymousAccess]]",
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), variables('enableAnonymousAccessOpt'), 'n ')]",
-    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -E \"', parameters('azureCloudStorageAccount').suffix, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\"')]",
+    "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', parameters('azureCloudStorageAccount').name, '\" -k \"', parameters('azureCloudStorageAccount').key, '\" -E \"', parameters('azureCloudStorageAccount').suffix, '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\" -O \"', parameters('esSettings').samlMetadataUri, '\" -P \"', variables('kibanaDomainName'), '\"')]",
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
@@ -92,7 +99,6 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
     ],
     "ubuntuSkus": {
-      "2": "14.04.5-LTS",
       "5": "16.04-LTS",
       "6": "16.04-LTS"
     },
@@ -104,7 +110,7 @@
         "sku": "[variables('ubuntuSku')]",
         "version": "latest"
       },
-      "managementPort": "22",
+      "managementPort": 22,
       "extensionSettings": {
         "master": {
           "publisher": "Microsoft.Azure.Extensions",
@@ -151,7 +157,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -u \"', concat(if(equals(parameters('networkSettings').https, 'Yes'), 'https', 'http'), '://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\" -Y \"', replace(parameters('topologySettings').kibanaYaml, '\"', '\\\"'), '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob,'\" -J \"', parameters('esSettings').httpCaCertPassword, '\"')]"
+            "commandToExecute": "[concat('bash kibana-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -u \"', concat(if(equals(parameters('networkSettings').https, 'Yes'), 'https', 'http'), '://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityKibanaPwd, '\" -C \"', parameters('topologySettings').kibanaCertBlob, '\" -K \"', parameters('topologySettings').kibanaKeyBlob, '\" -P \"', parameters('topologySettings').kibanaKeyPassphrase, '\" -Y \"', replace(parameters('topologySettings').kibanaYaml, '\"', '\\\"'), '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob,'\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -U \"', variables('kibanaDomainName'), '\"')]"
           }
         }
       }
@@ -193,10 +199,6 @@
     }
   ],
   "outputs": {
-    "kibana": {
-      "value": "[reference('elasticsearch-nodes').outputs.kibana.value]",
-      "type": "string"
-    },
     "jumpboxssh": {
       "value": "[reference('elasticsearch-nodes').outputs.jumpboxssh.value]",
       "type": "string"

@@ -47,6 +47,9 @@ help()
     echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
     echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
 
+    echo "-O URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
+    echo "-P Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
+
     echo "-j install azure cloud plugin for snapshot and restore"
     echo "-a set the default storage account for azure cloud plugin"
     echo "-k set the key for the default storage account for azure cloud plugin"
@@ -134,8 +137,11 @@ TRANSPORT_CACERT=""
 TRANSPORT_CACERT_PASSWORD=""
 TRANSPORT_CERT_PASSWORD=""
 
+SAML_METADATA_URI=""
+SAML_SP_URI=""
+
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:Xxyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -209,6 +215,12 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:Xxyzldjh optname; d
       ;;
     N) #Transport cert password
       TRANSPORT_CERT_PASSWORD="${OPTARG}"
+      ;;
+    O) #SAML metadata URI
+      SAML_METADATA_URI="${OPTARG}"
+      ;;
+    P) #SAML Service Provider URI
+      SAML_SP_URI="${OPTARG}"
       ;;
     d) #cluster is using dedicated master nodes
       CLUSTER_USES_DEDICATED_MASTERS=1
@@ -1067,6 +1079,33 @@ configure_elasticsearch_yaml()
     # Configure TLS for Transport layer
     if [[ -n "${TRANSPORT_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
         configure_transport_tls $ES_CONF
+    fi
+
+    # Configure SAML realm only for valid versions of Elasticsearch and if the conditions are met
+    if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.2.0") -eq 0 && -n "$SAML_METADATA_URI" && -n "$SAML_SP_URI" && ( -n "$HTTP_CERT" || -n "$HTTP_CACERT" ) && ${INSTALL_XPACK} -ne 0 ]]; then
+      log "[configure_elasticsearch_yaml] configuring SAML realm named 'saml_aad' for $SAML_SP_URI"
+      [ -d /etc/elasticsearch/saml ] || mkdir -p /etc/elasticsearch/saml
+      wget --retry-connrefused --waitretry=1 -q "$SAML_METADATA_URI" -O /etc/elasticsearch/saml/metadata.xml
+      chown -R elasticsearch:elasticsearch /etc/elasticsearch/saml
+      SAML_SP_URI="${SAML_SP_URI%/}"
+      # extract the entityID from the metadata file
+      local IDP_ENTITY_ID="$(grep -oP '\sentityID="(.*?)"\s' /etc/elasticsearch/saml/metadata.xml | sed 's/^.*"\(.*\)".*/\1/')"
+      {
+          echo -e ""
+          echo -e "xpack.security.authc.realms.saml_aad:"
+          echo -e "  type: saml"
+          echo -e "  order: 2"
+          echo -e "  idp.metadata.path: /etc/elasticsearch/saml/metadata.xml"
+          echo -e "  idp.entity_id: \"$IDP_ENTITY_ID\""
+          echo -e "  sp.entity_id:  \"$SAML_SP_URI/\""
+          echo -e "  sp.acs: \"$SAML_SP_URI/api/security/v1/saml\""
+          echo -e "  sp.logout: \"$SAML_SP_URI/logout\""
+          echo -e "  attributes.principal: \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name\""
+          echo -e "  attributes.name: \"http://schemas.microsoft.com/identity/claims/displayname\""
+          echo -e "  attributes.mail: \"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress\""
+          echo -e "  attributes.groups: \"http://schemas.microsoft.com/ws/2008/06/identity/claims/role\""
+      } >> $ES_CONF
+      log "[configure_elasticsearch_yaml] configured SAML realm"
     fi
 }
 

@@ -17,6 +17,8 @@
   "esTransportCaCertBlob": { "value":""},
   "esTransportCaCertPassword": { "value":""},
   "esTransportCertPassword": { "value":""},
+  "samlMetadataUri": { "value":""},
+  "samlServiceProviderUri": { "value":""},
   "kibana":{"value":"Yes"},
   "vmSizeKibana":{"value":"Standard_D1"},
   "kibanaCertBlob":{"value":""},
