@@ -69,7 +69,7 @@ function checks(cb) {
             }
         }
         else {
-          if (r.properties.parameters.elasticTags == undefined) {
+          if (r.properties.parameters && r.properties.parameters.elasticTags == undefined) {
             errors.push("The resource '" + r.name + "' in template '" + filename + "' does not have an elasticTags parameter");
           }
         }
