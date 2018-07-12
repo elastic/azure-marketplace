@@ -174,5 +174,9 @@
     "Consultant",
     "Student",
     "Other"
-  ]
+  ],
+  "trackingGuids": {
+    "marketplace": "pid-53DEEEE7-A572-4F07-99DC-151B67BB6F1F",
+    "github": "pid-B2C934E3-29F3-4194-BFD2-4F1370B78E0C"
+  }
 }
