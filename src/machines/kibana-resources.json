@@ -51,17 +51,6 @@
         "description": "Size of the Kibana VM"
       }
     },
-    "https": {
-      "type": "string",
-      "defaultValue": "No",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Controls if the output address should be HTTP or HTTPS"
-      }
-    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -91,9 +80,9 @@
         "ssh": {
           "publicKeys": [
             {
-            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
-            "keyData": "[parameters('credentials').sshPublicKey]"
-        }
+              "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
+              "keyData": "[parameters('credentials').sshPublicKey]"
+            }
           ]
       }
       }
@@ -222,6 +211,5 @@
       ]
     }
   ],
-  "outputs": {
-    }
-  }
+  "outputs": {}
+}
