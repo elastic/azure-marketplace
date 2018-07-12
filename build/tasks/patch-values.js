@@ -128,6 +128,8 @@ gulp.task("patch", function(cb) {
             userJobFunctionsControl.constraints.allowedValues = userJobTitles;
             userJobFunctionsControl.defaultValue = userJobTitles[0].label;
 
+            ui.parameters.outputs.vmDataDiskCount = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
+
             jsonfile.writeFile(uiTemplate, ui, function (err) {
               cb();
             });
