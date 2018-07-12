@@ -709,7 +709,7 @@
                   "password": "'logstash_system' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password for the built-in 'logstash_system' user. This is a built-in account that Logstash uses to communicate with Elasticsearch. Only used for 5.2.0+",
+                "toolTip": "Password for the built-in 'logstash_system' user. This is a built-in account that Logstash uses to communicate with Elasticsearch.",
                 "constraints": {
                   "required": true,
                   "regex": "^.{6,}",

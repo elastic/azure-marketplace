@@ -13,7 +13,7 @@ After pulling the source, call the following _once_
 npm install
 ```
 
-to pull in all devDependencies. You may edit the[build/allowedValues.json](build/allowedValues.json) file, which the build uses to patch the ARM template and Marketplace UI definition. Then, run
+to pull in all devDependencies. You may edit the [build/allowedValues.json](build/allowedValues.json) file, which the build uses to patch the ARM template and Marketplace UI definition. Then, run
 
 ```sh
 npm run build
@@ -111,8 +111,8 @@ in conjunction with other parameters.
     An internal load balancer will also deployed. Application Gateway and Kibana communicate with the cluster through the internal
     load balancer.</li>
     </ul>
-    <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like 
-    <a href="https://www.elastic.co/products/x-pack/security">Elastic's Security</a>, in addition to configuring transport layer security.</strong></p>
+    <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like
+    <a href="https://www.elastic.co/products/x-pack/security">X-Pack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
   <tr><td>azureCloudPlugin</td><td>string</td>
@@ -132,11 +132,11 @@ in conjunction with other parameters.
 
   <tr><td>xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    plugins: Monitoring, Security, Alerting, Graph and Machine Learning (5.5.0+). If also installing Kibana, it will have Reporting and Profiler installed.
+    plugins. If also installing Kibana, X-Pack will also be installed for Kibana.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
-    <td>Additional Elasticsearch plugins to install.  Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
+    <td>Additional Elasticsearch plugins to install. Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalYaml</td><td>string</td>
@@ -149,29 +149,29 @@ in conjunction with other parameters.
     </td><td><code>0</code></td></tr>
 
   <tr><td>esHttpCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be protected with a password. <br /><br />
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be protected with a password. <br /><br />
     If using <code>esHttpCaCertBlob</code>, this password will be used to protect the generated PKCS#12 archive on each node.
     <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to use to generate certificates to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for the HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
   
   <tr><td>esTransportCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to use to generate certificates to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) for the Certificate Authority (CA) to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
@@ -214,12 +214,12 @@ in conjunction with other parameters.
     <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted.</td><td><code>""</code></td></tr>
 
   <tr><td>kibanaAdditionalYaml</td><td>string</td>
-    <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
+    <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
     <br /><br />
-    <strong>NOTE:</strong> If you are deploying Kibana, the Kibana virtual machine can act
+    <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
     as a jumpbox.
   </td><td><code>No</code></td></tr>
 
@@ -255,13 +255,13 @@ in conjunction with other parameters.
   </td><td><code>Large</code></td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
-    <td>The number of data nodes you wish to deploy. Must be greater than 0. 
+    <td>The number of data nodes you wish to deploy. <strong>Must be greater than 0</strong>.
     </td><td><code>3</code></td></tr>
 
   <tr><td>storageAccountType</td><td>string</td>
     <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. 
     The <code>Default</code> storage account type will be Premium Storage for VMs that 
-    support Premium Storage and Standard Storage for those that do not.
+    support Premium Storage and Standard Storage for those that do not. <code>Standard</code> will use Standard Storage.
     </td><td><code>Default</code></td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
@@ -276,7 +276,7 @@ in conjunction with other parameters.
 
   <tr><td>vmClientNodeCount</td><td>int</td>
     <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backendpool of the loadbalancer but
-    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backendpool).
+    if you provision client nodes, these will be added to the load balancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
     </td><td><code>0</code></td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
@@ -327,7 +327,7 @@ in conjunction with other parameters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityLogstashPassword</td><td>securestring</td>
-    <td>Security password for 5.2.0+ built-in <code>logstash_system</code> user. Only used in 5.2.0+.
+    <td>This is the built-in <code>logstash_system</code> user.
     <br />
     must be &gt; 6 characters
     </td><td><code>""</code></td></tr>

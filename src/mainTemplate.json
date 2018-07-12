@@ -618,7 +618,7 @@
     "securityLogstashPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'logstash_system' user in 5.2.0 and up. Must be > 6 characters"
+        "description": "Password for the 'logstash_system' user. Must be > 6 characters"
       }
     },
     "location": {
