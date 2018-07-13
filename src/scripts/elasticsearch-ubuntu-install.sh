@@ -708,7 +708,7 @@ configure_http_tls()
 
           log "[configure_http_tls] converting PKCS#12 HTTP CA to PEM"
           echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.key -nocerts -nodes -passin stdin
-          echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
+          echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -passin stdin
 
           log "[configure_http_tls] generate HTTP cert using $CERTGEN"
           $CERTGEN --in $SSL_PATH/elasticsearch-http.yml --out $SSL_PATH/elasticsearch-http.zip \
