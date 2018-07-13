@@ -65,8 +65,6 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
-        main.parameters.elasticTags.defaultValue.tracking = (argv.tracking && argv.tracking.toLowerCase() === "marketplace") ?
-           allowedValues.trackingGuids.marketplace : allowedValues.trackingGuids.github;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {

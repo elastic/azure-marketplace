@@ -2,17 +2,6 @@ var gulp = require("gulp");
 var _ = require('lodash');
 var filereader = require('./lib/filereader');
 
-function checkTracking(cb) {
-  var mainTemplate = require("../../src/mainTemplate.json");
-  var allowedValues = require("../allowedValues.json");
-
-  if (mainTemplate.parameters.elasticTags.defaultValue.tracking !== allowedValues.trackingGuids.marketplace) {
-    throw new Error(`Tracking check failed:\nExpected tracking guid for release to be ${allowedValues.trackingGuids.marketplace}. Pass --tracking marketplace argument`);
-  }
-
-  cb();
-}
-
 function checks(cb) {
   var errors = [];
   var mainTemplate = require("../../src/mainTemplate.json");
@@ -103,4 +92,3 @@ function checks(cb) {
 }
 
 gulp.task("sanity-checks", checks);
-gulp.task("check-tracking", checkTracking);
