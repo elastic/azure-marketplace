@@ -767,7 +767,7 @@ configure_http_tls()
       # Elasticsearch 5.x does not support PKCS#12 archives, so any passed or generated certs will need to be converted to PEM
       if [[ -f $HTTP_CERT_PATH ]]; then
           log "[configure_http_tls] convert PKCS#12 HTTP to PEM"
-          echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http.crt -clcerts -nokeys -passin stdin
+          echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http.crt -nokeys -passin stdin
           echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http.key -nocerts -nodes -passin stdin
           echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $HTTP_CERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
       fi
