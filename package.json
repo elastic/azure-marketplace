@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/elastic/azure-marketplace",
   "devDependencies": {
-    "azure-cli": "^0.10.12",
+    "azure-cli": "^0.10.19",
     "casperjs": "^1.1.1",
     "dateformat": "^1.0.12",
     "del": "^2.2.1",
