@@ -48,11 +48,21 @@
       "No": []
     },
     "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
-    "wafEnabledOptions": {
+    "wafEnabledOpts": {
       "Enabled": true,
       "Disabled": false
     },
-    "wafEnabled": "[variables('wafEnabledOptions')[parameters('applicationGatewaySettings').firewallStatus]]"
+    "wafEnabled": "[variables('wafEnabledOpts')[parameters('applicationGatewaySettings').firewallStatus]]",
+    "webApplicationFirewallConfigurationOpts": {
+      "WAF": {
+        "ruleSetType": "OWASP",
+        "ruleSetVersion": "3.0",
+        "enabled": "[variables('wafEnabled')]",
+        "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
+      },
+      "Standard": {}
+    },
+    "webApplicationFirewallConfiguration": "[variables('webApplicationFirewallConfigurationOpts')[parameters('applicationGatewaySettings').tier]]"
   },
   "resources": [
     {
@@ -255,12 +265,23 @@
             }
           }
         ],
-        "webApplicationFirewallConfiguration": {
-          "ruleSetType": "OWASP",
-          "ruleSetVersion": "3.0",
-          "enabled": "[variables('wafEnabled')]",
-          "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
-        }
+        "webApplicationFirewallConfiguration": "[variables('webApplicationFirewallConfiguration')]",
+        "probes": [
+          {
+            "name": "es-app-gateway-probe",
+            "properties": {
+              "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+              "path": "/",
+              "host": "127.0.0.1",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "match": {
+                "statusCodes": ["200-399", "401"]
+              }
+            }
+          }
+        ]
       }
     }
   ],
