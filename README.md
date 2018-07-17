@@ -264,8 +264,8 @@ in conjunction with other parameters.
     </td><td><a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes">Maximum number supported disks for data node VM size</a></td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of each attached disk. Choose <code>Large</code> (1023Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
-    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P30, P20 and P10</a>
+    <td>The disk size of each attached disk. Choose <code>XXLarge</code> (4095Gb), <code>XLarge</code> (2048Gb), <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P50, P40, P30, P20 and P10</a>
     storage disk types, respectively.
     </td>
   </td><td><code>Large</code></td></tr>
