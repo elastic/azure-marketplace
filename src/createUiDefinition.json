@@ -490,7 +490,7 @@
                 "name": "vmDataDiskSize",
                 "type": "Microsoft.Common.DropDown",
                 "label": "Size of each managed disk",
-                "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
+                "visible": "[greater(steps('nodesStep').dataNodesDisks.vmDataDiskCount, 0)]",
                 "defaultValue": "Large (1024Gb)",
                 "toolTip": "The size of each data disk to attach to each data node",
                 "constraints": {
@@ -522,7 +522,7 @@
                 "name": "storageAccountType",
                 "type": "Microsoft.Common.DropDown",
                 "label": "Type of managed disks",
-                "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
+                "visible": "[greater(steps('nodesStep').dataNodesDisks.vmDataDiskCount, 0)]",
                 "defaultValue": "Default disks for Data node VM size",
                 "toolTip": "The storage type of managed disks. The default will be Premium disks for VMs that support Premium disks and Standard disks for those that do not.",
                 "constraints": {
