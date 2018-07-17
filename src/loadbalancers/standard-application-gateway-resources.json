@@ -266,7 +266,8 @@
               "timeout": 30,
               "unhealthyThreshold": 3,
               "match": {
-                "statusCodes": ["200-399", "401"]
+                "statusCodes": ["200-399", "401"],
+                "body": ""
               }
             }
           }
