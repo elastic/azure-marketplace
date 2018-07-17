@@ -217,7 +217,11 @@
               "port": 9200,
               "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
               "cookieBasedAffinity": "Disabled",
-              "authenticationCertificates": "[variables('backendCerts')]"
+              "authenticationCertificates": "[variables('backendCerts')]",
+              "probeEnabled": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/es-app-gateway-probe')]"
+              }
             }
           }
         ],
@@ -272,7 +276,7 @@
               "timeout": 30,
               "unhealthyThreshold": 3,
               "match": {
-                "statusCodes": ["200-399", "401"]
+                "statusCodes": ["200-399,401"]
               }
             }
           }
