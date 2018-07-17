@@ -449,6 +449,70 @@
                 "count": "[steps('nodesStep').dataNodes.vmDataNodeCount]"
               },
               {
+                "name": "vmDataDiskCount",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Number of managed disks to attach",
+                "defaultValue": "1",
+                "toolTip": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the selected data node VM size, the maximum number of disks that can be attached will be used. If 1 disk is selected, it is not RAIDed. If 0 disks are selected, the temporary disk will be used to store Elasticsearch data. IMPORTANT: The temporary disk is ephemeral in nature so be sure you know the trade-offs when choosing 0 disks.",
+                "constraints": {
+                  "required": true,
+                  "regex": "^\\d+$",
+                  "validationMessage": "Value must be numeric and greater than or equal to 0"
+                }
+              },
+              {
+                "name": "vmDataDiskSize",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Size of each managed disk",
+                "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
+                "defaultValue": "Large",
+                "toolTip": "The size of each data disk to attach to each data node",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Small (128Gb)",
+                      "value": "Small"
+                    },
+                    {
+                      "label": "Medium (512Gb)",
+                      "value": "Medium"
+                    },
+                    {
+                      "label": "Large (1024Gb)",
+                      "value": "Large"
+                    },
+                    {
+                      "label": "Extra Large (2048Gb)",
+                      "value": "XLarge"
+                    },
+                    {
+                      "label": "Extra Extra Large (4095Gb)",
+                      "value": "XXLarge"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "storageAccountType",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Type of managed disks",
+                "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
+                "defaultValue": "Default",
+                "toolTip": "The storage type of managed disks. The default will be Premium disks for VMs that support Premium disks and Standard disks for those that do not.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Standard disks",
+                      "value": "Standard"
+                    },
+                    {
+                      "label": "Default disks for VM SKU",
+                      "value": "Default"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "dataNodesAreMasterEligible",
                 "type": "Microsoft.Common.OptionsGroup",
                 "label": "Data nodes are master eligible",
@@ -1266,10 +1330,10 @@
       "kibanaAdditionalYaml": "",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
-      "vmDataDiskCount": 64,
-      "vmDataDiskSize": "Large",
+      "vmDataDiskCount": "[steps('nodesStep').dataNodes.vmDataDiskCount]",
+      "vmDataDiskSize": "[steps('nodesStep').dataNodes.vmDataDiskSize]",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
-      "storageAccountType": "Default",
+      "storageAccountType": "[steps('nodesStep').dataNodes.storageAccountType]",
       "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodes.dataNodesAreMasterEligible]",
       "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
       "vmSizeMasterNodes": "[steps('nodesStep').masterNodes.vmSizeMasterNodes]",
