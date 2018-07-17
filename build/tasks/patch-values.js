@@ -61,7 +61,7 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
         main.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
         main.parameters.vmDataDiskSize.allowedValues = diskSizes;
-        main.parameters.vmDataDiskSize.defaultValue = _.last(diskSizes);
+        main.parameters.vmDataDiskSize.defaultValue = "Large";
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
@@ -125,8 +125,6 @@ gulp.task("patch", function(cb) {
             var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
             userJobFunctionsControl.constraints.allowedValues = userJobTitles;
             userJobFunctionsControl.defaultValue = userJobTitles[0].label;
-
-            ui.parameters.outputs.vmDataDiskCount = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
 
             jsonfile.writeFile(uiTemplate, ui, function (err) {
               cb();
