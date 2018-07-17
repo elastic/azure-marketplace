@@ -47,22 +47,7 @@
       ],
       "No": []
     },
-    "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
-    "wafEnabledOpts": {
-      "Enabled": true,
-      "Disabled": false
-    },
-    "wafEnabled": "[variables('wafEnabledOpts')[parameters('applicationGatewaySettings').firewallStatus]]",
-    "webApplicationFirewallConfigurationOpts": {
-      "WAF": {
-        "ruleSetType": "OWASP",
-        "ruleSetVersion": "3.0",
-        "enabled": "[variables('wafEnabled')]",
-        "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
-      },
-      "Standard": {}
-    },
-    "webApplicationFirewallConfiguration": "[variables('webApplicationFirewallConfigurationOpts')[parameters('applicationGatewaySettings').tier]]"
+    "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]"
   },
   "resources": [
     {
@@ -265,7 +250,6 @@
             }
           }
         ],
-        "webApplicationFirewallConfiguration": "[variables('webApplicationFirewallConfiguration')]",
         "probes": [
           {
             "name": "es-app-gateway-probe",

@@ -1045,7 +1045,7 @@
     "loadBalancerOptions": {
       "internal": "internal-lb-resources",
       "external": "external-lb-resources",
-      "gateway": "application-gateway-resources"
+      "gateway": "[concat(toLower(parameters('appGatewayTier')),'-application-gateway-resources')]"
     },
     "loadBalancerTemplateUrl": "[concat(variables('templateBaseUrl'), 'loadbalancers/', variables('loadBalancerOptions')[parameters('loadBalancerType')],'.json')]",
     "osSettingsTemplateUrl": "[concat(variables('templateBaseUrl'), 'settings/ubuntuSettings.json')]",
