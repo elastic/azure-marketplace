@@ -164,7 +164,7 @@
           {
             "name": "virtualNetworkConfiguration",
             "type": "Microsoft.Common.Section",
-            "label": "Virtual Network Configuration",
+            "label": "Virtual network configuration",
             "elements": [
               {
                 "name": "virtualNetwork",
@@ -230,14 +230,14 @@
           {
             "name": "dataNodes",
             "type": "Microsoft.Common.Section",
-            "label": "Data Nodes",
+            "label": "Data nodes",
             "elements": [
               {
                 "name": "vmDataNodeCount",
                 "type": "Microsoft.Common.DropDown",
-                "label": "Number of data nodes (if not using dedicated master nodes, recommended >= 3 data nodes)",
+                "label": "Number of data nodes",
                 "defaultValue": "3",
-                "toolTip": "Specify the number of data nodes for this cluster. When not using dedicated master nodes, it is strongly recommended to have at least 3 data nodes in order to avoid split brain scenarios.",
+                "toolTip": "Specify the number of data nodes for this cluster. When not using dedicated master nodes, it is strongly recommended to have a minimum 3 data nodes in order to avoid split brain scenarios.",
                 "constraints": {
                   "allowedValues": [
                     {
@@ -327,7 +327,7 @@
                 "name": "vmSizeDataNodes",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Data node VM size",
-                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "toolTip": "Choose VM SKU size for data nodes",
                 "recommendedSizes": [
                   "Standard_DS1_v2",
                   "Standard_DS2_v2",
@@ -449,9 +449,35 @@
                 "count": "[steps('nodesStep').dataNodes.vmDataNodeCount]"
               },
               {
+                "name": "dataNodesAreMasterEligible",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Data nodes are master eligible",
+                "defaultValue": "No",
+                "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "dataNodesDisks",
+            "type": "Microsoft.Common.Section",
+            "label": "Data node disks",
+            "elements": [
+              {
                 "name": "vmDataDiskCount",
                 "type": "Microsoft.Common.TextBox",
-                "label": "Number of managed disks to attach",
+                "label": "Number of managed disks per data node",
                 "defaultValue": "1",
                 "toolTip": "Number of disks to attach to each data node in RAID 0 setup. If the number of disks selected is more than can be attached to the selected data node VM size, the maximum number of disks that can be attached will be used. If 1 disk is selected, it is not RAIDed. If 0 disks are selected, the temporary disk will be used to store Elasticsearch data. IMPORTANT: The temporary disk is ephemeral in nature so be sure you know the trade-offs when choosing 0 disks.",
                 "constraints": {
@@ -465,7 +491,7 @@
                 "type": "Microsoft.Common.DropDown",
                 "label": "Size of each managed disk",
                 "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
-                "defaultValue": "Large",
+                "defaultValue": "Large (1024Gb)",
                 "toolTip": "The size of each data disk to attach to each data node",
                 "constraints": {
                   "allowedValues": [
@@ -497,7 +523,7 @@
                 "type": "Microsoft.Common.DropDown",
                 "label": "Type of managed disks",
                 "visible": "[greater(steps('nodesStep').dataNodes.vmDataDiskCount, 0)]",
-                "defaultValue": "Default",
+                "defaultValue": "Default disks for Data node VM size",
                 "toolTip": "The storage type of managed disks. The default will be Premium disks for VMs that support Premium disks and Standard disks for those that do not.",
                 "constraints": {
                   "allowedValues": [
@@ -506,27 +532,8 @@
                       "value": "Standard"
                     },
                     {
-                      "label": "Default disks for VM SKU",
+                      "label": "Default disks for Data node VM size",
                       "value": "Default"
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "dataNodesAreMasterEligible",
-                "type": "Microsoft.Common.OptionsGroup",
-                "label": "Data nodes are master eligible",
-                "defaultValue": "No",
-                "toolTip": "Allow data nodes to be master eligible, setting this to Yes will no longer deploy the 3 dedicated master nodes",
-                "constraints": {
-                  "allowedValues": [
-                    {
-                      "label": "Yes",
-                      "value": "Yes"
-                    },
-                    {
-                      "label": "No",
-                      "value": "No"
                     }
                   ]
                 }
@@ -536,14 +543,14 @@
           {
             "name": "masterNodes",
             "type": "Microsoft.Common.Section",
-            "label": "Master Nodes",
+            "label": "Master nodes",
             "visible": "[equals(steps('nodesStep').dataNodes.dataNodesAreMasterEligible, 'No')]",
             "elements": [
               {
                 "name": "vmSizeMasterNodes",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Master node VM size",
-                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "toolTip": "Choose VM SKU size for master nodes",
                 "recommendedSizes": [
                   "Standard_D1",
                   "Standard_D2",
@@ -667,7 +674,7 @@
           {
             "name": "clientNodes",
             "type": "Microsoft.Common.Section",
-            "label": "Client Nodes",
+            "label": "Client nodes",
             "elements": [
               {
                 "name": "vmClientNodeCount",
@@ -744,7 +751,7 @@
                 "name": "vmSizeClientNodes",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Client node VM size",
-                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "toolTip": "Choose VM SKU size for client (coordinating) nodes",
                 "visible": "[greater(steps('nodesStep').clientNodes.vmClientNodeCount, 0)]",
                 "recommendedSizes": [
                   "Standard_D1",
@@ -880,7 +887,7 @@
           {
             "name": "es_admin",
             "type": "Microsoft.Common.Section",
-            "label": "Elastic User",
+            "label": "Elastic user account",
             "elements": [
               {
                 "name": "securityAdminPassword",
@@ -904,7 +911,7 @@
           {
             "name": "es_kibana",
             "type": "Microsoft.Common.Section",
-            "label": "Kibana User",
+            "label": "Kibana user account",
             "elements": [
               {
                 "name": "securityKibanaPassword",
@@ -928,7 +935,7 @@
           {
             "name": "es_logstash",
             "type": "Microsoft.Common.Section",
-            "label": "Logstash System User",
+            "label": "Logstash system user account",
             "elements": [
               {
                 "name": "securityLogstashPassword",
@@ -952,7 +959,7 @@
           {
             "name": "es_read",
             "type": "Microsoft.Common.Section",
-            "label": "es_read (read only) User",
+            "label": "es_read (read only) user account",
             "elements": [
               {
                 "name": "securityReadPassword",
@@ -1330,10 +1337,10 @@
       "kibanaAdditionalYaml": "",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
-      "vmDataDiskCount": "[steps('nodesStep').dataNodes.vmDataDiskCount]",
-      "vmDataDiskSize": "[steps('nodesStep').dataNodes.vmDataDiskSize]",
+      "vmDataDiskCount": "[steps('nodesStep').dataNodesDisks.vmDataDiskCount]",
+      "vmDataDiskSize": "[steps('nodesStep').dataNodesDisks.vmDataDiskSize]",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
-      "storageAccountType": "[steps('nodesStep').dataNodes.storageAccountType]",
+      "storageAccountType": "[steps('nodesStep').dataNodesDisks.storageAccountType]",
       "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodes.dataNodesAreMasterEligible]",
       "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
       "vmSizeMasterNodes": "[steps('nodesStep').masterNodes.vmSizeMasterNodes]",
