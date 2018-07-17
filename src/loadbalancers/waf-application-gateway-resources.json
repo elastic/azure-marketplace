@@ -221,7 +221,8 @@
               "probeEnabled": true,
               "probe": {
                 "id": "[concat(variables('applicationGatewayId'), '/probes/es-app-gateway-probe')]"
-              }
+              },
+              "requestTimeout": 86400
             }
           }
         ],
