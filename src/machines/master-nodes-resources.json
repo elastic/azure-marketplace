@@ -47,7 +47,7 @@
     {
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
       ],
