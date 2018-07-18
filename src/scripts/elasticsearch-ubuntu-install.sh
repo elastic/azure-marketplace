@@ -923,6 +923,20 @@ configure_transport_tls()
 ## Configuration
 ##----------------------------------
 
+configure_awareness_attributes()
+{
+  local ES_CONF=$1
+  install_jq
+  log "[configure_awareness_attributes] configure fault and update domain attributes"
+  local METADATA=$(curl -sH Metadata:true "http://169.254.169.254/metadata/instance?api-version=2017-08-01")
+  local FAULT_DOMAIN=$(jq -r .compute.platformFaultDomain <<< $METADATA)
+  local UPDATE_DOMAIN=$(jq -r .compute.platformUpdateDomain <<< $METADATA)
+  echo "node.attr.fault_domain: $FAULT_DOMAIN" >> $ES_CONF
+  echo "node.attr.update_domain: $UPDATE_DOMAIN" >> $ES_CONF
+  log "[configure_awareness_attributes] configure shard allocation awareness using fault_domain and update_domain"
+  echo "cluster.routing.allocation.awareness.attributes: fault_domain,update_domain" >> $ES_CONF
+}
+
 configure_elasticsearch_yaml()
 {
     local ES_CONF=/etc/elasticsearch/elasticsearch.yml
@@ -978,6 +992,8 @@ configure_elasticsearch_yaml()
     echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
     echo "network.host: [_site_, _local_]" >> $ES_CONF
     echo "node.max_local_storage_nodes: 1" >> $ES_CONF
+
+    configure_awareness_attributes $ES_CONF
 
     # Configure mandatory plugins
     if [[ -n "${MANDATORY_PLUGINS}" ]]; then
@@ -1134,20 +1150,29 @@ configure_os_properties()
 ## Installation of dependencies
 ##----------------------------------
 
+install_apt_package()
+{
+  local PACKAGE=$1
+  if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    log "[install_$PACKAGE] installing $PACKAGE"
+    (apt-get -yq install $PACKAGE || (sleep 15; apt-get -yq install $PACKAGE))
+    log "[install_$PACKAGE] installed $PACKAGE"
+  fi
+}
+
 install_unzip()
 {
-    if [ $(dpkg-query -W -f='${Status}' unzip 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-      log "[install_unzip] installing unzip"
-      (apt-get -yq install unzip || (sleep 15; apt-get -yq install unzip))
-      log "[install_unzip] installed unzip"
-    fi
+    install_apt_package unzip
+}
+
+install_jq()
+{
+    install_apt_package jq
 }
 
 install_yamllint()
 {
-    log "[install_yamllint] installing yamllint"
-    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
-    log "[install_yamllint] installed yamllint"
+    install_apt_package yamllint
 }
 
 install_ntp()
