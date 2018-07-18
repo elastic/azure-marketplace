@@ -932,18 +932,8 @@
     "appGatewayCount": {
       "type": "int",
       "defaultValue": 2,
-      "allowedValues": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
+      "minValue": 1,
+      "maxValue": 10,
       "metadata": {
         "description": "The number of instances of the Application Gateway. A minimum of 2 is recommended for Production clusters. Required when selecting Application Gateway for load balancing"
       }
@@ -1599,8 +1589,7 @@
         "dataDisks": "[variables('resolvedDataDiskCount')]"
       },
       "dataLoadBalancerBackEndPools": "[variables('dataLoadBalancerOptions')[variables('clientResourceIndex')].backendPools]",
-      "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]",
-      "enableAnonymousAccess": "[if(and(equals(parameters('loadBalancerType'), 'gateway'), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]"
+      "loadBalancerBackEndPools": "[variables('lbBackEndPoolsAdded').backendPools]"
     },
     "networkSettings": {
       "name": "[parameters('vNetName')]",

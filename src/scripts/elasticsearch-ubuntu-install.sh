@@ -119,7 +119,6 @@ USER_KIBANA_PWD="changeme"
 USER_LOGSTASH_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
-ANONYMOUS_ACCESS=0
 
 INSTALL_AZURECLOUD_PLUGIN=0
 STORAGE_ACCOUNT=""
@@ -141,7 +140,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -167,9 +166,6 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:Xxyzldjh optnam
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
-      ;;
-    X) #anonymous access
-      ANONYMOUS_ACCESS=1
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -605,21 +601,6 @@ apply_security_settings()
         exit 10
       fi
       log "[apply_security_settings] added es_read account"
-
-      # create an anonymous_user role
-      if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
-        log "[apply_security_settings] create anonymous_user role"
-        curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/anonymous_user" -d'
-        {
-          "cluster": [ "cluster:monitor/main" ]
-        }'
-        if [[ $? != 0 ]]; then
-          log "[apply_security_settings] could not create anonymous_user role"
-          exit 10
-        fi
-        log "[apply_security_settings] added anonymous_user role"
-      fi
-
       log "[apply_security_settings] updated roles and users"
     fi
 }
@@ -1026,21 +1007,6 @@ configure_elasticsearch_yaml()
         fi
         log "[configure_elasticsearch_yaml] Set X-Pack Security enabled"
         echo "xpack.security.enabled: true" >> $ES_CONF
-    fi
-
-    # Configure Anonymous access
-    if [ ${ANONYMOUS_ACCESS} -ne 0 ]; then
-        log "[configure_elasticsearch_yaml] Set anonymous access"
-        {
-            echo -e ""
-            echo -e "# anonymous access"
-            echo -e "xpack.security.authc:"
-            echo -e "  anonymous:"
-            echo -e "    username: anonymous_user"
-            echo -e "    roles: anonymous_user"
-            echo -e "    authz_exception: false"
-            echo -e ""
-        } >> $ES_CONF
     fi
 
     # Additional yaml configuration

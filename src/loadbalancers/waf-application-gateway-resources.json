@@ -48,11 +48,11 @@
       "No": []
     },
     "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
-    "wafEnabledOptions": {
+    "wafEnabledOpts": {
       "Enabled": true,
       "Disabled": false
     },
-    "wafEnabled": "[variables('wafEnabledOptions')[parameters('applicationGatewaySettings').firewallStatus]]"
+    "wafEnabled": "[variables('wafEnabledOpts')[parameters('applicationGatewaySettings').firewallStatus]]"
   },
   "resources": [
     {
@@ -217,7 +217,12 @@
               "port": 9200,
               "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
               "cookieBasedAffinity": "Disabled",
-              "authenticationCertificates": "[variables('backendCerts')]"
+              "authenticationCertificates": "[variables('backendCerts')]",
+              "probeEnabled": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/es-app-gateway-probe')]"
+              },
+              "requestTimeout": 86400
             }
           }
         ],
@@ -260,7 +265,24 @@
           "ruleSetVersion": "3.0",
           "enabled": "[variables('wafEnabled')]",
           "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
-        }
+        },
+        "probes": [
+          {
+            "name": "es-app-gateway-probe",
+            "properties": {
+              "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+              "path": "/",
+              "host": "127.0.0.1",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "match": {
+                "statusCodes": ["200-399", "401"],
+                "body": ""
+              }
+            }
+          }
+        ]
       }
     }
   ],

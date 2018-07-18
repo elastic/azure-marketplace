@@ -212,7 +212,12 @@
               "port": 9200,
               "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
               "cookieBasedAffinity": "Disabled",
-              "authenticationCertificates": "[variables('backendCerts')]"
+              "authenticationCertificates": "[variables('backendCerts')]",
+              "probeEnabled": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/es-app-gateway-probe')]"
+              },
+              "requestTimeout": 86400
             }
           }
         ],
@@ -246,6 +251,23 @@
               },
               "backendHttpSettings": {
                 "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/es-app-gateway-httpsettings')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "es-app-gateway-probe",
+            "properties": {
+              "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+              "path": "/",
+              "host": "127.0.0.1",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "match": {
+                "statusCodes": ["200-399", "401"],
+                "body": ""
               }
             }
           }

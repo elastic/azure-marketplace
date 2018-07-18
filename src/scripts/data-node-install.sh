@@ -28,7 +28,6 @@ help()
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S logstash_system user password"
-    echo "-X enable anonymous access with monitoring role (for health probes)"
 
     echo "-l install plugins"
     echo "-L <plugin;plugin> install additional plugins"
@@ -93,7 +92,6 @@ USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
 USER_KIBANA_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
-ANONYMOUS_ACCESS=0
 
 HTTP_CERT=""
 HTTP_CERT_PASSWORD=""
@@ -120,7 +118,7 @@ COUNTRY=""
 INSTALL_SWITCHES=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:Xxyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -146,9 +144,6 @@ while getopts :n:m:v:A:R:K:S:Z:p:U:I:c:e:f:g:t:s:o:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
-      ;;
-    X) #anonymous access
-      ANONYMOUS_ACCESS=1
       ;;
     Z) #number of data nodes hints (used to calculate minimum master nodes)
       DATANODE_COUNT=${OPTARG}
@@ -272,10 +267,6 @@ fi
 
 if [ $INSTALL_XPACK -eq 1 ]; then
   INSTALL_SWITCHES="$INSTALL_SWITCHES -l"
-fi
-
-if [ $ANONYMOUS_ACCESS -eq 1 ]; then
-  INSTALL_SWITCHES="$INSTALL_SWITCHES -X"
 fi
 
 # install elasticsearch
