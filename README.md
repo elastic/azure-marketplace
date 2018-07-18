@@ -481,35 +481,8 @@ You can deploy using the template directly from Github using the Azure CLI or Az
 
 ### Azure CLI 1.0
 
-1. Log into Azure
-
-  ```sh
-  azure login
-  ```
-
-2. Ensure you are in arm mode
-
-  ```sh
-  azure config mode arm
-  ```
-
-3. Create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
-
-  ```sh
-  azure group create <name> <location>
-  ```
-
-4. Use our template directly from GitHub using `--template-uri`
-
-```sh
-azure group deployment create --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/fix/6.3.0-pr/src/mainTemplate.json --parameters-file parameters/password.parameters.json -g <name>
-```
-
-where `<name>` refers to the resource group you just created.
-
-**NOTE**
-
-The `--parameters-file` can specify a different location for the items that get provisioned inside of the resource group. Make sure these are the same prior to deploying if you need them to be. Omitting location from the parameters file is another way to make sure the resources get deployed in the same location as the resource group.
+Azure CLI 1.0 is no longer supported as the `apiVersion`s of resources are newer than those
+supported by the last release. It's recommended to update to [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 
 ### Azure CLI 2.0
 
@@ -528,7 +501,6 @@ The `--parameters-file` can specify a different location for the items that get 
 
 ```sh
 az group deployment create \
-  --name deployment-name \
   --resource-group <name> \
   --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/fix/6.3.0-pr/src/mainTemplate.json \
   --parameters @parameters/password.parameters.json

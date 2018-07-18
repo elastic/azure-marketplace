@@ -3,8 +3,10 @@
 Run the following to bring down all the dependencies
 
 ```bash
-$ npm install
+npm install
 ```
+
+To run tests, you will also need to install [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 
 ## Build
 
