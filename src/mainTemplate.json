@@ -497,10 +497,12 @@
       "allowedValues": [
         "Small",
         "Medium",
-        "Large"
+        "Large",
+        "XLarge",
+        "XXLarge"
       ],
       "metadata": {
-        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
+        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb), Large (1024Gb), XLarge (2048Gb) and XXLarge (4095Gb). For Premium Storage, this equates to P10, P20, P30, P40 and P50, respectively."
       }
     },
     "vmDataNodeCount": {
@@ -1518,7 +1520,9 @@
       }
     },
     "dataDiskSizes": {
-      "Large": 1023,
+      "XXLarge": 4095,
+      "XLarge": 2048,
+      "Large": 1024,
       "Medium": 512,
       "Small": 128
     },
