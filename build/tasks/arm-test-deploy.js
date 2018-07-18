@@ -120,9 +120,9 @@ var validateTemplate = (test, cb) => {
 }
 var showOperationList = (test, cb) => {
   var rg = test.resourceGroup;
-  var operationList = [ 'group', 'deployment', 'list',
+  var operationList = [ 'group', 'deployment', 'operation', 'list',
+    '--name', 'mainTemplate',
     '--resource-group', rg,
-    //'mainTemplate',
     '--out', 'json'
   ];
   log("getting operation list result for deployment in resource group: " + rg);

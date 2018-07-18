@@ -135,7 +135,7 @@ var logout = (cb) => {
   var logout = [ 'logout',
     '--username', config.arm.clientId
   ];
-  log("logging out of the  azure cli tooling")
+  log("logging out of azure cli tooling")
   az(logout, cb);
 }
 
@@ -164,9 +164,10 @@ var deleteGroups = function (groups, cb) {
   if (groups.length == 0) cb();
   else groups.forEach(n=> {
     var groupDelete = [ 'group', 'delete',
+      '--name', 'mainTemplate',
       '--resource-group', n,
       '--yes',
-      '--no-wait',
+      //'--no-wait',
       '--out', 'json'];
     log(`deleting resource group: ${n}`);
     az(groupDelete, (error, stdout, stderr) => {
@@ -175,7 +176,6 @@ var deleteGroups = function (groups, cb) {
       allDeleted();
     });
   });
-  cb();
 }
 
 var deleteAllTestGroups = function (cb) {
@@ -190,7 +190,8 @@ var deleteAllTestGroups = function (cb) {
     if (error || stderr) return bailOut(error || new Error(stderr));
     var result = JSON.parse(stdout);
     var testGroups = _(result).map(g=>g.name).value();
-    log(`found lingering resource groups: ${testGroups}`, false);
+    if (testGroups.length === 0) log("found no lingering resource groups", false);
+    else log(`found lingering resource groups: ${testGroups}`, false);
     deleteGroups(testGroups, cb);
   });
 }
@@ -217,6 +218,7 @@ var createResourceGroup = (test, cb) => {
   var rg = armTests[test].resourceGroup;
   var location = armTests[test].location;
   var createGroup = [ 'group', 'create',
+    '--name', 'mainTemplate',
     '--resource-group', rg,
     '--location', location,
     '--out', 'json'];
@@ -286,9 +288,9 @@ var deployTemplates = function(cb) {
 var showOperationList = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
-  var operationList = [ 'group', 'deployment', 'list',
+  var operationList = [ 'group', 'deployment', 'operation', 'list',
+    '--name', 'mainTemplate',
     '--resource-group', rg,
-    //'mainTemplate',
     '--out', 'json'
   ];
   log(`getting operation list result for deployment in resource group: ${rg}`);
