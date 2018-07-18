@@ -167,7 +167,7 @@ var deleteGroups = function (groups, cb) {
       '--name', 'mainTemplate',
       '--resource-group', n,
       '--yes',
-      //'--no-wait',
+      '--no-wait',
       '--out', 'json'];
     log(`deleting resource group: ${n}`);
     az(groupDelete, (error, stdout, stderr) => {
@@ -459,7 +459,6 @@ var deployTemplate = (test, cb) => {
     '--resource-group', rg,
     '--template-uri', templateUri,
     '--parameters', '@' + t.paramsFile,
-    //'--no-wait',
     '--out', 'json'
   ];
   log(`deploying ${test} in resource group: ${rg}`);
