@@ -1,25 +1,12 @@
 var config = require('../.test.json');
 var gulp = require("gulp");
-const execFile = require('child_process').execFile;
-const spawn = require('child_process').spawn;
 var fs = require('fs');
 var _ = require('lodash');
 var dateFormat = require("dateformat");
 var git = require('git-rev')
-var merge = require('merge');
-var mkdirp = require('mkdirp');
-var del = require('del');
-var request = require('request');
 var hostname = require("os").hostname();
-var operatingSystem = require("os").platform();
-
-var azureCli = "../node_modules/.bin/azure";
-if (operatingSystem === "win32")
-  azureCli = "..\\node_modules\\.bin\\azure.cmd";
-
-var runDate = dateFormat(new Date(), "-yyyymmdd-HHMMss-Z").replace("+","-");
+var az = require("./lib/az");
 var log = (data) => console.log(data);
-
 
 var bootstrapTest = (artifactsBaseUrl) =>
 {
@@ -36,41 +23,55 @@ var bootstrapTest = (artifactsBaseUrl) =>
   params.securityAdminPassword.value = config.deployments.securityPassword;
   params.securityLogstashPassword.value = config.deployments.securityPassword;
 
+  // Some parameters are longer than the max allowed characters for cmd on Windows.
+  // Persist to file and pass the file path for parameters
+  var resourceGroup = "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var parametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
+  fs.writeFileSync(parametersFile, JSON.stringify(params, null, 2));
+
   return {
     location: "westeurope",
-    resourceGroup: "test-" + hostname.toLowerCase() + "-" + "single" + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-"),
+    resourceGroup: resourceGroup,
     templateUri:  artifactsBaseUrl + "/mainTemplate.json",
-    params: params
+    params: params,
+    paramsFile: parametersFile
   }
 }
 
 var bootstrap = (cb) => {
-  git.branch(function (branch) {
-    var artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
-    var test = bootstrapTest(artifactsBaseUrl);
-    cb(test);
-  })
+  var version = [ "--version" ];
+  az(version, (error, stdout, stderr) => {
+    if (error || stderr) return bailOut(error || new Error(stderr));
+    log(`Using ${stdout.split('\n')[0]}` );
+
+    git.branch(function (branch) {
+      var artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
+      var test = bootstrapTest(artifactsBaseUrl);
+      cb(test);
+    })
+  });
 };
 
 var login = (cb) => bootstrap((test) => {
   var login = [ 'login', '--service-principal',
     '--username', config.arm.clientId,
     '--password', config.arm.clientSecret,
-    '--tenant', config.arm.tenantId,
-    '-e', config.arm.environment
+    '--tenant', config.arm.tenantId
   ];
 
   log("logging into azure cli tooling")
-  var child = execFile(azureCli, login, (error, stdout, stderr) => {
+  az(login, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr), true);
     cb(test);
   });
 });
 
 var logout = (cb) => {
-  var logout = [ 'logout', config.arm.clientId];
+  var logout = [ 'logout',
+    '--username', config.arm.clientId
+  ];
   log("logging out of azure cli tooling")
-  execFile(azureCli, logout, cb);
+  az(logout, cb);
 }
 
 var bailOut = (error)  => {
@@ -82,9 +83,13 @@ var bailOut = (error)  => {
 var createResourceGroup = (test, cb) => {
   var rg = test.resourceGroup;
   var location = test.location;
-  var createGroup = [ 'group', 'create', rg, location, '--json'];
+  var createGroup = [ 'group', 'create',
+    '--resource-group', rg,
+    '--location', location,
+    '--out', 'json'
+  ];
   log("creating resource group: " + rg);
-  execFile(azureCli, createGroup, (error, stdout, stderr) => {
+  az(createGroup, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr));
 
     if (!stdout) return bailOut(new Error("No output returned when creating resourceGroup: " + rg));
@@ -97,17 +102,16 @@ var createResourceGroup = (test, cb) => {
 }
 
 var validateTemplate = (test, cb) => {
-  var p = JSON.stringify(test.params)
   var rg = test.resourceGroup;
   createResourceGroup(test, () => {
-    var validateGroup = [ 'group', 'template', 'validate',
+    var validateGroup = [ 'group', 'deployment', 'validate',
       '--resource-group', rg,
       '--template-uri', test.templateUri,
-      '--parameters', p,
-      '--json'
+      '--parameters', '@' + test.paramsFile,
+      '--out', 'json'
     ];
     log("validating resource group: " + rg);
-    execFile(azureCli, validateGroup, (error, stdout, stderr) => {
+    az(validateGroup, (error, stdout, stderr) => {
       log("validation errors:" + (error || stderr));
       if ((error || stderr)) return bailOut(error || new Error(stderr));
       cb(test);
@@ -116,13 +120,13 @@ var validateTemplate = (test, cb) => {
 }
 var showOperationList = (test, cb) => {
   var rg = test.resourceGroup;
-  var operationList = [ 'group', 'deployment', 'operation', 'list',
-    rg,
-    'mainTemplate',
-    '--json'
+  var operationList = [ 'group', 'deployment', 'list',
+    '--resource-group', rg,
+    //'mainTemplate',
+    '--out', 'json'
   ];
   log("getting operation list result for deployment in resource group: " + rg);
-  execFile(azureCli, operationList, (error, stdout, stderr) => {
+  az(operationList, (error, stdout, stderr) => {
     log("operationListResult:" + !!(stdout || stderr));
     if (error || stderr) return bailOut(error || new Error(stderr));
     var result = JSON.parse(stdout)
@@ -139,17 +143,16 @@ var showOperationList = (test, cb) => {
 }
 
 var deployTemplate = (test, cb) => {
-  var p = JSON.stringify(test.params)
   var rg = test.resourceGroup;
   var deployGroup = [ 'group', 'deployment', 'create',
     '--resource-group', rg,
     '--template-uri', test.templateUri,
-    '--parameters', p,
-    '--quiet',
-    '--json'
+    '--parameters', '@' + test.paramsFile,
+    //'--no-wait',
+    '--out', 'json'
   ];
   log("deploying in resource group: " + rg);
-  execFile(azureCli, deployGroup, (error, stdout, stderr) => {
+  az(deployGroup, (error, stdout, stderr) => {
     log("deployResult: " + !!(stdout || stderr));
     if (error || stderr) showOperationList(test, ()=> bailOut(error || new Error(stderr)));
     else {

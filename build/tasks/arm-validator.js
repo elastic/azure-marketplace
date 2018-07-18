@@ -1,6 +1,5 @@
 var config = require('../.test.json');
 var gulp = require("gulp");
-const execFile = require('child_process').execFile;
 var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
@@ -10,19 +9,15 @@ var merge = require('merge');
 var mkdirp = require('mkdirp');
 var del = require('del');
 var request = require('request');
-var hostname = require("os").hostname();
-var operatingSystem = require("os").platform();
-var compareVersions = require('compare-versions');
+var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
-
-var azureCli = (operatingSystem === "win32")? "..\\node_modules\\.bin\\azure.cmd" : "../node_modules/.bin/azure";
+var az = require("./lib/az");
 var artifactsBaseUrl = "";
 var templateUri = "";
 var armTests = {};
-
-var runDate = dateFormat(new Date(), "-yyyymmdd-HHMMss-Z").replace("+","-");
 var logDist = "../dist/test-runs";
 var logDistTmp = logDist + "/tmp";
+
 var log = (f, data) =>
 {
   if (!data || data === true)
@@ -73,7 +68,7 @@ var bootstrapTest = (t, defaultVersion) =>
 
   // Some parameters are longer than the max allowed characters for cmd on Windows.
   // Persist to file and pass the file path for parameters
-  var resourceGroup = "test-" + hostname.toLowerCase() + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var resourceGroup = "test-" + hostname + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
   var testParametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
   fs.writeFileSync(testParametersFile, JSON.stringify(testParameters, null, 2));
 
@@ -97,22 +92,28 @@ var bootstrap = (cb) => {
     : _.last(allowedValues.versions);
 
   if (!_.includes(allowedValues.versions, defaultVersion)){
-    return bailOut(new Error("No version in allowedValues.versions matching " + defaultVersion));
+    return bailOut(new Error(`No version in allowedValues.versions matching ${defaultVersion}`));
   }
 
-  var templateMatcher = new RegExp(argv.test || ".*");
+  var version = [ '--version' ];
+  az(version, (error, stdout, stderr) => {
+    if (error || stderr) return bailOut(error || new Error(stderr));
+    log(`Using ${stdout.split('\n')[0]}` );
 
-  git.branch(function (branch) {
-    artifactsBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/"+ branch + "/src";
-    templateUri = artifactsBaseUrl + "/mainTemplate.json";
-    log(`Using template: ${templateUri}`, false);
-    armTests = _(fs.readdirSync("arm-tests"))
-      .filter(t => templateMatcher.test(t))
-      .indexBy((f) => f)
-      .mapValues(t => bootstrapTest(t, defaultVersion))
-      .value();
-    cb();
-  })
+    var templateMatcher = new RegExp(argv.test || ".*");
+
+    git.branch(function (branch) {
+      artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
+      templateUri = `${artifactsBaseUrl}/mainTemplate.json`;
+      log(`Using template: ${templateUri}`, false);
+      armTests = _(fs.readdirSync("arm-tests"))
+        .filter(t => templateMatcher.test(t))
+        .indexBy((f) => f)
+        .mapValues(t => bootstrapTest(t, defaultVersion))
+        .value();
+      cb();
+    })
+  });
 };
 
 var login = (cb) => bootstrap(() => {
@@ -120,20 +121,22 @@ var login = (cb) => bootstrap(() => {
     '--username', config.arm.clientId,
     '--password', config.arm.clientSecret,
     '--tenant', config.arm.tenantId,
-    '-e', config.arm.environment
+    //'-e', config.arm.environment
   ];
 
   log("logging into azure cli tooling")
-  var child = execFile(azureCli, login, (error, stdout, stderr) => {
+  az(login, (error, stdout, stderr) => {
     if (error || stderr) return bailOutNoCleanUp(error || new Error(stderr));
     cb();
   });
 });
 
 var logout = (cb) => {
-  var logout = [ 'logout', config.arm.clientId];
+  var logout = [ 'logout',
+    '--username', config.arm.clientId
+  ];
   log("logging out of the  azure cli tooling")
-  execFile(azureCli, logout, cb);
+  az(logout, cb);
 }
 
 var bailOutNoCleanUp = (error)  => {
@@ -160,23 +163,33 @@ var deleteGroups = function (groups, cb) {
   log(`deleting ${groups.length} resource groups`);
   if (groups.length == 0) cb();
   else groups.forEach(n=> {
-    var groupDelete = [ 'group', 'delete', n, '-q', '--json', '--nowait'];
+    var groupDelete = [ 'group', 'delete',
+      '--resource-group', n,
+      '--yes',
+      '--no-wait',
+      '--out', 'json'];
     log(`deleting resource group: ${n}`);
-    execFile(azureCli, groupDelete, (error, stdout, stderr) => {
+    az(groupDelete, (error, stdout, stderr) => {
       if (error || stderr) return bailOut(error || new Error(stderr), n);
       log(`deleted resource group: ${n}`, false);
       allDeleted();
     });
   });
+  cb();
 }
 
 var deleteAllTestGroups = function (cb) {
-  var groupList = [ 'group', 'list', '--json'];
-  log("getting a list of all resources that start with test-");
-  execFile(azureCli, groupList, (error, stdout, stderr) => {
+  var startsWithPattern = `test-${hostname}-`;
+  var groupList = [ 'group', 'list',
+    // double quotes needed around JMESPATH expression
+    '--query', `"[?name | starts_with(@,'${startsWithPattern}')]"`,
+    '--out', 'json'
+  ];
+  log(`getting a list of all resources that start with ${startsWithPattern}`);
+  az(groupList, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr));
     var result = JSON.parse(stdout);
-    var testGroups = _(result).map(g=>g.name).filter(n=>n.match(/^test\-/)).value();
+    var testGroups = _(result).map(g=>g.name).value();
     log(`found lingering resource groups: ${testGroups}`, false);
     deleteGroups(testGroups, cb);
   });
@@ -203,9 +216,12 @@ var deleteCurrentTestGroups = function(cb)
 var createResourceGroup = (test, cb) => {
   var rg = armTests[test].resourceGroup;
   var location = armTests[test].location;
-  var createGroup = [ 'group', 'create', rg, location, '--json'];
+  var createGroup = [ 'group', 'create',
+    '--resource-group', rg,
+    '--location', location,
+    '--out', 'json'];
   log(`creating resource group: ${rg}`);
-  execFile(azureCli, createGroup, (error, stdout, stderr) => {
+  az(createGroup, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr), rg);
     log(test, `createGroupResult: ${stdout}`);
     var result = JSON.parse(stdout);
@@ -234,14 +250,14 @@ var validateTemplate = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   createResourceGroup(test, () => {
-    var validateGroup = [ 'group', 'template', 'validate',
+    var validateGroup = [ 'group', 'deployment', 'validate',
       '--resource-group', rg,
       '--template-uri', templateUri,
-      '--parameters-file', t.paramsFile,
-      '--json'
+      '--parameters', '@' + t.paramsFile,
+      '--out', 'json'
     ];
     log(`validating ${test} in resource group: ${rg}`);
-    execFile(azureCli, validateGroup, (error, stdout, stderr) => {
+    az(validateGroup, (error, stdout, stderr) => {
       log(test, `Expected result: ${t.isValid} because ${t.why}`);
       log(test, `validateResult:${stdout || stderr}`);
       if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr), rg);
@@ -270,13 +286,13 @@ var deployTemplates = function(cb) {
 var showOperationList = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
-  var operationList = [ 'group', 'deployment', 'operation', 'list',
-    rg,
-    'mainTemplate',
-    '--json'
+  var operationList = [ 'group', 'deployment', 'list',
+    '--resource-group', rg,
+    //'mainTemplate',
+    '--out', 'json'
   ];
   log(`getting operation list result for deployment in resource group: ${rg}`);
-  execFile(azureCli, operationList, (error, stdout, stderr) => {
+  az(operationList, (error, stdout, stderr) => {
     log(test, `operationListResult: ${stdout || stderr}`);
     if (error || stderr) return bailOut(error || new Error(stderr), rg);
     var errors = _(JSON.parse(stdout))
@@ -318,15 +334,13 @@ var sanityCheckApplicationGateway = (test, cb) => {
   var appGateway = "application gateway";
 
   var operationList = [ 'network', 'public-ip', 'show',
-    '--name',
-    'es-app-gateway-ip',
-    '--resource-group',
-    rg,
-    '--json'
+    '--name', 'es-app-gateway-ip',
+    '--resource-group', rg,
+    '--out', 'json'
   ];
 
   log(`getting the public IP for ${appGateway} in: ${rg}`);
-  execFile(azureCli, operationList, (error, stdout, stderr) => {
+  az(operationList, (error, stdout, stderr) => {
     log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
     if (error || stderr) {
       log(`getting public ip for ${appGateway} in ${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
@@ -442,12 +456,12 @@ var deployTemplate = (test, cb) => {
   var deployGroup = [ 'group', 'deployment', 'create',
     '--resource-group', rg,
     '--template-uri', templateUri,
-    '--parameters-file', t.paramsFile,
-    '--quiet',
-    '--json'
+    '--parameters', '@' + t.paramsFile,
+    //'--no-wait',
+    '--out', 'json'
   ];
   log(`deploying ${test} in resource group: ${rg}`);
-  execFile(azureCli, deployGroup, (error, stdout, stderr) => {
+  az(deployGroup, (error, stdout, stderr) => {
     log(test, `deployResult: ${stdout || stderr}`);
     if (error || stderr) {
       showOperationList(test, ()=> bailOut(error || new Error(stderr), rg));
