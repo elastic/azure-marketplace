@@ -1,5 +1,6 @@
 var config = require('../.test.json');
 var gulp = require("gulp");
+var colors = require("colors");
 var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
@@ -25,7 +26,7 @@ var log = (f, data) =>
     var logToConsole = !data;
     data = f;
     f = "test-run"
-    if (logToConsole) console.log(data);
+    if (logToConsole) console.log(`[${dateFormat(new Date(), "HH:MM:ss").grey}] ${data}`);
   }
   if (!data) return;
   var file = f + ".log";
