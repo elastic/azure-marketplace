@@ -208,20 +208,6 @@
     "usseceast": { "platformFaultDomainCount": 2 },
     "ussecwest": { "platformFaultDomainCount": 2 }
   },
-  "userJobTitle": [
-    "IT Executive (CIO, CTO, VP Engineering, etc.)",
-    "Business Executive (CEO, COO, CMO, etc.)",
-    "Architect",
-    "Business Development/Alliance Manager",
-    "DBA",
-    "Technical Operations",
-    "Director / Development Manager",
-    "Product / Project Manager",
-    "Software Developer / Engineer",
-    "Consultant",
-    "Student",
-    "Other"
-  ],
   "trackingGuids": {
     "marketplace": "pid-53DEEEE7-A572-4F07-99DC-151B67BB6F1F"
   }
