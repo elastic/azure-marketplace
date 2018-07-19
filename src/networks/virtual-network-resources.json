@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Network settings object"
+      }
+    },
+    "loadBalancerType": {
+      "type": "string",
+      "defaultValue": "internal",
+      "allowedValues": [
+        "internal",
+        "external",
+        "gateway"
+      ],
+      "metadata": {
+        "description": "Set up an internal or external load balancer, or use Application Gateway (gateway) for load balancing and SSL offload. If you are setting up Elasticsearch on a publicly available endpoint, it is *strongly recommended* to secure your nodes with a product like Elastic's X-Pack Security"
+      }
+    },
+    "elasticTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+      },
+      "metadata": {
+        "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+      }
+    }
+  },
+  "variables": {
+    "subnetsOpts": [
+      [
+        {
+          "name": "[parameters('networkSettings').subnet.name]",
+          "properties": {
+            "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
+          }
+        },
+        {
+          "name": "[parameters('networkSettings').applicationGatewaySubnet.name]",
+          "properties": {
+            "addressPrefix": "[parameters('networkSettings').applicationGatewaySubnet.addressPrefix]"
+          }
+        }
+      ],
+      [
+        {
+          "name": "[parameters('networkSettings').subnet.name]",
+          "properties": {
+            "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
+          }
+        }
+      ]
+    ],
+    "subnets": "[variables('subnetsOpts')[if(equals(parameters('loadBalancerType'), 'gateway'), 0, 1)]]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('networkSettings').name]",
+      "location": "[parameters('networkSettings').location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('networkSettings').addressPrefix]"
+          ]
+        },
+        "subnets": "[variables('subnets')]"
+      }
+    }
+  ]
+}

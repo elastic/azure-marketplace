@@ -1044,7 +1044,7 @@
   "variables": {
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'partials/shared-resources.json')]",
-    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', if(equals(parameters('vNetNewOrExisting'), 'new'), if(equals(parameters('loadBalancerType'), 'gateway'), 'new-virtual-network-with-gateway', 'new-virtual-network'), 'existing-virtual-network'), '.json')]",
+    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/virtual-network-resources.json')]",
     "loadBalancerOptions": {
       "internal": "internal-lb-resources",
       "external": "external-lb-resources",
@@ -1693,6 +1693,9 @@
         "parameters": {
           "networkSettings": {
             "value": "[variables('networkSettings')]"
+          },
+          "loadBalancerType": {
+            "value": "[parameters('loadBalancerType')]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
