@@ -28,7 +28,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccountName')]",
-      "apiVersion": "2016-01-01",
+      "apiVersion": "2017-10-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -43,7 +43,7 @@
   ],
   "outputs": {
     "sharedStorageAccountKey":{
-      "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+      "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2017-10-01').keys[0].value]",
       "type": "string"
     },
     "sharedStorageAccountSuffix": {

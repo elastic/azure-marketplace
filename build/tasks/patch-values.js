@@ -1,9 +1,6 @@
 var gulp = require("gulp");
 var jsonfile = require('jsonfile');
 var _ = require('lodash');
-var replace = require('gulp-replace');
-var fs = require('fs');
-var argv = require('yargs').argv;
 
 jsonfile.spaces = 2;
 

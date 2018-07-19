@@ -60,7 +60,7 @@
       "condition": "[greater(parameters('storageSettings').dataDisks, 0)]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
       ],
@@ -117,7 +117,7 @@
       "condition": "[equals(parameters('storageSettings').dataDisks, 0)]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-nodisks-creation')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
       ],

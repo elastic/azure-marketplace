@@ -1,6 +1,5 @@
 var gulp = require("gulp");
 var phantomjs = require('phantomjs-prebuilt')
-var casperJs = require('gulp-casperjs');
 var spawn = require('child_process').spawn;
 var gutil = require('gulp-util');
 var fs = require('fs');

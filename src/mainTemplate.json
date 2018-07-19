@@ -4,7 +4,7 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/fix/6.3.0-pr/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
@@ -1044,7 +1044,7 @@
   "variables": {
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'partials/shared-resources.json')]",
-    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/', if(equals(parameters('vNetNewOrExisting'), 'new'), if(equals(parameters('loadBalancerType'), 'gateway'), 'new-virtual-network-with-gateway', 'new-virtual-network'), 'existing-virtual-network'), '.json')]",
+    "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/virtual-network-resources.json')]",
     "loadBalancerOptions": {
       "internal": "internal-lb-resources",
       "external": "external-lb-resources",
@@ -1646,7 +1646,7 @@
     {
       "name": "[parameters('elasticTags').tracking]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -1659,7 +1659,7 @@
     {
       "name": "shared",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -1683,7 +1683,7 @@
       "condition": "[equals(parameters('vNetNewOrExisting'), 'new')]",
       "name": "network",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -1694,6 +1694,9 @@
           "networkSettings": {
             "value": "[variables('networkSettings')]"
           },
+          "loadBalancerType": {
+            "value": "[parameters('loadBalancerType')]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -1703,7 +1706,7 @@
     {
       "name": "kibana-ip",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -1729,7 +1732,7 @@
     {
       "name": "loadbalancer",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'network')]"
@@ -1756,7 +1759,7 @@
     {
       "name": "virtual-machines",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-02-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
         "[concat('Microsoft.Resources/deployments/', 'kibana-ip')]"

@@ -3,8 +3,10 @@
 Run the following to bring down all the dependencies
 
 ```bash
-$ npm install
+npm install
 ```
+
+To run tests, you will also need to install [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 
 ## Build
 
@@ -55,14 +57,14 @@ cp build/.test.example.json build/.test.json
 
 `.test.json` is git ignored but **always take extra care not to commit this file or make a copy of it**.
 
-Now that the test file is set up, tests can be run with
+Now that the test file is set up, validation tests can be run with
 
 ```bash
 npm run test
 ```
 
 Which will login to the Azure account accessible by the Service Principal account and create a
-resource group with the name `test-<machinename>-<scenario>-<date>` and perform online validation
+resource group with the name `test-<hostname>-<scenario>-<date>` and perform online validation
 of the template using the scenarios parameters.
 When done, the command will clean up the resource groups and logout of azure.
 
@@ -97,24 +99,25 @@ where the `--test` parameter is a regular expression to include tests to run.
 the `test` command will simply validate that the template parameters are valid, but a deployment can be performed with
 
 ```bash
-npm run deploy-all
+npm run deploy
 ```
 
-This is similar to `test` but will try and deploy all scenarios with `isValid:true`, once all the scenarios have been validated.
+This is similar to `test` but will also deploy scenarios that have `isValid:true` configuration,
+once all the scenarios have been validated.
 Some post install checks are performed on the deployed cluster to assert successful deployment.
 
 **NOTE:** Be sure that you have sufficient core quota in the subscription and location into which you're deploying.
 
 ### Cleaning up resource groups
 
-Both `test` and `deploy-all` will attempt to clean up the resource groups created as part of a test run, but sometimes this
+Both `test` and `deploy` will attempt to clean up the resource groups created as part of a test run, but sometimes this
 may not happen e.g. testing process stopped part-way through. When this happens, you can run
 
 ```bash
 npm run azure-cleanup
 ```
 
-to remove all resource-groups starting with `test-*`
+to remove all resource-groups starting with `test-<hostname>-*`
 
 ## Automated UI tests
 

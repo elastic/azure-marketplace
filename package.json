@@ -10,8 +10,7 @@
     "release": "gulp --gulpfile build/gulpfile.js release",
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
-    "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all",
-    "deploy-test": "gulp --gulpfile build/gulpfile.js deploy-test",
+    "deploy": "gulp --gulpfile build/gulpfile.js deploy",
     "links": "gulp --gulpfile build/gulpfile.js links"
   },
   "repository": {
@@ -31,8 +30,9 @@
   },
   "homepage": "https://github.com/elastic/azure-marketplace",
   "devDependencies": {
-    "azure-cli": "^0.10.19",
     "casperjs": "^1.1.1",
+    "colors": "^1.3.0",
+    "compare-versions": "^3.3.0",
     "dateformat": "^1.0.12",
     "del": "^2.2.1",
     "eclint": "^1.1.5",
@@ -55,7 +55,5 @@
     "requiredir": "^1.0.7",
     "yargs": "^6.0.0"
   },
-  "dependencies": {
-    "compare-versions": "^3.0.0"
-  }
+  "dependencies": {}
 }

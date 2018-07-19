@@ -33,7 +33,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-10-01",
       "name": "es-internal-lb",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
@@ -109,7 +109,7 @@
       }
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-10-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "es-external-lb-ip",
       "location": "[parameters('networkSettings').location]",
@@ -124,7 +124,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-10-01",
       "name": "es-external-lb",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",

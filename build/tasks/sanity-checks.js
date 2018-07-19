@@ -17,7 +17,7 @@ function checks(cb) {
       excludingDefault.push(p);
     });
     if (excludingDefault.length == 0) return;
-    errors.push("Main template has different inputs as the ui template outputs: " + excludingDefault)
+    errors.push(`Main template has different inputs as the ui template outputs: ${excludingDefault}`);
   }
 
   var outputDiff = (kind, template, empty) => {
@@ -25,19 +25,16 @@ function checks(cb) {
     var empty = require("../../src/" + empty)
     var difference = _.difference(_.keys(template.outputs), _.keys(empty.outputs));
     if (difference.length == 0) return;
-    errors.push("The " + kind +" template differs from its empty variant: " + difference);
+    errors.push(`The ${kind} template differs from its empty variant: ${difference}`);
   }
 
   var parametersParity = () => {
-    var parameters = [
-      {
-        name: "password",
-        template: require("../../parameters/password.parameters.json")
-      },
-      {
-        name: "ssh",
-        template: require("../../parameters/ssh.parameters.json")
-      }];
+    var parameters = ["password", "ssh"].map(function (v) {
+      return {
+        name: v,
+        template: require(`../../parameters/${v}.parameters.json`)
+      };
+    });
 
     parameters.forEach(p=> {
       var difference = _.difference(mainTemplateParams, _.keys(p.template));
@@ -52,25 +49,21 @@ function checks(cb) {
     });
   }
 
-  var filter = function(filename) {
-    return filename.endsWith(".json");
-  }
-
   function resourcesHaveProviderTag(filename, content) {
     var template = JSON.parse(content);
     if (template.resources) {
       template.resources.forEach(r => {
         if (r.type !== "Microsoft.Resources/deployments") {
             if (r.tags == undefined) {
-              errors.push("The resource '" + r.name + "' in template '" + filename + "' does not have tags");
+              errors.push(`The resource '${r.name}' in template '${filename}' does not have tags`);
             }
             else if (r.tags.provider == undefined) {
-              errors.push("The resource '" + r.name + "' in template '" + filename + "' is missing provider in tags");
+              errors.push(`The resource '${r.name}' in template '${filename}' is missing provider in tags`);
             }
         }
         else {
           if (r.properties.parameters && r.properties.parameters.elasticTags == undefined) {
-            errors.push("The resource '" + r.name + "' in template '" + filename + "' does not have an elasticTags parameter");
+            errors.push(`The resource '${r.name}' in template '${filename}' does not have an elasticTags parameter`);
           }
         }
       });
@@ -79,10 +72,11 @@ function checks(cb) {
 
   marketPlaceArmParity();
   outputDiff("kibana", "machines/kibana-resources.json", "empty/empty-kibana-resources.json");
+  outputDiff("kibana-ip", "ips/kibana-ip-resources.json", "empty/empty-kibana-ip-resources.json");
   outputDiff("jumpbox", "machines/jumpbox-resources.json", "empty/empty-jumpbox-resources.json");
   parametersParity();
 
-  filereader.readFiles('../src/', filter, resourcesHaveProviderTag);
+  filereader.readFiles('../src/', (filename) => filename.endsWith(".json"), resourcesHaveProviderTag);
 
   if (errors.length) {
     throw new Error("Sanity checks failed:\n" + errors.join('\n'));
