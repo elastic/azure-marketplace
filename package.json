@@ -10,7 +10,7 @@
     "release": "gulp --gulpfile build/gulpfile.js release",
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
-    "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all",
+    "deploy": "gulp --gulpfile build/gulpfile.js deploy",
     "links": "gulp --gulpfile build/gulpfile.js links"
   },
   "repository": {

@@ -40,7 +40,7 @@ gulp.task("default", ["sanity-checks", "patch"], function() {
   return stream;
 });
 
-gulp.task("release", ["default", "deploy-all"], function() {
+gulp.task("release", ["default", "deploy"], function() {
   var stream = gulp.src(["../dist/test-runs/tmp/*.log"])
     .pipe(zip("test-results" + timestamp +".zip"))
     .pipe(gulp.dest("../dist/releases"))

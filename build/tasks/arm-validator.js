@@ -316,10 +316,10 @@ var sanityCheckDeployment = (test, stdout, cb) => {
 
   if (stdout) {
     var outputs = JSON.parse(stdout).properties.outputs;
-  if (outputs.loadbalancer.value !== "N/A")
-      checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
-  if (outputs.kibana.value !== "N/A")
-    checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
+    if (outputs.loadbalancer.value !== "N/A")
+        checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
+    if (outputs.kibana.value !== "N/A")
+      checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
   }
 
   if (t.params.loadBalancerType.value === "gateway")
@@ -479,7 +479,7 @@ gulp.task("test", ["clean"], function(cb) {
   login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(cb))));
 });
 
-gulp.task("deploy-all", ["clean"], function(cb) {
+gulp.task("deploy", ["clean"], function(cb) {
   login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
 });
 
