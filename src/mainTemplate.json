@@ -78,7 +78,7 @@
       ],
       "defaultValue": "No",
       "metadata": {
-        "description": "Choose whether to install Azure Repository plugin. The plugin allows an existing Azure storage account to be used for snapshot and restore"
+        "description": "Choose whether to install Azure Repository plugin. The plugin allows a Azure storage account to be used for snapshot and restore. If azureCloudStorageAccountName and azureCloudStorageAccountKey are not supplied, will use the shared storage account deployed."
       }
     },
     "azureCloudStorageAccountName": {
@@ -1791,6 +1791,13 @@
           },
           "kibanaIp": {
             "value": "[reference('kibana-ip').outputs.fqdn.value]"
+          },
+          "sharedStorageAccount": {
+            "value": {
+              "name": "[variables('commonVmSettings').storageAccountName]",
+              "key": "[reference('shared').outputs.sharedStorageAccountKey.value]",
+              "suffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]"
+            }
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
