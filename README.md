@@ -440,30 +440,6 @@ in conjunction with other parameters.
     <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
     </td><td><code>Detection</code></td></tr>
 
-  <tr><td>userCompany</td><td>string</td>
-    <td>The name of your company.
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userEmail</td><td>string</td>
-    <td>Your email address
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userFirstName</td><td>string</td>
-    <td>Your first name
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userLastName</td><td>string</td>
-    <td>Your last name
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userJobTitle</td><td>string</td>
-    <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">the list of job titles</a>
-    </td><td><code>Other</code></td></tr>
-
-  <tr><td>userCountry</td><td>string</td>
-    <td>The country in which you are based.
-    </td><td><code>""</code></td></tr>
-
 </table>
 
 ### Web based deploy
