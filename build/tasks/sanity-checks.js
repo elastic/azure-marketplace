@@ -79,6 +79,7 @@ function checks(cb) {
 
   marketPlaceArmParity();
   outputDiff("kibana", "machines/kibana-resources.json", "empty/empty-kibana-resources.json");
+  outputDiff("kibana-ip", "ips/kibana-ip-resources.json", "empty/empty-kibana-ip-resources.json");
   outputDiff("jumpbox", "machines/jumpbox-resources.json", "empty/empty-jumpbox-resources.json");
   parametersParity();
 
