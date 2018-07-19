@@ -221,17 +221,17 @@ in conjunction with other parameters.
     <li><strong>SSL/TLS must be configured for HTTP layer of Elasticsearch</strong></li></ul>
     </td><td><code>""</code></td></tr>
 
-  <tr><td colspan="4" style="font-size:120%"><strong>Master node related settings</strong></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#master-node">Master node</a> related settings</strong></td></tr>
 
   <tr><td>vmSizeMasterNodes</td><td>string</td>
     <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
-  <tr><td colspan="4" style="font-size:120%"><strong>Data node related settings</strong></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#data-node">Data node</a> related settings</strong></td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to make all data nodes master eligible. This can be useful for small Elasticsearch clusters however, for larger clusters it is recommended to have dedicated master nodes. 
+    <td>Either <code>Yes</code> or <code>No</code> to make all data nodes master eligible. This can be useful for small Elasticsearch clusters however, for larger clusters it is recommended to have dedicated master nodes.
     When <code>Yes</code> no dedicated master nodes will be provisioned.
     </td><td><code>No</code></td></tr>
 
@@ -274,7 +274,7 @@ in conjunction with other parameters.
     support Premium Storage and Standard Storage for those that do not. <code>Standard</code> will use Standard Storage.
     </td><td><code>Default</code></td></tr>
 
-  <tr><td colspan="4" style="font-size:120%"><strong>Client node related settings</strong></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Client (Coordinating only) node</a> related settings</strong></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
     <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
