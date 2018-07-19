@@ -34,16 +34,16 @@ gulp.task("links", (cb) => {
         /https:\/\/github.com\/(.+?\/.+?)\.git/.exec(originRepo.url)[1] :
         /git@github\.com:(.+?\/.+?)\.git/.exec(originRepo.url)[1];
     }
-    
+
     var repoName = argv.repo || getRepoNameFromRemotes(remotes);
 
-    git.branch(function (branch) {
+    git.branch((branch) => {
       var branchName = argv.branch || branch;
 
-      ["../src/", "../parameters/"].forEach((dir) => { 
-        filereader.readFiles(dir, filter, function (fileName, content) { 
-          replaceLinks(fileName, content, repoName, branchName); 
-        }, error) 
+      ["../src/", "../parameters/"].forEach((dir) => {
+        filereader.readFiles(dir, filter, function (fileName, content) {
+          replaceLinks(fileName, content, repoName, branchName);
+        }, error)
       });
       fs.readFile("../README.md", 'utf-8', (err, content) => {
         if (err) {

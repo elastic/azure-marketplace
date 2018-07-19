@@ -98,7 +98,7 @@ var bootstrap = (cb) => {
 
   var templateMatcher = new RegExp(argv.test || ".*");
 
-  git.branch(function (branch) {
+  git.branch((branch) => {
     artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
     templateUri = `${artifactsBaseUrl}/mainTemplate.json`;
     log(`Using template: ${templateUri}`, false);
@@ -158,7 +158,7 @@ var bailOut = (error, rg)  => {
   else cb();
 }
 
-var deleteGroups = function (groups, cb) {
+var deleteGroups = (groups, cb) => {
   var deleted = 0;
   var allDeleted = () => { if (++deleted == groups.length) cb(); };
   log(`deleting ${groups.length} resource groups`);
@@ -179,7 +179,7 @@ var deleteGroups = function (groups, cb) {
   });
 }
 
-var deleteAllTestGroups = function (cb) {
+var deleteAllTestGroups = (cb) => {
   var startsWithPattern = `test-${hostname}-`;
   var groupList = [ 'group', 'list',
     // double quotes needed around JMESPATH expression
@@ -197,7 +197,7 @@ var deleteAllTestGroups = function (cb) {
   });
 }
 
-var deleteCurrentTestGroups = function(cb) {
+var deleteCurrentTestGroups = (cb) => {
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
   if (argv.nodestroy) {
     log(`not destroying ${groups.length} resource groups as --nodestroy parameter passed.`, false);
@@ -214,7 +214,8 @@ var deleteCurrentTestGroups = function(cb) {
   }
 }
 
-var deleteParametersFiles = function(cb) {
+var deleteParametersFiles = (cb) => {
+  log("deleting temporary parameter files", false);
   del([ logDistTmp + "/**/*.json" ], { force: true });
   cb();
 }
@@ -237,7 +238,7 @@ var createResourceGroup = (test, cb) => {
   });
 }
 
-var validateTemplates = function(cb) {
+var validateTemplates = (cb) => {
   var validated = 0;
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
   var allValidated = () => {
@@ -274,7 +275,7 @@ var validateTemplate = (test, cb) => {
   })
 }
 
-var deployTemplates = function(cb) {
+var deployTemplates = (cb) => {
   var deployed = 0;
   var validGroups = _.valuesIn(armTests).filter(a=>a.isValid && a.deploy).map(a=>a.resourceGroup);
   var allDeployed = () => {
@@ -480,14 +481,14 @@ var deployTemplate = (test, cb) => {
 gulp.task("create-log-folder", (cb) => mkdirp(logDistTmp, cb));
 gulp.task("clean", ["create-log-folder"], () => del([ logDistTmp + "/**/*" ], { force: true }));
 
-gulp.task("test", ["clean"], function(cb) {
+gulp.task("test", ["clean"], (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
 });
 
-gulp.task("deploy", ["clean"], function(cb) {
+gulp.task("deploy", ["clean"], (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
 });
 
-gulp.task("azure-cleanup", ["clean"], function(cb) {
+gulp.task("azure-cleanup", ["clean"], (cb) => {
   login(() => deleteAllTestGroups(() => logout(cb)));
 });

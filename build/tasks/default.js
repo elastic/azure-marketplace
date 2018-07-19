@@ -15,7 +15,6 @@ gulp.task("default", ["sanity-checks", "patch"], function() {
           var allowedValues = require("../allowedValues.json");
           var mainTemplate = JSON.parse(content);
           mainTemplate.parameters.elasticTags.defaultValue.tracking = allowedValues.trackingGuids.marketplace;
-
           resolve(JSON.stringify(mainTemplate, null, 2) + "\n");
         }
 
@@ -26,10 +25,9 @@ gulp.task("default", ["sanity-checks", "patch"], function() {
     .pipe(jsonlint.reporter())
     .pipe(eclint.check({
       reporter: function(file, message) {
-        //var relativePath = path.relative(".", file.path);
         console.error(file.path + ":", message);
-        }
-      }))
+      }
+    }))
     .pipe(jsonlint.failAfterError())
     .pipe(addsrc.append(["../src/**/*.sh"]))
     .pipe(zip("elasticsearch-marketplace" + timestamp +".zip"))
