@@ -95,41 +95,41 @@ var bootstrap = (cb) => {
     return bailOut(new Error(`No version in allowedValues.versions matching ${defaultVersion}`));
   }
 
+  var templateMatcher = new RegExp(argv.test || ".*");
+
+  git.branch(function (branch) {
+    artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
+    templateUri = `${artifactsBaseUrl}/mainTemplate.json`;
+    log(`Using template: ${templateUri}`, false);
+    armTests = _(fs.readdirSync("arm-tests"))
+      .filter(t => templateMatcher.test(t))
+      .indexBy((f) => f)
+      .mapValues(t => bootstrapTest(t, defaultVersion))
+      .value();
+    cb();
+  });
+};
+
+var login = (cb) => {
   var version = [ '--version' ];
   az(version, (error, stdout, stderr) => {
     if (error || stderr) return bailOut(error || new Error(stderr));
     log(`Using ${stdout.split('\n')[0]}` );
 
-    var templateMatcher = new RegExp(argv.test || ".*");
+    var login = [ 'login',
+      '--service-principal',
+      '--username', config.arm.clientId,
+      '--password', config.arm.clientSecret,
+      '--tenant', config.arm.tenantId
+    ];
 
-    git.branch(function (branch) {
-      artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
-      templateUri = `${artifactsBaseUrl}/mainTemplate.json`;
-      log(`Using template: ${templateUri}`, false);
-      armTests = _(fs.readdirSync("arm-tests"))
-        .filter(t => templateMatcher.test(t))
-        .indexBy((f) => f)
-        .mapValues(t => bootstrapTest(t, defaultVersion))
-        .value();
+    log("logging into azure cli tooling")
+    az(login, (error, stdout, stderr) => {
+      if (error || stderr) return bailOutNoCleanUp(error || new Error(stderr));
       cb();
-    })
+    });
   });
-};
-
-var login = (cb) => bootstrap(() => {
-  var login = [ 'login', '--service-principal',
-    '--username', config.arm.clientId,
-    '--password', config.arm.clientSecret,
-    '--tenant', config.arm.tenantId,
-    //'-e', config.arm.environment
-  ];
-
-  log("logging into azure cli tooling")
-  az(login, (error, stdout, stderr) => {
-    if (error || stderr) return bailOutNoCleanUp(error || new Error(stderr));
-    cb();
-  });
-});
+}
 
 var logout = (cb) => {
   var logout = [ 'logout',
@@ -196,8 +196,7 @@ var deleteAllTestGroups = function (cb) {
   });
 }
 
-var deleteCurrentTestGroups = function(cb)
-{
+var deleteCurrentTestGroups = function(cb) {
   var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
   if (argv.nodestroy) {
     log(`not destroying ${groups.length} resource groups as --nodestroy parameter passed.`, false);
@@ -212,6 +211,11 @@ var deleteCurrentTestGroups = function(cb)
     log(`deleting current run groups: ${groups}`, true);
     deleteGroups(groups, cb);
   }
+}
+
+var deleteParametersFiles = function(cb) {
+  del([ logDistTmp + "/**/*.json" ], { force: true });
+  cb();
 }
 
 var createResourceGroup = (test, cb) => {
@@ -476,11 +480,11 @@ gulp.task("create-log-folder", (cb) => mkdirp(logDistTmp, cb));
 gulp.task("clean", ["create-log-folder"], () => del([ logDistTmp + "/**/*" ], { force: true }));
 
 gulp.task("test", ["clean"], function(cb) {
-  login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(cb))));
+  bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
 });
 
 gulp.task("deploy", ["clean"], function(cb) {
-  login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(cb)))));
+  bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
 });
 
 gulp.task("azure-cleanup", ["clean"], function(cb) {
