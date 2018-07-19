@@ -11,7 +11,6 @@
     "headless": "gulp --gulpfile build/gulpfile.js headless",
     "azure-cleanup": "gulp --gulpfile build/gulpfile.js azure-cleanup",
     "deploy-all": "gulp --gulpfile build/gulpfile.js deploy-all",
-    "deploy-test": "gulp --gulpfile build/gulpfile.js deploy-test",
     "links": "gulp --gulpfile build/gulpfile.js links"
   },
   "repository": {
