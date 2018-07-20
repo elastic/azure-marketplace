@@ -424,7 +424,7 @@ plugin_cmd()
 
 install_xpack()
 {
-    if dpkg --compare-versions "$ES_VERSION" "<" "6.3.0"; then
+    if dpkg --compare-versions "$ES_VERSION" "lt" "6.3.0"; then
       log "[install_xpack] installing X-Pack plugins"
       $(plugin_cmd) install x-pack --batch
       log "[install_xpack] installed X-Pack plugins"
