@@ -185,13 +185,22 @@ add_to_fstab() {
 do_partition() {
 # This function creates one (1) primary partition on the
 # disk, using all available space
-    _disk=${1}
-    _type=${2}
-    if [ -z "${_type}" ]; then
-        # default to Linux partition type (ie, ext3/ext4/xfs)
-        _type=83
-    fi
-    echo "n
+    local _disk=${1}
+    local largest_dos_volume_bytes=2199023255040
+    local disk_size=$(fdisk -l ${_disk} | grep -E -o ", [0-9]+ bytes," | grep -E -o "[0-9]+")
+
+    if [[ "${disk_size}" -gt "${largest_dos_volume_bytes}" ]]; then
+      log "create partition for ${_disk} with parted"
+      parted -s ${_disk} -- mklabel gpt mkpart primary 0% 100%
+    else
+      log "create partition for ${_disk} with fdisk"
+      local _type=${2}
+      if [ -z "${_type}" ]; then
+          # default to Linux partition type (ie, ext3/ext4/xfs)
+          _type=83
+      fi
+
+      echo "n
 p
 1
 
@@ -199,6 +208,7 @@ p
 t
 ${_type}
 w"| fdisk "${_disk}"
+    fi
 
 #
 # Use the bash-specific $PIPESTATUS to ensure we get the correct exit code
