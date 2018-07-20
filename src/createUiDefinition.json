@@ -1214,7 +1214,7 @@
       "kibanaAdditionalYaml": "",
       "jumpbox": "[steps('externalAccessStep').jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
-      "vmDataDiskCount": "[steps('nodesStep').dataNodesDisks.vmDataDiskCount]",
+      "vmDataDiskCount": "[int(steps('nodesStep').dataNodesDisks.vmDataDiskCount)]",
       "vmDataDiskSize": "[steps('nodesStep').dataNodesDisks.vmDataDiskSize]",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
       "storageAccountType": "[steps('nodesStep').dataNodesDisks.storageAccountType]",
