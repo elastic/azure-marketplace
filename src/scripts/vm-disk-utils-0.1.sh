@@ -190,17 +190,24 @@ do_partition() {
     local disk_size=$(fdisk -l ${_disk} | grep -E -o ", [0-9]+ bytes," | grep -E -o "[0-9]+")
 
     if [[ "${disk_size}" -gt "${largest_dos_volume_bytes}" ]]; then
-      log "create partition for ${_disk} with parted"
-      parted -s ${_disk} -- mklabel gpt mkpart primary 0% 100%
+        log "create partition for ${_disk} with parted"
+        parted -s ${_disk} -- mklabel gpt mkpart primary 0% 100%
+        local EXIT_CODE=$?
+        if [[ $EXIT_CODE -ne 0 ]]; then
+            log "An error occurred partitioning ${_disk}"
+            echo "An error occurred partitioning ${_disk}" >&2
+            echo "I cannot continue" >&2
+            exit $EXIT_CODE
+        fi
     else
-      log "create partition for ${_disk} with fdisk"
-      local _type=${2}
-      if [ -z "${_type}" ]; then
-          # default to Linux partition type (ie, ext3/ext4/xfs)
-          _type=83
-      fi
+        log "create partition for ${_disk} with fdisk"
+        local _type=${2}
+        if [ -z "${_type}" ]; then
+            # default to Linux partition type (ie, ext3/ext4/xfs)
+            _type=83
+        fi
 
-      echo "n
+        echo "n
 p
 1
 
@@ -208,18 +215,17 @@ p
 t
 ${_type}
 w"| fdisk "${_disk}"
-    fi
 
-#
-# Use the bash-specific $PIPESTATUS to ensure we get the correct exit code
-# from fdisk and not from echo
-if [ ${PIPESTATUS[1]} -ne 0 ];
-then
-    log "An error occurred partitioning ${_disk}"
-    echo "An error occurred partitioning ${_disk}" >&2
-    echo "I cannot continue" >&2
-    exit 2
-fi
+        # Use the bash-specific $PIPESTATUS to ensure we get the correct exit code
+        # from fdisk and not from echo
+        if [ ${PIPESTATUS[1]} -ne 0 ];
+        then
+            log "An error occurred partitioning ${_disk}"
+            echo "An error occurred partitioning ${_disk}" >&2
+            echo "I cannot continue" >&2
+            exit 2
+        fi
+    fi
 }
 #end do_partition
 
