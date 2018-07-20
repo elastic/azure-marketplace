@@ -103,6 +103,17 @@ in conjunction with other parameters.
     <td>The base url of the Elastic ARM template.
     <strong>Required</strong></td><td>Raw content of the current branch</td></tr>
 
+  <tr><td>location</td><td>string</td>
+    <td>The location where to provision all the items in this template. Defaults to inheriting the location
+    from the resource group. Any other value must be a valid <a href="https://azure.microsoft.com/regions/">Azure region</a>.
+    </td><td><code>[resourceGroup().location]</code></td></tr>
+
+  <tr><td>vmHostNamePrefix</td><td>string</td>
+    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes on the network, so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters.
+    </td><td><code>""</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Elasticsearch related settings</strong></td></tr>
+
   <tr><td>esVersion</td><td>string</td>
     <td>A valid supported Elasticsearch version for the target template version. See <a href="https://github.com/elastic/azure-marketplace/blob/master/src/mainTemplate.json">this list for supported versions</a>.
     <strong>Required</strong></td><td>Latest version supported by target template version</td></tr>
@@ -126,6 +137,17 @@ in conjunction with other parameters.
     <a href="https://www.elastic.co/products/x-pack/security">X-Pack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
+  <tr><td id="x-pack">xpackPlugins</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
+    features such as <a href="https://www.elastic.co/products/x-pack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/x-pack/security">Security</a>, <a href="https://www.elastic.co/products/x-pack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/x-pack/graph">Graph</a>, <a href="https://www.elastic.co/products/x-pack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/x-pack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/x-pack/reporting">Reporting</a> and Profiler installed.
+    <br /><br />
+    A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
+    will include only the Open Source features.
+    <br /><br />
+    A value of <code>No</code> for Elasticsearch and Kibana 6.3.0+
+    will include the <a href="https://www.elastic.co/subscriptions">free Basic license features.</a>
+    </td><td><code>Yes</code></td></tr>
+
   <tr><td>azureCloudPlugin</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install the Azure Cloud plugin for snapshot/restore. 
     When set to <code>Yes</code>, both <code>azureCloudeStorageAccountName</code> 
@@ -140,17 +162,6 @@ in conjunction with other parameters.
   <tr><td>azureCloudStorageAccountKey</td><td>securestring</td>
     <td> The access key of an existing storage account to use for snapshots with Azure Cloud plugin.
     </td><td><code>""</code></td></tr>
-
-  <tr><td id="x-pack">xpackPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    features such as <a href="https://www.elastic.co/products/x-pack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/x-pack/security">Security</a>, <a href="https://www.elastic.co/products/x-pack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/x-pack/graph">Graph</a>, <a href="https://www.elastic.co/products/x-pack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/x-pack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/x-pack/reporting">Reporting</a> and Profiler installed.
-    <br /><br />
-    A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
-    will include only the Open Source features.
-    <br /><br />
-    A value of <code>No</code> for Elasticsearch and Kibana 6.3.0+
-    will include the <a href="https://www.elastic.co/subscriptions">free Basic license features.</a>
-    </td><td><code>Yes</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
     <td>Additional Elasticsearch plugins to install. Each plugin must be separated by a semicolon. e.g. <code>analysis-icu;mapper-attachments</code>
@@ -210,43 +221,30 @@ in conjunction with other parameters.
     <li><strong>SSL/TLS must be configured for HTTP layer of Elasticsearch</strong></li></ul>
     </td><td><code>""</code></td></tr>
 
-  <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
-    </td><td><code>Yes</code></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#master-node">Master node</a> related settings</strong></td></tr>
 
-  <tr><td>vmSizeKibana</td><td>string</td>
-    <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
-    <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
-    </td><td><code>Standard_A2</code></td></tr>
+  <tr><td>vmSizeMasterNodes</td><td>string</td>
+    <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>.
+    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
+    </td><td><code>Standard_D1</code></td></tr>
 
-  <tr><td>kibanaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the certificate (.crt) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#data-node">Data node</a> related settings</strong></td></tr>
 
-  <tr><td>kibanaKeyBlob</td><td>securestring</td>
-    <td>A Base-64 encoded form of the private key (.key) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
-
-  <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
-    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted.</td><td><code>""</code></td></tr>
-
-  <tr><td>kibanaAdditionalYaml</td><td>string</td>
-    <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
-
-  <tr><td>jumpbox</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
-    <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
-    as a jumpbox.
-  </td><td><code>No</code></td></tr>
-
-  <tr><td>vmHostNamePrefix</td><td>string</td>
-    <td>The prefix to use for hostnames when naming virtual machines in the cluster. Hostnames are used for resolution of master nodes on the network, so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix, to differentiate the hostnames of this cluster from an existing cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters.
-    </td><td><code>""</code></td></tr>
+  <tr><td>dataNodesAreMasterEligible</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to make all data nodes master eligible. This can be useful for small Elasticsearch clusters however, for larger clusters it is recommended to have dedicated master nodes.
+    When <code>Yes</code> no dedicated master nodes will be provisioned.
+    </td><td><code>No</code></td></tr>
 
   <tr><td>vmSizeDataNodes</td><td>string</td>
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmDataNodeCount</td><td>int</td>
+    <td>The number of data nodes you wish to deploy. <strong>Must be greater than 0</strong>.
+    </td><td><code>3</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Data node disk related settings</strong></td></tr>
 
   <tr><td>vmDataDiskCount</td><td>int</td>
     <td>Number of <a href="https://azure.microsoft.com/en-au/services/managed-disks/">managed disks</a> to attach to each data node in RAID 0 setup.
@@ -270,25 +268,13 @@ in conjunction with other parameters.
     </td>
   </td><td><code>Large</code></td></tr>
 
-  <tr><td>vmDataNodeCount</td><td>int</td>
-    <td>The number of data nodes you wish to deploy. <strong>Must be greater than 0</strong>.
-    </td><td><code>3</code></td></tr>
-
   <tr><td>storageAccountType</td><td>string</td>
     <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. 
     The <code>Default</code> storage account type will be Premium Storage for VMs that 
     support Premium Storage and Standard Storage for those that do not. <code>Standard</code> will use Standard Storage.
     </td><td><code>Default</code></td></tr>
 
-  <tr><td>dataNodesAreMasterEligible</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to make all data nodes master eligible. This can be useful for small Elasticsearch clusters however, for larger clusters it is recommended to have dedicated master nodes. 
-    When <code>Yes</code> no dedicated master nodes will be provisioned.
-    </td><td><code>No</code></td></tr>
-
-  <tr><td>vmSizeMasterNodes</td><td>string</td>
-    <td>Azure VM size of dedicated master nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>. By default the template deploys 3 dedicated master nodes, unless <code>dataNodesAreMasterEligible</code> is set to <code>Yes</code>.
-    <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
-    </td><td><code>Standard_D1</code></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Client (Coordinating only) node</a> related settings</strong></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
     <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
@@ -299,6 +285,8 @@ in conjunction with other parameters.
     <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Security related settings</strong></td></tr>
 
   <tr><td>adminUsername</td><td>string</td>
     <td>Admin username used when provisioning virtual machines. Must be a valid Linux username i.e. <a target="_blank" href="https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#ubuntu">avoid any of the following usernames for Ubuntu</a>
@@ -348,10 +336,40 @@ in conjunction with other parameters.
     must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
-  <tr><td>location</td><td>string</td>
-    <td>The location where to provision all the items in this template. Defaults to the special <code>[resourceGroup().location]</code> value which means it will inherit the location
-    from the resource group. Any other value must be a valid <a href="https://azure.microsoft.com/regions/">Azure region</a>.
-    </td><td><code>[resourceGroup().location]</code></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
+
+  <tr><td>kibana</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
+    </td><td><code>Yes</code></td></tr>
+
+  <tr><td>vmSizeKibana</td><td>string</td>
+    <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
+    </td><td><code>Standard_A2</code></td></tr>
+
+  <tr><td>kibanaCertBlob</td><td>string</td>
+    <td>A Base-64 encoded form of the certificate (.crt) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaKeyBlob</td><td>securestring</td>
+    <td>A Base-64 encoded form of the private key (.key) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaKeyPassphrase</td><td>securestring</td>
+    <td>The passphrase to decrypt the private key. Optional as the key may not be encrypted.</td><td><code>""</code></td></tr>
+
+  <tr><td>kibanaAdditionalYaml</td><td>string</td>
+    <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Jumpbox related settings</strong></td></tr>
+
+  <tr><td>jumpbox</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
+    <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
+    as a jumpbox.
+  </td><td><code>No</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Virtual network related settings</strong></td></tr>
 
   <tr><td>vNetNewOrExisting</td><td>string</td>
     <td>Whether the Virtual Network is <code>new</code> or <code>existing</code>. An <code>existing</code> Virtual Network in
@@ -398,6 +416,8 @@ in conjunction with other parameters.
     <strong>Required when creating a <code>new</code> Virtual Network and selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>10.0.0.128/28</code></td></tr>
 
+   <tr><td colspan="4" style="font-size:120%"><strong>Application Gateway related settings</strong></td></tr>
+
    <tr><td>appGatewayTier</td><td>string</td>
     <td>The tier of the Application Gateway, either <code>Standard</code> or <code>WAF</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
@@ -416,13 +436,13 @@ in conjunction with other parameters.
     </td><td><code>2</code></td></tr>
 
    <tr><td>appGatewayCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway.
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key for Application Gateway.
     This certificate is used to secure HTTPS connections to and from the Application Gateway.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr>
 
    <tr><td>appGatewayCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) certificate for the Application Gateway. Defaults to <code>""</code>.
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the certificate and key for Application Gateway.
     <strong>Required when selecting <code>gateway</code> for load balancing.</strong>
     </td><td><code>""</code></td></tr>
 
@@ -439,30 +459,6 @@ in conjunction with other parameters.
     <td>The firewall mode of the Application Gateway, either <code>Detection</code> or <code>Prevention</code>.
     <strong>Required when selecting <code>gateway</code> for load balancing and using appGatewayTier <code>WAF<code>.</strong>
     </td><td><code>Detection</code></td></tr>
-
-  <tr><td>userCompany</td><td>string</td>
-    <td>The name of your company.
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userEmail</td><td>string</td>
-    <td>Your email address
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userFirstName</td><td>string</td>
-    <td>Your first name
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userLastName</td><td>string</td>
-    <td>Your last name
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>userJobTitle</td><td>string</td>
-    <td>Your job title. Pick the nearest one that matches from <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">the list of job titles</a>
-    </td><td><code>Other</code></td></tr>
-
-  <tr><td>userCountry</td><td>string</td>
-    <td>The country in which you are based.
-    </td><td><code>""</code></td></tr>
 
 </table>
 

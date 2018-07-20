@@ -20,12 +20,6 @@
             "description" : "Shared VM settings"
         }
     },
-    "phoneHomeSettings": {
-        "type": "object",
-        "metadata": {
-            "description": "Deployment details sent back to our CRM, only needed when deploying from the marketplace, optional in the ARM template"
-        }
-    },
     "topologySettings": {
         "type": "object",
         "metadata": {
@@ -98,9 +92,7 @@
     "ubuntuScripts": [
       "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/user-information.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/data-node-install.sh')]"
+      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
     ],
     "ubuntuSkus": {
       "5": "16.04-LTS",
@@ -149,7 +141,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash data-node-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -U \"http://app-lon02.marketo.com/index.php/leadCapture/save2\" -I \"813-MAM-392\" -c \"', parameters('phoneHomeSettings').company, '\" -e \"', parameters('phoneHomeSettings').email, '\" -f \"', parameters('phoneHomeSettings').firstName, '\" -g \"', parameters('phoneHomeSettings').lastName, '\" -t \"', parameters('phoneHomeSettings').jobTitle, '\" -s \"', parameters('phoneHomeSettings').topology, '\" -o \"', parameters('phoneHomeSettings').country, '\"')]"
+            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
         "kibana": {

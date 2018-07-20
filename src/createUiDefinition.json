@@ -1175,133 +1175,6 @@
             }
           }
         ]
-      },
-      {
-        "name": "userInformationStep",
-        "label": "User Information",
-        "subLabel": {
-          "preValidation": "Provide user information",
-          "postValidation": "Done"
-        },
-        "bladeTitle": "User Information",
-        "elements": [
-          {
-            "name": "userCompany",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Company",
-            "defaultValue": "",
-            "toolTip": "Name of your company",
-            "constraints": {
-              "required": true,
-              "validationMessage": "Company name is required"
-            }
-          },
-          {
-            "name": "userEmail",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Email address",
-            "defaultValue": "",
-            "toolTip": "Your email address",
-            "constraints": {
-              "required": true,
-              "regex": "^(.+)@(.+){2,}\\.(.+){2,}$",
-              "validationMessage": "Email address is required"
-            }
-          },
-          {
-            "name": "userFirstName",
-            "type": "Microsoft.Common.TextBox",
-            "label": "First name",
-            "defaultValue": "",
-            "toolTip": "Your first name",
-            "constraints": {
-              "required": true,
-              "validationMessage": "First name is required"
-            }
-          },
-          {
-            "name": "userLastName",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Last name",
-            "defaultValue": "",
-            "toolTip": "Your last name",
-            "constraints": {
-              "required": true,
-              "validationMessage": "Last name is required"
-            }
-          },
-          {
-            "name": "userJobTitle",
-            "type": "Microsoft.Common.DropDown",
-            "label": "Job title",
-            "toolTip": "Your job title. Pick the nearest description that matches",
-            "defaultValue": "IT Executive (CIO, CTO, VP Engineering, etc.)",
-            "constraints": {
-              "required": true,
-              "allowedValues": [
-                {
-                  "label": "IT Executive (CIO, CTO, VP Engineering, etc.)",
-                  "value": "IT Executive (CIO, CTO, VP Engineering, etc.)"
-                },
-                {
-                  "label": "Business Executive (CEO, COO, CMO, etc.)",
-                  "value": "Business Executive (CEO, COO, CMO, etc.)"
-                },
-                {
-                  "label": "Architect",
-                  "value": "Architect"
-                },
-                {
-                  "label": "Business Development/Alliance Manager",
-                  "value": "Business Development/Alliance Manager"
-                },
-                {
-                  "label": "DBA",
-                  "value": "DBA"
-                },
-                {
-                  "label": "Technical Operations",
-                  "value": "Technical Operations"
-                },
-                {
-                  "label": "Director / Development Manager",
-                  "value": "Director / Development Manager"
-                },
-                {
-                  "label": "Product / Project Manager",
-                  "value": "Product / Project Manager"
-                },
-                {
-                  "label": "Software Developer / Engineer",
-                  "value": "Software Developer / Engineer"
-                },
-                {
-                  "label": "Consultant",
-                  "value": "Consultant"
-                },
-                {
-                  "label": "Student",
-                  "value": "Student"
-                },
-                {
-                  "label": "Other",
-                  "value": "Other"
-                }
-              ]
-            }
-          },
-          {
-            "name": "userCountry",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Country",
-            "defaultValue": "",
-            "toolTip": "The country in which you are based",
-            "constraints": {
-              "required": true,
-              "validationMessage": "Country is required"
-            }
-          }
-        ]
       }
     ],
     "outputs": {
@@ -1367,13 +1240,7 @@
       "appGatewayEsHttpCertBlob": "",
       "appGatewayWafStatus": "Disabled",
       "appGatewayWafMode": "Detection",
-      "location": "[location()]",
-      "userCompany": "[steps('userInformationStep').userCompany]",
-      "userEmail": "[steps('userInformationStep').userEmail]",
-      "userFirstName": "[steps('userInformationStep').userFirstName]",
-      "userLastName": "[steps('userInformationStep').userLastName]",
-      "userJobTitle": "[steps('userInformationStep').userJobTitle]",
-      "userCountry": "[steps('userInformationStep').userCountry]"
+      "location": "[location()]"
     }
   }
 }

@@ -26,9 +26,6 @@ var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
-var userJobTitles = allowedValues.userJobTitle
-  .map(function(v) { return { "label": v, "value": v }});
-
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(nodeResources, function(err, resources) {
@@ -52,7 +49,6 @@ gulp.task("patch", function(cb) {
           return tier;
         });
 
-        main.parameters.userJobTitle.allowedValues = allowedValues.userJobTitle;
         main.parameters.esVersion.allowedValues = versions;
         main.parameters.esVersion.defaultValue = _.last(versions);
         main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
@@ -84,14 +80,12 @@ gulp.task("patch", function(cb) {
             var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
             var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
             var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
-
             var externalAccessStep = _.find(ui.parameters.steps, function (step) { return step.name == "externalAccessStep"; });
-            var userInformationStep =  _.find(ui.parameters.steps, function (step) { return step.name == "userInformationStep"; });
-
             var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
             var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
             var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
             var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+
             var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
               delete control.constraints.allowedValues;
               control.constraints.allowedSizes = allowedSizes;
@@ -118,10 +112,6 @@ gulp.task("patch", function(cb) {
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;
             var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
             clientNodeCountControl.constraints.allowedValues = clientNodeValues;
-
-            var userJobFunctionsControl = _.find(userInformationStep.elements, function (el) { return el.name == "userJobTitle"; });
-            userJobFunctionsControl.constraints.allowedValues = userJobTitles;
-            userJobFunctionsControl.defaultValue = userJobTitles[0].label;
 
             jsonfile.writeFile(uiTemplate, ui, function (err) {
               cb();

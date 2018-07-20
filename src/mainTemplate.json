@@ -983,62 +983,6 @@
       "metadata": {
         "description": "The Base-64 encoded certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
-    },
-    "userCompany": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Name of your company"
-      }
-    },
-    "userEmail": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Your email address"
-      }
-    },
-    "userFirstName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Your first name"
-      }
-    },
-    "userLastName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Your last name"
-      }
-    },
-    "userJobTitle": {
-      "type": "string",
-      "defaultValue": "Other",
-      "allowedValues": [
-        "IT Executive (CIO, CTO, VP Engineering, etc.)",
-        "Business Executive (CEO, COO, CMO, etc.)",
-        "Architect",
-        "Business Development/Alliance Manager",
-        "DBA",
-        "Technical Operations",
-        "Director / Development Manager",
-        "Product / Project Manager",
-        "Software Developer / Engineer",
-        "Consultant",
-        "Student",
-        "Other"
-      ],
-      "metadata": {
-        "description": "Your job title. Pick the nearest description that matches"
-      }
-    },
-    "userCountry": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "The country in which you are based"
-      }
     }
   },
   "variables": {
@@ -1080,15 +1024,6 @@
       "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]",
       "samlMetadataUri": "[parameters('samlMetadataUri')]",
       "samlServiceProviderUri": "[parameters('samlServiceProviderUri')]"
-    },
-    "phoneHomeSettings": {
-      "email": "[parameters('userEmail')]",
-      "firstName": "[parameters('userFirstName')]",
-      "lastName": "[parameters('userLastName')]",
-      "jobTitle": "[parameters('userJobTitle')]",
-      "company": "[parameters('userCompany')]",
-      "country": "[parameters('userCountry')]",
-      "topology": "[concat('m=', if(equals(parameters('dataNodesAreMasterEligible'), 'No'), '3', '0'), ' ', parameters('vmSizeMasterNodes'), ',d=', parameters('vmDataNodeCount'), ' ', parameters('vmSizeDataNodes'), ',c=', parameters('vmClientNodeCount'), ' ', parameters('vmSizeClientNodes'), ',k=', if(equals(parameters('kibana'), 'Yes'), '1', '0'), ' ', parameters('vmSizeKibana'), ',j=', if(equals(parameters('jumpbox'), 'Yes'), '1', '0'), ' Standard_A0', ',l=', parameters('loadBalancerType'))]"
     },
     "networkResourceGroupMap": {
       "new": "[resourceGroup().name]",
@@ -1779,9 +1714,6 @@
           },
           "commonVmSettings": {
             "value": "[variables('commonVmSettings')]"
-          },
-          "phoneHomeSettings": {
-            "value": "[variables('phoneHomeSettings')]"
           },
           "topologySettings": {
             "value": "[variables('topologySettings')]"
