@@ -1,0 +1,101 @@
+:marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
+:portal: https://portal.azure.com
+:github: https://github.com/elastic/azure-marketplace
+:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
+:microsoftdocs: https://docs.microsoft.com
+:azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
+:azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
+:subscriptions: https://www.elastic.co/subscriptions
+:sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
+:resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
+:incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
+
+[[azure-arm-template]]
+== Azure Resource Manager (ARM) template
+
+TODO: Work in progress
+
+[float]
+== Getting started
+
+== Elasticseach Nodes
+
+=== Configuration
+
+- dedicated master nodes
+- incremental scale up and down
+
+=== Number of nodes
+
+- different parameters for roles
+- subscription core quota limits
+
+=== Size of nodes
+
+=== Availability
+
+==== Availability sets
+
+==== Update and Fault Domains
+
+=== Data disk configuration
+
+== Networking
+
+=== Virtual network
+
+- New or existing virtual network
+- Azure DNS for resolution
+
+=== Load balancing
+
+- Internal
+- External
+- Application Gateway
+
+=== Network Security Groups
+
+== Security
+
+=== Authentication and Authorization
+
+=== Transport Layer Security
+
+==== Elasticsearch
+
+===== HTTP layer
+
+===== Transport layer
+
+==== Kibana
+
+== Plugins
+
+=== X-Pack
+
+=== Azure repository
+
+=== Miscellaneous
+
+== Troubleshooting
+
+Sometimes, things may go wrong with the deployment for a number of different
+reasons including but not limited to
+
+- Incorrect or invalid parameters passed to the template,
+that pass initial validation but fail at deployment time
+- Transient errors associated with template dependencies
+- Transient errors associated with the Azure infrastructure
+
+When such issues arise, you'll need to know where to look to ascertain what the
+underlying problem is, in order to determine what action to take to rectify.
+
+=== Diagnosing through logs
+
+
+
+=== Accessing nodes
+
+
+
+=== Repeated deployments

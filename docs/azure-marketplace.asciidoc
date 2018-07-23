@@ -1,0 +1,320 @@
+:marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
+:portal: https://portal.azure.com
+:github: https://github.com/elastic/azure-marketplace
+:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
+:xpackdocs: https://www.elastic.co/guide/en/x-pack/current
+:xpack: https://www.elastic.co/products/x-pack
+:microsoftdocs: https://docs.microsoft.com
+:azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
+:azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
+:azurecalculator: https://azure.microsoft.com/en-us/pricing/calculator/
+:subscriptions: https://www.elastic.co/subscriptions
+:sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
+:resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
+:incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
+
+[[azure-marketplace]]
+= Azure Marketplace solution
+
+The Azure Marketplace solution offering is a preconfigured
+template to deploy an Elasticsearch cluster and Kibana to Azure. It's available
+on {marketplace}[Microsoft's Azure Marketplace], making it easy to find and
+consume.
+
+The solution template is a Bring-Your-Own-License (BYOL) offering; the solution
+always deploys with a 30 day trial license that enables
+all {subscriptions}[the Platinum features of X-Pack], to provide the best getting
+started experience. After the trial license expires, Elasticsearch
+will operated in a degraded mode
+
+[float]
+== Getting started
+
+Navigate to the {marketplace}[Azure Marketplace] offering, and click the "Get it Now"
+button:
+
+image:images/marketplace.jpg[]
+
+This will take you straight to the solution from the Marketplace, within the
+{portal}[Azure portal]. If you're not already logged into the portal, you'll be
+prompted to do so first.
+
+Once you're ready to proceed, click the Create button to walk through the steps.
+
+=== Marketplace steps
+
+Each step of the process is presented in its own blade within the portal, which
+we'll walk through.
+
+==== Basics
+
+The first step involves setting up the details for the username and authentication
+mechanism you'll use to access the virtual machines deployed by the solution:
+
+image:images/marketplace_step1.png[]
+
+The username must be a valid Ubuntu username and for authentication mechanism,
+choose between password or {sshkey}[SSH key]. When choosing SSH key, password
+authentication will be disabled on the virtual machines.
+
+Next, choose the subscription, resource group and location into which to deploy
+the solution. When choosing an existing resource group, there a couple of points
+to bear in mind
+
+. A resource group is a container that holds related resources. As such,
+{resourcegroup}[those resources share the same lifecycle, permissions and policies]
+
+. The solution template deploys in {incrementalmode}[incremental mode]; If a previous solution
+deployment has been performed into an existing resource group, the resources that
+exist in the resource group but are not in the template are left unchanged. All resources
+that are specified by the solution will be deployed, and for those resources that
+already exist and whose settings are unchanged, no change will be made. For those
+resources whose settings are changed however, the resource is provisioned with those
+new settings. What this means in practice is that you should carefully consider
+how the settings specified within the template being deployed may affect the resources
+that could be currently running Elasticsearch.
+
+TIP: More often than not, you'll want to deploy the solution into a new resource
+group. Providing access to Elasticsearch to existing Azure resources such as
+Azure App Services can be achieved by connecting the deployed virtual machines
+to an existing virtual network, which can be specified in the next step.
+
+==== Cluster settings
+
+the Cluster settings blade provides the option to pick the version of Elasticsearch
+to deploy, and give the cluster a name:
+
+image:images/marketplace_step2.png[]
+
+Additionally, the solution can deploy a new virtual network or use an existing
+virtual network within the same subscription and location as the target resource
+group. This is particularly useful in situations where resources may already be
+deployed in another resource group, and the cluster should be accessible to those
+resources on the same network, and possibly same subnet.
+
+==== Nodes configuration
+
+The Nodes configuration blade controls the number of each
+{elasticdocs}/modules-node.html[type of node] to deploy for the cluster:
+
+image:images/marketplace_step3.png[]
+
+IMPORTANT: Elasticsearch nodes resolve other nodes on the network by their hostname,
+which Azure DNS supports. It is therefore critical that when deploying a cluster to
+an existing virtual network, the hostnames for Elasticsearch nodes are unique. The
+`Hostname prefix` input will be applied to the naming convention for master, data and client
+nodes, allowing for unique hostnames when deploying multiple clusters to the same
+virtual network.
+
+For data nodes, the number of {microsoftdocs}/azure/virtual-machines/windows/managed-disks-overview[managed disks],
+in addition to size and type of disks,
+can be specified. When the number of managed disks is two or more, a RAID 0
+array is created across the disks to improve overall operations. When no disks are
+specified, the node will use the temp storage of the VM for the data directory.
+
+IMPORTANT: https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/[Temp storage], with filesystem `/dev/sdb1` mounted on `/mnt` in Ubuntu,
+is present on the physical machine hosting the VM. It is ephemeral in nature and
+not persistent; A VM can move to a different host at _any_ point in time for various
+reasons, including hardware failures. When this happens, the VM will be created on
+the new host using the OS disk from the storage account, and __new temp storage
+will be created on the new host__. Using temp storage can be a cost effective way of running an
+Elasticsearch cluster on Azure with decent performance, so long as you understand
+the tradeoffs in doing so, by snapshotting frequently and ensuring adequate data
+redundancy through sufficient replica shards.
+
+==== User configuration
+
+An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
+with X-Pack and a 30 day trial license that enables all of {subscriptions}[the Platinum features],
+including X-Pack Security. X-Pack Security allows Basic Authentication configuration
+for the cluster and to do so, sets up three
+{xpackdocs}/setting-up-authentication.html[built-in user accounts]
+
+. The `elastic` user, a built-in superuser account
+. The `kibana` user, a built-in account that Kibana uses to connect and
+communicate with Elasticsearch
+. The `logstash_system` user, a built-in account that can be used by Logstash
+when storing monitoring information in Elasticsearch.
+
+Additionally, a read-only user account, `es_read`, is created that has read only
+access to indices:
+
+image:images/marketplace_step4.png[]
+
+Passwords must be specified for all of these accounts.
+
+==== External access
+
+The external access blade determines how the cluster can be accessed from outside
+of the virtual network:
+
+image:images/marketplace_step5.png[]
+
+When installing Kibana, a separate VM will be provisioned onto which Kibana will
+be deployed and a public IP address will be attached
+to the Kibana VM along with a Network Security group, allowing TCP access over ports
+5601 and 22. The former is used to connect to Kibana through the browser, whilst
+the latter is used to connect to the Kibana VM via SSH.
+
+A jumpbox VM can optionally be deployed, which can be connected to via SSH in order
+to gain access to the Elasticsearch VMs.
+
+Either an internal or external load balancer can be deployed from the Marketplace;
+When choosing external load balancer, both an internal and external load balancer will
+be deployed. Kibana will use the internal load balancer to communicate with Elasticsearch,
+and the external load balancer is configured with a public IP address , allowing access
+to Elasticsearch from outside of Azure over port 9200.
+
+[IMPORTANT]
+--
+The Marketplace solution does not configure SSL/TLS for communication for any of
+
+* Communication from the browser to Kibana
+* Communication from Kibana to Elasticsearch through internal laod balancer
+* Communication to Elasticsearch through external load balancer over the HTTP layer
+* Communication between Elasticsearch nodes in the cluster over the Transport layer
+
+This is to keep the getting started experience simple through the Marketplace. If you
+need to configure SSL/TLS, it is **recommended that you use {github}[the Azure Resource Manager
+template on GitHub directly].**
+--
+
+==== Summary
+
+The last steps of configuring a deployment allow you to confirm the values provided
+for all inputs in the previous steps, and to read the terms and conditions before
+deployment:
+
+image:images/marketplace_step6.png[]
+
+The Azure infrastructure also performs some final validation steps. Once you're
+happy to proceed and the OK button is clicked, a new deployment will be started
+and within minutes, you'll have Elasticsearch running on Azure!
+
+[[accessing-elasticsearch]]
+=== Accessing Elasticsearch
+
+Elasticsearch can be accessed from outside of Azure through the external load
+balancer, by navigating to the external load balancer public IP address resource
+and using either the IP address or public domain name along with port 9200.
+For example,
+
+[source,sh]
+----
+http://lb-<random domain name>.<location>.cloudapp.azure.com:9200
+----
+
+==== Accessing Kibana
+
+Kibana can be accessed from outside of Azure by navigating to the Kibana public
+IP address resource and using either the IP address or public domain name along
+with port 5601. For example,
+
+[source,sh]
+----
+http://kb-<random domain name>.<location>.cloudapp.azure.com:5601
+----
+
+==== Accessing virtual machines
+
+Virtual machines can be accessed using SSH through either the Kibana VM or Jumpbox
+VM over port 22. Both Kibana and Jumpbox VMs are configured with a network security
+group that allows TCP traffic over port 22. SSH authentication will use the
+authentication mechanism specified in the Basics step,
+either `password` or `SSH public key`:
+
+[source,sh]
+----
+ssh <admin username>@<kibana or jumpbox public IP address>
+----
+
+Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
+be accessed using SSH with either the internal IP address or VM hostname (if using
+Azure DNS to resolve addresses from hostnames):
+
+[source,sh]
+----
+ssh <admin username>@<internal IP address or VM hostname>
+----
+
+[[azure-marketplace-faqs]]
+== Azure Marketplace Frequently Asked Questions (FAQ)
+
+What resources does the Marketplace deploy?::
++
+The default configuration of the Marketplace deploys the following resources:
++
+* 1 virtual network
+* 3 dedicated master node Standard D1 SKU VMs running Ubuntu 16.04 with OS disks
+and network interfaces
+* 1 availability set for master nodes
+* 3 data node Standard DS1 v2 SKU VMs running Ubuntu 16.04 with OS disks, network
+interfaces and one
+1024Gb managed disk per data node
+* 1 availability set for data nodes
+* 1 Kibana Standard D1 SKU VM running Ubuntu 16.04 with OS disk, network interface,
+network security group and public IP address
+* 1 internal load balancer
++
+A screenshot of the resources deployed by default:
++
+image:images/marketplace_default_resources.png[]
++
+A 30 day trial license of {xpack}[Elastic's X-Pack] is also installed. X-Pack is available
+under {subscriptions}[a commercial license subscription], and extends the stack with features such
+as Security, Monitoring, Alerting, Reporting, Graph and Machine Learning capabilities.
++
+What is the cost of the Azure Marketplace solution?::
+The cost of deploying from the Marketplace will vary depending on the cluster
+topology that you decide to deploy and the VM SKUs that you choose for each of the
+VMs within the cluster. The cost will also vary depending on which Azure region
+you decide to deploy to. Because there are a number of variables involved, a cost
+needs to be calculated on a case-by-case basis. At a minimum, you will pay for
+all Azure resources deployed by the template. The
+{azurecalculator}[Azure pricing calculator] can help in providing a good estimate
+for this. In addition to the cost of Azure resources, {subscriptions}[X-Pack Gold, Platinum and
+Enterprise subscriptions] require a license to be purchased, the cost of which is
+dependent on a number of factors. Please get in touch with us to discuss.
++
+How do I connect to Elasticsearch?::
+Elasticsearch can be accessed from outside of Azure by choosing an external load
+balancer for the load balancer type, within the External access blade step.
++
+From within Azure, Azure resources can access Elasticsearch by connecting to the
+Virtual network in which the cluster is deployed. It is recommended to connect through
+the internal load balancer, which will round robin requests to client (coordinating only)
+nodes if deployed, or to data nodes otherwise.
++
+How do I connect to the VMs to troubleshoot?::
+Elasticsearch VMs are not accessible from outside of the virtual network. When
+configuring the deployment through the blade steps, a Kibana VM or Jumpbox VM can
+be deployed through which all VMs attached to the virtual network can be accessed.
++
+Both Kibana and Jumpbox VMs are configured with a network security group that allows
+TCP traffic over port 22, to allow you to use SSH to securely connect to VMs. SSH
+authentication will use the authentication mechanism specified in the Basics step,
+either `password` or `SSH public key`:
++
+[source,sh]
+----
+ssh <admin username>@<kibana or jumpbox public IP address>
+----
++
+Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
+be accessed using SSH with either the internal IP address or VM hostname (if using
+Azure DNS to resolve addresses from hostnames):
++
+[source,sh]
+----
+ssh <admin username>@<internal IP address or VM hostname>
+----
++
+See the troubleshooting documentation for more details.
+Does the Marketplace solution deploy Logstash?::
+The Marketplace solution **does not** currently deploy Logstash, only Elasticsearch
+and Kibana. There is an {github}/issues/157[open issue (157)] to track and discuss the inclusion of Logstash
+within the template.
++
+You can deploy Logstash manually by creating a new VM, attaching it to the same
+virtual network to which the cluster is attached, and deploy Logstash onto the VM by
+using SSH through either the Kibana VM or Jumpbox VM.
