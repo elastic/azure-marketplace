@@ -77,6 +77,7 @@ posts for further information
 
 * [Spinning up a cluster with Elastic's Azure Marketplace template](https://www.elastic.co/blog/spinning-up-a-cluster-with-elastics-azure-marketplace-template)
 * [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
+* [SAML based Single Sign-On with Elasticsearch and Azure Active Directory](https://www.elastic.co/blog/saml-based-single-sign-on-with-elasticsearch-and-azure-active-directory?blade=tw&hulk=social)
 
 ### X-Pack features
 
