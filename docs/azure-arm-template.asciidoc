@@ -13,10 +13,90 @@
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
 
-TODO: Work in progress
+The Azure Resource Manager (ARM) template is a declarative solution template that
+targets the Azure Resource Manager (ARM) API, to deploy a collection of Azure resources
+necessary to run an Elasticsearch cluster on Azure. The ARM API is Microsoft's
+infrastructure-as-code offering to provide infrastructure-as-a-service (IaaS) on
+the Azure platform, with a consistent API for managing resources.
+
+An ARM template deploys the resources together in a single unit of work, either
+as an incremental deployment, which is useful when targeting an existing resource
+group, or as a full deployment, which will replace all resources within a resource
+group.
 
 [float]
 == Getting started
+
+The best way to work with Elastic's ARM template is using one of the official Azure
+command line interface (CLI) tools:
+
+{azurecli}[Azure CLI 2.0]:: A Python-based cross platform CLI, typically used
+on MacOS and Linux
+
+{azurepowershell}[Azure PowerShell]:: An Azure PowerShell module providing a rich
+object oriented API, typically used on Windows
+
+[[logging-in]]
+[float]
+=== Log in to CLI
+
+Once a CLI is installed, log into an Azure account to use with the CLI
+
+[source,sh]
+.Azure CLI 2.0
+----
+az login
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+Login-AzureRmAccount
+----
+
+and follow the instructions provided.
+
+[[first-deployment]]
+[float]
+=== Deploy Elasticsearch with Kibana
+
+Now that the CLI is logged in with an account, a deployment can be started. First,
+choose a subscription in which to create a resource group and resources
+
+[source,sh]
+.Azure CLI 2.0
+----
+az account set --subscription "<subscription id>"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+Select-AzureRmSubscription -SubscriptionId "<subscription id>"
+----
+
+Now that a subscription is selected, create a resource group into which the resources
+will be deployed
+
+[source,sh]
+.Azure CLI 2.0
+----
+az group create --name "<name>" --location "<location>"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
+----
+
+A resource group is a container that holds related resources. As such,
+{resourcegroup}[those resources share the same lifecycle, permissions and policies].
+A resource group is tied to a specific location, which internally, is where the
+Azure infrastructure will persist data related to the resource group, such as
+deployments. The resources deployed within a resource group however, do not need
+to be deployed to the same location as the resource group; resources within a resource
+group can be deployed to any location.
 
 == Elasticseach Nodes
 
