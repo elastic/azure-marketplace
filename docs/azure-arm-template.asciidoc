@@ -9,6 +9,9 @@
 :sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
 :resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
 :incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
+:vms: {microsoftdocs}/azure/virtual-machines/linux/sizes
+:azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
+:jq: https://stedolan.github.io/jq/
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -56,9 +59,9 @@ Login-AzureRmAccount
 
 and follow the instructions provided.
 
-[[first-deployment]]
+[[deploy-elasticsearch-and-kibana]]
 [float]
-=== Deploy Elasticsearch with Kibana
+=== Deploy Elasticsearch and Kibana
 
 Now that the CLI is logged in with an account, a deployment can be started. First,
 choose a subscription in which to create a resource group and resources
@@ -90,6 +93,14 @@ az group create --name "<name>" --location "<location>"
 New-AzureRmResourceGroup -Name "<name>" -Location "<location>"
 ----
 
+where
+
+`<name>`:: is a meaningful name to provide the resource group in order to identify
+it for future reference
+`<location>`:: is a {azurelocations}[valid azure location] for the subscription type
+
+[NOTE]
+--
 A resource group is a container that holds related resources. As such,
 {resourcegroup}[those resources share the same lifecycle, permissions and policies].
 A resource group is tied to a specific location, which internally, is where the
@@ -97,20 +108,261 @@ Azure infrastructure will persist data related to the resource group, such as
 deployments. The resources deployed within a resource group however, do not need
 to be deployed to the same location as the resource group; resources within a resource
 group can be deployed to any location.
+--
 
-== Elasticseach Nodes
+Now that a resource group has been created, start a deployment of the ARM
+template
 
-=== Configuration
+[source,sh]
+.Azure CLI 2.0
+----
+template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
+template_version=6.3.1
 
-- dedicated master nodes
-- incremental scale up and down
+az group deployment create \
+  --resource-group "<name>" \
+  --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
+  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
+               esVersion=6.3.1 esClusterName=elasticsearch \
+               vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
+               adminUsername=russ adminPassword=Password1234 \
+               securityBootstrapPassword=bootstrapPassword123 \
+               securityAdminPassword=adminPassword123 \
+               securityReadPassword=readPassword123 \
+               securityKibanaPassword=kibanaPassword123 \
+               securityLogstashPassword=logstashPassword123
+----
 
-=== Number of nodes
+[source,powershell]
+.Azure PowerShell
+----
+$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
+$templateVersion = "6.3.1"
 
-- different parameters for roles
-- subscription core quota limits
+$parameters = @{
+  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
+  "esVersion" = "6.3.1"
+  "esClusterName" = "elasticsearch"
+  "vmDataDiskCount" = 1
+  "dataNodesAreMasterEligible" = "Yes"
+  "adminUsername" = "russ"
+  "adminPassword" = "Password1234"
+  "securityBootstrapPassword" = "bootstrapPassword123"
+  "securityAdminPassword" = "adminPassword123"
+  "securityReadPassword" = "readPassword123"
+  "securityKibanaPassword" = "kibanaPassword123"
+  "securityLogstashPassword" = "logstashPassword123"
+}
 
-=== Size of nodes
+$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
+  -TemplateUri "$templateBaseUri/$templateVersion/src/mainTemplate.json" `
+  -TemplateParameterObject $parameters
+----
+
+This example will deploy
+
+* an Elasticsearch cluster named elasticsearch
+running version 6.3.1
+* Kibana 6.3.1.
+* The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
+* The cluster will have a trial license applied, providing access to Platinum
+X-Pack features for 30 days
+* X-Pack Security is enabled, and the built-in roles `elastic`, `kibana` and
+`logstash_system` are configured, along with an `es_read` user account with readonly
+access.
+
+The ARM template accepts _many_ {github}#parameters[parameters], many of which are optional. When a value is not supplied for a parameter, a default value defined within the
+ARM template will be used. In the example above, the number of data nodes deployed
+uses the default value of 3.
+
+[float]
+[[deployment-outputs]]
+=== Deployment outputs
+
+When an ARM template deployment completes successfully, the template outputs
+
+`jumpboxssh`:: The public SSH key used when connecting to the jumpbox VM via SSH,
+where the `authenticationType` parameter value passed is `sshPublicKey`
+
+`kibana`:: The domain name and port for the public IP address for Kibana,
+when `kibana` parameter value passed is `Yes`
+
+`loadbalancer`:: The domain name and port for the public IP address for the
+external load balancer, when `loadBalancerType` parameter value passed is `external`
+
+When an output value is not applicable, `"N/A"` is returned.
+
+The values can be retrieved with Azure CLI 2.0 and using, for example, {jq}[`jq`] to
+extract the values from JSON
+
+[source,sh]
+.Azure CLI 2.0
+----
+outputs=$(az group deployment show --name mainTemplate \
+  --resource-group "<name>" \
+  --query properties.outputs)
+
+# jq needs to be installed
+jumpboxssh=$(jq -r .jumpboxssh.value <<< $outputs)
+kibana=$(jq -r .kibana.value <<< $outputs)
+loadbalancer=$(jq -r .loadbalancer.value <<< $outputs)
+----
+
+Using Azure PowerShell, the outputs can be retrieved from the `$deployment`
+variable assigned as part of the deployment command
+
+[source,powershell]
+.Azure PowerShell
+----
+$jumpboxssh=$deployment.Outputs.jumpboxssh.Value
+$kibana=$deployment.Outputs.kibana.Value
+$loadbalancer=$deployment.Outputs.loadbalancer.Value
+----
+
+[float]
+[[delete-resource-group]]
+=== Delete resource group
+
+When finished with a deployment and no longer wish to keep the resources or data
+around, the easiest way to delete all resources is to delete the resource group
+containing the resources, assuming the resource group only contains resources
+from the ARM template deployment
+
+[source,sh]
+.Azure CLI 2.0
+----
+az group delete --resource-group "<name>"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+Remove-AzureRmResourceGroup -Name "<name>"
+----
+
+That's it for getting started with the ARM template. Read on to learn more about
+different parameter and deployment options.
+
+== Elasticseach nodes
+
+The ARM template is able to deploy an Elasticsearch cluster topology with up to 50 data nodes and up to 20 coordinating nodes, along with three dedicated master nodes. The following
+sections highlight the parameters that can control {elasticdocs}/modules-node.html[node] deployment options.
+
+Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
+published to the Azure VM gallery by Canonical.
+
+[IMPORTANT]
+.Subscription core quota limits
+--
+The template is able to deploy a cluster up to 73 nodes in size (3 master, 50 data and
+20 coordinating nodes), but the largest cluster that you'll be able to deploy will
+be governed by the core quota limit defined for the VM SKU targeted and location
+within the subscription. You can check what the limit and current use is with
+`Subscriptions > Usage + quotas` in the {portal}[Azure portal] or
+
+[source,sh]
+.Azure CLI 2.0
+----
+az vm list-usage --location "<location>"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+Get-AzureRmVMUsage -Location "<location>"
+----
+
+Typically, the default limit is 10 per VM SKU family per location. Contact Azure
+support to increase the limit for a VM SKU in a specific location.
+--
+
+[float]
+=== Data node configuration
+
+By default, the template deploys three data nodes. Data nodes hold and perform
+data related operations such as search and aggregations. Data node VMs are attached
+to the backend pool of load balancers within the template, unless coordinating nodes
+are also deployed, in which case coordinating nodes will be attached instead.
+
+`dataNodesAreMasterEligible`::
+Either `Yes` or `No` to make data nodes master-eligible. This can be useful for small Elasticsearch clusters. For larger clusters however, it is recommended to have
+dedicated master nodes. The default is `No`, and when `Yes` is passed, no
+dedicated master nodes will be provisioned.
+
+`vmSizeDataNodes`::
+The {vms}[Azure VM SKU] to use for data nodes. Different VM SKUs have different CPU, RAM,
+temporary storage space and network bandwidth. Additionally, Different VM SKUs have
+different limits to the number of managed disks that can be attached. The default is
+`Standard_D1`.
+
+`vmDataNodeCount`::
+The number of data nodes. Must be greater than 0. Defaults to 3.
+
+[float]
+=== Master node configuration
+
+When `dataNodesAreMasterEligible` parameter is `No`, three dedicated master nodes
+will be deployed. Dedicated master nodes are **recommended** for larger clusters.
+
+`vmSizeMasterNodes`::
+The {vms}[Azure VM SKU] to use for dedicated master nodes.
+Different VM SKUs have different CPU, RAM, temporary storage space and network
+bandwidth. The default is `Standard_D1`.
+
+[float]
+=== Coordinating node configuration
+
+Coordinating nodes can be deployed with the template; coordinating nodes do not
+hold data and are not master-eligible, acting as the coordinators of incoming
+requests from clients, sending the request on to data nodes, and gathering the
+results to reduce each data node's results into a single global resultset.
+Coordinating nodes are a way to scale a cluster deployed with this template
+beyond 100 data nodes, the maximum number of VMs that can be added to a
+load balancer backend pool; although the template puts a limit of 50 data nodes
+within the template, this can be increased by forking the template and increasing
+this limit to 100.
+
+If specified, coordinating node VMs are attached to the backend pool of load
+balancers within the template, instead of data node VMs.
+
+`vmSizeClientNodes`::
+The {vms}[Azure VM SKU] to use for coordinating nodes.
+Different VM SKUs have different CPU, RAM, temporary storage space and network
+bandwidth. The default is `Standard_D1`.
+
+`vmClientNodeCount`::
+The number of coordinating nodes. Defaults to 0.
+
+[float]
+=== Ingest and Machine learning nodes
+
+All nodes are configured as Ingest nodes, as well as the Machine
+learning nodes if a license that enables Machine learning features has been
+applied. Consult the {elasticdocs}/modules-node.html[node] documentation to understand how these can be changed.
+
+[float]
+=== Scaling up number of nodes
+
+The template deploys in {incrementalmode}[incremental mode] by default; If a previous solution deployment has been performed into the target resource group, the resources that exist in the resource group __but are not in the template are left unchanged__. All resources that are specified by the solution will be deployed, and for those __resources that already exist and whose settings are unchanged, no change will be made__. For those __resources whose settings are changed however, the resource is provisioned with those new settings__.
+
+If the Elasticsearch deployment script is run on a VM that already has Elasticsearch service running, the elasticsearch configuration file is changed
+using parameters from the new deployment. If the node is using the temporary disk
+for storage, the script ensures that the data directory and permissions are set appropriately. If a change to the elasticsearch configuration file is detected,
+the Elasticsearch service is restarted.
+
+What incremental deployment mode and deployment script behaviour mean in practice
+is that it is possible to increase the size of a cluster deployed with the template. There are some caveats to be aware of with this
+
+. A deployment into an existing resource group where the template has already been
+deployed *must* use exactly the same parameters, except either `vmDataNodeCount` or
+`vmClientNodeCount`, which should be higher (or the same) as the previous deployment to the resource group, to increase the number of data or coordinating
+nodes, respectively.
+. Template deployment in incremental mode *must* only be used to scale up a
+cluster, and not down; the Azure infrastructure has no knowledge of which VMs
+can be safely deleted without losing data, since it knows nothing about the shards
+and replicas that each node contains.
+. Scaling up _should_ only be used when the cluster contains dedicated master
+nodes
 
 === Availability
 

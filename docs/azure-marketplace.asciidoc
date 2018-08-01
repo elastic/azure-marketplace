@@ -65,7 +65,7 @@ to bear in mind
 {resourcegroup}[those resources share the same lifecycle, permissions and policies]
 
 . The solution template deploys in {incrementalmode}[incremental mode]; If a previous solution
-deployment has been performed into an existing resource group, the resources that
+deployment has been performed into the target resource group, the resources that
 exist in the resource group but are not in the template are left unchanged. All resources
 that are specified by the solution will be deployed, and for those resources that
 already exist and whose settings are unchanged, no change will be made. For those
