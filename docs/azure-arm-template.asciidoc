@@ -12,6 +12,7 @@
 :vms: {microsoftdocs}/azure/virtual-machines/linux/sizes
 :azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
 :jq: https://stedolan.github.io/jq/
+:monit: https://mmonit.com/monit/
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -422,9 +423,44 @@ that pass initial validation but fail at deployment time
 When such issues arise, you'll need to know where to look to ascertain what the
 underlying problem is, in order to determine what action to take to rectify.
 
+=== Diagnosing through Azure
+
+
+
 === Diagnosing through logs
 
+The log files on each of the Elasticsearch node VMs are a great resource to
+understand the current state of the system. The following in particular are most
+useful, which you may need administrative privileges on the VM to access:
 
+`/var/log/arm-install.log`::
+A log file that the Elasticsearch deployment script writes to. This provides a
+chronological timeline for the important events that occur at deployment time,
+also giving an indication of how long each takes. Looking at this first provides
+an indication as to whether the deployment script completed successfully.
+
+`/var/lib/waagent/custom-script/download/0/stderr`::
+A log file that contains log messages written to standard error (stderr) by the Azure infrastructure when the Elasticsearch deployment script runs.
+
+`/var/lib/waagent/custom-script/download/0/stdout`::
+A log file that contains log messages written to standard output (stdout) by the Azure infrastructure when the Elasticsearch deployment script runs. There will be
+duplication of messages that have been written to `/var/log/arm-install.log`, in addition to other tooling related output such as apt package installations.
+
+`/var/log/monit.log`::
+A log file for {monit}[monit], the utility used to manage and monitor the
+Elasticsearch service. This log file is useful to check to ensure monit is running correctly.
+
+==== Elasticsearch logs
+
+In addition to template specific and Azure related logs, Elasticsearch log
+and configuration files provide invaluable information
+
+Log files in `/var/log/elasticsearch/`::
+A collection of different log files written to by the running Elasticsearch
+process.
+
+`/etc/elasticsearch/elasticsearch.yml`::
+The Elasticsearch configuration log file.
 
 === Accessing nodes
 
