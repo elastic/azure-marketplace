@@ -11,6 +11,8 @@
 :incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
 :vms: {microsoftdocs}/azure/virtual-machines/linux/sizes
 :azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
+:availabilitysets: {microsoftdocs}/virtual-machines/windows/manage-availability
+:availabilityzones: {microsoftdocs}/availability-zones/az-overview
 :jq: https://stedolan.github.io/jq/
 :monit: https://mmonit.com/monit/
 
@@ -250,7 +252,8 @@ The ARM template is able to deploy an Elasticsearch cluster topology with up to 
 sections highlight the parameters that can control {elasticdocs}/modules-node.html[node] deployment options.
 
 Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
-published to the Azure VM gallery by Canonical.
+published to the Azure VM gallery by Canonical, using the {elasticdocs}/deb.html[Debian package distribution
+of Elasticsearch].
 
 [IMPORTANT]
 .Subscription core quota limits
@@ -367,9 +370,38 @@ nodes
 
 === Availability
 
+
+
 ==== Availability sets
 
+Master, data and coordinating node VMs are grouped in their own
+{availabilitysets}[Availability sets], to try to ensure that at least one machine
+is available within a datacentre during a planned or unplanned maintenance event.
+
+The template does not currently use {availabilityzones}[Availability zones] since
+they are not yet available in all Azure regions to which the template can be
+deployed. It is expected that the template will use Availability zones in the future.
+
 ==== Update and Fault Domains
+
+Each Availability set has 20 Update domains and two or three Fault domains, depending
+on how many Fault domains the selected Azure location supports. When VMs are provisioned, they
+are round-robin assigned an Update domain and Fault domain.
+
+Update domains::
+Indicate group of virtual machines and underlying physical hardware that can be
+rebooted at the same time.
+
+Fault domains::
+Indicates group of virtual machines that share a common power source and network switch.
+While placing your virtual machines into an availability set does not the cluster
+from operating system or Elasticsearch operation failures, it does limit the impact
+of potential physical hardware failures, network outages, or power interruptions.
+
+When Elasticsearch is installed onto the VM, the Update and Fault domains in which the
+VM resides are specified as node attributes.
+{elasticdocs}/allocation-awareness.html[Shard allocation awareness] is configured
+taking into account Fault domain and Update domain values.
 
 === Data disk configuration
 
