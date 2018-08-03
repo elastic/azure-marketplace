@@ -13,6 +13,8 @@
 :azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
 :availabilitysets: {microsoftdocs}/virtual-machines/windows/manage-availability
 :availabilityzones: {microsoftdocs}/availability-zones/az-overview
+:manageddisks: {microsoftdocs}/azure/virtual-machines/linux/managed-disks-overview
+:dns: {microsoftdocs}/azure/virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances#name-resolution-that-uses-your-own-dns-server
 :jq: https://stedolan.github.io/jq/
 :monit: https://mmonit.com/monit/
 
@@ -246,6 +248,7 @@ Remove-AzureRmResourceGroup -Name "<name>"
 That's it for getting started with the ARM template. Read on to learn more about
 different parameter and deployment options.
 
+[[elasticsearch-nodes]]
 == Elasticseach nodes
 
 The ARM template is able to deploy an Elasticsearch cluster topology with up to 50 data nodes and up to 20 coordinating nodes, along with three dedicated master nodes. The following
@@ -281,7 +284,8 @@ support to increase the limit for a VM SKU in a specific location.
 --
 
 [float]
-=== Data node configuration
+[[data-nodes]]
+=== Data nodes
 
 By default, the template deploys three data nodes. Data nodes hold and perform
 data related operations such as search and aggregations. Data node VMs are attached
@@ -303,7 +307,8 @@ different limits to the number of managed disks that can be attached. The defaul
 The number of data nodes. Must be greater than 0. Defaults to 3.
 
 [float]
-=== Master node configuration
+[[master-nodes]]
+=== Master nodes
 
 When `dataNodesAreMasterEligible` parameter is `No`, three dedicated master nodes
 will be deployed. Dedicated master nodes are **recommended** for larger clusters.
@@ -314,7 +319,8 @@ Different VM SKUs have different CPU, RAM, temporary storage space and network
 bandwidth. The default is `Standard_D1`.
 
 [float]
-=== Coordinating node configuration
+[[coordinating-nodes]]
+=== Coordinating nodes
 
 Coordinating nodes can be deployed with the template; coordinating nodes do not
 hold data and are not master-eligible, acting as the coordinators of incoming
@@ -368,19 +374,25 @@ and replicas that each node contains.
 . Scaling up _should_ only be used when the cluster contains dedicated master
 nodes
 
+[float]
 === Availability
 
-
+Oftentimes you will want to deploy a highly available Elasticsearch cluster that
+stays online even in the face of instance or zone failure. Azure has several
+concepts to manage Availability.
 
 ==== Availability sets
 
 Master, data and coordinating node VMs are grouped in their own
-{availabilitysets}[Availability sets], to try to ensure that at least one machine
+{availabilitysets}[Availability sets], so that at least one machine
 is available within a datacentre during a planned or unplanned maintenance event.
 
+[NOTE]
+--
 The template does not currently use {availabilityzones}[Availability zones] since
 they are not yet available in all Azure regions to which the template can be
 deployed. It is expected that the template will use Availability zones in the future.
+--
 
 ==== Update and Fault Domains
 
@@ -403,14 +415,124 @@ VM resides are specified as node attributes.
 {elasticdocs}/allocation-awareness.html[Shard allocation awareness] is configured
 taking into account Fault domain and Update domain values.
 
-=== Data disk configuration
+[[data-disks]]
+=== Data disks
+
+{manageddisks}[Managed disks] can be attached to <<data-nodes, Data nodes>> to use as the data directory for the node. The ARM template can attach Standard HDD disks or Premium
+managed disks, for those VM SKUs that support them:
+
+`storageAccountType`::
+The performance tier of managed disks. `Standard` will use Standard HDD disks,
+whilst `Default` will use Premium managed disks for those {vms}[VM SKUs] that support Premium
+managed disks, and Standard HDD disks for those that do not. The default is `Default`.
+
+`vmDataDiskSize`::
+The size of each attached managed disk. Choose between
++
+[horizontal]
+`XXLarge`::: 4095 GB
+`XLarge`::: 2048 GB
+`Large`::: 1024 GB
+`Medium`::: 512 GB
+`Small`::: 128 GB
+
++
+Default is `Large`.
+
+`vmDataDiskCount`::
+The number of managed disks to attach to _each_ data node. The total number of
+managed disks will be
++
+[source]
+----
+vmDataNodeCount * vmDataDiskCount
+----
++
+If the number of disks selected is more than can be attached to the data node VM SKU,
+the maximum number of disks that can be attached for the data node VM SKU size
+will be used. This is equivalent to
++
+[source]
+----
+Math.min(vmDataDiskCount, data node VM SKU maximum attached disks)
+----
++
+Must be greater than or equal to 0.
+Default is the maximum number of disks supported by the data node VM SKU.
+
+Disks are partitioned with `fdisk` when less than 2TB, and with `parted` when larger,
+with an ext4 filesystem and 4096 byte block size.
+
+Data is striped across attached disks per data node in a RAID 0 array, using `mdadm` on Linux. When only one managed disk is attached, no RAID 0 array is configured. When a value of 0 is specified, the data node will use the temp storage of the VM.
+
+include::temp-storage-admonition.asciidoc[]
+
+Striping data across attached disks is recommended to improve Input/Output operations per second (IOPS) performance, since the IOPS and throughput limit per disk can be
+combined. The IOPS for Premium disks is higher than for Standard HDD disks, so
+Premium disks are recommended where application performance is paramount.
 
 == Networking
 
 === Virtual network
 
-- New or existing virtual network
-- Azure DNS for resolution
+The template can deploy a new virtual network and attach Elasticsearch and Kibana
+to it, or can use an existing virtual network in the same Azure region as the
+resource group being deployed to.
+
+Using an existing virtual network requires a subnet to exist to which to attach the deployed resources and a known available private IP address to use as the static address for the internal load balancer, which Kibana will use to communicate with the cluster.
+The subnet also needs to have a sufficient number of available IP addresses for all of the resources that will be attached.
+
+==== Check private IP address availability
+
+A private IP address can be checked to see if it's available within a virtual network
+with
+
+[source,sh]
+.Azure CLI 2.0
+----
+az network vnet check-ip-address --name "<vnet name>" \
+  --ip-address "<ip address>"
+  --resource-group "<resource group>"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+Test-AzureRmPrivateIPAddressAvailability -VirtualNetworkName "<vnet name>" `
+  -IPAddress "<ip address>" `
+  -ResourceGroupName "<resource group>"
+----
+
+==== Azure DNS resolution
+
+Azure DNS resolution can resolve VMs within a virtual network by hostname, and
+is relied upon by the template to form an Elasticsearch cluster, by seeding each
+node with the hostnames of each master-eligible node. IP addresses are not used
+since they are dynamically allocated to VMs within the template.
+
+[IMPORTANT]
+--
+The template uses a predictable convention when assigning hostnames to VMs, naming
+them `master-`, `data-` and `client-` for master, data and coordinating nodes,
+respectively, followed by an incrementing integer starting at 0.
+
+Such a convention is problematic when it comes to deploying more than one cluster
+to the same virtual network however; Azure infrastructure does not prevent you
+from creating a new VM with the same hostname as an existing VM attached to the
+target virtual network, leading to Azure DNS resolving the hostname to the last
+attached VM.
+
+For this reason, the template exposes the following parameter
+
+`vmHostNamePrefix`::
+Prefix the name of each hostname in the cluster. The prefix can be up to 5
+characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters.
+--
+
+If a custom DNS is specified, it's possible to configure your own DNS servers to
+resolve hostnames correctly, by {dns}[forwarding DNS queries to Azure to resolve].
+This should be configured on the virtual network so that if VMs are shut down or
+moved around, they will have the correct configuration when starting up.
 
 === Load balancing
 
