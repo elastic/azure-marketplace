@@ -15,8 +15,12 @@
 :availabilityzones: {microsoftdocs}/availability-zones/az-overview
 :manageddisks: {microsoftdocs}/azure/virtual-machines/linux/managed-disks-overview
 :dns: {microsoftdocs}/azure/virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances#name-resolution-that-uses-your-own-dns-server
+:applicationgateway: {microsoftdocs}/azure/application-gateway/application-gateway-introduction
+:applicationgatewayfaqs: {microsoftdocs}/azure/application-gateway/application-gateway-faq
+:owasp30: https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
 :jq: https://stedolan.github.io/jq/
 :monit: https://mmonit.com/monit/
+:version: 6.3.1
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -255,8 +259,24 @@ The ARM template is able to deploy an Elasticsearch cluster topology with up to 
 sections highlight the parameters that can control {elasticdocs}/modules-node.html[node] deployment options.
 
 Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
-published to the Azure VM gallery by Canonical, using the {elasticdocs}/deb.html[Debian package distribution
-of Elasticsearch].
+published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {monit}[monit] to manage and monitor the Elasticsearch process. monit is configured to run in daemon mode, checking
+the state of the Elasticsearch process every 30 seconds; if the process is found to not be running, monit will attempt to start the process.
+
+Elasticsearch can be stopped with monit using
+
+[source,sh]
+----
+sudo monit stop elasticsearch
+----
+
+started with
+
+[source,sh]
+----
+sudo monit start elasticsearch
+----
+
+Refer to {monit}/documentation/monit.html[monit documentation] for further details.
 
 [IMPORTANT]
 .Subscription core quota limits
@@ -480,8 +500,42 @@ to it, or can use an existing virtual network in the same Azure region as the
 resource group being deployed to.
 
 Using an existing virtual network requires a subnet to exist to which to attach the deployed resources and a known available private IP address to use as the static address for the internal load balancer, which Kibana will use to communicate with the cluster.
-The subnet also needs to have a sufficient number of available IP addresses for all of the resources that will be attached.
+The subnet also needs to have a sufficient number of available IP addresses for all of the resources that will be attached. The following parameters are related to virtual
+network configuration
 
+`vNetNewOrExisting`::
+Select `new` or `existing` to deploy a new virtual network or use an existing virtual
+network, respectively. An existing virtual network in another resource group must exist
+in the same Azure location as the target location to be valid. Default is `new`.
+
+`vNetName`::
+The name of the virtual network. Defaults to `es-net`.
+
+`vNetClusterSubnetName`::
+The name of the subnet to which deployed VMs and load balancers will be attached.
+When using an existing virtual network, the subnet must already exist. Defaults
+to `es-subnet`.
+
+`vNetLoadBalancerIp`::
+The private IP address to use when configuring the internal load balancer.
+<<check-private-ip-address-availability, Must be an available IP address>> on
+the provided vNetClusterSubnetName. Defaults to `10.0.0.4`.
+
+When deploying a new virtual network, the following parameters also apply
+
+`vNetNewAddressPrefix`::
+The address space when creating a new virtual network. Defaults to `10.0.0.0/24`.
+
+`vNetNewClusterSubnetAddressPrefix`::
+The address space of the `vNetClusterSubnetName` subnet. Defaults to `10.0.0.0/25`.
+
+When attaching to an existing resource group, the following parameter also applies
+
+`vNetExistingResourceGroup`::
+The name of the resource group in which the existing virtual network is deployed.
+The resource group must exist in the same Azure location as the target location.
+
+[[check-private-ip-address-availability]]
 ==== Check private IP address availability
 
 A private IP address can be checked to see if it's available within a virtual network
@@ -536,33 +590,192 @@ moved around, they will have the correct configuration when starting up.
 
 === Load balancing
 
-- Internal
-- External
-- Application Gateway
+The template exposes three different load balancing deployment options to suit
+different use cases. Each is exposed through
 
-=== Network Security Groups
+`loadBalancerType`::
+Choose between `internal`, `external` or `gateway` to configure an internal load
+balancer, external load balancer, or Application Gateway, respectively. Default
+is `internal`.
+
+==== Internal load balancer
+An OSI layer 4 load balancer configured with a static private IP address on the virtual
+network, that can be used to round robin requests across Elasticsearch nodes. The
+private IP address is configured with `vNetLoadBalancerIp` parameter.
+
+When coordinating nodes are deployed, they are attached to the internal load balancer
+backend pool. When no coordinating nodes are deployed, data nodes are attached to
+the backend pool. The load balancer receives incoming requests on port 9200 and
+round robins them across the backend pool over port 9200,
+with a TCP health probe that checks connectivity every 30 seconds, taking
+nodes out of the backend pool when health probes fail.
+
+When Kibana is deployed, Kibana is configured to communicate with Elasticsearch
+through the internal load balancer.
+
+==== External load balancer
+An OSI layer 4 load balancer configured with a dynamically assigned public IP address
+that can be used to send requests to Elasticsearch from the public internet.
+
+When choosing to deploy with an external load balancer, both an internal and
+external load balancer are deployed; when Kibana is deployed, it will be
+configured to communicate with Elasticsearch through the internal load balancer.
+The external load balancer receives incoming requests on port 9200 and
+round robins them across the backend pool over port 9201,
+with a TCP health probe that checks connectivity every 30 seconds, taking
+nodes out of the backend pool when health probes fail. Since both the internal and
+external load balancer contain the same VMs in their backend pools, the external load
+balancer communicates with the backend pool over port 9201, to work around a limitation
+in Azure. On each Elasticsearch node VM, incoming traffic on port 9201 is re-routed
+to port 9200 using a persistent `iptables` configuration, and then routed back to
+9201 for the outgoing response.
+
+As with the internal load balancer, when coordinating nodes are deployed,
+they are attached to the external load balancer backend pool.
+When no coordinating nodes are deployed, data nodes are attached to
+the backend pool. The load balancer round robins requests across the backend pool
+over port 9200, with a TCP health probe that checks connectivity every 30 seconds, taking
+nodes out of the backend pool when health probes fail.
+
+==== Application Gateway
+An OSI layer 7 load balancer configured with a dynamically assigned public IP address
+that can be used to send requests to Elasticsearch from the public internet. {applicationgateway}[Application
+Gateway] can be configured with a certificate to configure SSL/TLS between the client
+and Application Gateway, performing SSL termination at the gateway. The following parameters are used
+to configure Application Gateway
+
+`vNetAppGatewaySubnetName`::
+The subnet name for Application Gateway. Application Gateway can only be deployed into
+a subnet that contains Application Gateways. When deploying to an existing virtual
+network, the subnet must exist beforehand. Defaults to `es-gateway-subnet`.
+
+`vNetNewAppGatewaySubnetAddressPrefix`::
+The address space of the Application Gateway subnet. This must be specified when
+deploying a new virtual network. The address space must be large enough for the
+specified Application Gateway configuration; see {applicationgatewayfaqs}[Application Gateway FAQs]
+for more details
+
+`appGatewayTier`::
+The tier of Application Gateway. Either `Standard` or `WAF`. The latter is Web
+application firewall (WAF), a feature that provides centralized protection from
+common exploits and vulnerabilities based on {owasp30}[OWASP core rule sets 3.0].
+Defaults to `Standard`.
+
+`appGatewaySku`::
+The size of the Application Gateway. Choose `Small`, `Medium` or `Large`.
+When choosing `appGatewayTier` of `WAF`, the size must be at least `Medium`. The
+main difference between sizes is the amount of throughput that the Gateway can handle.
+Defaults to `Medium`.
+
+`appGatewayCount`::
+The number of instances of Application Gateway, from 1 to 10. a minimum value
+of 2 is recommended for production loads. Defaults to 2.
+
+`appGatewayCertBlob`::
+A Base-64 encoded PKCS#12 archive (.p12/.pfx) containing the certificate
+and key for Application Gateway. This certificate is used to configure SSL/TLS to
+and from Application Gateway. This is required to correctly configure Application
+Gateway.
+
+`appGatewayCertPassword`::
+The passphrase for the PKCS#12 archive containing the certificate and key for
+Application Gateway. Defaults to empty string.
+
+`appGatewayEsHttpCertBlob`::
+The Base-64 encoded public certificate (.cer) used to secure the HTTP layer of
+Elasticsearch. This is used by Application Gateway to whitelist certificates used
+by the backend pool when configuring end-to-end encryption,
+and is required when SSL/TLS is configured for the HTTP layer
+of Elasticsearch. See the <<tls, Transport Layer Security>> section for more details.
+
+`appGatewayWafStatus`::
+When choosing `appGatewayTier` of `WAF`, this parameter controls the firewall
+status, either `Enabled` or `Disabled`. Defaults to `Enabled`.
+
+`appGatewayWafMode`::
+When choosing `appGatewayTier` of `WAF`, the firewall mode, either `Detection` or
+`Prevention`. Defaults to `Detection`.
+
+When choosing to deploy with Application Gateway, both Application Gateway and
+an internal load balancer are deployed; the internal load balancer is configured as
+the backend pool for Application Gateway.
+
+A custom health probe is configured that reports healthy for the backend pool for
+status codes between 200-399, and for status code 401, which may be returned when
+X-Pack Security is enabled, since the health probe makes requests without any form
+of authentication.
+
+The public IP address of Application Gateway is not returned in the template
+outputs, but can be retrieved after successful deployment with
+
+[source,sh]
+.Azure CLI 2.0
+----
+gateway_ip_resource=$(az network public-ip show --name "es-app-gateway-ip" \
+  --resource-group "<resource group>")
+
+# jq needs to be installed
+gateway_fqdn=$(jq -r .dnsSettings.fqdn <<< $gateway_ip_resource)
+gateway_ip="https://${gateway_fqdn}:9200"
+----
+
+[source,powershell]
+.Azure PowerShell
+----
+$gatewayIpResource = Get-AzureRmPublicIpAddress -Name "es-app-gateway-ip" `
+  -ResourceGroupName "<resource group>"
+
+$gatewayIp = "https://$($gatewayIpResource.DnsSettings.Fqdn):9200"
+----
 
 == Security
 
+TODO!
+
 === Authentication and Authorization
 
+TODO!
+
+=== SAML single sign-on
+
+TODO!
+
+[[tls]]
 === Transport Layer Security
+
+TODO!
 
 ==== Elasticsearch
 
+TODO!
+
 ===== HTTP layer
+
+TODO!
 
 ===== Transport layer
 
+TODO!
+
 ==== Kibana
+
+TODO!
 
 == Plugins
 
+TODO!
+
 === X-Pack
+
+TODO!
 
 === Azure repository
 
+TODO!
+
 === Miscellaneous
+
+TODO!
 
 == Troubleshooting
 
@@ -577,9 +790,41 @@ that pass initial validation but fail at deployment time
 When such issues arise, you'll need to know where to look to ascertain what the
 underlying problem is, in order to determine what action to take to rectify.
 
+=== Accessing nodes
+Elasticsearch node VMs are not accessible from outside of the virtual network to which
+the cluster is attached. The VMs can be accessed through SSH by either using Kibana
+as a jumpbox, or deploying a specific Jumpbox VM. In both cases, a network security
+group is configured to allow TCP traffic from the public internet on port 22 to allow
+access through SSH.
+
+SSH Authentication will use the authentication mechanism defined by the `authenticationType` parameter, either `password` or `SSH public key`:
+
+[source,sh]
+----
+ssh <admin username>@<kibana or jumpbox public IP address>
+----
+
+Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
+be accessed using SSH with either the private IP address or VM hostname, if using
+Azure DNS to resolve addresses from hostnames
+
+[source,sh]
+----
+ssh <admin username>@<internal IP address or VM hostname>
+----
+
+Many utilities and file paths may require elevated permissions to access, for
+example, the elasticsearch configuration file
+
+[source,sh]
+----
+sudo su
+cat /etc/elasticsearch/elasticsearch.yml
+----
+
 === Diagnosing through Azure
 
-
+TODO!
 
 === Diagnosing through logs
 
@@ -616,8 +861,63 @@ process.
 `/etc/elasticsearch/elasticsearch.yml`::
 The Elasticsearch configuration log file.
 
-=== Accessing nodes
+=== Repeatable deployments
 
+For repeatable deployments, it is recommended to target a specific template release
+within the {github}[GitHub repository]; Each release is identified by tagging the
+commit and the {github}/releases[release notes] indicate the changes in the release.
 
+Targeting a specific release ensures that the template parameters remain the same,
+in addition to which resources are deployed and how they are configured. Furthermore,
+a release undergoes considerable testing before being considered ready for public
+release.
 
-=== Repeated deployments
+As an example, to target {version} release of the template
+
+[source,sh]
+[subs="verbatim,attributes"]
+.Azure CLI 2.0
+----
+template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
+template_version={version}
+
+az group deployment create \
+  --resource-group "<name>" \
+  --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
+  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
+               esVersion={version} esClusterName=elasticsearch \
+               vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
+               adminUsername=russ adminPassword=Password1234 \
+               securityBootstrapPassword=bootstrapPassword123 \
+               securityAdminPassword=adminPassword123 \
+               securityReadPassword=readPassword123 \
+               securityKibanaPassword=kibanaPassword123 \
+               securityLogstashPassword=logstashPassword123
+----
+
+[source,powershell]
+[subs="verbatim,attributes"]
+.Azure PowerShell
+----
+$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
+$templateVersion = "{version}"
+
+$parameters = @{
+  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
+  "esVersion" = "{version}"
+  "esClusterName" = "elasticsearch"
+  "vmDataDiskCount" = 1
+  "dataNodesAreMasterEligible" = "Yes"
+  "adminUsername" = "russ"
+  "adminPassword" = "Password1234"
+  "securityBootstrapPassword" = "bootstrapPassword123"
+  "securityAdminPassword" = "adminPassword123"
+  "securityReadPassword" = "readPassword123"
+  "securityKibanaPassword" = "kibanaPassword123"
+  "securityLogstashPassword" = "logstashPassword123"
+}
+
+$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
+  -TemplateUri "$templateBaseUri/$templateVersion/src/mainTemplate.json" `
+  -TemplateParameterObject $parameters
+----
