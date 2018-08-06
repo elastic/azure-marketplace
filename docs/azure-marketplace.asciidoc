@@ -293,7 +293,7 @@ ssh <admin username>@<kibana or jumpbox public IP address>
 ----
 +
 Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
-be accessed using SSH with either the internal IP address or VM hostname (if using
+be accessed using SSH with either the private IP address or VM hostname (if using
 Azure DNS to resolve addresses from hostnames):
 +
 [source,sh]
