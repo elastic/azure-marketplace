@@ -1,7 +1,13 @@
 :marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
-:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
+:current: 6.3
+:register: https://register.elastic.co
+:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/{current}
+:stackdocs: https://www.elastic.co/guide/en/elastic-stack-overview/{current}
+:xpackenabled: {elasticdocs}/security-settings.html#general-security-settings
+:bootstrappassword: : {stackdocs}/built-in-users.html#bootstrap-elastic-passwords
+:licenseexpiration: {stackdocs}/license-expiration.html
 :microsoftdocs: https://docs.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
 :azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
@@ -223,9 +229,9 @@ variable assigned as part of the deployment command
 [source,powershell]
 .Azure PowerShell
 ----
-$jumpboxssh=$deployment.Outputs.jumpboxssh.Value
-$kibana=$deployment.Outputs.kibana.Value
-$loadbalancer=$deployment.Outputs.loadbalancer.Value
+$jumpboxssh = $deployment.Outputs.jumpboxssh.Value
+$kibana = $deployment.Outputs.kibana.Value
+$loadbalancer = $deployment.Outputs.loadbalancer.Value
 ----
 
 [float]
@@ -302,6 +308,29 @@ Get-AzureRmVMUsage -Location "<location>"
 Typically, the default limit is 10 per VM SKU family per location. Contact Azure
 support to increase the limit for a VM SKU in a specific location.
 --
+
+[float]
+[[admin-username]]
+=== Virtual machine admin user
+
+All VMs deployed by the template are secured with a username and either a password
+or SSH key
+
+`adminUsername`::
+Admin username used when provisioning VMs. Must be a valid Linux username
+i.e. https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-usernames/#ubuntu[avoid any usernames that are invalid for Ubuntu]
+
+`authenticationType`::
+The authentication mechanism to use to access VMs. Can be either `password` or
+`sshPublicKey`.
+
+`adminPassword`::
+When `authenticationType` is `password`, the password to use for the Admin username
+to access VMs.
+
+`sshPublicKey`::
+When `authenticationType` is `sshPublicKey`, the public SSH key to use for the
+Admin username to access VMs.
 
 [float]
 [[data-nodes]]
@@ -730,11 +759,100 @@ $gatewayIp = "https://$($gatewayIpResource.DnsSettings.Fqdn):9200"
 
 == Security
 
-TODO!
+Securing Elasticsearch and Kibana is of paramount importance, to prevent
+unauthorized access by unknown users and unauthorized access by known users
+without the appropriate role required for authorization. In addition, securing
+the transport of data and communication between Elasticsearch, Kibana, the browser,
+or any other client by encrypting traffic is critical for data integrity.
+
+The ARM template exposes a number of features for securing a deployment to Azure.
 
 === Authentication and Authorization
 
-TODO!
+The default template deployment applies a trial license to the cluster to enable
+X-Pack features, including Security, for a trial period of 30 days.
+
+As part of the trial, Security features including Basic Authentication are enabled,
+by {xpackenabled}[configuring `xpack.security.enabled: true`
+in Elasticsearch configuration]. This prevents anonymous access to the
+cluster.
+
+[WARNING]
+--
+After the trial license period expires, the trial platinum features
+{licenseexpiration}[**operate in a degraded mode, with many features disabled**].
+
+You should update your license as soon as possible. You are essentially flying blind
+when running with an expired license. The license can be updated at any point before
+or on expiration, using the {elasticdocs}/update-license.html[Update License API]
+or Kibana UI, if available in the version deployed.
+
+With Elasticsearch 6.3+, you can revert to a free perpetual basic license
+included with deployment by using the {elasticdocs}/start-basic.html[Start Basic API].
+
+With Elasticsearch 6.2 and prior, you can {register}[register for free basic license] and apply
+it to the cluster.
+--
+
+The following parameters are used to configure initial user accounts
+
+`securityBootstrapPassword`::
+Security password for {bootstrappassword}[`bootstrap.password` key] added to the Elasticsearch keystore.
+The bootstrap password is used to seed the built-in users and is necessary only for
+Elasticsearch 6.0 onwards.
++
+If no value is supplied, a 13 character password will be generated using the
+ARM template `uniqueString()` function.
+
+`securityAdminPassword`::
+Security password for the `elastic` superuser built-in user account. Must be greater
+than six characters in length.
++
+[IMPORTANT]
+--
+Keep this password somewhere safe; You never know when you may need it!
+--
+
+`securityKibanaPassword`::
+Security password for the `kibana` built-in user account. This is the account that
+Kibana uses to communicate with Elasticsearch. Must be greater
+than six characters in length.
+
+`securityLogstashPassword`::
+Security password for the `logstash_system` built-in user account. This is the account that
+Logstash can use to communicate with Elasticsearch. Must be greater
+than six characters in length.
++
+[NOTE]
+--
+The template does not currently deploy Logstash. The `logstash_system` built-in user account
+must still be configured however, and can be used to communicate with Elasticsearch
+if Logstash is also deployed.
+--
+
+`securityReadPassword`::
+Security password for an `es_read` user account configured with a user (read-only) role with
+the following definition
++
+[source,json]
+--
+{
+  "cluster": [ "monitor" ],
+  "indices": [
+    {
+      "names": [ "*" ],
+      "privileges": [ "read", "monitor", "view_index_metadata" ]
+    }
+  ]
+}
+--
++
+Must be greater than six characters in length.
+
+It is recommended after deployment to use the `elastic` superuser account to create
+the individual user accounts that will be needed for the users and applications
+that will interact with Elasticsearch and Kibana, then use those accounts going
+forward.
 
 === SAML single sign-on
 
