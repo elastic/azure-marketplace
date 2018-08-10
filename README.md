@@ -664,7 +664,7 @@ be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using
 [`openssl pkcs12`](https://www.openssl.org/docs/man1.0.2/apps/pkcs12.html)
 
     ```sh
-    openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -clcerts -nokeys
+    openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -nokeys
     ```
 
     and provide the passphrase for the archive when prompted.
@@ -676,7 +676,7 @@ Gateway's whitelisting mechanism. This can be checked using
 [`openssl x509`](https://www.openssl.org/docs/man1.0.2/apps/x509.html)
 
 ```sh
-openssl x509 -in public_key.cer -text -noout
+openssl x509 -in http_public_cert.cer -text -noout
 ```
 
 which will output something similar to
