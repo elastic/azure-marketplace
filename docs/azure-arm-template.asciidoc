@@ -182,7 +182,7 @@ running version 6.3.1
 * The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
 * The cluster will have a trial license applied, providing access to Platinum
 X-Pack features for 30 days
-* X-Pack Security is enabled, and the built-in roles `elastic`, `kibana` and
+* X-Pack Security is enabled, and the {xpackdocs}/built-in-roles.html[built-in roles] `elastic`, `kibana` and
 `logstash_system` are configured, along with an `es_read` user account with readonly
 access.
 
@@ -666,6 +666,7 @@ the backend pool. The load balancer round robins requests across the backend poo
 over port 9200, with a TCP health probe that checks connectivity every 30 seconds, taking
 nodes out of the backend pool when health probes fail.
 
+[[application-gateway]]
 ==== Application Gateway
 An OSI layer 7 load balancer configured with a dynamically assigned public IP address
 that can be used to send requests to Elasticsearch from the public internet. {applicationgateway}[Application
@@ -780,7 +781,7 @@ cluster.
 [WARNING]
 --
 After the trial license period expires, the trial platinum features
-{licenseexpiration}[**operate in a degraded mode, with many features disabled**].
+{licenseexpiration}[**operate in a degraded mode**].
 
 You should update your license as soon as possible. You are essentially flying blind
 when running with an expired license. The license can be updated at any point before
@@ -825,7 +826,7 @@ than six characters in length.
 +
 [NOTE]
 --
-The template does not currently deploy Logstash. The `logstash_system` built-in user account
+The template does **not** currently deploy Logstash. The `logstash_system` built-in user account
 must still be configured however, and can be used to communicate with Elasticsearch
 if Logstash is also deployed.
 --
@@ -854,26 +855,378 @@ the individual user accounts that will be needed for the users and applications
 that will interact with Elasticsearch and Kibana, then use those accounts going
 forward.
 
-=== SAML single sign-on
+[[saml-single-sign-on-with-azure-active-directory]]
+=== SAML single sign-on with Azure Active Directory
 
-TODO!
+Using SAML single sign-on (SSO) for Elasticsearch with Azure Active Directory (AAD)
+means that Elasticsearch does not need to be seeded with any user accounts from the directory.
+Instead, Elasticsearch is able to rely on the claims sent within a SAML token in
+response to successful authentication to determine identity and privileges.
+
+To integrate SAML SSO, you
+
+TODO! Requirements
+
+TODO! Indicate that Basic Authentication realm is also configured
+
+==== Create Enterprise application
+
+To integrate Elasticsearch with AAD for SAML SSO, it's necessary to create an Enterprise Application within AAD _before_ deploying Elasticsearch with the ARM template. An Enterprise application can be created in the Azure Portal by first navigating to Azure Active Directory
+
+image:images/azure_active_directory.png[]
+
+Choosing Enterprise applications from the AAD blade
+
+image:images/enterprise_application.png[]
+
+And then creating a new application using the `+ New application` button. This will bring up a new blade where a new Enterprise application can be added
+
+image:images/configure_non_gallery_application.png[]
+
+Configure a non-gallery application and give it a name, such as Elasticsearch.
+
+[[configure-enterprise-application]]
+==== Configure enterprise application
+
+To configure the enterprise application for SAML SSO, navigate to it in the
+AAD blade under `Enterprise Applications`, and select the `Single sign-on` navigation item
+
+image:images/enterprise_application_saml_configuration.png[]
+
+Make a note of the App Federation Metadata Url, as you will need this when
+deploying Elasticsearch on Azure.
+
+If you will be configuring a `CNAME` DNS record entry for Kibana, configure the
+Identifier (EntityID) input with the domain that you'll be using. For example,
+if setting up a `CNAME` of `saml-aad` on the `elastic.co` domain to point to Kibana, the value will be `https://saml-aad.elastic.co:5601` for Identifier (EntityID).
+Additionally, the Reply URL input should be `https://saml-aad.elastic.co:5601/api/security/v1/saml`. If you will not be configuring
+a `CNAME`, simply leave these blank for now.
+
+==== SAML token attributes
+
+The User Attributes section lists the attributes that will be returned in a SAML token
+upon successful authentication
+
+image:images/saml_token_attributes.png[]
+
+Add the `role` attribute to the User attributes using the Add Attribute section
+
+image:images/saml_token_add_attribute.png[]
+
+with the following details
+
+[horizontal]
+Name:: `role`
+Mapping:: `user.assignedroles`
+Namespace:: `http://schemas.microsoft.com/ws/2008/06/identity/claims`
+
+Now, the role(s) assigned to a user within the Enterprise application will be
+sent in the SAML token, in the SAML `role` claim.
+
+[[application-manifest]]
+==== Application manifest
+
+When an Enterprise application is first created, an https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-application-manifest[Application Manifest] is also created that controls the application's identity configuration with respect to AAD. Amongst other things, the app manifest specifies which roles can be declared for the Enterprise application, in the `appRoles` array.
+
+To view the `appRoles`, navigate to the `App registrations` menu item within the Azure Active Directory blade, select the Enterprise application in question, and click the Manifest button
+
+image:images/application_manifest.png[]
+
+The manifest is a JSON object that will look similar to
+
+[source,json]
+----
+{
+  "appId": "<guid>",
+  "appRoles": [
+    {
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "displayName": "User",
+      "id": "<guid>",
+      "isEnabled": true,
+      "description": "User",
+      "value": null
+    },
+    {
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "displayName": "msiam_access",
+      "id": "<guid>",
+      "isEnabled": true,
+      "description": "msiam_access",
+      "value": null
+    }
+  ],
+  ... etc.
+}
+----
+
+Add role objects to the `appRoles` array for the roles that you wish to be able to assign
+users within AAD to. A recommendation here is to add the built-in roles available within
+Elasticsearch, for example, the `superuser` role, etc. Each role needs a unique identifer and can be given a description
+
+[source,json]
+----
+{
+  "appId": "<guid>",
+  "appRoles": [
+    {
+      "allowedMemberTypes": [
+        "User"
+      ],
+      "displayName": "Superuser",
+      "id": "18d14569-c3bd-439b-9a66-3a2aee01d14d",
+      "isEnabled": true,
+      "description": "Superuser with administrator access",
+      "value": "superuser"
+    },
+    ... other roles
+  ],
+  ... etc.
+----
+
+After adding the necessary roles, save the manifest.
+
+==== Assign users to Enterprise application
+
+Now that the Enterprise application roles are configured, users within AAD can be granted
+access to the Enterprise application and be assigned one of the application roles
+
+image:images/add_user_to_role.png[]
+
+=== Configuring Elasticsearch for SAML SSO
+
+With Azure Active Directory configured, the following parameters can be used to
+configure Elasticsearch for SAML SSO
+
+`samlMetadataUri`::
+the URI from which the metadata for the Identity Provider can be retrieved. Use the App Federation Metadata Url of the Enterprise application created in Azure.
+
+`samlServiceProviderUri`::
+An optional URI of the Service Provider. This will be the valuesupplied for the Identifier (EntityID) field, when using a `CNAME` DNS record entry to point to the instance of Kibana deployed.
++
+If not specified, the value used will be the fully qualified domain name of the public IP address assigned to the deployed Kibana instance.
+
+In addition to these parameters, the following conditions must be satisfied:
+
+* `esVersion` **must** be one that supports the SAML realm i.e. Elasticsearch 6.2.0 or later
+* `xpackPlugins` **must** be `Yes` to install a trial license of X-Pack platinum features
+* `kibana` **must** be `Yes` to deploy an instance of Kibana
+* `esHttpCertBlob` _or_ `esHttpCaCertBlob` **must* be provided to configure SSL/TLS for the HTTP layer of Elasticsearch.
+
+For a production environment, it's strongly recommended to also configure SSL/TLS for communication with Kibana using `kibanaCertBlob` and `kibanaKeyBlob` parameters. Consult the <<tls, Transport Layer Security>> section for further details on configuring SSL/TLS for Elasticsearch and Kibana.
+
+An example of a minimum deployment is
+
+[source,sh]
+[subs="verbatim,attributes"]
+.Azure CLI 2.0
+----
+template_version={version}
+template_base_uri="https://raw.githubusercontent.com/elastic/azure-marketplace/$template_version/src"
+
+# certificates for SSL/TLS
+http_cert=$(base64 /mnt/c/http.p12)
+kibana_cert=$(base64 /mnt/c/kibana.crt)
+kibana_key=$(base64 /mnt/c/kibana.key)
+
+resource_group="<resource group>"
+location="<location>"
+
+# App Federation Metadata Url of the Enterprise application
+metadata_uri="https://login.microsoftonline.com/<guid>/federationmetadata/2007-06/federationmetadata.xml?appid=<guid>"
+
+az group create --name $resource_group --location $location
+
+az group deployment create \
+    --resource-group $resource_group \
+    --template-uri $template_base_uri/mainTemplate.json \
+    --parameters artifactsBaseUrl=$template_base_uri \
+        esClusterName=elasticsearch \
+        esHttpCertBlob=$http_cert \
+        adminUsername=russ \
+        authenticationType=password \
+        adminPassword=Password1234 \
+        securityBootstrapPassword=BootstrapPassword123 \
+        securityAdminPassword=AdminPassword123 \
+        securityReadPassword=ReadPassword123 \
+        securityKibanaPassword=KibanaPassword123 \
+        securityLogstashPassword=LogstashPassword123 \
+        kibanaCertBlob=$kibana_cert \
+        kibanaKeyBlob=$kibana_key \
+        samlMetadataUri=$metadata_uri
+----
+
+[source,powershell]
+[subs="verbatim,attributes"]
+.Azure PowerShell
+----
+$templateVersion = "{version}"
+$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
+
+# certificates for SSL/TLS
+$httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\http-cert.pfx"))
+$kibanaCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\kibana.crt"))
+$kibanaKey = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\kibana.key"))
+
+$resourceGroup = "<resource group>"
+$location = "<location>"
+
+# App Federation Metadata Url of the Enterprise application
+$metadataUri="https://login.microsoftonline.com/<guid>/federationmetadata/2007-06/federationmetadata.xml?appid=<guid>"
+
+$parameters = @{
+    "artifactsBaseUrl"= $templateBaseUri
+    "esClusterName" = "elasticsearch"
+    "esHttpCertBlob" = $httpCert
+    "adminUsername" = "russ"
+    "authenticationType" = "password"
+    "adminPassword" = "Password1234"
+    "securityBootstrapPassword" = "BootstrapPassword123"
+    "securityAdminPassword" = "AdminPassword123"
+    "securityReadPassword" = "ReadPassword123"
+    "securityKibanaPassword" = "KibanaPassword123"
+    "securityLogstashPassword" = "LogstashPassword123"
+    "kibanaCertBlob" = $kibanaCert
+    "kibanaKeyBlob" = $kibanaKey
+    "samlMetadataUri" = $metadataUri
+}
+
+New-AzureRmResourceGroup -Name $resourceGroup -Location $location
+
+New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroup `
+  -TemplateUri "$templateBaseUri/mainTemplate.json" `
+  -TemplateParameterObject $parameters
+----
+
+After cluster deployment, if you didn't provide a value for the `samlServiceProviderUri`,
+copy the <<deployment-outputs, `kibana` output>> and paste this value into <<configure-enterprise-application, the
+Identifier (EntityID) field for the Enterprise application within AAD>>. Also paste this value into the Reply URL field, followed by `/api/security/v1/saml`.
+
+=== Role mappings
+
+With the cluster deployed, the {elasticdocs}/security-api-role-mapping.html[Role Mapping APIs] are used to configure rules to define how roles received in the SAML token map to roles within Elasticsearch. A SAML realm called `saml_aad` is configured when `samlMetadataUri` parameter is provided, and maps the SAML role claim to the `groups` attribute.
+
+Since SAML SSO integration also configures Bacis Authentication access, role mappings
+can be added using the `elastic` superuser account. The role mappings that you define will vary depending on the roles that you defined in the `appRoles` array in the  <<application-manifest, Enterprise Application Manifest>>, but as two examples to demonstrate
+
+[source,sh]
+----
+curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-kibana-user" -H 'Content-Type: application/json' -u elastic -d'
+{
+  "roles": [ "kibana_user" ],
+  "enabled": true,
+  "rules": {
+    "field": { "realm.name": "saml_aad" } <1>
+  }
+}'
+----
+<1> The saml realm configured by the ARM template
+
+will give the `kibana_user` role to any user authenticated through the `saml_aad` SAML
+realm, and
+
+[source,sh]
+----
+curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-superuser" -H 'Content-Type: application/json' -u elastic -d'
+{
+  "roles": [ "superuser" ],
+  "enabled": true,
+  "rules": {
+    "all": [
+      { "field": { "realm.name": "saml_aad" } }, <1>
+      { "field": { "groups": "superuser" } } <2>
+    ]
+  }
+}'
+----
+<1> The saml realm configured by the ARM template
+<2> The `superuser` role defined in the Enterprise application manifest, and received in the role claim of the SAML token for the authenticated user
 
 [[tls]]
 === Transport Layer Security
 
-TODO!
+It is strongly recommended that you secure communication when using the template in production. X-Pack Security can provide Authentication and Role Based Access control, and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
 
-==== Elasticsearch
+==== HTTP layer
 
-TODO!
+You can secure HTTP communication to the cluster with TLS on the HTTP layer of Elasticsearch. You would
+typically want to do this when also deploying an external loadbalancer or Application Gateway, but you can also
+do this when deploying only Kibana, to secure internal traffic
+between Kibana and Elasticsearch through the internal load balancer.
 
-===== HTTP layer
+Configuring TLS for the HTTP layer requires xPackPlugins be set to `Yes`, and the following parameters can be used
 
-TODO!
+`esHttpCertBlob`::
+A base 64 encoded string of the PKCS#12 archive containing the certificate and key with which to secure the HTTP layer. This certificate will be used by all nodes within the cluster.
 
-===== Transport layer
+`esHttpCertPassword`::
+Optional passphrase for the PKCS#12 archive encoded in `esHttpCertBlob`. Defaults
+to empty string as the archive may not be protected.
 
-TODO!
+Typically, `esHttpCertBlob` parameter would be used with
+a certificate associated with a domain configured with
+a `CNAME` DNS record pointing to the public domain name
+or IP address of the external load balancer or Application
+Gateway.
+
+As an alternative to `esHttpCertBlob`, the following parameters can be used
+
+`esHttpCaCertBlob`::
+A base 64 encoded string of the PKCS#12 archive containing the Certificate Authority (CA)
+certificate and key with which to generate a certificate
+for each node within the cluster for securing the HTTP
+layer. Each generated certificate contains a Subject Alternative Name DNS entry with
+the hostname, an ipAddress entry with the private IP address, and an ipAddress
+entry with the private IP address of the internal load balancer. The latter allows
+Kibana to communicate with the cluster through the internal load balancer with
+full verification.
+
+`esHttpCaCertPassword`::
+Optional passphrase for the PKCS#12 archive encoded in `esHttpCaCertBlob`. Defaults
+to empty string as the archive may not be protected.
+
+[IMPORTANT]
+--
+
+When using Application Gateway for the `loadBalancerType`, you can **only** use `esHttpCertBlob` parameter (and optional `esHttpCertPassword`). SSL/TLS to Application Gateway is secured using `appGatewayCertBlob` parameter as described in <<application-gateway, Application Gateway section>> and Application Gateway performs
+SSL offload/termination.
+
+End-to-end encryption when also configuring TLS on the HTTP layer requires passing the public certificate from the PKCS#12 archive passed in the `esHttpCertBlob` parameter as the value of the `appGatewayEsHttpCertBlob` parameter.
+This allows Application Gateway to whitelist the certificate used by VMs in the backend pool.
+
+The certificate can be extracted from the PKCS#12 archive using openssl
+
+[source,sh]
+----
+
+openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -nokeys
+----
+
+The certificate to secure the HTTP layer *must* include a Subject Alternative Name with a DNS entry that matches the Subject CN to work with Application Gateway's whitelisting mechanism.
+--
+
+==== Transport layer
+
+You can secure communication between nodes in the cluster with TLS on the Transport layer of Elasticsearch.
+Configuring TLS for the Transport layer requires `xPackPlugins` be set to `Yes`.
+The following parameters can be used
+
+`esTransportCaCertBlob`::
+A base 64 encoded string of the PKCS#12 archive containing the Certificate Authority (CA)
+certificate and private key, used to generate a unique certificate for each node within
+the cluster. Each generated certificate contains a Subject Alternative Name DNS entry with
+the hostname and an ipAddress entry with the private IP address.
+
+`esTransportCertPassword`::
+Optional passphrase for the PKCS#12 archive encoded in `esTransportCaCertBlob`. Defaults
+to empty string as the archive may not be protected.
+
+One way to generate a PKCS#12 archive containing a CA certificate and key is using
+{elasticdocs}/certutil.html[Elastic's certutil command utility].
 
 ==== Kibana
 
