@@ -27,6 +27,7 @@
 :jq: https://stedolan.github.io/jq/
 :monit: https://mmonit.com/monit/
 :version: 6.3.1
+:yamllint: http://www.yamllint.com/
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -627,6 +628,7 @@ Choose between `internal`, `external` or `gateway` to configure an internal load
 balancer, external load balancer, or Application Gateway, respectively. Default
 is `internal`.
 
+[[internal-load-balancer]]
 ==== Internal load balancer
 An OSI layer 4 load balancer configured with a static private IP address on the virtual
 network, that can be used to round robin requests across Elasticsearch nodes. The
@@ -642,6 +644,7 @@ nodes out of the backend pool when health probes fail.
 When Kibana is deployed, Kibana is configured to communicate with Elasticsearch
 through the internal load balancer.
 
+[[external-load-balancer]]
 ==== External load balancer
 An OSI layer 4 load balancer configured with a dynamically assigned public IP address
 that can be used to send requests to Elasticsearch from the public internet.
@@ -757,6 +760,46 @@ $gatewayIpResource = Get-AzureRmPublicIpAddress -Name "es-app-gateway-ip" `
 
 $gatewayIp = "https://$($gatewayIpResource.DnsSettings.Fqdn):9200"
 ----
+
+=== Kibana
+
+Kibana can be deployed in addition to Elasticsearch, providing a visual window and UI into the data within Elasticsearch. The version of Kibana deployed is always the same
+as the version of Elasticsearch, ensuring compatibility between the products.
+
+The following parameters can be used to deploy Kibana, and control additional configuration
+
+`kibana`::
+Whether to deploy Kibana in addition to Elasticsearch. A value of `Yes` will also deploy Kibana, whilst `No` will not. Defaults to `Yes`.
+
+`vmSizeKibana`::
+The {vms}[Azure VM SKU] to use for data nodes. Different VM SKUs have different CPU, RAM,
+temporary storage space and network bandwidth. The Kibana VM always uses standard storage for the OS disk. The default value is `Standard_A2`.
+
+[NOTE]
+--
+The template deploys only a single instance of Kibana. You should ensure that a VM SKU
+of sufficient size is chosen to be service the expected amount of traffic. A larger VM
+SKU will generally be faster to optimize browser bundles and start up than a smaller
+VM SKU.
+--
+
+`kibanaAdditionalYaml`::
+Additional configuration that will be applied to the kibana.yml configuration file before start up. Each line must be separated by a `\n` newline character, for example
++
+[source,text]
+----
+"server.name: \"My server\"\nkibana.defaultAppId: home" <1>
+----
+<1> "My server" is enclosed within escaped double quotes because it contains whitespace, and is itself inside of a double quoted string.
++
+It is recommended that you run your additional yaml through a {yamllint}[linter] before starting a deployment, as incorrectly formatted yaml will fail the deployment.
+
+Kibana is deployed with
+
+* a public IP address, whose fully qualified domain name and IP address can be retrieved from the <<deployment-outputs, deployment outputs>>
+* a network security group that allows TCP traffic from the internet on port 5601, to allow browsers to interact with Kibana. Port 22 also allows TCP traffic from the internet, to allow a user to connect using SSH, and use Kibana as a jumpbox to connect to Elasticsearch node VMs.
+
+Kibana communicates with Elasticsearch through the <<internal-loadbalancer, internal load balancer>>
 
 == Security
 
@@ -1173,7 +1216,7 @@ a `CNAME` DNS record pointing to the public domain name
 or IP address of the external load balancer or Application
 Gateway.
 
-As an alternative to `esHttpCertBlob`, the following parameters can be used
+As an alternative to `esHttpCertBlob` and `esHttpCertPassword`, the following parameters can be used
 
 `esHttpCaCertBlob`::
 A base 64 encoded string of the PKCS#12 archive containing the Certificate Authority (CA)
@@ -1230,15 +1273,66 @@ One way to generate a PKCS#12 archive containing a CA certificate and key is usi
 
 ==== Kibana
 
-TODO!
+You can secure communication between the browser and Kibana with TLS wiht the following parameters
+
+`kibanaCertBlob`::
+A base 64 encoded string of the PEM certificate used to secure communication between the browser and Kibana.
+
+`kibanaKeyBlob`::
+A base 64 encoded string of the private key for the certificate, used to secure communication between the browser and Kibana.
+
+`kibanaKeyPassphrase`::
+Optional passphrase for the private key encoded in `kibanaKeyBlob`. Defaults to empty string as the private key may not be protected.
+
+==== Passing certificates and archives
+
+All certificates and PKCS#12 archives *must* be passed as base 64 encoded string values. A base 64 encoded value can be obtained using
+
+. https://linux.die.net/man/1/base64[base64] on Linux, or https://www.openssl.org/docs/man1.0.2/apps/openssl.html[openssl] on Linux and MacOS
++
+[source,sh]
+.Using base64
+----
+httpCert=$(base64 http-cert.p12)
+----
++
+[source,sh]
+.Using openssl
+----
+httpCert=$(openssl base64 -in http-cert.p12)
+----
++
+[NOTE]
+--
+PEM certificates are already base 64 encoded. Irrespective to this, you should still base 64 encode PEM certificates; _all certificates and PKCS#12 archives_ are expected to be base 64 encoded, to keep usage simple.
+--
+
+. using PowerShell on Windows
++
+[source,powershell]
+.Using PowerShell
+----
+$httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("c:\http-cert.p12"))
+----
 
 == Plugins
 
-TODO!
+An ARM template deployment can include additional plugins.
 
 === X-Pack
 
-TODO!
+A trial license for the Platinum features of X-Pack can be deployed for Elasticsearch, and Kibana, if also deployed, using the following parameter
+
+`xPackPlugins`::
+Select `Yes` to install a trial license of the platinum features. A trial license provides access to platinum features for 30 days. a value of `No`
++
+. for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license to the basic features. These versions use a distribution with X-Pack included, and the license applied determines which features are activated for use.
+. for Elasticsearch and Kibana prior to 6.3.0, the X-Pack plugin will not be installed when a value of `No` is passed. These versions
+
+[IMPORTANT]
+--
+
+--
 
 === Azure repository
 
