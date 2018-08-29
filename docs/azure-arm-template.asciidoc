@@ -1304,7 +1304,7 @@ httpCert=$(openssl base64 -in http-cert.p12)
 +
 [NOTE]
 --
-PEM certificates are already base 64 encoded. Irrespective to this, you should still base 64 encode PEM certificates; _all certificates and PKCS#12 archives_ are expected to be base 64 encoded, to keep usage simple.
+PEM certificates are already base 64 encoded. Irrespective to this, you should still base 64 encode PEM certificates; _all certificates and PKCS#12 archives_ are expected to be base 64 encoded, to keep template usage simple i.e. if a parameter contains a certificate or archive, base 64 encode it.
 --
 
 . using PowerShell on Windows
@@ -1317,7 +1317,8 @@ $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("c:\http-cert.p12"
 
 == Plugins
 
-An ARM template deployment can include additional plugins.
+An ARM template deployment can include additional plugins, so long as those plugins
+can be downloaded from a public URI at deployment and installation time.
 
 === X-Pack
 
@@ -1356,6 +1357,7 @@ When such issues arise, you'll need to know where to look to ascertain what the
 underlying problem is, in order to determine what action to take to rectify.
 
 === Accessing nodes
+
 Elasticsearch node VMs are not accessible from outside of the virtual network to which
 the cluster is attached. The VMs can be accessed through SSH by either using Kibana
 as a jumpbox, or deploying a specific Jumpbox VM. In both cases, a network security
@@ -1389,7 +1391,40 @@ cat /etc/elasticsearch/elasticsearch.yml
 
 === Diagnosing through Azure
 
-TODO!
+There may be transient deployment issues that prevent one or more resources from
+being deployed successfully. An overview of the status of deploying resources can
+be found within the Azure portal:
+
+TODO! image here
+
+The same information can be retrieved using the Azure CLI tools
+
+[source,sh]
+.Azure CLI 2.0
+----
+# Get all operations
+az group deployment operation list --name mainTemplate \
+    --resource-group "<resource group>" \
+    --out json
+
+# Check those that haven't been provisioned successfully
+az group deployment operation list --name mainTemplate \
+    --resource-group "<resource group>" \
+    --out json \
+    --query "[?properties.provisioningState != 'Succeeded']"
+----
+
+[source, powershell]
+.Azure PowerShell
+----
+# Get all operations
+Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
+    -ResourceGroupName "<resource group>"
+
+# Check those that haven't been provisioned successfully
+Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
+    -ResourceGroupName "<resource group>" | ?{ $_.Properties.ProvisioningState -ne "Succeeded" }
+----
 
 === Diagnosing through logs
 
