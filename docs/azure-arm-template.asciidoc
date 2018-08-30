@@ -3,14 +3,15 @@
 :github: https://github.com/elastic/azure-marketplace
 :current: 6.3
 :register: https://register.elastic.co
-:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/{current}
+:elasticguide: https://www.elastic.co/guide/en/elasticsearch
+:elasticdocs: {elasticguide}/reference/{current}
 :stackdocs: https://www.elastic.co/guide/en/elastic-stack-overview/{current}
 :xpackenabled: {elasticdocs}/security-settings.html#general-security-settings
 :bootstrappassword: : {stackdocs}/built-in-users.html#bootstrap-elastic-passwords
 :licenseexpiration: {stackdocs}/license-expiration.html
 :microsoftdocs: https://docs.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
-:azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
+:azurepowershell: {microsoftdocs}/powershell/azure/overview
 :subscriptions: https://www.elastic.co/subscriptions
 :sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
 :resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
@@ -25,11 +26,11 @@
 :applicationgatewayfaqs: {microsoftdocs}/azure/application-gateway/application-gateway-faq
 :owasp30: https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
 :jq: https://stedolan.github.io/jq/
-:monit: https://mmonit.com/monit/
+:monit: https://mmonit.com/monit
 :version: 6.3.1
 :yamllint: http://www.yamllint.com/
 
-[[azure-arm-template]]
+[[arm-template]]
 == Azure Resource Manager (ARM) template
 
 The Azure Resource Manager (ARM) template is a declarative solution template that
@@ -43,8 +44,8 @@ as an incremental deployment, which is useful when targeting an existing resourc
 group, or as a full deployment, which will replace all resources within a resource
 group.
 
-[float]
-== Getting started
+[[arm-template-getting-started]]
+=== Getting started
 
 The best way to work with Elastic's ARM template is using one of the official Azure
 command line interface (CLI) tools:
@@ -56,8 +57,7 @@ on MacOS and Linux
 object oriented API, typically used on Windows
 
 [[logging-in]]
-[float]
-=== Log in to CLI
+==== Log in to CLI
 
 Once a CLI is installed, log into an Azure account to use with the CLI
 
@@ -191,8 +191,8 @@ The ARM template accepts _many_ {github}#parameters[parameters], many of which a
 ARM template will be used. In the example above, the number of data nodes deployed
 uses the default value of 3.
 
-[float]
 [[deployment-outputs]]
+[float]
 === Deployment outputs
 
 When an ARM template deployment completes successfully, the template outputs
@@ -235,14 +235,14 @@ $kibana = $deployment.Outputs.kibana.Value
 $loadbalancer = $deployment.Outputs.loadbalancer.Value
 ----
 
-[float]
 [[delete-resource-group]]
+[float]
 === Delete resource group
 
 When finished with a deployment and no longer wish to keep the resources or data
 around, the easiest way to delete all resources is to delete the resource group
-containing the resources, assuming the resource group only contains resources
-from the ARM template deployment
+containing the resources, **assuming the resource group _only_ contains resources
+from the ARM template deployment**
 
 [source,sh]
 .Azure CLI 2.0
@@ -259,31 +259,29 @@ Remove-AzureRmResourceGroup -Name "<name>"
 That's it for getting started with the ARM template. Read on to learn more about
 different parameter and deployment options.
 
-[[elasticsearch-nodes]]
-== Elasticseach nodes
+[[template-configuration]]
+=== Template configuration
+
+The ARM template has some general parameters that control the operation of the
+template:
+
+`artifactsBaseUrl`::
+The base public URI which informs the main template from where the other contents
+of the ARM template will be retrieved, such as linked templates and deployment scripts.
+Default is `\https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src`
+where `{branch}` is the git branch or tag to target, for
+<<repeatable-deployments, repeatable deployments>>
+
+`location`::
+The {azurelocations}[Azure location] in which to deploy the resources. Defaults to the same location
+as the target resource group of the deployment. All deployed resources are deployed
+to this location.
+
+[[elasticsearch]]
+=== Elasticsearch
 
 The ARM template is able to deploy an Elasticsearch cluster topology with up to 50 data nodes and up to 20 coordinating nodes, along with three dedicated master nodes. The following
 sections highlight the parameters that can control {elasticdocs}/modules-node.html[node] deployment options.
-
-Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
-published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {monit}[monit] to manage and monitor the Elasticsearch process. monit is configured to run in daemon mode, checking
-the state of the Elasticsearch process every 30 seconds; if the process is found to not be running, monit will attempt to start the process.
-
-Elasticsearch can be stopped with monit using
-
-[source,sh]
-----
-sudo monit stop elasticsearch
-----
-
-started with
-
-[source,sh]
-----
-sudo monit start elasticsearch
-----
-
-Refer to {monit}/documentation/monit.html[monit documentation] for further details.
 
 [IMPORTANT]
 .Subscription core quota limits
@@ -310,9 +308,28 @@ Typically, the default limit is 10 per VM SKU family per location. Contact Azure
 support to increase the limit for a VM SKU in a specific location.
 --
 
-[float]
+Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
+published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {monit}[monit] to manage and monitor the Elasticsearch process, with monit configured to run in daemon mode, checking
+the state of the Elasticsearch process every 30 seconds. If the process is found to not be running, monit will attempt to start the process.
+
+Elasticsearch can be stopped with monit <<troubleshooting-accessing-nodes, on an Elasticsearch VM node>> using
+
+[source,sh]
+----
+sudo monit stop elasticsearch
+----
+
+and started with
+
+[source,sh]
+----
+sudo monit start elasticsearch
+----
+
+Refer to {monit}/documentation/monit.html[monit documentation] for further details.
+
 [[admin-username]]
-=== Virtual machine admin user
+==== Virtual machine admin user
 
 All VMs deployed by the template are secured with a username and either a password
 or SSH key
@@ -333,9 +350,47 @@ to access VMs.
 When `authenticationType` is `sshPublicKey`, the public SSH key to use for the
 Admin username to access VMs.
 
-[float]
+[[cluster-settings]]
+==== Cluster settings
+
+The following are general settings that control cluster configuration
+
+`esVersion`::
+The version of Elasticsearch (and thus, Kibana) to deploy. Each template version
+is capable of deploying many different versions, with the template version number
+giving an indication of what the default stack version will be. For example,
+{github}/blob/{version}/src/mainTemplate.json#L22-L49[template
+version {version} will deploy Elasticsearch {version}] by default. Consult
+`esVersion.allowedValues` array in mainTemplate.json file of a specific template version to
+ascertain which versions it can deploy.
+
+`esClusterName`::
+The name of the Elasticsearch cluster. It's recommended to choose an appropriate name
+that describes the purpose of the cluster. This value is **required**
+
+`esHeapSize`::
+The amount of memory, in megabytes, to allocate on each
+{elasticdocs}/heap-size.html[Elasticsearch node for the JVM heap].
+Default will allocate 50% of the available memory will be allocated to Elasticsearch heap,
+up to a maximum of 31,744MB (approximately 32GB).
++
+This is an expert level feature; setting a heap size too low or larger than available
+memory on the chosen Elasticsearch VM SKU will fail the deployment.
+
+`esAdditionalYaml`::
+Additional configuration for Elasticsearch yml configuration file.
+Each line must be separated by a `\n` newline character. For example,
++
+[source,sh]
+----
+"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"
+----
++
+It is recommended that you run your additional yaml through a {yamllint}[linter]
+before starting a deployment, as incorrectly formatted yaml will fail the deployment.
+
 [[data-nodes]]
-=== Data nodes
+==== Data nodes
 
 By default, the template deploys three data nodes. Data nodes hold and perform
 data related operations such as search and aggregations. Data node VMs are attached
@@ -356,9 +411,8 @@ different limits to the number of managed disks that can be attached. The defaul
 `vmDataNodeCount`::
 The number of data nodes. Must be greater than 0. Defaults to 3.
 
-[float]
 [[master-nodes]]
-=== Master nodes
+==== Master nodes
 
 When `dataNodesAreMasterEligible` parameter is `No`, three dedicated master nodes
 will be deployed. Dedicated master nodes are **recommended** for larger clusters.
@@ -368,13 +422,12 @@ The {vms}[Azure VM SKU] to use for dedicated master nodes.
 Different VM SKUs have different CPU, RAM, temporary storage space and network
 bandwidth. The default is `Standard_D1`.
 
-[float]
 [[coordinating-nodes]]
-=== Coordinating nodes
+==== Coordinating nodes
 
-Coordinating nodes can be deployed with the template; coordinating nodes do not
-hold data and are not master-eligible, acting as the coordinators of incoming
-requests from clients, sending the request on to data nodes, and gathering the
+Coordinating nodes can optionally be deployed with the template; coordinating nodes do not
+hold data and are not master-eligible, but act as the coordinators of incoming
+requests from clients, sending those request on to data nodes, and gathering the
 results to reduce each data node's results into a single global resultset.
 Coordinating nodes are a way to scale a cluster deployed with this template
 beyond 100 data nodes, the maximum number of VMs that can be added to a
@@ -393,25 +446,32 @@ bandwidth. The default is `Standard_D1`.
 `vmClientNodeCount`::
 The number of coordinating nodes. Defaults to 0.
 
-[float]
-=== Ingest and Machine learning nodes
+[[ingest-ml-nodes]]
+==== Ingest and Machine learning nodes
 
-All nodes are configured as Ingest nodes, as well as the Machine
-learning nodes if a license that enables Machine learning features has been
-applied. Consult the {elasticdocs}/modules-node.html[node] documentation to understand how these can be changed.
+All deployed nodes are configured as Ingest nodes, as well as Machine
+learning nodes, if a license that enables Machine learning features has been
+applied. Consult the {elasticdocs}/modules-node.html[node] documentation to
+understand how node roles can be changed.
 
+[[scaling-up-number-of-nodes]]
 [float]
 === Scaling up number of nodes
 
-The template deploys in {incrementalmode}[incremental mode] by default; If a previous solution deployment has been performed into the target resource group, the resources that exist in the resource group __but are not in the template are left unchanged__. All resources that are specified by the solution will be deployed, and for those __resources that already exist and whose settings are unchanged, no change will be made__. For those __resources whose settings are changed however, the resource is provisioned with those new settings__.
+The template deploys in {incrementalmode}[incremental mode] by default; If a previous
+solution deployment has been performed into the target resource group, the resources
+that exist in the resource group __but are not in the template are left unchanged__.
+All resources that are specified by the solution will be deployed, and for those
+__resources that already exist and whose settings are unchanged, no change will be made__.
+For those __resources whose settings are changed however, the resource is provisioned with those new settings__.
 
-If the Elasticsearch deployment script is run on a VM that already has Elasticsearch service running, the elasticsearch configuration file is changed
+If the Elasticsearch deployment script is run on a VM that already has Elasticsearch
+process running, the elasticsearch.yml configuration file is changed
 using parameters from the new deployment. If the node is using the temporary disk
-for storage, the script ensures that the data directory and permissions are set appropriately. If a change to the elasticsearch configuration file is detected,
-the Elasticsearch service is restarted.
+for storage, the script ensures that the data directory and permissions are set appropriately. If a change to the elasticsearch configuration file is detected, the Elasticsearch process is restarted.
 
 What incremental deployment mode and deployment script behaviour mean in practice
-is that it is possible to increase the size of a cluster deployed with the template. There are some caveats to be aware of with this
+is that it is possible to increase the size of a cluster deployed with the template. There are some caveats to be aware of
 
 . A deployment into an existing resource group where the template has already been
 deployed *must* use exactly the same parameters, except either `vmDataNodeCount` or
@@ -423,47 +483,6 @@ can be safely deleted without losing data, since it knows nothing about the shar
 and replicas that each node contains.
 . Scaling up _should_ only be used when the cluster contains dedicated master
 nodes
-
-[float]
-=== Availability
-
-Oftentimes you will want to deploy a highly available Elasticsearch cluster that
-stays online even in the face of instance or zone failure. Azure has several
-concepts to manage Availability.
-
-==== Availability sets
-
-Master, data and coordinating node VMs are grouped in their own
-{availabilitysets}[Availability sets], so that at least one machine
-is available within a datacentre during a planned or unplanned maintenance event.
-
-[NOTE]
---
-The template does not currently use {availabilityzones}[Availability zones] since
-they are not yet available in all Azure regions to which the template can be
-deployed. It is expected that the template will use Availability zones in the future.
---
-
-==== Update and Fault Domains
-
-Each Availability set has 20 Update domains and two or three Fault domains, depending
-on how many Fault domains the selected Azure location supports. When VMs are provisioned, they
-are round-robin assigned an Update domain and Fault domain.
-
-Update domains::
-Indicate group of virtual machines and underlying physical hardware that can be
-rebooted at the same time.
-
-Fault domains::
-Indicates group of virtual machines that share a common power source and network switch.
-While placing your virtual machines into an availability set does not the cluster
-from operating system or Elasticsearch operation failures, it does limit the impact
-of potential physical hardware failures, network outages, or power interruptions.
-
-When Elasticsearch is installed onto the VM, the Update and Fault domains in which the
-VM resides are specified as node attributes.
-{elasticdocs}/allocation-awareness.html[Shard allocation awareness] is configured
-taking into account Fault domain and Update domain values.
 
 [[data-disks]]
 === Data disks
@@ -493,7 +512,7 @@ Default is `Large`.
 The number of managed disks to attach to _each_ data node. The total number of
 managed disks will be
 +
-[source]
+[source,sh]
 ----
 vmDataNodeCount * vmDataDiskCount
 ----
@@ -502,7 +521,7 @@ If the number of disks selected is more than can be attached to the data node VM
 the maximum number of disks that can be attached for the data node VM SKU size
 will be used. This is equivalent to
 +
-[source]
+[source,sh]
 ----
 Math.min(vmDataDiskCount, data node VM SKU maximum attached disks)
 ----
@@ -521,9 +540,51 @@ Striping data across attached disks is recommended to improve Input/Output opera
 combined. The IOPS for Premium disks is higher than for Standard HDD disks, so
 Premium disks are recommended where application performance is paramount.
 
-== Networking
+[[availability]]
+=== Availability
 
-=== Virtual network
+Oftentimes you will want to deploy a highly available Elasticsearch cluster that
+stays online even in the face of instance or zone failure. Azure has several
+concepts to manage Availability.
+
+==== Availability sets
+
+Master, data and coordinating node VMs are grouped in their own
+{availabilitysets}[Availability sets], so that at least one machine
+is available within a datacentre during a planned or unplanned maintenance event.
+
+[NOTE]
+--
+The template does not currently use {availabilityzones}[Availability zones] since
+they are not yet available in all Azure regions to which the template can be
+deployed. It is expected that the template will use Availability zones in the future.
+--
+
+==== Update and Fault Domains
+
+Each Availability set has 20 Update domains and two or three Fault domains, depending
+on how many Fault domains the selected Azure location supports. When VMs are provisioned, they
+are round-robin assigned an Update domain and Fault domain.
+
+Update domains::
+Indicates a group of virtual machines and underlying physical hardware that can be
+rebooted at the same time.
+
+Fault domains::
+Indicates a group of virtual machines that share a common power source and network switch.
+While placing your virtual machines into an availability set does not mitigate
+operating system or Elasticsearch operation failures, it does limit the impact
+of potential physical hardware failures, network outages, or power interruptions.
+
+When Elasticsearch is installed onto the VM, the Update and Fault domains in which the
+VM resides are specified as node attributes in the elasticsearch.yml configuration file.
+{elasticdocs}/allocation-awareness.html[Shard allocation awareness] is configured
+taking into account these Fault domain and Update domain attribute values.
+
+=== Networking
+
+[[virtual-network]]
+==== Virtual network
 
 The template can deploy a new virtual network and attach Elasticsearch and Kibana
 to it, or can use an existing virtual network in the same Azure region as the
@@ -587,6 +648,7 @@ Test-AzureRmPrivateIPAddressAvailability -VirtualNetworkName "<vnet name>" `
   -ResourceGroupName "<resource group>"
 ----
 
+[[dns-resolution]]
 ==== Azure DNS resolution
 
 Azure DNS resolution can resolve VMs within a virtual network by hostname, and
@@ -618,6 +680,7 @@ resolve hostnames correctly, by {dns}[forwarding DNS queries to Azure to resolve
 This should be configured on the virtual network so that if VMs are shut down or
 moved around, they will have the correct configuration when starting up.
 
+[[load-balancing]]
 === Load balancing
 
 The template exposes three different load balancing deployment options to suit
@@ -799,9 +862,10 @@ Kibana is deployed with
 * a public IP address, whose fully qualified domain name and IP address can be retrieved from the <<deployment-outputs, deployment outputs>>
 * a network security group that allows TCP traffic from the internet on port 5601, to allow browsers to interact with Kibana. Port 22 also allows TCP traffic from the internet, to allow a user to connect using SSH, and use Kibana as a jumpbox to connect to Elasticsearch node VMs.
 
-Kibana communicates with Elasticsearch through the <<internal-loadbalancer, internal load balancer>>
+Kibana communicates with Elasticsearch through the <<internal-load-balancer, internal load balancer>>
 
-== Security
+[[security]]
+=== Security
 
 Securing Elasticsearch and Kibana is of paramount importance, to prevent
 unauthorized access by unknown users and unauthorized access by known users
@@ -811,7 +875,8 @@ or any other client by encrypting traffic is critical for data integrity.
 
 The ARM template exposes a number of features for securing a deployment to Azure.
 
-=== Authentication and Authorization
+[[authentication-and-authorization]]
+==== Authentication and Authorization
 
 The default template deployment applies a trial license to the cluster to enable
 X-Pack features, including Security, for a trial period of 30 days.
@@ -821,22 +886,7 @@ by {xpackenabled}[configuring `xpack.security.enabled: true`
 in Elasticsearch configuration]. This prevents anonymous access to the
 cluster.
 
-[WARNING]
---
-After the trial license period expires, the trial platinum features
-{licenseexpiration}[**operate in a degraded mode**].
-
-You should update your license as soon as possible. You are essentially flying blind
-when running with an expired license. The license can be updated at any point before
-or on expiration, using the {elasticdocs}/update-license.html[Update License API]
-or Kibana UI, if available in the version deployed.
-
-With Elasticsearch 6.3+, you can revert to a free perpetual basic license
-included with deployment by using the {elasticdocs}/start-basic.html[Start Basic API].
-
-With Elasticsearch 6.2 and prior, you can {register}[register for free basic license] and apply
-it to the cluster.
---
+include::trial-license-warning.asciidoc[]
 
 The following parameters are used to configure initial user accounts
 
@@ -871,7 +921,7 @@ than six characters in length.
 --
 The template does **not** currently deploy Logstash. The `logstash_system` built-in user account
 must still be configured however, and can be used to communicate with Elasticsearch
-if Logstash is also deployed.
+if Logstash is also deployed later.
 --
 
 `securityReadPassword`::
@@ -899,20 +949,30 @@ that will interact with Elasticsearch and Kibana, then use those accounts going
 forward.
 
 [[saml-single-sign-on-with-azure-active-directory]]
-=== SAML single sign-on with Azure Active Directory
+==== SAML single sign-on with Azure Active Directory
 
 Using SAML single sign-on (SSO) for Elasticsearch with Azure Active Directory (AAD)
 means that Elasticsearch does not need to be seeded with any user accounts from the directory.
 Instead, Elasticsearch is able to rely on the claims sent within a SAML token in
 response to successful authentication to determine identity and privileges.
 
-To integrate SAML SSO, you
+To integrate SAML SSO, the following conditions must be satisfied:
 
-TODO! Requirements
+* `esVersion` **must** be one that supports the SAML realm i.e. Elasticsearch 6.2.0 or later
+* `xpackPlugins` **must** be `Yes` to install a trial license of X-Pack platinum features
+* `kibana` **must** be `Yes` to deploy an instance of Kibana
+* `esHttpCertBlob` _or_ `esHttpCaCertBlob` **must** be provided to configure SSL/TLS for the HTTP layer of Elasticsearch.
 
-TODO! Indicate that Basic Authentication realm is also configured
+SAML integration with AAD defines a SAML realm with the name `saml_aad` in the
+elasticsearch.yml configuration file. The Basic Authentication realm is also
+enabled, to provide access to the cluster through the built-in users configured
+as part of the template. The built-in users can be used to perform additional steps
+needed within Elasticsearch to complete the integration.
 
-==== Create Enterprise application
+The following sections guide you through what is required to integrate SAML SSO
+with AAD for Elasticsearch and Kibana deployed through the ARM template.
+
+===== Create Enterprise application
 
 To integrate Elasticsearch with AAD for SAML SSO, it's necessary to create an Enterprise Application within AAD _before_ deploying Elasticsearch with the ARM template. An Enterprise application can be created in the Azure Portal by first navigating to Azure Active Directory
 
@@ -929,7 +989,7 @@ image:images/configure_non_gallery_application.png[]
 Configure a non-gallery application and give it a name, such as Elasticsearch.
 
 [[configure-enterprise-application]]
-==== Configure enterprise application
+===== Configure enterprise application
 
 To configure the enterprise application for SAML SSO, navigate to it in the
 AAD blade under `Enterprise Applications`, and select the `Single sign-on` navigation item
@@ -941,11 +1001,11 @@ deploying Elasticsearch on Azure.
 
 If you will be configuring a `CNAME` DNS record entry for Kibana, configure the
 Identifier (EntityID) input with the domain that you'll be using. For example,
-if setting up a `CNAME` of `saml-aad` on the `elastic.co` domain to point to Kibana, the value will be `https://saml-aad.elastic.co:5601` for Identifier (EntityID).
-Additionally, the Reply URL input should be `https://saml-aad.elastic.co:5601/api/security/v1/saml`. If you will not be configuring
+if setting up a `CNAME` of `saml-aad` on the `elastic.co` domain to point to Kibana, the value would be `\https://saml-aad.elastic.co:5601` for Identifier (EntityID).
+Additionally, the Reply URL input would be `\https://saml-aad.elastic.co:5601/api/security/v1/saml`. If you will not be configuring
 a `CNAME`, simply leave these blank for now.
 
-==== SAML token attributes
+===== SAML token attributes
 
 The User Attributes section lists the attributes that will be returned in a SAML token
 upon successful authentication
@@ -961,13 +1021,13 @@ with the following details
 [horizontal]
 Name:: `role`
 Mapping:: `user.assignedroles`
-Namespace:: `http://schemas.microsoft.com/ws/2008/06/identity/claims`
+Namespace:: `\http://schemas.microsoft.com/ws/2008/06/identity/claims`
 
 Now, the role(s) assigned to a user within the Enterprise application will be
 sent in the SAML token, in the SAML `role` claim.
 
 [[application-manifest]]
-==== Application manifest
+===== Application manifest
 
 When an Enterprise application is first created, an https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-application-manifest[Application Manifest] is also created that controls the application's identity configuration with respect to AAD. Amongst other things, the app manifest specifies which roles can be declared for the Enterprise application, in the `appRoles` array.
 
@@ -1033,14 +1093,14 @@ Elasticsearch, for example, the `superuser` role, etc. Each role needs a unique 
 
 After adding the necessary roles, save the manifest.
 
-==== Assign users to Enterprise application
+===== Assign users to Enterprise application
 
 Now that the Enterprise application roles are configured, users within AAD can be granted
 access to the Enterprise application and be assigned one of the application roles
 
 image:images/add_user_to_role.png[]
 
-=== Configuring Elasticsearch for SAML SSO
+==== Configuring Elasticsearch for SAML SSO
 
 With Azure Active Directory configured, the following parameters can be used to
 configure Elasticsearch for SAML SSO
@@ -1052,13 +1112,6 @@ the URI from which the metadata for the Identity Provider can be retrieved. Use 
 An optional URI of the Service Provider. This will be the valuesupplied for the Identifier (EntityID) field, when using a `CNAME` DNS record entry to point to the instance of Kibana deployed.
 +
 If not specified, the value used will be the fully qualified domain name of the public IP address assigned to the deployed Kibana instance.
-
-In addition to these parameters, the following conditions must be satisfied:
-
-* `esVersion` **must** be one that supports the SAML realm i.e. Elasticsearch 6.2.0 or later
-* `xpackPlugins` **must** be `Yes` to install a trial license of X-Pack platinum features
-* `kibana` **must** be `Yes` to deploy an instance of Kibana
-* `esHttpCertBlob` _or_ `esHttpCaCertBlob` **must* be provided to configure SSL/TLS for the HTTP layer of Elasticsearch.
 
 For a production environment, it's strongly recommended to also configure SSL/TLS for communication with Kibana using `kibanaCertBlob` and `kibanaKeyBlob` parameters. Consult the <<tls, Transport Layer Security>> section for further details on configuring SSL/TLS for Elasticsearch and Kibana.
 
@@ -1149,7 +1202,7 @@ After cluster deployment, if you didn't provide a value for the `samlServiceProv
 copy the <<deployment-outputs, `kibana` output>> and paste this value into <<configure-enterprise-application, the
 Identifier (EntityID) field for the Enterprise application within AAD>>. Also paste this value into the Reply URL field, followed by `/api/security/v1/saml`.
 
-=== Role mappings
+==== Role mappings
 
 With the cluster deployed, the {elasticdocs}/security-api-role-mapping.html[Role Mapping APIs] are used to configure rules to define how roles received in the SAML token map to roles within Elasticsearch. A SAML realm called `saml_aad` is configured when `samlMetadataUri` parameter is provided, and maps the SAML role claim to the `groups` attribute.
 
@@ -1167,7 +1220,7 @@ curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-kibana-user
   }
 }'
 ----
-<1> The saml realm configured by the ARM template
+<1> The SAML realm configured by the ARM template
 
 will give the `kibana_user` role to any user authenticated through the `saml_aad` SAML
 realm, and
@@ -1186,14 +1239,16 @@ curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-superuser" 
   }
 }'
 ----
-<1> The saml realm configured by the ARM template
+<1> The SAML realm configured by the ARM template
 <2> The `superuser` role defined in the Enterprise application manifest, and received in the role claim of the SAML token for the authenticated user
 
 [[tls]]
+[float]
 === Transport Layer Security
 
 It is strongly recommended that you secure communication when using the template in production. X-Pack Security can provide Authentication and Role Based Access control, and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
 
+[[http-layer]]
 ==== HTTP layer
 
 You can secure HTTP communication to the cluster with TLS on the HTTP layer of Elasticsearch. You would
@@ -1252,6 +1307,7 @@ openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -nokeys
 The certificate to secure the HTTP layer *must* include a Subject Alternative Name with a DNS entry that matches the Subject CN to work with Application Gateway's whitelisting mechanism.
 --
 
+[[transport-layer]]
 ==== Transport layer
 
 You can secure communication between nodes in the cluster with TLS on the Transport layer of Elasticsearch.
@@ -1271,6 +1327,7 @@ to empty string as the archive may not be protected.
 One way to generate a PKCS#12 archive containing a CA certificate and key is using
 {elasticdocs}/certutil.html[Elastic's certutil command utility].
 
+[[security-kibana]]
 ==== Kibana
 
 You can secure communication between the browser and Kibana with TLS wiht the following parameters
@@ -1304,7 +1361,7 @@ httpCert=$(openssl base64 -in http-cert.p12)
 +
 [NOTE]
 --
-PEM certificates are already base 64 encoded. Irrespective to this, you should still base 64 encode PEM certificates; _all certificates and PKCS#12 archives_ are expected to be base 64 encoded, to keep template usage simple i.e. if a parameter contains a certificate or archive, base 64 encode it.
+PEM certificates are already base 64 encoded. Irrespective, you should still base 64 encode PEM certificates; _all certificates and PKCS#12 archives_ are expected to be base 64 encoded, to keep template usage simple i.e. if a parameter contains a certificate or archive, base 64 encode it.
 --
 
 . using PowerShell on Windows
@@ -1315,209 +1372,119 @@ PEM certificates are already base 64 encoded. Irrespective to this, you should s
 $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("c:\http-cert.p12"))
 ----
 
-== Plugins
+[[plugins]]
+=== Plugins
 
 An ARM template deployment can include additional plugins, so long as those plugins
 can be downloaded from a public URI at deployment and installation time.
 
+[[plugins-xpack]]
+[float]
 === X-Pack
 
-A trial license for the Platinum features of X-Pack can be deployed for Elasticsearch, and Kibana, if also deployed, using the following parameter
+A trial license for the Platinum features of X-Pack can be deployed for
+Elasticsearch, and Kibana if also deployed, using the following parameter
 
 `xPackPlugins`::
-Select `Yes` to install a trial license of the platinum features. A trial license provides access to platinum features for 30 days. a value of `No`
+Select `Yes` to install a trial license of the platinum features. A trial license
+provides access to platinum features for 30 days. a value of `No`
 +
-. for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license to the basic features. These versions use a distribution with X-Pack included, and the license applied determines which features are activated for use.
-. for Elasticsearch and Kibana prior to 6.3.0, the X-Pack plugin will not be installed when a value of `No` is passed. These versions
+. for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license
+providing access to the basic features. These versions use a distribution with
+X-Pack included in the installation, and the license applied determines which
+features are activated for use.
+. for Elasticsearch and Kibana prior to 6.3.0, the X-Pack plugin will not be
+installed when a value of `No` is passed. These versions require X-Pack plugin to
+be installed to be able to apply a license and access features related to that license.
++
+The default is `Yes`.
 
-[IMPORTANT]
---
+include::trial-license-warning.asciidoc[]
 
---
-
+[[plugins-azure-repository]]
+[float]
 === Azure repository
 
-TODO!
+The ARM template can be configured with the
+{elasticguide}/plugins/{current}/repository-azure.html[Azure repository plugin] to allow
+snapshotting of data within the cluster to an Azure storage account, and restoration
+of a snapshot. A separate Azure storage account can be used for this purpose or
+alternatively, the shared Azure storage account deployed as part of the template
+can be used.
 
-=== Miscellaneous
+[TIP]
+--
+It is recommended to use a separate storage account in another resource
+group with azure repository plugin so that deleting the resource group in
+which a cluster resides does not accidently delete snapshot data as well.
+--
 
-TODO!
+The following parameters can configure Azure repository
 
-== Troubleshooting
+`azureCloudPlugin`::
+Either `Yes` or `No` to install the Azure repository plugin. Default is `No`.
 
-Sometimes, things may go wrong with the deployment for a number of different
-reasons including but not limited to
+`azureCloudStorageAccountName`::
+Optional name of an existing storage account to configure Azure repository plugin.
+Must be a valid Azure Storage Account name. If no value is passed and `azureCloudPlugin`
+is `Yes`, the shared storage account deployed with the template will be used.
 
-- Incorrect or invalid parameters passed to the template,
-that pass initial validation but fail at deployment time
-- Transient errors associated with template dependencies
-- Transient errors associated with the Azure infrastructure
+`azureCloudStorageAccountKey`::
+Optional storage account key associated with the existing storage account named
+in `azureCloudStorageAccountName` to configure Azure repository plugin. Required
+only when passing a value for `azureCloudStorageAccountName`.
 
-When such issues arise, you'll need to know where to look to ascertain what the
-underlying problem is, in order to determine what action to take to rectify.
-
-=== Accessing nodes
-
-Elasticsearch node VMs are not accessible from outside of the virtual network to which
-the cluster is attached. The VMs can be accessed through SSH by either using Kibana
-as a jumpbox, or deploying a specific Jumpbox VM. In both cases, a network security
-group is configured to allow TCP traffic from the public internet on port 22 to allow
-access through SSH.
-
-SSH Authentication will use the authentication mechanism defined by the `authenticationType` parameter, either `password` or `SSH public key`:
-
-[source,sh]
-----
-ssh <admin username>@<kibana or jumpbox public IP address>
-----
-
-Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
-be accessed using SSH with either the private IP address or VM hostname, if using
-Azure DNS to resolve addresses from hostnames
-
-[source,sh]
-----
-ssh <admin username>@<internal IP address or VM hostname>
-----
-
-Many utilities and file paths may require elevated permissions to access, for
-example, the elasticsearch configuration file
-
-[source,sh]
-----
-sudo su
-cat /etc/elasticsearch/elasticsearch.yml
-----
-
-=== Diagnosing through Azure
-
-There may be transient deployment issues that prevent one or more resources from
-being deployed successfully. An overview of the status of deploying resources can
-be found within the Azure portal:
-
-TODO! image here
-
-The same information can be retrieved using the Azure CLI tools
+The Azure repository plugin does **not** create the container within the
+storage account when creating a repository using the {elasticdocs}/modules-snapshots.html[Snapshot API]; the container
+**must** be created before creating a repository
 
 [source,sh]
 .Azure CLI 2.0
 ----
-# Get all operations
-az group deployment operation list --name mainTemplate \
-    --resource-group "<resource group>" \
-    --out json
+# jq needs to be installed
+export AZURE_STORAGE_CONNECTION_STRING="$(az storage account show-connection-string \
+  --name '<storage account name>' --resource-group '<resource group>' \
+      | jq -r .connectionString)"
 
-# Check those that haven't been provisioned successfully
-az group deployment operation list --name mainTemplate \
-    --resource-group "<resource group>" \
-    --out json \
-    --query "[?properties.provisioningState != 'Succeeded']"
-----
-
-[source, powershell]
-.Azure PowerShell
-----
-# Get all operations
-Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
-    -ResourceGroupName "<resource group>"
-
-# Check those that haven't been provisioned successfully
-Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
-    -ResourceGroupName "<resource group>" | ?{ $_.Properties.ProvisioningState -ne "Succeeded" }
-----
-
-=== Diagnosing through logs
-
-The log files on each of the Elasticsearch node VMs are a great resource to
-understand the current state of the system. The following in particular are most
-useful, which you may need administrative privileges on the VM to access:
-
-`/var/log/arm-install.log`::
-A log file that the Elasticsearch deployment script writes to. This provides a
-chronological timeline for the important events that occur at deployment time,
-also giving an indication of how long each takes. Looking at this first provides
-an indication as to whether the deployment script completed successfully.
-
-`/var/lib/waagent/custom-script/download/0/stderr`::
-A log file that contains log messages written to standard error (stderr) by the Azure infrastructure when the Elasticsearch deployment script runs.
-
-`/var/lib/waagent/custom-script/download/0/stdout`::
-A log file that contains log messages written to standard output (stdout) by the Azure infrastructure when the Elasticsearch deployment script runs. There will be
-duplication of messages that have been written to `/var/log/arm-install.log`, in addition to other tooling related output such as apt package installations.
-
-`/var/log/monit.log`::
-A log file for {monit}[monit], the utility used to manage and monitor the
-Elasticsearch service. This log file is useful to check to ensure monit is running correctly.
-
-==== Elasticsearch logs
-
-In addition to template specific and Azure related logs, Elasticsearch log
-and configuration files provide invaluable information
-
-Log files in `/var/log/elasticsearch/`::
-A collection of different log files written to by the running Elasticsearch
-process.
-
-`/etc/elasticsearch/elasticsearch.yml`::
-The Elasticsearch configuration log file.
-
-=== Repeatable deployments
-
-For repeatable deployments, it is recommended to target a specific template release
-within the {github}[GitHub repository]; Each release is identified by tagging the
-commit and the {github}/releases[release notes] indicate the changes in the release.
-
-Targeting a specific release ensures that the template parameters remain the same,
-in addition to which resources are deployed and how they are configured. Furthermore,
-a release undergoes considerable testing before being considered ready for public
-release.
-
-As an example, to target {version} release of the template
-
-[source,sh]
-[subs="verbatim,attributes"]
-.Azure CLI 2.0
-----
-template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
-template_version={version}
-
-az group deployment create \
-  --resource-group "<name>" \
-  --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
-  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
-               esVersion={version} esClusterName=elasticsearch \
-               vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
-               adminUsername=russ adminPassword=Password1234 \
-               securityBootstrapPassword=bootstrapPassword123 \
-               securityAdminPassword=adminPassword123 \
-               securityReadPassword=readPassword123 \
-               securityKibanaPassword=kibanaPassword123 \
-               securityLogstashPassword=logstashPassword123
+az storage container create --name "<container name>"
 ----
 
 [source,powershell]
-[subs="verbatim,attributes"]
 .Azure PowerShell
 ----
-$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
-$templateVersion = "{version}"
+Set-AzureRmCurrentStorageAccount -ResourceGroupName "<resource group>" `
+    -Name "<storage account name>"
+New-AzureStorageContainer -Name "<container name>"
+----
 
-$parameters = @{
-  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
-  "esVersion" = "{version}"
-  "esClusterName" = "elasticsearch"
-  "vmDataDiskCount" = 1
-  "dataNodesAreMasterEligible" = "Yes"
-  "adminUsername" = "russ"
-  "adminPassword" = "Password1234"
-  "securityBootstrapPassword" = "bootstrapPassword123"
-  "securityAdminPassword" = "adminPassword123"
-  "securityReadPassword" = "readPassword123"
-  "securityKibanaPassword" = "kibanaPassword123"
-  "securityLogstashPassword" = "logstashPassword123"
+then the Azure repository can be created using the Snapshot API
+
+[source,js]
+----
+PUT _snapshot/backup_1
+{
+  "type": "azure",
+  "settings": {
+    "container": "<container name>"
+  }
 }
 
-$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
-  -TemplateUri "$templateBaseUri/$templateVersion/src/mainTemplate.json" `
-  -TemplateParameterObject $parameters
 ----
+// CONSOLE
+
+[[plugins-miscellaneous]]
+[float]
+=== Miscellaneous plugins
+
+Other plugins can be installed at deployment time using the following parameter
+
+`esAdditionalPlugins`::
+Additional Elasticsearch plugins to install. Each plugin name must be separated by a
+semicolon. For example,
++
+`analysis-icu;ingest-geoip;ingest-attachment`
+
+Any additional plugins installed are added to the
+{elasticguide}/plugins/{current}/_plugins_directory.html[`plugin.mandatory` setting
+in elasticsearch.yml configuration], to ensure that a node will start only when
+it has all mandatory plugins.
