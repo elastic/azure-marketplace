@@ -1,4 +1,4 @@
-[[azure-marketplace-faqs]]
+[[faqs]]
 == Frequently Asked Questions (FAQ)
 
 What resources does the Marketplace deploy?::
@@ -24,7 +24,7 @@ image:images/marketplace_default_resources.png[]
 A 30 day trial license of {xpack}[Elastic's X-Pack] is also installed. X-Pack is available
 under {subscriptions}[a commercial license subscription], and extends the stack with features such
 as Security, Monitoring, Alerting, Reporting, Graph and Machine Learning capabilities.
-+
+
 What is the cost of the Azure Marketplace solution?::
 The cost of deploying from the Marketplace will vary depending on the cluster
 topology that you decide to deploy and the VM SKUs that you choose for each of the
@@ -36,16 +36,16 @@ all Azure resources deployed by the template. The
 for this. In addition to the cost of Azure resources, {subscriptions}[X-Pack Gold, Platinum and
 Enterprise subscriptions] require a license to be purchased, the cost of which is
 dependent on a number of factors. Please get in touch with us to discuss.
-+
+
 How do I connect to Elasticsearch?::
 Elasticsearch can be accessed from outside of Azure by choosing an external load
 balancer for the load balancer type, within the External access blade step.
 +
 From within Azure, Azure resources can access Elasticsearch by connecting to the
 Virtual network in which the cluster is deployed. It is recommended to connect through
-the internal load balancer, which will round robin requests to client (coordinating only)
+the internal load balancer, which will round robin requests to coordinating
 nodes if deployed, or to data nodes otherwise.
-+
+
 How do I connect to the VMs to troubleshoot?::
 Elasticsearch VMs are not accessible from outside of the virtual network. When
 configuring the deployment through the blade steps, a Kibana VM or Jumpbox VM can

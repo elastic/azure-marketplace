@@ -36,7 +36,7 @@ include::azure-marketplace.asciidoc[]
 
 include::azure-arm-template.asciidoc[]
 
-include::faq.asciidoc[]
+include::faqs.asciidoc[]
 
 include::troubleshooting.asciidoc[]
 
