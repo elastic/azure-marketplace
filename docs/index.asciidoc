@@ -4,7 +4,7 @@
 :elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
 :microsoftdocs: https://docs.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
-:azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
+:azurepowershell: {microsoftdocs}/powershell/azure/overview
 :subscriptions: https://www.elastic.co/subscriptions
 :sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
 :resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
@@ -22,8 +22,8 @@ template to deploy an Elasticsearch cluster and Kibana to Azure.
 The solution provides a UI within the {portal}[Azure portal] that guides you through a
 series of steps in which you provide the minimum number of input parameters needed
 to deploy an Elasticsearch cluster to Azure. Follwing the last step,
-the UI feeds the provided parameter values to an Azure Resource Manager (ARM)
-template which deploys the requested Azure resources to a resource group, and,
+the UI feeds the provided parameter values to an <<arm-template, Azure Resource Manager (ARM)
+template>> which deploys the requested Azure resources to a resource group, and,
 in a matter of minutes, you have a running cluster!
 
 The {github}[ARM template] used by the Marketplace offering for deploying

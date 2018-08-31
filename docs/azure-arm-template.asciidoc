@@ -113,7 +113,7 @@ where
 
 `<name>`:: is a meaningful name to provide the resource group in order to identify
 it for future reference
-`<location>`:: is a {azurelocations}[valid azure location] for the subscription type
+`<location>`:: is a valid {azurelocations}[Azure location] for the subscription
 
 [NOTE]
 --
