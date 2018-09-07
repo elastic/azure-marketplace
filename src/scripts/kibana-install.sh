@@ -156,7 +156,7 @@ log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 download_kibana()
 {
     log "[download_kibana] Download Kibana $KIBANA_VERSION"
-    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-amd64.deb"
+    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-amd64.deb?ultron=msft&gambit=azure"
     log "[download_kibana] Download location $DOWNLOAD_URL"
     wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O "kibana-$KIBANA_VERSION.deb"
     local EXIT_CODE=$?

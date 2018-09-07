@@ -422,11 +422,32 @@
         "description": "Size of the Logstash nodes"
       }
     },
+    "logstashHeapSize": {
+      "type": "int",
+      "defaultValue": 0,
+      "metadata": {
+        "description": "The size, in megabytes, of memory to allocate to Logstash for the JVM heap. If unspecified, will default to 1GB"
+      }
+    },
+    "logstashConf": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "base 64 Logstash configuration."
+      }
+    },
     "logstashKeystorePassword": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
         "description": "Password for the Logstash keystore."
+      }
+    },
+    "logstashAdditionalPlugins": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Additional Logstash plugins to install.  Each plugin must be separated by a semicolon. e.g. azure_event_hubs;http_poller"
       }
     },
     "logstashAdditionalYaml": {
@@ -1608,6 +1629,13 @@
       "kibanaCertBlob": "[parameters('kibanaCertBlob')]",
       "kibanaHttps": "[variables('kibanaHttps')]",
       "kibanaYaml": "[parameters('kibanaAdditionalYaml')]",
+      "vmSizeLogstash": "[parameters('vmSizeLogstash')]",
+      "logstash": "[parameters('logstash')]",
+      "logstashHeapSize": "[parameters('logstashHeapSize')]",
+      "logstashConf": "[parameters('logstashConf')]",
+      "logstashPlugins": "[parameters('logstashAdditionalPlugins')]",
+      "logstashYaml": "[parameters('logstashAdditionalYaml')]",
+      "logstashKeystorePwd": "[parameters('logstashKeystorePassword')]",
       "jumpbox": "[parameters('jumpbox')]",
       "dataNodeStorageSettings": {
         "accountType": "[variables('resolvedStorageAccountType')]",

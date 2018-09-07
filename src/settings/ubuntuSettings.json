@@ -90,10 +90,11 @@
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), 'n ')]",
     "commonInstallParams": "[concat('\"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').version, '\" -m ', parameters('esSettings').heapSize,' -A \"', parameters('esSettings').securityAdminPwd, '\" -R \"', parameters('esSettings').securityReadPwd, '\" -K \"', parameters('esSettings').securityKibanaPwd, '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -B \"', parameters('esSettings').securityBootstrapPwd, '\" -Z ', parameters('topologySettings').vmDataNodeCount,' -p \"', variables('namespacePrefix'), '\" -a \"', variables('azureCloudStorageName'), '\" -k \"', variables('azureCloudStorageKey'), '\" -E \"', variables('azureCloudStorageSuffix'), '\" -L \"', parameters('esSettings').installAdditionalPlugins, '\" -C \"', replace(parameters('esSettings').yamlConfiguration, '\"', '\\\"'), '\" -D \"', parameters('topologySettings').vNetLoadBalancerIp, '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob, '\" -J \"', parameters('esSettings').httpCaCertPassword, '\" -T \"', parameters('esSettings').transportCaCertBlob, '\" -W \"', parameters('esSettings').transportCaCertPassword, '\" -N \"', parameters('esSettings').transportCertPassword, '\" -O \"', parameters('esSettings').samlMetadataUri, '\" -P \"', variables('kibanaDomainName'), '\"')]",
     "ubuntuScripts": [
-      "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-ubuntu-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
-      "[concat(parameters('templateBaseUrl'), 'scripts/java-ubuntu-install.sh')]"
+      "[concat(parameters('templateBaseUrl'), 'scripts/logstash-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/java-install.sh')]"
     ],
     "ubuntuSkus": {
       "5": "16.04-LTS",
@@ -118,7 +119,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
         "client": {
@@ -130,7 +131,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
         "data": {
@@ -142,7 +143,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-ubuntu-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
           }
         },
         "kibana": {
@@ -166,7 +167,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash logstash-ubuntu-install.sh -', variables('installPluginsShortOpt'), 'n \"', parameters('esSettings').clusterName, '\" -v \"', parameters('esSettings').logstashVersion, '\" -e \"', parameters('esSettings').version, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityLogstashPwd, '\"')]"
+            "commandToExecute": "[concat('bash logstash-install.sh -', variables('installPluginsShortOpt'), 'v \"', parameters('esSettings').logstashVersion, '\" -u \"', concat('http://', parameters('topologySettings').vNetLoadBalancerIp, ':9200') ,'\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -L \"', parameters('topologySettings').logstashPlugins, '\" -c \"', parameters('topologySettings').logstashConf, '\" -K \"', parameters('topologySettings').logstashKeystorePwd, '\"')]"
           }
         }
       }
