@@ -1,4 +1,4 @@
-[[faqs]]
+[[azure-marketplace-faq]]
 == Frequently Asked Questions (FAQ)
 
 What resources does the Marketplace deploy?::
@@ -70,7 +70,7 @@ Azure DNS to resolve addresses from hostnames):
 ssh <admin username>@<internal IP address or VM hostname>
 ----
 +
-See the <<troubleshooting, troubleshooting section>> for more details.
+See the <<azure-arm-template-troubleshooting, troubleshooting section>> for more details.
 
 Does the Marketplace solution deploy Logstash?::
 The Marketplace solution **does not** currently deploy Logstash, only Elasticsearch
