@@ -1,8 +1,8 @@
 [[azure-marketplace-faq]]
-== Frequently Asked Questions (FAQ)
+== Frequently Asked Questions
 
 What resources does the Marketplace deploy?::
-+
+
 The default configuration of the Marketplace deploys the following resources:
 +
 * 1 virtual network
@@ -21,11 +21,14 @@ A screenshot of the resources deployed by default:
 +
 image:images/marketplace_default_resources.png[]
 +
-A 30 day trial license of {xpack}[Elastic's X-Pack] is also installed. X-Pack is available
-under {subscriptions}[a commercial license subscription], and extends the stack with features such
-as Security, Monitoring, Alerting, Reporting, Graph and Machine Learning capabilities.
+A 30 day trial license of {elasticstack}[the Elastic Stack Platinum features] is also installed.
+Elastic Stack features are available
+under {subscriptions}[a commercial license subscription], providing
+enterprise-grade features such as Security, Monitoring, Alerting, Reporting,
+Graph and Machine Learning capabilities.
 
 What is the cost of the Azure Marketplace solution?::
+
 The cost of deploying from the Marketplace will vary depending on the cluster
 topology that you decide to deploy and the VM SKUs that you choose for each of the
 VMs within the cluster. The cost will also vary depending on which Azure region
@@ -33,11 +36,13 @@ you decide to deploy to. Because there are a number of variables involved, a cos
 needs to be calculated on a case-by-case basis. At a minimum, you will pay for
 all Azure resources deployed by the template. The
 {azurecalculator}[Azure pricing calculator] can help in providing a good estimate
-for this. In addition to the cost of Azure resources, {subscriptions}[X-Pack Gold, Platinum and
-Enterprise subscriptions] require a license to be purchased, the cost of which is
-dependent on a number of factors. Please get in touch with us to discuss.
+for this. In addition to the cost of Azure resources,
+{subscriptions}[Elastic Stack Gold, Platinum and Enterprise features] require a
+license to be purchased, the cost of which is dependent on a number of factors.
+Please get in touch with us to discuss.
 
 How do I connect to Elasticsearch?::
+
 Elasticsearch can be accessed from outside of Azure by choosing an external load
 balancer for the load balancer type, within the External access blade step.
 +
@@ -47,6 +52,7 @@ the internal load balancer, which will round robin requests to coordinating
 nodes if deployed, or to data nodes otherwise.
 
 How do I connect to the VMs to troubleshoot?::
+
 Elasticsearch VMs are not accessible from outside of the virtual network. When
 configuring the deployment through the blade steps, a Kibana VM or Jumpbox VM can
 be deployed through which all VMs attached to the virtual network can be accessed.
@@ -73,6 +79,7 @@ ssh <admin username>@<internal IP address or VM hostname>
 See the <<azure-arm-template-troubleshooting, troubleshooting section>> for more details.
 
 Does the Marketplace solution deploy Logstash?::
+
 The Marketplace solution **does not** currently deploy Logstash, only Elasticsearch
 and Kibana. There is an {github}/issues/157[open issue] to track and discuss the inclusion of Logstash
 within the template.

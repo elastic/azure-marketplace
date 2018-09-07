@@ -140,17 +140,17 @@ in addition to which resources are deployed and how they are configured. Further
 a release undergoes considerable testing before being considered ready for public
 release.
 
-As an example, to target {version} release of the template
+As an example, to {github}/releases/tag/{version}[target {version} release] of the template
 
 [source,sh]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure CLI 2.0
 ----
 template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
 template_version={version}
 
 az group deployment create \
-  --resource-group "\<name\>" \
+  --resource-group "<name>" \
   --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
   --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
                esVersion={version} esClusterName=elasticsearch \
@@ -164,7 +164,7 @@ az group deployment create \
 ----
 
 [source,powershell]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure PowerShell
 ----
 $templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
@@ -185,7 +185,7 @@ $parameters = @{
   "securityLogstashPassword" = "logstashPassword123"
 }
 
-$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "\<name\>" `
+$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
   -TemplateUri "$templateBaseUri/$templateVersion/src/mainTemplate.json" `
   -TemplateParameterObject $parameters
 ----

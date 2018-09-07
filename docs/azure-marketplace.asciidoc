@@ -2,8 +2,8 @@
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
 :elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
+:elasticstack: https://www.elastic.co/products/stack
 :xpackdocs: https://www.elastic.co/guide/en/x-pack/current
-:xpack: https://www.elastic.co/products/x-pack
 :microsoftdocs: https://docs.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
 :azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
@@ -23,7 +23,7 @@ consume.
 
 The solution template is a Bring-Your-Own-License (BYOL) offering; the solution
 always deploys with a 30 day trial license that enables
-all {subscriptions}[the Platinum features of X-Pack], to provide the best getting
+all {subscriptions}[the Platinum features of the Elastic Stack], to provide the best getting
 started experience. After the trial license expires, Elasticsearch operates
 in a degraded mode.
 
@@ -122,9 +122,9 @@ include::temp-storage-admonition.asciidoc[]
 ==== User configuration
 
 An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
-with X-Pack and a 30 day trial license that enables all of {subscriptions}[the Platinum features],
-including X-Pack Security. X-Pack Security allows Basic Authentication configuration
-for the cluster and to do so, sets up three
+with a 30 day trial license that enables all of {subscriptions}[the Platinum features of the Elastic Stack],
+including {elasticstack}/security[Security]. Security features allow Basic Authentication configuration
+for the cluster, setting up three
 {xpackdocs}/setting-up-authentication.html[built-in user accounts]
 
 . The `elastic` user, a built-in superuser account
