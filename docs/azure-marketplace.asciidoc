@@ -168,7 +168,7 @@ to Elasticsearch from outside of Azure over port 9200.
 The Marketplace solution does not configure SSL/TLS for communication for any of
 
 * Communication from the browser to Kibana
-* Communication from Kibana to Elasticsearch through internal laod balancer
+* Communication from Kibana to Elasticsearch through internal load balancer
 * Communication to Elasticsearch through external load balancer over the HTTP layer
 * Communication between Elasticsearch nodes in the cluster over the Transport layer
 
