@@ -363,7 +363,7 @@
     },
     "vmSizeLogstash": {
       "type": "string",
-      "defaultValue": "Standard_A2",
+      "defaultValue": "Standard_D1",
       "allowedValues": [
         "Standard_A2",
         "Standard_A3",
