@@ -168,7 +168,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash logstash-install.sh -', variables('installPluginsShortOpt'), 'v \"', parameters('esSettings').version, '\" -m ', parameters('topologySettings').logstashHeapSize, ' -u \"', variables('loadBalancerIp'),'\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -L \"', parameters('topologySettings').logstashPlugins, '\" -c \"', parameters('topologySettings').logstashConf, '\" -K \"', parameters('topologySettings').logstashKeystorePwd, '\" -Y \"', replace(parameters('topologySettings').logstashYaml, '\"', '\\\"'), '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob,'\" -J \"', parameters('esSettings').httpCaCertPassword)]"
+            "commandToExecute": "[concat('bash logstash-install.sh -', variables('installPluginsShortOpt'), 'v \"', parameters('esSettings').version, '\" -m ', parameters('topologySettings').logstashHeapSize, ' -u \"', variables('loadBalancerIp'), '\" -S \"', parameters('esSettings').securityLogstashPwd, '\" -L \"', parameters('topologySettings').logstashPlugins, '\" -c \"', parameters('topologySettings').logstashConf, '\" -K \"', parameters('topologySettings').logstashKeystorePwd, '\" -Y \"', replace(parameters('topologySettings').logstashYaml, '\"', '\\\"'), '\" -H \"', parameters('esSettings').httpCertBlob,'\" -G \"', parameters('esSettings').httpCertPassword, '\" -V \"', parameters('esSettings').httpCaCertBlob,'\" -J \"', parameters('esSettings').httpCaCertPassword, '\"')]"
           }
         }
       }
