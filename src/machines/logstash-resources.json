@@ -125,7 +125,7 @@
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
-            "name": "osdisk",
+            "name": "[concat(variables('namespace'), '-osdisk')]",
             "managedDisk": {
               "storageAccountType": "Standard_LRS"
             },
