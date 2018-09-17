@@ -650,9 +650,8 @@
       }
     },
     "vmClientNodeCount": {
-      "type": "int",
-      "defaultValue": 0,
-      "minValue": 0,
+      "type": "string",
+      "defaultValue": "0",
       "metadata": {
         "description": "Number of Elasticsearch client nodes to provision. A value of 0 puts the data nodes on the load balancer"
       }
@@ -1490,7 +1489,7 @@
       "[variables('lbBackEndPoolsAdded')]",
       "[variables('lbBackEndPoolsRemoved')]"
     ],
-    "clientResourceIndex": "[mod(add(parameters('vmClientNodeCount'),2),add(parameters('vmClientNodeCount'),1))]",
+    "clientResourceIndex": "[mod(add(int(parameters('vmClientNodeCount')),2),add(int(parameters('vmClientNodeCount')),1))]",
     "storageAccountOverrides": {
       "Default": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
       "Standard": "Standard_LRS"
