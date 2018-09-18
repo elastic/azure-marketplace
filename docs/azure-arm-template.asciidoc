@@ -644,7 +644,7 @@ with
 .Azure CLI 2.0
 ----
 az network vnet check-ip-address --name "<vnet name>" \
-  --ip-address "<ip address>"
+  --ip-address "<ip address>" \
   --resource-group "<resource group>"
 ----
 
