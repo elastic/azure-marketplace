@@ -22,7 +22,8 @@
     "6.2.3",
     "6.2.4",
     "6.3.0",
-    "6.3.1"
+    "6.3.1",
+    "6.4.1"
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,

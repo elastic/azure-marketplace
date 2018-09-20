@@ -4,7 +4,7 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/6.4.1/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
@@ -21,7 +21,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "6.3.1",
+      "defaultValue": "6.4.1",
       "allowedValues": [
         "5.3.2",
         "5.4.0",
@@ -45,7 +45,8 @@
         "6.2.3",
         "6.2.4",
         "6.3.0",
-        "6.3.1"
+        "6.3.1",
+        "6.4.1"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
