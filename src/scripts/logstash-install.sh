@@ -151,12 +151,17 @@ add_keystore_or_env_var()
 {
   local KEY=$1
   local VALUE="$2"
+  local SYS_CONFIG=/etc/sysconfig/logstash
+
+  if [[ ! -f $SYS_CONFIG ]]; then
+    touch $SYS_CONFIG
+    chmod 600 $SYS_CONFIG
+  fi
 
   if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
-    # TODO: Should be set in  /etc/sysconfig/logstash
-    # See https://www.elastic.co/guide/en/logstash/current/keystore.html#keystore-password
     set +o history
     export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
+    echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG
     set -o history
 
     # create keystore if it doesn't exist
@@ -173,6 +178,7 @@ add_keystore_or_env_var()
     log "[add_keystore_or_env_var] adding environment variable for $KEY"
     set +o history
     export $KEY="$VALUE"
+    echo "$KEY=\"$VALUE\"" >> $SYS_CONFIG
     set -o history
     log "[add_keystore_or_env_var] added environment variable for $KEY"
   fi
@@ -196,7 +202,12 @@ configure_logstash_yaml()
     # logstash conf file
     if [[ -n "$LOGSTASH_CONF_FILE" ]]; then
       local CONF_FILE=/etc/logstash/conf.d/logstash.conf
-      mv $CONF_FILE $CONF_FILE.bak
+
+      if [[ -f $CONF_FILE ]]; then
+        log "[configure_logstash_yaml] moving $CONF_FILE to $CONF_FILE.bak"
+        mv $CONF_FILE $CONF_FILE.bak
+      fi
+
       log "[configure_logstash_yaml] writing logstash conf to $CONF_FILE"
       echo ${LOGSTASH_CONF_FILE} | base64 -d | tee $CONF_FILE
     fi
