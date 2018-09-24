@@ -152,7 +152,7 @@ add_keystore_or_env_var()
   local KEY=$1
   local VALUE="$2"
 
-  if dpkg --compare-versions "$LOGSTASH_VERSION" ">=" "6.2.0"; then
+  if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
     # TODO: Should be set in  /etc/sysconfig/logstash
     # See https://www.elastic.co/guide/en/logstash/current/keystore.html#keystore-password
     set +o history
@@ -162,12 +162,12 @@ add_keystore_or_env_var()
     # create keystore if it doesn't exist
     if [[ ! -f /etc/logstash/logstash.keystore ]]; then
       log "[add_keystore_or_env_var] creating logstash keystore"
-      /usr/share/logstash/bin/logstash-keystore create
+      /usr/share/logstash/bin/logstash-keystore create --path.settings /etc/logstash
       log "[add_keystore_or_env_var] created logstash keystore"
     fi
 
     log "[add_keystore_or_env_var] adding $KEY to logstash keystore"
-    echo "$VALUE" | /usr/share/logstash/bin/logstash-keystore add $KEY
+    echo "$VALUE" | /usr/share/logstash/bin/logstash-keystore add $KEY --path.settings /etc/logstash
     log "[add_keystore_or_env_var] added $KEY logstash keystore"
   else
     log "[add_keystore_or_env_var] adding environment variable for $KEY"
@@ -219,7 +219,7 @@ configure_logstash_yaml()
     if [ ${INSTALL_XPACK} -ne 0 ]; then
       if dpkg --compare-versions "$LOGSTASH_VERSION" "<" "6.3.0"; then
         log "[configure_logstash_yaml] installing x-pack plugin"
-        /usr/share/logstash/bin/logstash-plugin install x-pack
+        /usr/share/logstash/bin/logstash-plugin install x-pack --path.settings /etc/logstash
         log "[configure_logstash_yaml] installed x-pack plugin"
       fi
 
@@ -327,7 +327,7 @@ install_additional_plugins()
             log "[install_additional_plugins] skipping plugin $PLUGIN"
         else
             log "[install_additional_plugins] installing plugin $PLUGIN"
-            /usr/share/logstash/bin/logstash-plugin install $PLUGIN
+            /usr/share/logstash/bin/logstash-plugin install $PLUGIN --path.settings /etc/logstash
             log "[install_additional_plugins] installed plugin $PLUGIN"
         fi
     done
