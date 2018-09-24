@@ -151,17 +151,18 @@ add_keystore_or_env_var()
 {
   local KEY=$1
   local VALUE="$2"
-  local SYS_CONFIG=/etc/sysconfig/logstash
+  local SYS_CONFIG=/etc/sysconfig
 
   if [[ ! -f $SYS_CONFIG ]]; then
-    touch $SYS_CONFIG
-    chmod 600 $SYS_CONFIG
+    [ -d $SYS_CONFIG ] || mkdir -p $SYS_CONFIG
+    touch $SYS_CONFIG/logstash
+    chmod 600 $SYS_CONFIG/logstash
   fi
 
   if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
     set +o history
     export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
-    echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG
+    echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG/logstash
     set -o history
 
     # create keystore if it doesn't exist
@@ -178,7 +179,7 @@ add_keystore_or_env_var()
     log "[add_keystore_or_env_var] adding environment variable for $KEY"
     set +o history
     export $KEY="$VALUE"
-    echo "$KEY=\"$VALUE\"" >> $SYS_CONFIG
+    echo "$KEY=\"$VALUE\"" >> $SYS_CONFIG/logstash
     set -o history
     log "[add_keystore_or_env_var] added environment variable for $KEY"
   fi
