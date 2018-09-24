@@ -184,7 +184,10 @@ configure_logstash_yaml()
     local SSL_PATH=/etc/logstash/ssl
 
     # backup the current config
-    mv $LOGSTASH_CONF $LOGSTASH_CONF.bak
+    if [[ -f $LOGSTASH_CONF ]]; then
+      log "[configure_logstash_yaml] moving $LOGSTASH_CONF to $LOGSTASH_CONF.bak"
+      mv $LOGSTASH_CONF $LOGSTASH_CONF.bak
+    fi
 
     log "[configure_logstash_yaml] configuring logstash.yml"
 
@@ -203,6 +206,7 @@ configure_logstash_yaml()
     add_keystore_or_env_var 'ELASTICSEARCH_URL' "$ELASTICSEARCH_URL"
 
     # put data on the OS disk in a writable location
+    # TODO: Consider allowing attached managed disk in future
     echo "path.data: /var/lib/logstash" >> $LOGSTASH_CONF
 
     # TODO: make configurable?
@@ -217,9 +221,9 @@ configure_logstash_yaml()
 
     # install x-pack
     if [ ${INSTALL_XPACK} -ne 0 ]; then
-      if dpkg --compare-versions "$LOGSTASH_VERSION" "<" "6.3.0"; then
+      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "6.3.0"; then
         log "[configure_logstash_yaml] installing x-pack plugin"
-        /usr/share/logstash/bin/logstash-plugin install x-pack --path.settings /etc/logstash
+        /usr/share/logstash/bin/logstash-plugin install x-pack
         log "[configure_logstash_yaml] installed x-pack plugin"
       fi
 
@@ -327,7 +331,7 @@ install_additional_plugins()
             log "[install_additional_plugins] skipping plugin $PLUGIN"
         else
             log "[install_additional_plugins] installing plugin $PLUGIN"
-            /usr/share/logstash/bin/logstash-plugin install $PLUGIN --path.settings /etc/logstash
+            /usr/share/logstash/bin/logstash-plugin install $PLUGIN
             log "[install_additional_plugins] installed plugin $PLUGIN"
         fi
     done
@@ -360,8 +364,8 @@ install_yamllint()
 # Installation sequence
 #########################
 
-if systemctl -q is-enabled logstash.service; then
-  log "logstash already installed."
+if systemctl -q is-active logstash.service; then
+  log "logstash already installed and running. reconfigure and restart if logstash.yml has changed"
 
   configure_logstash_yaml
 
