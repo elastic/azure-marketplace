@@ -123,7 +123,7 @@ done
 # Install Oracle Java
 install_java()
 {
-  bash java-ubuntu-install.sh
+  bash java-install.sh
 }
 
 # Install Logstash

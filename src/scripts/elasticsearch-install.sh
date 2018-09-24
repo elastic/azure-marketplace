@@ -344,7 +344,7 @@ check_data_disk()
 # Install Oracle Java
 install_java()
 {
-  bash java-ubuntu-install.sh
+  bash java-install.sh
 }
 
 # Install Elasticsearch
@@ -1130,10 +1130,15 @@ install_yamllint()
 
 install_ntp()
 {
-    log "[install_ntp] installing ntp daemon"
-    (apt-get -yq install ntp || (sleep 15; apt-get -yq install ntp))
+    install_apt_package ntp
+    install_apt_package ntpdate
+
+    if [ $(systemctl -q is-active ntp) ]; then
+      service ntp stop
+    fi
+
     ntpdate pool.ntp.org
-    log "[install_ntp] installed ntp daemon and ntpdate"
+    service ntp start
 }
 
 install_monit()
