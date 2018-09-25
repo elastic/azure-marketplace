@@ -1133,12 +1133,12 @@ install_ntp()
     install_apt_package ntp
     install_apt_package ntpdate
 
-    if [ $(systemctl -q is-active ntp) ]; then
-      service ntp stop
+    if systemctl -q is-active ntp.service; then
+      systemctl stop ntp.service
     fi
 
     ntpdate pool.ntp.org
-    service ntp start
+    systemctl start ntp.service
 }
 
 install_monit()

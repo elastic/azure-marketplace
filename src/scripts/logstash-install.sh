@@ -13,9 +13,24 @@ export DEBIAN_FRONTEND=noninteractive
 
 help()
 {
-    echo "This script installs logstash on a dedicated VM in the elasticsearch ARM template cluster"
+    echo "This script installs Logstash on a dedicated Ubuntu VM"
     echo "Parameters:"
-    # TODO: Add parameters here
+    echo "-v Logstash version e.g. 6.2.2"
+    echo "-m heap size in megabytes to allocate to JVM"
+    echo "-u Elasticsearch URL to configure monitoring and make available to configuration through ELASTICSEARCH_URL variable"
+
+    echo "-S logstash_system user password"
+    echo "-l whether to install X-Pack plugins (or enable trial license in 6.3.0+)"
+
+    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
+
+    echo "-L <plugin;plugin> install additional plugins"
+    echo "-c base 64 encoded Logstash conf file"
+    echo "-K Logstash keystore password for Logstash 6.2.0+"
+    echo "-Y <yaml\nyaml> additional yaml configuration"
 
     echo "-h view this help content"
 }
@@ -160,13 +175,13 @@ add_keystore_or_env_var()
   fi
 
   if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
-    set +o history
-    export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
-    echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG/logstash
-    set -o history
-
     # create keystore if it doesn't exist
     if [[ ! -f /etc/logstash/logstash.keystore ]]; then
+      set +o history
+      export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
+      echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG/logstash
+      set -o history
+
       log "[add_keystore_or_env_var] creating logstash keystore"
       /usr/share/logstash/bin/logstash-keystore create --path.settings /etc/logstash
       log "[add_keystore_or_env_var] created logstash keystore"
@@ -221,7 +236,7 @@ configure_logstash_yaml()
     # TODO: Consider allowing attached managed disk in future
     echo "path.data: /var/lib/logstash" >> $LOGSTASH_CONF
 
-    # TODO: make configurable?
+    # TODO: make persistent queues configurable?
     # echo "queue.type: persisted" >> $LOGSTASH_CONF
 
     # put log files on the OS disk in a writable location
@@ -289,7 +304,8 @@ configure_logstash_yaml()
       log "[configure_logstash_yaml] Configured ELASTICSEARCH_CACERT for Elasticsearch TLS"
     fi
 
-    # TODO: Configure Pipeline Management?
+    # TODO: Configure Centralized Pipeline Management?
+    # https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html
 
     # Additional yaml configuration
     if [[ -n "$YAML_CONFIGURATION" ]]; then
