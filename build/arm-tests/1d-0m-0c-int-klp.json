@@ -1,0 +1,21 @@
+{
+  "description": "1 data node cluster with logstash",
+  "isValid" : true,
+  "deploy" : true,
+  "why" : "",
+  "location" : "westeurope",
+  "parameters" : {
+    "loadBalancerType":{"value":"external"},
+    "kibana":{"value":"No"},
+    "logstash":{"value":"Yes"},
+    "logstashAdditionalPlugins":{"value":"logstash-input-heartbeat"},
+    "logstashConf":{"value":"conf/logstash.conf"},
+    "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+    "vmDataNodeCount":{"value":1},
+    "vmDataDiskCount":{"value":1},
+    "vmDataDiskSize":{"value":"Small"},
+    "storageAccountType":{"value":"Default"},
+    "dataNodesAreMasterEligible":{"value":"Yes"},
+    "authenticationType":{"value":"password"}
+	}
+}

@@ -39,17 +39,17 @@ var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
 
-  // replace cert parameters with values with base64 encoded certs
-  [
-    "esHttpCertBlob",
+  // replace parameters with values with base64 encoded values
+  [ "esHttpCertBlob",
     "esHttpCaCertBlob",
     "esTransportCaCertBlob",
     "kibanaCertBlob",
     "kibanaKeyBlob",
     "appGatewayCertBlob",
-    "appGatewayEsHttpCertBlob"].forEach(k => {
+    "appGatewayEsHttpCertBlob",
+    "logstashConf"].forEach(k => {
     if (test.parameters[k] && test.parameters[k].value) {
-      var cert = fs.readFileSync("certs/" + test.parameters[k].value);
+      var cert = fs.readFileSync(test.parameters[k].value);
       test.parameters[k].value = new Buffer(cert).toString("base64");
     }
   });
@@ -322,8 +322,14 @@ var sanityCheckDeployment = (test, stdout, cb) => {
 
   if (stdout) {
     var outputs = JSON.parse(stdout).properties.outputs;
-    if (outputs.loadbalancer.value !== "N/A")
-        checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
+    if (outputs.loadbalancer.value !== "N/A") {
+      checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
+
+      // logstash can be checked with external loadbalancer
+      // TODO: support checking through Application Gateway and Kibana
+      if (t.params.logstash.value === "Yes")
+        checks.push(()=> sanityCheckLogstash(test, outputs.loadbalancer.value, allChecked));
+    }
     if (outputs.kibana.value !== "N/A")
       checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
   }
@@ -361,10 +367,7 @@ var sanityCheckApplicationGateway = (test, cb) => {
   });
 }
 
-var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
-  var t = armTests[test];
-  var rg = t.resourceGroup;
-  log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
+var createLoadBalancerRequestOptions = (t, loadbalancerType) => {
   var opts = {
     json: true,
     auth: { username: "elastic", password: config.deployments.securityPassword },
@@ -390,6 +393,14 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
     }
   }
 
+  return opts;
+}
+
+var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
+  var t = armTests[test];
+  var rg = t.resourceGroup;
+  log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
+  var opts = createLoadBalancerRequestOptions(t, loadbalancerType);
   request(url, opts, (error, response, body) => {
     if (!error && response.statusCode == 200) {
       log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
@@ -421,7 +432,7 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
       //bailout(error || new error(m));
       cb();
     }
-  })
+  });
 }
 
 var sanityCheckKibana = (test, url, cb) => {
@@ -455,6 +466,32 @@ var sanityCheckKibana = (test, url, cb) => {
     //There is no guarantee kibana is not provisioned before the cluster is up
     cb();
   });
+}
+
+var sanityCheckLogstash = (test, url, cb) => {
+  var t = armTests[test];
+  var rg = t.resourceGroup;
+  log(`checking logstash is sending events in resource group: ${rg}`);
+  var opts = createLoadBalancerRequestOptions(t, "external");
+
+  request(`${url}/heartbeat/_count`, opts, (error, response, body) => {
+    if (!error && response.statusCode == 200) {
+      var count = (body) ? body.count : -1;
+      if (count >= 0) {
+        log(`logstash sent ${count} events in resource group: ${rg}`);
+        cb();
+      }
+      else {
+        log(`logstash not sent any events in resource group: ${rg}`);
+        cb();
+      }
+    }
+    else {
+      log(test, `error counting logstash events:  error: ${error}`);
+      cb();
+    }
+  });
+
 }
 
 var deployTemplate = (test, cb) => {

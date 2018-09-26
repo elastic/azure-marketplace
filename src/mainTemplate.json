@@ -433,7 +433,7 @@
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "base 64 Logstash configuration."
+        "description": "base 64 encoded form of a Logstash conf file to deploy."
       }
     },
     "logstashKeystorePassword": {

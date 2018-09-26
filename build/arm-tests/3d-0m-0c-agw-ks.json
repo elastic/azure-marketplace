@@ -30,7 +30,7 @@
 		"appGatewayTier": {"value":"WAF"},
 		"appGatewaySku": {"value":"Medium"},
 		"appGatewayCount": {"value":2},
-		"appGatewayCertBlob": {"value":"cert-with-password.pfx"},
+		"appGatewayCertBlob": {"value":"certs/cert-with-password.pfx"},
 		"appGatewayCertPassword": {"value":"Password123"},
 		"appGatewayWafStatus": {"value":"Enabled"},
 		"appGatewayWafMode": {"value":"Detection"}
