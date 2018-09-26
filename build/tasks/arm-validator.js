@@ -473,25 +473,33 @@ var sanityCheckLogstash = (test, url, cb) => {
   var rg = t.resourceGroup;
   log(`checking logstash is sending events in resource group: ${rg}`);
   var opts = createLoadBalancerRequestOptions(t, "external");
-
-  request(`${url}/heartbeat/_count`, opts, (error, response, body) => {
-    if (!error && response.statusCode == 200) {
-      var count = (body) ? body.count : -1;
-      if (count >= 0) {
-        log(`logstash sent ${count} events in resource group: ${rg}`);
-        cb();
+  var attempts = 0;
+  var countRequest = () => {
+    request(`${url}/heartbeat/_count`, opts, (error, response, body) => {
+      if (!error && response.statusCode == 200) {
+        var count = (body) ? body.count : -1;
+        if (count >= 0) {
+          log(`logstash sent ${count} events in resource group: ${rg}`);
+          cb();
+        }
+        else {
+          log(`logstash not sent any events in resource group: ${rg}`);
+          cb();
+        }
+      }
+      else if (response.statusCode == 404 && attempts < 10) {
+        log(`logstash event index not found. retry attempt: ${++attempts} for resource group: ${rg}`);
+        setTimeout(countRequest, 5000);
       }
       else {
-        log(`logstash not sent any events in resource group: ${rg}`);
+        log(`problem checking for logstash events in resource group: ${rg}. response status code: ${response.statusCode}`);
+        log(test, `statusCode: ${response.statusCode}, error: ${error}\ncheckLogstashEventCountResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
         cb();
       }
-    }
-    else {
-      log(test, `statusCode: ${response.statusCode}, error: ${error}\ncheckLogstashEventCountResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
-      cb();
-    }
-  });
+    });
+  };
 
+  countRequest();
 }
 
 var deployTemplate = (test, cb) => {
