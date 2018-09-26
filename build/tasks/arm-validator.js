@@ -487,7 +487,7 @@ var sanityCheckLogstash = (test, url, cb) => {
       }
     }
     else {
-      log(test, `error counting logstash events:  error: ${error}`);
+      log(test, `statusCode: ${response.statusCode}, error: ${error}\ncheckLogstashEventCountResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
       cb();
     }
   });

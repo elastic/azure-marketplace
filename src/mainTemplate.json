@@ -1635,7 +1635,7 @@
       "logstashConf": "[parameters('logstashConf')]",
       "logstashPlugins": "[parameters('logstashAdditionalPlugins')]",
       "logstashYaml": "[parameters('logstashAdditionalYaml')]",
-      "logstashKeystorePwd": "[parameters('logstashKeystorePassword')]",
+      "logstashKeystorePwd": "[if(not(empty(parameters('logstashKeystorePassword'))),parameters('logstashKeystorePassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityLogstashPassword')))]",
       "jumpbox": "[parameters('jumpbox')]",
       "dataNodeStorageSettings": {
         "accountType": "[variables('resolvedStorageAccountType')]",
