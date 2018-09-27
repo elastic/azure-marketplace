@@ -168,7 +168,7 @@ add_keystore_or_env_var()
   local VALUE="$2"
   local SYS_CONFIG=/etc/sysconfig
 
-  if [[ ! -f $SYS_CONFIG ]]; then
+  if [[ ! -f $SYS_CONFIG/logstash ]]; then
     [ -d $SYS_CONFIG ] || mkdir -p $SYS_CONFIG
     touch $SYS_CONFIG/logstash
     chmod 600 $SYS_CONFIG/logstash
@@ -254,16 +254,22 @@ configure_logstash_yaml()
         log "[configure_logstash_yaml] installed x-pack plugin"
       fi
 
-      # configure monitoring
-      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+      # assumes Security is enabled, so configure monitoring credentials
       echo "xpack.monitoring.elasticsearch.username: logstash_system" >> $LOGSTASH_CONF
       echo 'xpack.monitoring.elasticsearch.password: "${LOGSTASH_SYSTEM_PASSWORD}"' >> $LOGSTASH_CONF
-      echo "xpack.monitoring.enabled: true" >> $LOGSTASH_CONF
     fi
+
+    # configure monitoring
+    echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+
+    local MONITORING='true'
 
     # Make the HTTP CA cert for communication with Elasticsearch available to
     # Logstash conf files through ${ELASTICSEARCH_CACERT}
     if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+
+      MONITORING='false'
+
       [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
       if [[ -n "${HTTP_CERT}" ]]; then
@@ -279,11 +285,18 @@ configure_logstash_yaml()
         else
             log "[configure_logstash_yaml] CA cert extracted from HTTP PKCS#12 archive. Make ELASTICSEARCH_CACERT available to conf files"
             add_keystore_or_env_var "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
-            echo 'xpack.monitoring.elasticsearch.ssl.ca: "${ELASTICSEARCH_CACERT}"' >> $LOGSTASH_CONF
+
+            # logstash performs hostname verification for monitoring
+            # which will not work for a HTTP cert provided by the user, where logstash communicates through internal loadbalancer.
+            # 6.4.0 exposes verification_mode, so set this to none and document.
+            if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.4.0"; then
+              echo 'xpack.monitoring.elasticsearch.ssl.ca: "${ELASTICSEARCH_CACERT}"' >> $LOGSTASH_CONF
+              echo 'xpack.monitoring.elasticsearch.ssl.verification_mode: none' >> $LOGSTASH_CONF
+              MONITORING='true'
+            fi
         fi
 
       else
-
         # convert PKCS#12 CA certificate to PEM format
         local HTTP_CACERT_FILENAME=elasticsearch-http-ca.p12
         log "[configure_logstash_yaml] Save PKCS#12 archive for Elasticsearch HTTP CA to file"
@@ -297,12 +310,20 @@ configure_logstash_yaml()
         else
             log "[configure_logstash_yaml] CA cert extracted from HTTP CA PKCS#12 archive. Make ELASTICSEARCH_CACERT available to conf files"
             add_keystore_or_env_var "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
+
+            # HTTP certs created from a HTTP CA provided by the user will include the
+            # IP address of the internal loadbalancer, so hostname verification will pass.
             echo 'xpack.monitoring.elasticsearch.ssl.ca: "${ELASTICSEARCH_CACERT}"' >> $LOGSTASH_CONF
+            MONITORING='true'
         fi
       fi
+
       chown -R logstash: $SSL_PATH
       log "[configure_logstash_yaml] Configured ELASTICSEARCH_CACERT for Elasticsearch TLS"
+      log "[configure_logstash_yaml] X-Pack monitoring for Logstash set to $MONITORING"
     fi
+
+    echo "xpack.monitoring.enabled: $MONITORING" >> $LOGSTASH_CONF
 
     # TODO: Configure Centralized Pipeline Management?
     # https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html
