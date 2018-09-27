@@ -1,4 +1,6 @@
-# Elasticsearch Azure Marketplace offering
+# Elastic Stack Azure Marketplace offering
+
+Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
 This repository consists of:
 
@@ -24,12 +26,12 @@ For more details around developing the template, take a look at the [Development
 
 ## Azure Marketplace
 
-The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
+The [Azure Marketplace Elastic Stack offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
-It will always bootstrap a cluster complete with a trial license of the [Elastic Stack's commercial features](https://www.elastic.co/products/stack).
+It will always bootstrap an Elasticsearch cluster complete with a trial license of the [Elastic Stack's commercial features](https://www.elastic.co/products/stack).
 
-Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
-<a href="#command-line-deploy">Check out the examples.</a>
+Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch on Azure, but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
+<a href="#command-line-deploy">Check out the CLI examples.</a>
 
 ---
 
@@ -81,12 +83,12 @@ posts for further information
 
 ### X-Pack features
 
-Starting with Elasticsearch and Kibana 6.3.0, The template deploys with X-Pack features bundled as part of the deployment, and
+Starting with Elasticsearch, Kibana and Logstash 6.3.0, The template deploys with X-Pack features bundled as part of the deployment, and
 includes the free features under the [Basic license](https://www.elastic.co/subscriptions) level.
 The [`xpackPlugins`](#x-pack) parameter determines whether a self-generated trial license is applied,
 offering a trial period of 30 days of the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
 
-For Elasticsearch and Kibana prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
+For Elasticsearch, Kibana and Logstash prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
 and a self-generated trial license is applied. In difference to 6.3.0 however, a value of `No` for `xpackPlugins` means that 
 X-Pack plugins are not installed, and therefore does not provide the free features under the Basic license level, offering the Open Source features only.
 For these versions, you can install X-Pack plugins and [**register for a free Basic license** to apply to the deployment](https://register.elastic.co/), in 
@@ -94,8 +96,9 @@ order to use the free features available under the Basic license level.
 
 ## Parameters
 
-The ARM template accepts a _lot_ of parameters, although many of them are optional and only used
-in conjunction with other parameters.
+The ARM template accepts a _lot_ of parameters, but don't fear! Most of them are **optional** and only used
+in conjunction with other parameters. Where a parameter value is not explicitly provided, it will take the default
+value defined in the template.
 
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
