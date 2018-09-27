@@ -58,6 +58,7 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+        main.parameters.vmSizeLogstash.allowedValues = vmSizes;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {
