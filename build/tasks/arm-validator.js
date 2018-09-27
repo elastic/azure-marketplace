@@ -39,7 +39,7 @@ var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
 
-  // replace parameters with values with base64 encoded values
+  // replace parameters with base64 encoded file values
   [ "esHttpCertBlob",
     "esHttpCaCertBlob",
     "esTransportCaCertBlob",
@@ -49,8 +49,11 @@ var bootstrapTest = (t, defaultVersion) =>
     "appGatewayEsHttpCertBlob",
     "logstashConf"].forEach(k => {
     if (test.parameters[k] && test.parameters[k].value) {
-      var cert = fs.readFileSync(test.parameters[k].value);
-      test.parameters[k].value = new Buffer(cert).toString("base64");
+      var buffer = fs.readFileSync(test.parameters[k].value);
+      if (k === "logstashConf") {
+        buffer = new Buffer(buffer.toString().replace("securityAdminPassword", config.deployments.securityPassword));
+      }
+      test.parameters[k].value = new Buffer(buffer).toString("base64");
     }
   });
 
@@ -371,19 +374,30 @@ var createLoadBalancerRequestOptions = (t, loadbalancerType) => {
   var opts = {
     json: true,
     auth: { username: "elastic", password: config.deployments.securityPassword },
+    // don't perform hostname validation as all tests use self-signed certs
     agentOptions: { checkServerIdentity: _.noop }
   };
 
-  var certParams = {
-    blob: (loadbalancerType === "application gateway") ? "appGatewayCertBlob": "esHttpCertBlob",
-    passphrase: (loadbalancerType === "application gateway") ? "appGatewayCertPassword": "esHttpCertPassword",
-  };
-
-  if (t.params[certParams.blob] && t.params[certParams.blob].value) {
-    if (t.params[certParams.passphrase] && t.params[certParams.passphrase].value) {
+  if (loadbalancerType === "application gateway") {
+    if (t.params.appGatewayCertBlob && t.params.appGatewayCertBlob.value) {
+      if (t.params.appGatewayCertPassword && t.params.appGatewayCertPassword.value) {
+        opts = merge.recursive(true, opts, {
+          pfx: fs.readFileSync("certs/cert-with-password.pfx"),
+          passphrase: t.params.appGatewayCertPassword.value,
+        });
+      }
+      else {
+        opts = merge.recursive(true, opts, {
+          pfx: fs.readFileSync("certs/cert-no-password.pfx")
+        });
+      }
+    }
+  }
+  else if (t.params.esHttpCertBlob && t.params.esHttpCertBlob.value) {
+    if (t.params.esHttpCertPassword && t.params.esHttpCertPassword.value) {
       opts = merge.recursive(true, opts, {
         pfx: fs.readFileSync("certs/cert-with-password.pfx"),
-        passphrase: t.params[certParams.passphrase].value,
+        passphrase: t.params.esHttpCertPassword.value,
       });
     }
     else {
@@ -391,6 +405,13 @@ var createLoadBalancerRequestOptions = (t, loadbalancerType) => {
         pfx: fs.readFileSync("certs/cert-no-password.pfx")
       });
     }
+  }
+  else if (t.params.esHttpCaCertBlob && t.params.esHttpCaCertBlob.value) {
+    opts = merge.recursive(true, opts, {
+      // ca cert agentOption does not work: https://github.com/request/request#using-optionsagentoptions
+      // so disable cert validation altogether when certs are generated from a CA.
+      rejectUnauthorized: false
+    });
   }
 
   return opts;
@@ -406,11 +427,14 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
       log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
       request(`${url}/_cluster/health`, opts, (error, response, body) => {
         var status = (body) ? body.status : "unknown";
-        if (!error && response.statusCode == 200 && status === "green") {
+        if (!error && response.statusCode === 200 &&
+            // if logstash is deployed and successfully sending events, the logstash created
+            // index will be created with the default number of shards and replicas
+            (status === "green" || (status === "yellow" && t.params.logstash.value === "Yes"))) {
           log(`cluster is up and running in resource group: ${rg}`);
           log(test, `clusterHealthResponse: ${JSON.stringify(body, null, 2)}`);
           var expectedTotalNodes = 3 + t.params.vmDataNodeCount.value + t.params.vmClientNodeCount.value;
-          if (t.params.dataNodesAreMasterEligible.value == "Yes") expectedTotalNodes -= 3;
+          if (t.params.dataNodesAreMasterEligible.value === "Yes") expectedTotalNodes -= 3;
 
           log(`expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
           //if (body.number_of_nodes != expectedTotalNodes) return bailOut(new Error(m));
@@ -464,7 +488,36 @@ var sanityCheckKibana = (test, url, cb) => {
     log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
     //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
     //There is no guarantee kibana is not provisioned before the cluster is up
-    cb();
+
+    if (state == "green") {
+      // check monitoring endpoint
+      opts.method = "POST";
+      opts.headers = opts.headers || {};
+      opts.headers["kbn-xsrf"] = "reporting";
+
+      request(`${url}/api/monitoring/v1/clusters`, opts, function (error, response, body) {
+        log(test, `monitoringResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
+
+        if (t.params.kibana.value === "Yes") {
+          var kibana = body.kibana;
+          if (kibana) {
+            log ("kibana monitoring enabled");
+          }
+        }
+
+        if (t.params.logstash.value === "Yes") {
+          var logstash = body.logstash;
+          if (logstash) {
+            log("logstash monitoring enabled");
+          }
+        }
+
+        cb();
+      });
+    }
+    else {
+      cb();
+    }
   });
 }
 
@@ -476,7 +529,7 @@ var sanityCheckLogstash = (test, url, cb) => {
   var attempts = 0;
   var countRequest = () => {
     request(`${url}/heartbeat/_count`, opts, (error, response, body) => {
-      if (!error && response.statusCode == 200) {
+      if (!error && response && response.statusCode == 200) {
         var count = (body) ? body.count : -1;
         if (count >= 0) {
           log(`logstash sent ${count} events in resource group: ${rg}`);
@@ -487,13 +540,13 @@ var sanityCheckLogstash = (test, url, cb) => {
           cb();
         }
       }
-      else if (response.statusCode == 404 && attempts < 10) {
+      else if (response && response.statusCode == 404 && attempts < 10) {
         log(`logstash event index not found. retry attempt: ${++attempts} for resource group: ${rg}`);
         setTimeout(countRequest, 5000);
       }
       else {
-        log(`problem checking for logstash events in resource group: ${rg}. response status code: ${response.statusCode}`);
-        log(test, `statusCode: ${response.statusCode}, error: ${error}\ncheckLogstashEventCountResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
+        log(`problem checking for logstash events in resource group: ${rg}. ${response ? "response status code: " + response.statusCode: ""}`);
+        log(test, `statusCode: ${response ? response.statusCode : "unknown"}, error: ${error}\ncheckLogstashEventCountResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
         cb();
       }
     });
