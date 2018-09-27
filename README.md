@@ -26,7 +26,7 @@ For more details around developing the template, take a look at the [Development
 
 The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
-It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack features](https://www.elastic.co/products/x-pack).
+It will always bootstrap a cluster complete with a trial license of the [Elastic Stack's commercial features](https://www.elastic.co/products/stack).
 
 Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
 <a href="#command-line-deploy">Check out the examples.</a>
@@ -140,7 +140,7 @@ in conjunction with other parameters.
 
   <tr><td id="x-pack">xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    features such as <a href="https://www.elastic.co/products/x-pack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/x-pack/security">Security</a>, <a href="https://www.elastic.co/products/x-pack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/x-pack/graph">Graph</a>, <a href="https://www.elastic.co/products/x-pack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/x-pack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/x-pack/reporting">Reporting</a> and Profiler installed.
+    features such as <a href="https://www.elastic.co/products/stack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/stack/security">Security</a>, <a href="https://www.elastic.co/products/stack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/stack/graph">Graph</a>, <a href="https://www.elastic.co/products/stack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/stack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/stack/reporting">Reporting</a> and Profiler installed.
     <br /><br />
     A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
     will include only the Open Source features.
@@ -275,7 +275,7 @@ in conjunction with other parameters.
     support Premium Storage and Standard Storage for those that do not. <code>Standard</code> will use Standard Storage.
     </td><td><code>Default</code></td></tr>
 
-  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Client (Coordinating only) node</a> related settings</strong></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Coordinating node</a> related settings</strong></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
     <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
@@ -341,8 +341,7 @@ in conjunction with other parameters.
 
   <tr><td>kibana</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
+    a trial license of the <a href="https://www.elastic.co/products/stack">commercial Kibana features</a> will be applied and activated.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
@@ -361,6 +360,39 @@ in conjunction with other parameters.
 
   <tr><td>kibanaAdditionalYaml</td><td>string</td>
     <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
+
+  <tr><td colspan="4" style="font-size:120%"><strong>Logstash related settings</strong></td></tr>
+
+  <tr><td>logstash</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Logstash installed. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
+    a trial license for the <a href="https://www.elastic.co/products/stack">commercial Logstash features</a> will be applied and activated.
+    </td><td><code>No</code></td></tr>
+
+  <tr><td>vmSizeLogstash</td><td>string</td>
+    <td>Azure VM size of the Logstash instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
+    </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>logstashHeapSize</td><td>integer</td>
+    <td>The size, <em>in megabytes</em>, of memory to allocate for the JVM heap for Logstash. If unspecified, Logstash will be configured with the default heap size for the distribution and version. 
+    Take a look at <a href="https://www.elastic.co/guide/en/logstash/current/tuning-logstash.html#profiling-the-heap" target="_blank">the Logstash documentation</a> on profiling heap size for more information. <br /><br /> <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Logstash VM SKU will fail the deployment.</strong>
+    </td><td><code>0</code></td></tr>
+
+  <tr><td>logstashConf</td><td>securestring</td>
+    <td>A Base-64 encoded form of a <a href="https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#configuration-file-structure" target="_blank">Logstash config file</a> to deploy.
+    </td><td><code>""</code></td></tr>  
+
+  <tr><td>logstashKeystorePassword</td><td>securestring</td>
+    <td>The password to protect the Logstash keystore. If no value is supplied, a value will be generated using the ARM template <code>uniqueString()</code> function. Used only in 6.2.0+
+    </td><td><code>""</code></td></tr>  
+
+  <tr><td>logstashAdditionalPlugins</td><td>string</td>
+    <td>Additional Logstash plugins to install. Each plugin must be separated by a semicolon. e.g. <code>logstash-input-heartbeat;logstash-input-twitter</code>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>logstashAdditionalYaml</td><td>string</td>
+    <td>Additional configuration for Logstash yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"pipeline.batch.size: 125\npipeline.batch.delay: 50"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
+    </td><td><code>""</code></td></tr>  
 
   <tr><td colspan="4" style="font-size:120%"><strong>Jumpbox related settings</strong></td></tr>
 
