@@ -86,6 +86,7 @@ gulp.task("patch", function(cb) {
             var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
             var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
             var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+            var logstashSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeLogstash"; });
 
             var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
               delete control.constraints.allowedValues;
@@ -95,7 +96,7 @@ gulp.task("patch", function(cb) {
                 if (recommendedSize) {
                   var fromIndex = sizes.indexOf(recommendedSize);
                   if (fromIndex == -1) {
-                    throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
+                    throw new Error(`recommendSize '${recommendedSize}' not found in recommendedSizes [${recommendedSizes.join("','")}]`);
                   }
                   sizes.splice(fromIndex);
                   sizes.unshift(recommendedSize);
@@ -108,6 +109,7 @@ gulp.task("patch", function(cb) {
             patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
             patchVmSizes(clientSizeControl, vmSizes);
             patchVmSizes(kibanaSizeControl, kibanaVmSizes);
+            patchVmSizes(logstashSizeControl, vmSizes);
 
             var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;

@@ -501,7 +501,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Additional Logstash plugins to install.  Each plugin must be separated by a semicolon. e.g. azure_event_hubs;http_poller"
+        "description": "Additional Logstash plugins to install.  Each plugin must be separated by a semicolon. e.g. logstash-input-azure_event_hubs;logstash-input-http_poller"
       }
     },
     "logstashAdditionalYaml": {
