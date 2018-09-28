@@ -149,7 +149,7 @@ var bailOutNoCleanUp = (error)  => {
   throw error;
 }
 
-var bailOut = (error, rg)  => {
+var bailOut = (error, rg) => {
   if (!error) return;
   if (!rg) log(error)
   else log(`resourcegroup: ${rg} - ${error}`)
@@ -490,25 +490,37 @@ var sanityCheckKibana = (test, url, cb) => {
     //There is no guarantee kibana is not provisioned before the cluster is up
 
     if (state == "green") {
-      // check monitoring endpoint
+      log(`checking kibana monitoring endpoint for rg: ${rg}`);
+
       opts.method = "POST";
       opts.headers = opts.headers || {};
       opts.headers["kbn-xsrf"] = "reporting";
+      var now = new Date();
+      now.setHours(now.getHours() - 1);
+      var plusAnHour = new Date();
+      plusAnHour.setHours(plusAnHour.getHours() + 1);
+      opts.body = JSON.stringify({
+        timeRange: {
+          min: dateFormat(now, "isoUtcDateTime"),
+          max: dateFormat(plusAnHour, "isoUtcDateTime")
+        }
+      });
 
       request(`${url}/api/monitoring/v1/clusters`, opts, function (error, response, body) {
         log(test, `monitoringResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
 
-        if (t.params.kibana.value === "Yes") {
-          var kibana = body.kibana;
+        if (body && body.length) {
+          var kibana = body[0].kibana;
           if (kibana) {
             log ("kibana monitoring enabled");
           }
-        }
 
-        if (t.params.logstash.value === "Yes") {
-          var logstash = body.logstash;
-          if (logstash) {
-            log("logstash monitoring enabled");
+          if (t.params.logstash.value === "Yes") {
+            log("logstash enabled in the template. Checking monitoring");
+            var logstash = body[0].logstash;
+            if (logstash) {
+              log("logstash monitoring enabled");
+            }
           }
         }
 
