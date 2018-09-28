@@ -237,6 +237,13 @@ configure_logstash_yaml()
     # TODO: Consider allowing attached managed disk in future
     echo "path.data: /var/lib/logstash" >> $LOGSTASH_CONF
 
+    # explicitly set the default conf file dir
+    if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
+      echo "path.config: /etc/logstash/conf.d/*.conf" >> $LOGSTASH_CONF
+    else
+      echo "path.config: /etc/logstash/conf.d" >> $LOGSTASH_CONF
+    fi
+
     # TODO: make persistent queues configurable?
     # echo "queue.type: persisted" >> $LOGSTASH_CONF
 
