@@ -36,7 +36,6 @@ help()
 }
 
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
-# The Script extension output the stdout/err buffer in intervals with duplicates.
 log()
 {
     echo \[$(date +%d%m%Y-%H:%M:%S)\] "$1"
@@ -62,7 +61,7 @@ fi
 #########################
 
 #Script Parameters
-LOGSTASH_VERSION="6.2.4"
+LOGSTASH_VERSION="6.4.0"
 LOGSTASH_HEAP=0
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
@@ -204,6 +203,8 @@ configure_logstash_yaml()
 {
     local LOGSTASH_CONF=/etc/logstash/logstash.yml
     local SSL_PATH=/etc/logstash/ssl
+    local LOG_PATH=/var/log/logstash
+    local XPACK_BUNDLED=$(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.3.0"; echo $?)
 
     # backup the current config
     if [[ -f $LOGSTASH_CONF ]]; then
@@ -240,27 +241,28 @@ configure_logstash_yaml()
     # echo "queue.type: persisted" >> $LOGSTASH_CONF
 
     # put log files on the OS disk in a writable location
-    local LOG_PATH=/var/log/logstash
     mkdir -p $LOG_PATH
     chown -R logstash: $LOG_PATH
     echo "path.logs: $LOG_PATH" >> $LOGSTASH_CONF
     echo "log.level: error" >> $LOGSTASH_CONF
 
     # install x-pack
-    if [ ${INSTALL_XPACK} -ne 0 ]; then
+    if [[ $INSTALL_XPACK -ne 0 ]]; then
       if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "6.3.0"; then
         log "[configure_logstash_yaml] installing x-pack plugin"
         /usr/share/logstash/bin/logstash-plugin install x-pack
         log "[configure_logstash_yaml] installed x-pack plugin"
       fi
 
+      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+
       # assumes Security is enabled, so configure monitoring credentials
       echo "xpack.monitoring.elasticsearch.username: logstash_system" >> $LOGSTASH_CONF
       echo 'xpack.monitoring.elasticsearch.password: "${LOGSTASH_SYSTEM_PASSWORD}"' >> $LOGSTASH_CONF
+    elif [[ $XPACK_BUNDLED -eq 0 ]]; then
+      # configure monitoring for basic
+      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
     fi
-
-    # configure monitoring
-    echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
 
     local MONITORING='true'
 
@@ -323,7 +325,9 @@ configure_logstash_yaml()
       log "[configure_logstash_yaml] X-Pack monitoring for Logstash set to $MONITORING"
     fi
 
-    echo "xpack.monitoring.enabled: $MONITORING" >> $LOGSTASH_CONF
+    if [[ $XPACK_BUNDLED -eq 0 || $INSTALL_XPACK -ne 0 ]]; then
+      echo "xpack.monitoring.enabled: $MONITORING" >> $LOGSTASH_CONF
+    fi
 
     # TODO: Configure Centralized Pipeline Management?
     # https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html
@@ -334,7 +338,7 @@ configure_logstash_yaml()
 
         local SKIP_LINES="node.name path.data path.logs "
         SKIP_LINES+="xpack.monitoring.elasticsearch.username xpack.monitoring.elasticsearch.password "
-        SKIP_LINES+="xpack.monitoring.enabled "
+        SKIP_LINES+="xpack.monitoring.enabled xpack.monitoring.elasticsearch.ssl.ca xpack.monitoring.elasticsearch.ssl.verification_mode "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION"); do
