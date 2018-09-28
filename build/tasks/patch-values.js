@@ -85,8 +85,12 @@ gulp.task("patch", function(cb) {
             var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
             var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
             var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-            var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
-            var logstashSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeLogstash"; });
+
+            var kibanaSection = _.find(externalAccessStep.elements, function (el) { return el.name == "kibanaSection"; });
+            var kibanaSizeControl = _.find(kibanaSection.elements, function (el) { return el.name == "vmSizeKibana"; });
+
+            var logstashSection = _.find(externalAccessStep.elements, function (el) { return el.name == "logstashSection"; });
+            var logstashSizeControl = _.find(logstashSection.elements, function (el) { return el.name == "vmSizeLogstash"; });
 
             var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
               delete control.constraints.allowedValues;
