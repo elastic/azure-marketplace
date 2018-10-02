@@ -101,6 +101,14 @@
     ["Standard_F8s", 16, "Premium", false],
     ["Standard_F16s", 32, "Premium", false],
 
+    ["Standard_F2s_v2", 4, "Premium", false],
+    ["Standard_F4s_v2", 8, "Premium", false],
+    ["Standard_F8s_v2", 16, "Premium", false],
+    ["Standard_F16s_v2", 32, "Premium", false],
+    ["Standard_F32s_v2", 32, "Premium", false],
+    ["Standard_F64s_v2", 32, "Premium", false],
+    ["Standard_F72s_v2", 32, "Premium", false],
+
     ["Standard_G1", 8, "Standard", false],
     ["Standard_G2", 16, "Standard", false],
     ["Standard_G3", 32, "Standard", false],
