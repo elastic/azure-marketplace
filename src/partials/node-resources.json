@@ -308,7 +308,7 @@
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
-              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmMasterNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmMasterNodeAcceleratedNetworking), 'Yes', 'No'), parameters('topologySettings').vmMasterNodeAcceleratedNetworking)]"
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmMasterNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeMasterNodes), 'Yes', 'No'), parameters('topologySettings').vmMasterNodeAcceleratedNetworking)]"
             }
           },
           "elasticTags": {
@@ -345,7 +345,7 @@
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
-              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmClientNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmClientNodeAcceleratedNetworking), 'Yes', 'No'), parameters('topologySettings').vmClientNodeAcceleratedNetworking)]"
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmClientNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeClientNodes), 'Yes', 'No'), parameters('topologySettings').vmClientNodeAcceleratedNetworking)]"
             }
           },
           "elasticTags": {
@@ -381,7 +381,7 @@
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
-              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmDataNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmDataNodeAcceleratedNetworking), 'Yes', 'No'), parameters('topologySettings').vmDataNodeAcceleratedNetworking)]"
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmDataNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeDataNodes), 'Yes', 'No'), parameters('topologySettings').vmDataNodeAcceleratedNetworking)]"
             }
           },
           "storageSettings": {
@@ -469,7 +469,7 @@
             "value": "[parameters('topologySettings').vmSizeKibana]"
           },
           "acceleratedNetworking": {
-            "value": "[if(equals(parameters('topologySettings').vmKibanaAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmKibanaAcceleratedNetworking), 'Yes', 'No'), parameters('topologySettings').vmKibanaAcceleratedNetworking)]"
+            "value": "[if(equals(parameters('topologySettings').vmKibanaAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeKibana), 'Yes', 'No'), parameters('topologySettings').vmKibanaAcceleratedNetworking)]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
