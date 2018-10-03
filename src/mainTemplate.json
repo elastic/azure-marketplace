@@ -1033,6 +1033,12 @@
         "description": "Password for the 'logstash_system' user. Must be > 6 characters"
       }
     },
+    "securityBeatsPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the 'beats_system' user. Must be > 6 characters. Required for Elasticsearch 6.3.0+ when xpackPlugins is 'Yes'"
+      }
+    },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
@@ -1219,6 +1225,7 @@
       "securityReadPwd": "[parameters('securityReadPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
       "securityLogstashPwd": "[parameters('securityLogstashPassword')]",
+      "securityBeatsPwd": "[parameters('securityBeatsPassword')]",
       "securityBootstrapPwd": "[if(not(empty(parameters('securityBootstrapPassword'))),parameters('securityBootstrapPassword'),uniqueString(resourceGroup().id, deployment().name, parameters('securityAdminPassword')))]",
       "samlMetadataUri": "[parameters('samlMetadataUri')]",
       "samlServiceProviderUri": "[parameters('samlServiceProviderUri')]"

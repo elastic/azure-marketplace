@@ -1319,6 +1319,30 @@
             ]
           },
           {
+            "name": "es_beats",
+            "type": "Microsoft.Common.Section",
+            "label": "Beats system user account",
+            "elements": [
+              {
+                "name": "securityBeatsPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "'beats_system' built-in user password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password for the built-in 'beats_system' user. This is a built-in account that Beats uses to communicate with Elasticsearch. Required for Elasticsearch 6.3.0+",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{6,}",
+                  "validationMessage": "Password must be at least 6 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
             "name": "es_read",
             "type": "Microsoft.Common.Section",
             "label": "es_read (read only) user account",
@@ -1407,6 +1431,7 @@
       "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
       "securityLogstashPassword": "[steps('securityStep').es_logstash.securityLogstashPassword]",
+      "securityBeatsPassword": "[steps('securityStep').es_beats.securityBeatsPassword]",
       "appGatewayTier": "Standard",
       "appGatewaySku": "Small",
       "appGatewayCount": 1,

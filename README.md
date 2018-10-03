@@ -342,6 +342,12 @@ value defined in the template.
     must be &gt; 6 characters
     </td><td><code>""</code></td></tr>
 
+  <tr><td>securityBeatsPassword</td><td>securestring</td>
+    <td>This is the built-in <code>beats_system</code> user. Valid for Elasticsearch 6.3.0+
+    <br />
+    must be &gt; 6 characters
+    </td><td><code>""</code></td></tr>
+
   <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
 
   <tr><td>kibana</td><td>string</td>
