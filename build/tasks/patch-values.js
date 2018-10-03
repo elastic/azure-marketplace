@@ -31,6 +31,7 @@ gulp.task("patch", function(cb) {
   jsonfile.readFile(nodeResources, function(err, resources) {
 
     resources.variables.locations = allowedValues.locations;
+    resources.variables.vmAcceleratedNetworking = allowedValues.vmAcceleratedNetworking;
 
     jsonfile.writeFile(nodeResources, resources, function(err) {
 

@@ -231,6 +231,16 @@ in conjunction with other parameters.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
+  <tr><td>vmMasterNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Master nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
+
   <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#data-node">Data node</a> related settings</strong></td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
@@ -242,6 +252,16 @@ in conjunction with other parameters.
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmDataNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Data nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
     <td>The number of data nodes you wish to deploy. <strong>Must be greater than 0</strong>.
@@ -280,14 +300,24 @@ in conjunction with other parameters.
   <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Client (Coordinating only) node</a> related settings</strong></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
-    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
-    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
+    <td> The number of coordinating nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
+    if you provision coordinating nodes, these will be added to the loadbalancer instead. Coordinating nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
     </td><td><code>0</code></td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
-    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <td> Azure VM size of the coordinating nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmClientNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for coordinating nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Security related settings</strong></td></tr>
 
@@ -351,6 +381,16 @@ in conjunction with other parameters.
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_A2</code></td></tr>
+
+  <tr><td>vmKibanaAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Kibana, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the certificate (.crt) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
