@@ -94,16 +94,11 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]"
     ],
-    "ubuntuSkus": {
-      "5": "16.04-LTS",
-      "6": "16.04-LTS"
-    },
-    "ubuntuSku": "[variables('ubuntuSkus')[substring(parameters('esSettings').version, 0, 1)]]",
     "ubuntuSettings": {
       "imageReference": {
         "publisher": "Canonical",
         "offer": "UbuntuServer",
-        "sku": "[variables('ubuntuSku')]",
+        "sku": "16.04.0-LTS",
         "version": "latest"
       },
       "managementPort": 22,
