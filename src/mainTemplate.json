@@ -74,18 +74,12 @@
         "description": "The name of an existing storage account to use for snapshots with Azure Repository plugin. Must be between 3 and 24 alphanumeric lowercase or characters or numbers."
       }
     },
-    "azureCloudStorageAccountKey": {
-      "type": "securestring",
-      "defaultValue": "",
-      "metadata": {
-        "description": "The access key of an existing storage account to use for snapshots with Azure Repository plugin"
-      }
-    },
-    "azureCloudStorageAccountSuffix": {
+    "azureCloudStorageAccountResourceGroup": {
       "type": "string",
-      "defaultValue": "core.windows.net",
+      "defaultValue": "",
+      "maxLength": 90,
       "metadata": {
-        "description": "The suffix of an existing storage account to use for snapshots with Azure Cloud plugin"
+        "description": "The name of an existing resource group in which the storage account to use for snapshots with Azure Repository plugin is located. Must be 90 character or less"
       }
     },
     "xpackPlugins": {
@@ -984,8 +978,7 @@
     "location": "[parameters('location')]",
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
-      "key": "[parameters('azureCloudStorageAccountKey')]",
-      "suffix": "[parameters('azureCloudStorageAccountSuffix')]",
+      "resourceGroup": "[parameters('azureCloudStorageAccountResourceGroup')]",
       "install": "[parameters('azureCloudPlugin')]"
     },
     "esSettings": {
@@ -1593,6 +1586,9 @@
           "storageAccountName": {
             "value": "[variables('commonVmSettings').storageAccountName]"
           },
+          "azureCloudStorageAccount": {
+            "value": "[variables('azureCloudStorageAccount')]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
@@ -1707,7 +1703,13 @@
             "value": "[variables('networkSettings')]"
           },
           "azureCloudStorageAccount": {
-            "value": "[variables('azureCloudStorageAccount')]"
+            "value": {
+              "name": "[variables('azureCloudStorageAccount').name]",
+              "resourceGroup": "[variables('azureCloudStorageAccount').resourceGroup]",
+              "install": "[variables('azureCloudStorageAccount').install]",
+              "key": "[reference('shared').outputs.existingStorageAccountKey.value]",
+              "suffix": "[reference('shared').outputs.existingStorageAccountSuffix.value]"
+            }
           },
           "kibanaIp": {
             "value": "[reference('kibana-ip').outputs.fqdn.value]"
