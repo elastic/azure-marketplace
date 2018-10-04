@@ -33,6 +33,7 @@
 :yamllint: http://www.yamllint.com/
 :openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
 :base64: https://linux.die.net/man/1/base64
+:acceleratednetworking: https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/
 
 
 
@@ -418,6 +419,12 @@ different limits to the number of managed disks that can be attached. The defaul
 `vmDataNodeCount`::
 The number of data nodes. Must be greater than 0. Defaults to 3.
 
+`vmDataNodeAcceleratedNetworking`::
+Whether to enable {acceleratednetworking}[accelerated networking] for data nodes,
+which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its
+networking performance. Valid values are `Default`, `Yes`, `No`. The default is `Default`, which
+enables accelerated networking for the VM SKUs known to support it.
+
 [[azure-arm-template-master-nodes]]
 ==== Master nodes
 
@@ -428,6 +435,12 @@ will be deployed. Dedicated master nodes are **recommended** for larger clusters
 The {vms}[Azure VM SKU] to use for dedicated master nodes.
 Different VM SKUs have different CPU, RAM, temporary storage space and network
 bandwidth. The default is `Standard_D1`.
+
+`vmMasterNodeAcceleratedNetworking`::
+Whether to enable {acceleratednetworking}[accelerated networking] for dedicated master nodes,
+which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its
+networking performance. Valid values are `Default`, `Yes`, `No`. The default is `Default`, which
+enables accelerated networking for the VM SKUs known to support it.
 
 [[azure-arm-template-coordinating-nodes]]
 ==== Coordinating nodes
@@ -452,6 +465,12 @@ bandwidth. The default is `Standard_D1`.
 
 `vmClientNodeCount`::
 The number of coordinating nodes. Defaults to 0.
+
+`vmClientNodeAcceleratedNetworking`::
+Whether to enable {acceleratednetworking}[accelerated networking] for coordinating nodes,
+which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its
+networking performance. Valid values are `Default`, `Yes`, `No`. The default is `Default`, which
+enables accelerated networking for the VM SKUs known to support it.
 
 [[azure-arm-template-ingest-ml-nodes]]
 ==== Ingest and Machine learning nodes
@@ -856,6 +875,12 @@ of sufficient size is chosen to be service the expected amount of traffic. A lar
 SKU will generally be faster to optimize browser bundles and start up than a smaller
 VM SKU.
 --
+
+`vmKibanaAcceleratedNetworking`::
+Whether to enable {acceleratednetworking}[accelerated networking] for Kibana,
+which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its
+networking performance. Valid values are `Default`, `Yes`, `No`. The default is `Default`, which
+enables accelerated networking for the VM SKUs known to support it.
 
 `kibanaAdditionalYaml`::
 Additional configuration that will be applied to the kibana.yml configuration file before start up. Each line must be separated by a `\n` newline character, for example

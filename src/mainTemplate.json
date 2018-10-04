@@ -314,6 +314,18 @@
         "description": "Size of the Kibana node"
       }
     },
+    "vmKibanaAcceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for Kibana, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+      }
+    },
     "kibanaCertBlob": {
       "type": "string",
       "defaultValue": "",
@@ -650,6 +662,18 @@
         "description": "Size of the Elasticsearch data nodes"
       }
     },
+    "vmDataNodeAcceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for data nodes, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+      }
+    },
     "vmDataDiskCount": {
       "type": "int",
       "defaultValue": 64,
@@ -830,12 +854,24 @@
         "description": "Size of the Elasticsearch master nodes, if data nodes are not master eligible, 3 master nodes of this size will be provisioned"
       }
     },
+    "vmMasterNodeAcceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for master nodes, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+      }
+    },
     "vmClientNodeCount": {
       "type": "int",
       "defaultValue": 0,
       "minValue": 0,
       "metadata": {
-        "description": "Number of Elasticsearch client nodes to provision. A value of 0 puts the data nodes on the load balancer"
+        "description": "Number of Elasticsearch coordinating nodes to provision. A value of 0 puts the data nodes on the load balancer"
       }
     },
     "vmSizeClientNodes": {
@@ -963,7 +999,19 @@
         "Standard_M128m"
       ],
       "metadata": {
-        "description": "Size of the Elasticsearch client nodes"
+        "description": "Size of the Elasticsearch coordinating nodes"
+      }
+    },
+    "vmClientNodeAcceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for coordinating nodes, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
       }
     },
     "adminUsername": {
@@ -1760,12 +1808,16 @@
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
       "vmSizeDataNodes": "[parameters('vmSizeDataNodes')]",
       "vmDataNodeStorageAccountType": "[variables('dataSkuSettings')[parameters('vmSizeDataNodes')].storageAccountType]",
+      "vmDataNodeAcceleratedNetworking": "[parameters('vmDataNodeAcceleratedNetworking')]",
       "vmHostNamePrefix": "[parameters('vmHostNamePrefix')]",
       "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
       "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",
+      "vmClientNodeAcceleratedNetworking": "[parameters('vmClientNodeAcceleratedNetworking')]",
       "vNetLoadBalancerIp": "[parameters('vNetLoadBalancerIp')]",
       "vmSizeMasterNodes": "[parameters('vmSizeMasterNodes')]",
+      "vmMasterNodeAcceleratedNetworking": "[parameters('vmMasterNodeAcceleratedNetworking')]",
       "vmSizeKibana": "[parameters('vmSizeKibana')]",
+      "vmKibanaAcceleratedNetworking": "[parameters('vmKibanaAcceleratedNetworking')]",
       "kibana": "[parameters('kibana')]",
       "kibanaKeyBlob": "[parameters('kibanaKeyBlob')]",
       "kibanaKeyPassphrase": "[parameters('kibanaKeyPassphrase')]",
