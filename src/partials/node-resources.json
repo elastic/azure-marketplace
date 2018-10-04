@@ -400,6 +400,46 @@
           }
         }
       }
+    },
+    {
+      "condition": "[equals(parameters('topologySettings').logstash, 'Yes')]",
+      "name": "logstash",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUrl'), 'machines/logstash-resources.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "credentials": {
+            "value": "[parameters('commonVmSettings').credentials]"
+          },
+          "location": {
+            "value": "[parameters('commonVmSettings').location]"
+          },
+          "namespace": {
+            "value": "[concat(parameters('commonVmSettings').namespacePrefix, 'logstash')]"
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          },
+          "vmSize": {
+            "value": "[parameters('topologySettings').vmSizeLogstash]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        }
+      }
     }
   ],
   "outputs": {
