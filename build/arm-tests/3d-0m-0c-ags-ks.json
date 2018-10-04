@@ -30,7 +30,7 @@
 		"appGatewayTier": {"value":"Standard"},
 		"appGatewaySku": {"value":"Small"},
 		"appGatewayCount": {"value":1},
-		"appGatewayCertBlob": {"value":"cert-with-password.pfx"},
+		"appGatewayCertBlob": {"value":"certs/cert-with-password.pfx"},
 		"appGatewayCertPassword": {"value":"Password123"},
 		"appGatewayWafStatus": {"value":"Disabled"},
 		"appGatewayWafMode": {"value":"Detection"}

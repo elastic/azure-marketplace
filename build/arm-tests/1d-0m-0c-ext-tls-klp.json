@@ -1,0 +1,30 @@
+{
+  "description": "1 data node cluster with logstash",
+  "notes": "the use of xpack.monitoring.collection.enabled requires version to be 6.3.0+",
+  "isValid" : true,
+  "deploy" : true,
+  "why" : "",
+  "location" : "westeurope",
+  "parameters" : {
+    "loadBalancerType":{"value":"external"},
+    "esAdditionalYaml":{"value":"xpack.monitoring.collection.enabled: true"},
+    "esHttpCaCertBlob":{"value":"certs/ca-cert-with-password.pfx"},
+    "esHttpCaCertPassword":{"value":"Password123"},
+    "esTransportCaCertBlob":{"value":"certs/ca-cert-with-password.pfx"},
+    "esTransportCaCertPassword":{"value":"Password123"},
+    "esTransportCertPassword":{"value":"Password1234"},
+    "kibana":{"value":"Yes"},
+    "vmSizeKibana":{"value":"Standard_DS1_v2"},
+    "logstash":{"value":"Yes"},
+    "vmSizeLogstash":{"value":"Standard_DS1_v2"},
+    "logstashAdditionalPlugins":{"value":"logstash-input-heartbeat"},
+    "logstashConf":{"value":"conf/logstash-tls.conf"},
+    "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+    "vmDataNodeCount":{"value":1},
+    "vmDataDiskCount":{"value":1},
+    "vmDataDiskSize":{"value":"Small"},
+    "storageAccountType":{"value":"Default"},
+    "dataNodesAreMasterEligible":{"value":"Yes"},
+    "authenticationType":{"value":"password"}
+	}
+}
