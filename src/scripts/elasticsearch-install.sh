@@ -1108,28 +1108,13 @@ configure_os_properties()
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
     resolvconf -u
 
-    # Increase maximum mmap count
-    echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
-
-    # Update pam_limits for bootstrap memory lock
-    echo "# allow user 'elasticsearch' mlockall" >> /etc/security/limits.conf
-    echo "elasticsearch soft memlock unlimited" >> /etc/security/limits.conf
-    echo "elasticsearch hard memlock unlimited" >> /etc/security/limits.conf
-
-    # Required for bootstrap memory lock
-    #echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
+    # Required for bootstrap memory lock with systemd
     local SYSTEMD_OVERRIDES=/etc/systemd/system/elasticsearch.service.d
     [ -d $SYSTEMD_OVERRIDES ] || mkdir -p $SYSTEMD_OVERRIDES
     {
       echo "[Service]"
       echo "LimitMEMLOCK=infinity"
     } >> $SYSTEMD_OVERRIDES/override.conf
-
-    # Maximum number of open files for elasticsearch user
-    echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
-
-    # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
-    echo "session    required   pam_limits.so" >> /etc/pam.d/su
 
     log "[configure_os_properties] configure systemd to start Elasticsearch service automatically when system boots"
     systemctl daemon-reload
