@@ -226,6 +226,12 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2_v3",
+        "Standard_D4_v3",
+        "Standard_D8_v3",
+        "Standard_D16_v3",
+        "Standard_D32_v3",
+        "Standard_D64_v3",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -274,6 +280,13 @@
         "Standard_F4s",
         "Standard_F8s",
         "Standard_F16s",
+        "Standard_F2s_v2",
+        "Standard_F4s_v2",
+        "Standard_F8s_v2",
+        "Standard_F16s_v2",
+        "Standard_F32s_v2",
+        "Standard_F64s_v2",
+        "Standard_F72s_v2",
         "Standard_G1",
         "Standard_G2",
         "Standard_G3",
@@ -549,6 +562,12 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2_v3",
+        "Standard_D4_v3",
+        "Standard_D8_v3",
+        "Standard_D16_v3",
+        "Standard_D32_v3",
+        "Standard_D64_v3",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -597,6 +616,13 @@
         "Standard_F4s",
         "Standard_F8s",
         "Standard_F16s",
+        "Standard_F2s_v2",
+        "Standard_F4s_v2",
+        "Standard_F8s_v2",
+        "Standard_F16s_v2",
+        "Standard_F32s_v2",
+        "Standard_F64s_v2",
+        "Standard_F72s_v2",
         "Standard_G1",
         "Standard_G2",
         "Standard_G3",
@@ -716,6 +742,12 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2_v3",
+        "Standard_D4_v3",
+        "Standard_D8_v3",
+        "Standard_D16_v3",
+        "Standard_D32_v3",
+        "Standard_D64_v3",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -764,6 +796,13 @@
         "Standard_F4s",
         "Standard_F8s",
         "Standard_F16s",
+        "Standard_F2s_v2",
+        "Standard_F4s_v2",
+        "Standard_F8s_v2",
+        "Standard_F16s_v2",
+        "Standard_F32s_v2",
+        "Standard_F64s_v2",
+        "Standard_F72s_v2",
         "Standard_G1",
         "Standard_G2",
         "Standard_G3",
@@ -839,6 +878,12 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2_v3",
+        "Standard_D4_v3",
+        "Standard_D8_v3",
+        "Standard_D16_v3",
+        "Standard_D32_v3",
+        "Standard_D64_v3",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -887,6 +932,13 @@
         "Standard_F4s",
         "Standard_F8s",
         "Standard_F16s",
+        "Standard_F2s_v2",
+        "Standard_F4s_v2",
+        "Standard_F8s_v2",
+        "Standard_F16s_v2",
+        "Standard_F32s_v2",
+        "Standard_F64s_v2",
+        "Standard_F72s_v2",
         "Standard_G1",
         "Standard_G2",
         "Standard_G3",
@@ -1296,6 +1348,30 @@
         "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D2_v3": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D4_v3": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D8_v3": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D16_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D32_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D64_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
       "Standard_DS1": {
         "dataDisks": 4,
         "storageAccountType": "Premium_LRS"
@@ -1329,23 +1405,23 @@
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS1_v2": {
-        "dataDisks": 2,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS2_v2": {
         "dataDisks": 4,
         "storageAccountType": "Premium_LRS"
       },
-      "Standard_DS3_v2": {
+      "Standard_DS2_v2": {
         "dataDisks": 8,
         "storageAccountType": "Premium_LRS"
       },
-      "Standard_DS4_v2": {
+      "Standard_DS3_v2": {
         "dataDisks": 16,
         "storageAccountType": "Premium_LRS"
       },
-      "Standard_DS5_v2": {
+      "Standard_DS4_v2": {
         "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS5_v2": {
+        "dataDisks": 64,
         "storageAccountType": "Premium_LRS"
       },
       "Standard_DS11_v2": {
@@ -1485,6 +1561,34 @@
         "storageAccountType": "Premium_LRS"
       },
       "Standard_F16s": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F2s_v2": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F4s_v2": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F8s_v2": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F16s_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F32s_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F64s_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F72s_v2": {
         "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
       },
