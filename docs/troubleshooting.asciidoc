@@ -1,4 +1,4 @@
-[[troubleshooting]]
+[[azure-arm-template-troubleshooting]]
 == Troubleshooting
 
 Sometimes, things may go wrong with the deployment for a number of different
@@ -12,7 +12,7 @@ that pass initial validation but fail at deployment time
 When such issues arise, you'll need to know where to look to ascertain what the
 underlying problem is, in order to determine what action to take to rectify.
 
-[[troubleshooting-accessing-nodes]]
+[[azure-arm-template-troubleshooting-accessing-nodes]]
 === Accessing nodes
 
 Elasticsearch node VMs are not accessible from outside of the virtual network to which
@@ -48,7 +48,7 @@ sudo su
 cat /etc/elasticsearch/elasticsearch.yml
 ----
 
-[[troubleshooting-azure]]
+[[azure-arm-template-troubleshooting-azure]]
 === Diagnosing through Azure
 
 There may be transient deployment issues that prevent one or more resources from
@@ -91,7 +91,7 @@ Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
     -ResourceGroupName "<resource group>" | ?{ $_.Properties.ProvisioningState -ne "Succeeded" }
 ----
 
-[[troubleshooting-azure-logs]]
+[[azure-arm-template-troubleshooting-azure-logs]]
 === Diagnosing through logs
 
 The log files on each of the Elasticsearch node VMs are a great resource to
@@ -115,7 +115,7 @@ duplication of messages that have been written to `/var/log/arm-install.log`, in
 A log file for {monit}[monit], the utility used to manage and monitor the
 Elasticsearch process. This log file is useful to check to ensure monit is running correctly.
 
-[[troubleshooting-elasticsearch-logs]]
+[[azure-arm-template-troubleshooting-elasticsearch-logs]]
 ==== Elasticsearch logs
 
 In addition to template specific and Azure related logs, Elasticsearch log
@@ -128,7 +128,7 @@ process.
 `/etc/elasticsearch/elasticsearch.yml`::
 The Elasticsearch configuration log file.
 
-[[repeatable-deployments]]
+[[azure-arm-template-repeatable-deployments]]
 === Repeatable deployments
 
 For repeatable deployments, it is recommended to target a specific template release
@@ -140,10 +140,10 @@ in addition to which resources are deployed and how they are configured. Further
 a release undergoes considerable testing before being considered ready for public
 release.
 
-As an example, to target {version} release of the template
+As an example, to {github}/releases/tag/{version}[target {version} release] of the template
 
 [source,sh]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure CLI 2.0
 ----
 template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
@@ -164,7 +164,7 @@ az group deployment create \
 ----
 
 [source,powershell]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure PowerShell
 ----
 $templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"

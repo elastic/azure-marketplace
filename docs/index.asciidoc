@@ -11,9 +11,9 @@
 :incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
 
 [[azure-marketplace-arm-template]]
-= Azure Marketplace and Resource Manager (ARM) template
+= Deploying with Azure Marketplace and Resource Manager (ARM) template
 
-[[introduction]]
+[[azure-marketplace-arm-template-introduction]]
 == Introduction
 
 The {marketplace}[Microsoft Azure Marketplace] solution is a preconfigured
@@ -21,8 +21,8 @@ template to deploy an Elasticsearch cluster and Kibana to Azure.
 
 The solution provides a UI within the {portal}[Azure portal] that guides you through a
 series of steps in which you provide the minimum number of input parameters needed
-to deploy an Elasticsearch cluster to Azure. Follwing the last step,
-the UI feeds the provided parameter values to an <<arm-template, Azure Resource Manager (ARM)
+to deploy an Elasticsearch cluster to Azure. Following the last step,
+the UI feeds the provided parameter values to an <<azure-arm-template, Azure Resource Manager (ARM)
 template>> which deploys the requested Azure resources to a resource group, and,
 in a matter of minutes, you have a running cluster!
 

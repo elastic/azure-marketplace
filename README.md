@@ -2,6 +2,8 @@
 
 Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
+[**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
+
 This repository consists of:
 
 * [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.

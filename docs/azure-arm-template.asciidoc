@@ -5,6 +5,7 @@
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
+:elasticstack: https://www.elastic.co/products/stack
 :stackdocs: https://www.elastic.co/guide/en/elastic-stack-overview/{current}
 :xpackenabled: {elasticdocs}/security-settings.html#general-security-settings
 :bootstrappassword: : {stackdocs}/built-in-users.html#bootstrap-elastic-passwords
@@ -24,13 +25,18 @@
 :dns: {microsoftdocs}/azure/virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances#name-resolution-that-uses-your-own-dns-server
 :applicationgateway: {microsoftdocs}/azure/application-gateway/application-gateway-introduction
 :applicationgatewayfaqs: {microsoftdocs}/azure/application-gateway/application-gateway-faq
+:applicationmanifest: {microsoftdocs}/azure/active-directory/develop/active-directory-application-manifest
 :owasp30: https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
 :jq: https://stedolan.github.io/jq/
 :monit: https://mmonit.com/monit
 :version: 6.3.1
 :yamllint: http://www.yamllint.com/
+:openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
+:base64: https://linux.die.net/man/1/base64
 
-[[arm-template]]
+
+
+[[azure-arm-template]]
 == Azure Resource Manager (ARM) template
 
 The Azure Resource Manager (ARM) template is a declarative solution template that
@@ -44,7 +50,7 @@ as an incremental deployment, which is useful when targeting an existing resourc
 group, or as a full deployment, which will replace all resources within a resource
 group.
 
-[[arm-template-getting-started]]
+[[azure-arm-template-getting-started]]
 === Getting started
 
 The best way to work with Elastic's ARM template is using one of the official Azure
@@ -56,7 +62,7 @@ on MacOS and Linux
 {azurepowershell}[Azure PowerShell]:: An Azure PowerShell module providing a rich
 object oriented API, typically used on Windows
 
-[[logging-in]]
+[[logging-in-to-cli]]
 ==== Log in to CLI
 
 Once a CLI is installed, log into an Azure account to use with the CLI
@@ -181,9 +187,8 @@ This example will deploy
 running version 6.3.1
 * Kibana 6.3.1.
 * The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
-* The cluster will have a trial license applied, providing access to Platinum
-X-Pack features for 30 days
-* X-Pack Security is enabled, and the {xpackdocs}/built-in-roles.html[built-in roles] `elastic`, `kibana` and
+* The cluster will have a trial license applied, providing access to Elastic Stack Platinum features for 30 days
+* Security feature is enabled, and the {xpackdocs}/built-in-roles.html[built-in roles] `elastic`, `kibana` and
 `logstash_system` are configured, along with an `es_read` user account with readonly
 access.
 
@@ -259,7 +264,7 @@ Remove-AzureRmResourceGroup -Name "<name>"
 That's it for getting started with the ARM template. Read on to learn more about
 different parameter and deployment options.
 
-[[template-configuration]]
+[[azure-arm-template-configuration]]
 === Template configuration
 
 The ARM template has some general parameters that control the operation of the
@@ -268,16 +273,16 @@ template:
 `artifactsBaseUrl`::
 The base public URI which informs the main template from where the other contents
 of the ARM template will be retrieved, such as linked templates and deployment scripts.
-Default is `\https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src`
+Default is `https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src`
 where `{branch}` is the git branch or tag to target, for
-<<repeatable-deployments, repeatable deployments>>
+<<azure-arm-template-repeatable-deployments, repeatable deployments>>
 
 `location`::
 The {azurelocations}[Azure location] in which to deploy the resources. Defaults to the same location
 as the target resource group of the deployment. All deployed resources are deployed
 to this location.
 
-[[elasticsearch]]
+[[azure-arm-template-elasticsearch]]
 === Elasticsearch
 
 The ARM template is able to deploy an Elasticsearch cluster topology with up to 50 data nodes and up to 20 coordinating nodes, along with three dedicated master nodes. The following
@@ -312,7 +317,7 @@ Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
 published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {monit}[monit] to manage and monitor the Elasticsearch process, with monit configured to run in daemon mode, checking
 the state of the Elasticsearch process every 30 seconds. If the process is found to not be running, monit will attempt to start the process.
 
-Elasticsearch can be stopped with monit <<troubleshooting-accessing-nodes, on an Elasticsearch VM node>> using
+Elasticsearch can be stopped with monit <<azure-arm-template-troubleshooting-accessing-nodes, on an Elasticsearch VM node>> using
 
 [source,sh]
 ----
@@ -328,8 +333,8 @@ sudo monit start elasticsearch
 
 Refer to {monit}/documentation/monit.html[monit documentation] for further details.
 
-[[admin-username]]
-==== Virtual machine admin user
+[[azure-arm-template-admin-username]]
+==== Virtual machine admin username
 
 All VMs deployed by the template are secured with a username and either a password
 or SSH key
@@ -350,7 +355,7 @@ to access VMs.
 When `authenticationType` is `sshPublicKey`, the public SSH key to use for the
 Admin username to access VMs.
 
-[[cluster-settings]]
+[[azure-arm-template-cluster-settings]]
 ==== Cluster settings
 
 The following are general settings that control cluster configuration
@@ -389,7 +394,7 @@ Each line must be separated by a `\n` newline character. For example,
 It is recommended that you run your additional yaml through a {yamllint}[linter]
 before starting a deployment, as incorrectly formatted yaml will fail the deployment.
 
-[[data-nodes]]
+[[azure-arm-template-data-nodes]]
 ==== Data nodes
 
 By default, the template deploys three data nodes. Data nodes hold and perform
@@ -411,7 +416,7 @@ different limits to the number of managed disks that can be attached. The defaul
 `vmDataNodeCount`::
 The number of data nodes. Must be greater than 0. Defaults to 3.
 
-[[master-nodes]]
+[[azure-arm-template-master-nodes]]
 ==== Master nodes
 
 When `dataNodesAreMasterEligible` parameter is `No`, three dedicated master nodes
@@ -422,7 +427,7 @@ The {vms}[Azure VM SKU] to use for dedicated master nodes.
 Different VM SKUs have different CPU, RAM, temporary storage space and network
 bandwidth. The default is `Standard_D1`.
 
-[[coordinating-nodes]]
+[[azure-arm-template-coordinating-nodes]]
 ==== Coordinating nodes
 
 Coordinating nodes can optionally be deployed with the template; coordinating nodes do not
@@ -446,7 +451,7 @@ bandwidth. The default is `Standard_D1`.
 `vmClientNodeCount`::
 The number of coordinating nodes. Defaults to 0.
 
-[[ingest-ml-nodes]]
+[[azure-arm-template-ingest-ml-nodes]]
 ==== Ingest and Machine learning nodes
 
 All deployed nodes are configured as Ingest nodes, as well as Machine
@@ -454,7 +459,7 @@ learning nodes, if a license that enables Machine learning features has been
 applied. Consult the {elasticdocs}/modules-node.html[node] documentation to
 understand how node roles can be changed.
 
-[[scaling-up-number-of-nodes]]
+[[azure-arm-template-scaling-nodes]]
 [float]
 === Scaling up number of nodes
 
@@ -484,10 +489,10 @@ and replicas that each node contains.
 . Scaling up _should_ only be used when the cluster contains dedicated master
 nodes
 
-[[data-disks]]
+[[azure-arm-template-data-disks]]
 === Data disks
 
-{manageddisks}[Managed disks] can be attached to <<data-nodes, Data nodes>> to use as the data directory for the node. The ARM template can attach Standard HDD disks or Premium
+{manageddisks}[Managed disks] can be attached to <<azure-arm-template-data-nodes, Data nodes>> to use as the data directory for the node. The ARM template can attach Standard HDD disks or Premium
 managed disks, for those VM SKUs that support them:
 
 `storageAccountType`::
@@ -540,13 +545,14 @@ Striping data across attached disks is recommended to improve Input/Output opera
 combined. The IOPS for Premium disks is higher than for Standard HDD disks, so
 Premium disks are recommended where application performance is paramount.
 
-[[availability]]
+[[azure-arm-template-availability]]
 === Availability
 
 Oftentimes you will want to deploy a highly available Elasticsearch cluster that
 stays online even in the face of instance or zone failure. Azure has several
 concepts to manage Availability.
 
+[[availability-sets]]
 ==== Availability sets
 
 Master, data and coordinating node VMs are grouped in their own
@@ -560,6 +566,7 @@ they are not yet available in all Azure regions to which the template can be
 deployed. It is expected that the template will use Availability zones in the future.
 --
 
+[[update-and-fault-domains]]
 ==== Update and Fault Domains
 
 Each Availability set has 20 Update domains and two or three Fault domains, depending
@@ -581,6 +588,7 @@ VM resides are specified as node attributes in the elasticsearch.yml configurati
 {elasticdocs}/allocation-awareness.html[Shard allocation awareness] is configured
 taking into account these Fault domain and Update domain attribute values.
 
+[[azure-arm-template-networking]]
 === Networking
 
 [[virtual-network]]
@@ -636,7 +644,7 @@ with
 .Azure CLI 2.0
 ----
 az network vnet check-ip-address --name "<vnet name>" \
-  --ip-address "<ip address>"
+  --ip-address "<ip address>" \
   --resource-group "<resource group>"
 ----
 
@@ -680,7 +688,7 @@ resolve hostnames correctly, by {dns}[forwarding DNS queries to Azure to resolve
 This should be configured on the virtual network so that if VMs are shut down or
 moved around, they will have the correct configuration when starting up.
 
-[[load-balancing]]
+[[azure-arm-template-load-balancing]]
 === Load balancing
 
 The template exposes three different load balancing deployment options to suit
@@ -798,7 +806,7 @@ the backend pool for Application Gateway.
 
 A custom health probe is configured that reports healthy for the backend pool for
 status codes between 200-399, and for status code 401, which may be returned when
-X-Pack Security is enabled, since the health probe makes requests without any form
+Elastic Stack Security is enabled, since the health probe makes requests without any form
 of authentication.
 
 The public IP address of Application Gateway is not returned in the template
@@ -824,6 +832,7 @@ $gatewayIpResource = Get-AzureRmPublicIpAddress -Name "es-app-gateway-ip" `
 $gatewayIp = "https://$($gatewayIpResource.DnsSettings.Fqdn):9200"
 ----
 
+[[azure-arm-template-kibana]]
 === Kibana
 
 Kibana can be deployed in addition to Elasticsearch, providing a visual window and UI into the data within Elasticsearch. The version of Kibana deployed is always the same
@@ -944,7 +953,7 @@ It is recommended that you run your additional yaml through a {yamllint}[linter]
 
 Logstash only accessible within the Virtual Network and communicates with Elasticsearch through the <<internal-load-balancer, internal load balancer>>
 
-[[security]]
+[[azure-arm-template-security]]
 === Security
 
 Securing Elasticsearch and Kibana is of paramount importance, to prevent
@@ -959,7 +968,7 @@ The ARM template exposes a number of features for securing a deployment to Azure
 ==== Authentication and Authorization
 
 The default template deployment applies a trial license to the cluster to enable
-X-Pack features, including Security, for a trial period of 30 days.
+Elastic Stack features, including Security, for a trial period of 30 days.
 
 As part of the trial, Security features including Basic Authentication are enabled,
 by {xpackenabled}[configuring `xpack.security.enabled: true`
@@ -1021,7 +1030,7 @@ the individual user accounts that will be needed for the users and applications
 that will interact with Elasticsearch and Kibana, then use those accounts going
 forward.
 
-[[saml-single-sign-on-with-azure-active-directory]]
+[[saml-single-sign-on]]
 ==== SAML single sign-on with Azure Active Directory
 
 Using SAML single sign-on (SSO) for Elasticsearch with Azure Active Directory (AAD)
@@ -1032,7 +1041,7 @@ response to successful authentication to determine identity and privileges.
 To integrate SAML SSO, the following conditions must be satisfied:
 
 * `esVersion` **must** be one that supports the SAML realm i.e. Elasticsearch 6.2.0 or later
-* `xpackPlugins` **must** be `Yes` to install a trial license of X-Pack platinum features
+* `xpackPlugins` **must** be `Yes` to install a trial license of Elastic Stack platinum features
 * `kibana` **must** be `Yes` to deploy an instance of Kibana
 * `esHttpCertBlob` _or_ `esHttpCaCertBlob` **must** be provided to configure SSL/TLS for the HTTP layer of Elasticsearch.
 
@@ -1045,6 +1054,7 @@ needed within Elasticsearch to complete the integration.
 The following sections guide you through what is required to integrate SAML SSO
 with AAD for Elasticsearch and Kibana deployed through the ARM template.
 
+[[create-enterprise-application]]
 ===== Create Enterprise application
 
 To integrate Elasticsearch with AAD for SAML SSO, it's necessary to create an Enterprise Application within AAD _before_ deploying Elasticsearch with the ARM template. An Enterprise application can be created in the Azure Portal by first navigating to Azure Active Directory
@@ -1078,6 +1088,7 @@ if setting up a `CNAME` of `saml-aad` on the `elastic.co` domain to point to Kib
 Additionally, the Reply URL input would be `\https://saml-aad.elastic.co:5601/api/security/v1/saml`. If you will not be configuring
 a `CNAME`, simply leave these blank for now.
 
+[[saml-token-attributes]]
 ===== SAML token attributes
 
 The User Attributes section lists the attributes that will be returned in a SAML token
@@ -1094,7 +1105,7 @@ with the following details
 [horizontal]
 Name:: `role`
 Mapping:: `user.assignedroles`
-Namespace:: `\http://schemas.microsoft.com/ws/2008/06/identity/claims`
+Namespace:: `http://schemas.microsoft.com/ws/2008/06/identity/claims`
 
 Now, the role(s) assigned to a user within the Enterprise application will be
 sent in the SAML token, in the SAML `role` claim.
@@ -1102,9 +1113,13 @@ sent in the SAML token, in the SAML `role` claim.
 [[application-manifest]]
 ===== Application manifest
 
-When an Enterprise application is first created, an https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-application-manifest[Application Manifest] is also created that controls the application's identity configuration with respect to AAD. Amongst other things, the app manifest specifies which roles can be declared for the Enterprise application, in the `appRoles` array.
+When an Enterprise application is first created, an {applicationmanifest}[Application Manifest]
+is also created that controls the application's identity configuration with
+respect to AAD. Amongst other things, the app manifest specifies which roles can
+be declared for the Enterprise application, in the `appRoles` array.
 
-To view the `appRoles`, navigate to the `App registrations` menu item within the Azure Active Directory blade, select the Enterprise application in question, and click the Manifest button
+To view the `appRoles`, navigate to the `App registrations` menu item within the
+Azure Active Directory blade, select the Enterprise application in question, and click the Manifest button
 
 image:images/application_manifest.png[]
 
@@ -1166,6 +1181,7 @@ Elasticsearch, for example, the `superuser` role, etc. Each role needs a unique 
 
 After adding the necessary roles, save the manifest.
 
+[[assign-users-to-enterprise-application]]
 ===== Assign users to Enterprise application
 
 Now that the Enterprise application roles are configured, users within AAD can be granted
@@ -1173,6 +1189,7 @@ access to the Enterprise application and be assigned one of the application role
 
 image:images/add_user_to_role.png[]
 
+[[configuring-elasticsearch-for-saml-single-sign-on]]
 ==== Configuring Elasticsearch for SAML SSO
 
 With Azure Active Directory configured, the following parameters can be used to
@@ -1191,7 +1208,7 @@ For a production environment, it's strongly recommended to also configure SSL/TL
 An example of a minimum deployment is
 
 [source,sh]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure CLI 2.0
 ----
 template_version={version}
@@ -1230,7 +1247,7 @@ az group deployment create \
 ----
 
 [source,powershell]
-[subs="verbatim,attributes"]
+[subs="attributes"]
 .Azure PowerShell
 ----
 $templateVersion = "{version}"
@@ -1275,24 +1292,26 @@ After cluster deployment, if you didn't provide a value for the `samlServiceProv
 copy the <<deployment-outputs, `kibana` output>> and paste this value into <<configure-enterprise-application, the
 Identifier (EntityID) field for the Enterprise application within AAD>>. Also paste this value into the Reply URL field, followed by `/api/security/v1/saml`.
 
+[[role-mappings]]
 ==== Role mappings
 
 With the cluster deployed, the {elasticdocs}/security-api-role-mapping.html[Role Mapping APIs] are used to configure rules to define how roles received in the SAML token map to roles within Elasticsearch. A SAML realm called `saml_aad` is configured when `samlMetadataUri` parameter is provided, and maps the SAML role claim to the `groups` attribute.
 
-Since SAML SSO integration also configures Bacis Authentication access, role mappings
+Since SAML SSO integration also configures Basic Authentication access, role mappings
 can be added using the `elastic` superuser account. The role mappings that you define will vary depending on the roles that you defined in the `appRoles` array in the  <<application-manifest, Enterprise Application Manifest>>, but as two examples to demonstrate
 
 [source,sh]
 ----
-curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-kibana-user" -H 'Content-Type: application/json' -u elastic -d'
+PUT /_xpack/security/role_mapping/saml-kibana-user
 {
   "roles": [ "kibana_user" ],
   "enabled": true,
   "rules": {
     "field": { "realm.name": "saml_aad" } <1>
   }
-}'
+}
 ----
+// CONSOLE
 <1> The SAML realm configured by the ARM template
 
 will give the `kibana_user` role to any user authenticated through the `saml_aad` SAML
@@ -1300,7 +1319,7 @@ realm, and
 
 [source,sh]
 ----
-curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-superuser" -H 'Content-Type: application/json' -u elastic -d'
+PUT /_xpack/security/role_mapping/saml-superuser
 {
   "roles": [ "superuser" ],
   "enabled": true,
@@ -1310,8 +1329,9 @@ curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-superuser" 
       { "field": { "groups": "superuser" } } <2>
     ]
   }
-}'
+}
 ----
+// CONSOLE
 <1> The SAML realm configured by the ARM template
 <2> The `superuser` role defined in the Enterprise application manifest, and received in the role claim of the SAML token for the authenticated user
 
@@ -1319,7 +1339,7 @@ curl -XPUT "https://localhost:9200/_xpack/security/role_mapping/saml-superuser" 
 [float]
 === Transport Layer Security
 
-It is strongly recommended that you secure communication when using the template in production. X-Pack Security can provide Authentication and Role Based Access control, and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
+It is strongly recommended that you secure communication when using the template in production. {elasticstack}/security[Elastic Stack Security] can provide Authentication and Role Based Access control, and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
 
 [[http-layer]]
 ==== HTTP layer
@@ -1363,13 +1383,13 @@ to empty string as the archive may not be protected.
 [IMPORTANT]
 --
 
-When using Application Gateway for the `loadBalancerType`, you can **only** use `esHttpCertBlob` parameter (and optional `esHttpCertPassword`). SSL/TLS to Application Gateway is secured using `appGatewayCertBlob` parameter as described in <<application-gateway, Application Gateway section>> and Application Gateway performs
+When using Application Gateway for the `loadBalancerType`, you can **only** use `esHttpCertBlob` parameter (and optional `esHttpCertPassword`). SSL/TLS to Application Gateway is secured using `appGatewayCertBlob` parameter as described in <<application-gateway, Application Gateway section>>, with Application Gateway performing
 SSL offload/termination.
 
 End-to-end encryption when also configuring TLS on the HTTP layer requires passing the public certificate from the PKCS#12 archive passed in the `esHttpCertBlob` parameter as the value of the `appGatewayEsHttpCertBlob` parameter.
 This allows Application Gateway to whitelist the certificate used by VMs in the backend pool.
 
-The certificate can be extracted from the PKCS#12 archive using openssl
+The certificate can be extracted from the PKCS#12 archive using {openssl}[openssl], for example
 
 [source,sh]
 ----
@@ -1377,7 +1397,7 @@ The certificate can be extracted from the PKCS#12 archive using openssl
 openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -nokeys
 ----
 
-The certificate to secure the HTTP layer *must* include a Subject Alternative Name with a DNS entry that matches the Subject CN to work with Application Gateway's whitelisting mechanism.
+The certificate to secure the HTTP layer *must* include a Subject Alternative Name with a DNS entry that matches the Subject CN, to work with Application Gateway's whitelisting mechanism.
 --
 
 [[transport-layer]]
@@ -1400,7 +1420,7 @@ to empty string as the archive may not be protected.
 One way to generate a PKCS#12 archive containing a CA certificate and key is using
 {elasticdocs}/certutil.html[Elastic's certutil command utility].
 
-[[security-kibana]]
+[[tls-kibana]]
 ==== Kibana
 
 You can secure communication between the browser and Kibana with TLS with the following parameters
@@ -1418,7 +1438,7 @@ Optional passphrase for the private key encoded in `kibanaKeyBlob`. Defaults to 
 
 All certificates and PKCS#12 archives *must* be passed as base 64 encoded string values. A base 64 encoded value can be obtained using
 
-. https://linux.die.net/man/1/base64[base64] on Linux, or https://www.openssl.org/docs/man1.0.2/apps/openssl.html[openssl] on Linux and MacOS
+. {base64}[base64] on Linux, or {openssl}[openssl] on Linux and MacOS
 +
 [source,sh]
 .Using base64
@@ -1445,17 +1465,17 @@ PEM certificates are already base 64 encoded. Irrespective, you should still bas
 $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("c:\http-cert.p12"))
 ----
 
-[[plugins]]
+[[azure-arm-template-plugins]]
 === Plugins
 
 An ARM template deployment can include additional plugins, so long as those plugins
-can be downloaded from a public URI at deployment and installation time.
+can be downloaded from a public URI at deployment time.
 
-[[plugins-xpack]]
+[[x-pack]]
 [float]
-=== X-Pack
+=== Elastic Stack features (formerly X-Pack)
 
-A trial license for the Platinum features of X-Pack can be deployed for
+A trial license for the Platinum features of the Elastic Stack can be deployed for
 Elasticsearch, and Kibana if also deployed, using the following parameter
 
 `xPackPlugins`::
@@ -1464,17 +1484,17 @@ provides access to platinum features for 30 days. a value of `No`
 +
 . for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license
 providing access to the basic features. These versions use a distribution with
-X-Pack included in the installation, and the license applied determines which
-features are activated for use.
+Elastic Stack features included in the installation, and the license applied determines which
+features are activated.
 . for Elasticsearch and Kibana prior to 6.3.0, the X-Pack plugin will not be
-installed when a value of `No` is passed. These versions require X-Pack plugin to
+installed when a value of `No` is passed. These versions require the X-Pack plugin to
 be installed to be able to apply a license and access features related to that license.
 +
 The default is `Yes`.
 
 include::trial-license-warning.asciidoc[]
 
-[[plugins-azure-repository]]
+[[azure-repository]]
 [float]
 === Azure repository
 
@@ -1545,7 +1565,7 @@ PUT _snapshot/backup_1
 ----
 // CONSOLE
 
-[[plugins-miscellaneous]]
+[[miscellaneous-plugins]]
 [float]
 === Miscellaneous plugins
 
