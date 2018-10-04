@@ -5,8 +5,8 @@
 	"location" : "westeurope",
 	"parameters" : {
     "loadBalancerType":{"value":"gateway"},
-    "esHttpCertBlob":{"value":"cert-no-password.pfx"},
-    "esTransportCaCertBlob":{"value":"ca-cert-no-password.pfx"},
+    "esHttpCertBlob":{"value":"certs/cert-no-password.pfx"},
+    "esTransportCaCertBlob":{"value":"certs/ca-cert-no-password.pfx"},
 		"kibana":{"value":"No"},
 		"jumpbox":{"value":"Yes"},
 		"vmSizeDataNodes":{"value":"Standard_D1"},
@@ -31,9 +31,9 @@
 		"appGatewayTier": {"value":"Standard"},
 		"appGatewaySku": {"value":"Small"},
 		"appGatewayCount": {"value":1},
-		"appGatewayCertBlob": {"value":"cert-with-password.pfx"},
+		"appGatewayCertBlob": {"value":"certs/cert-with-password.pfx"},
     "appGatewayCertPassword": {"value":"Password123"},
-    "appGatewayEsHttpCertBlob": {"value":"cert-no-password.crt"},
+    "appGatewayEsHttpCertBlob": {"value":"certs/cert-no-password.crt"},
 		"appGatewayWafStatus": {"value":"Disabled"},
 		"appGatewayWafMode": {"value":"Detection"}
 	}

@@ -159,7 +159,7 @@
     {
       "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('namespace'), '-0')]",
+      "name": "[variables('namespace')]",
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -175,7 +175,7 @@
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
-            "name": "osdisk",
+            "name": "[concat(variables('namespace'), '-osdisk')]",
             "managedDisk": {
               "storageAccountType": "Standard_LRS"
             },

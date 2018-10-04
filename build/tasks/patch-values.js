@@ -58,6 +58,7 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+        main.parameters.vmSizeLogstash.allowedValues = vmSizes;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {
@@ -84,7 +85,12 @@ gulp.task("patch", function(cb) {
             var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
             var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
             var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-            var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+
+            var kibanaSection = _.find(externalAccessStep.elements, function (el) { return el.name == "kibanaSection"; });
+            var kibanaSizeControl = _.find(kibanaSection.elements, function (el) { return el.name == "vmSizeKibana"; });
+
+            var logstashSection = _.find(externalAccessStep.elements, function (el) { return el.name == "logstashSection"; });
+            var logstashSizeControl = _.find(logstashSection.elements, function (el) { return el.name == "vmSizeLogstash"; });
 
             var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
               delete control.constraints.allowedValues;
@@ -94,7 +100,7 @@ gulp.task("patch", function(cb) {
                 if (recommendedSize) {
                   var fromIndex = sizes.indexOf(recommendedSize);
                   if (fromIndex == -1) {
-                    throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
+                    throw new Error(`recommendSize '${recommendedSize}' not found in recommendedSizes [${recommendedSizes.join("','")}]`);
                   }
                   sizes.splice(fromIndex);
                   sizes.unshift(recommendedSize);
@@ -107,6 +113,7 @@ gulp.task("patch", function(cb) {
             patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
             patchVmSizes(clientSizeControl, vmSizes);
             patchVmSizes(kibanaSizeControl, kibanaVmSizes);
+            patchVmSizes(logstashSizeControl, vmSizes);
 
             var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;
