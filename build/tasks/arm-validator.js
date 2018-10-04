@@ -589,16 +589,16 @@ var deployTemplate = (test, cb) => {
 }
 
 gulp.task("create-log-folder", (cb) => mkdirp(logDistTmp, cb));
-gulp.task("clean", ["create-log-folder"], () => del([ logDistTmp + "/**/*" ], { force: true }));
+gulp.task("clean", gulp.series(["create-log-folder"]), () => del([ logDistTmp + "/**/*" ], { force: true }));
 
-gulp.task("test", ["clean"], (cb) => {
+gulp.task("test", gulp.series(["clean"]), (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
 });
 
-gulp.task("deploy", ["clean"], (cb) => {
+gulp.task("deploy", gulp.series(["clean"]), (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
 });
 
-gulp.task("azure-cleanup", ["clean"], (cb) => {
+gulp.task("azure-cleanup", gulp.series(["clean"]), (cb) => {
   login(() => deleteAllTestGroups(() => logout(cb)));
 });
