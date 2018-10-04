@@ -1118,19 +1118,18 @@ configure_os_properties()
 
     # Required for bootstrap memory lock
     #echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
-
+    local SYSTEMD_OVERRIDES=/etc/systemd/system/elasticsearch.service.d
+    [ -d $SYSTEMD_OVERRIDES ] || mkdir -p $SYSTEMD_OVERRIDES
     {
       echo "[Service]"
       echo "LimitMEMLOCK=infinity"
-    } >> /etc/systemd/system/elasticsearch.service.d/override.conf
+    } >> $SYSTEMD_OVERRIDES/override.conf
 
     # Maximum number of open files for elasticsearch user
     echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
 
     # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
     echo "session    required   pam_limits.so" >> /etc/pam.d/su
-
-
 
     log "[configure_os_properties] configure systemd to start Elasticsearch service automatically when system boots"
     systemctl daemon-reload
