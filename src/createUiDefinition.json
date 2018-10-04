@@ -1374,7 +1374,7 @@
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
       "azureCloudPlugin": "No",
       "azureCloudStorageAccountName": "",
-      "azureCloudStorageAccountKey": "",
+      "azureCloudStorageAccountResourceGroup": "",
       "xpackPlugins": "Yes",
       "esAdditionalPlugins": "",
       "esAdditionalYaml": "",

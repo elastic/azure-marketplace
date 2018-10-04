@@ -1531,10 +1531,11 @@ Optional name of an existing storage account to configure Azure repository plugi
 Must be a valid Azure Storage Account name. If no value is passed and `azureCloudPlugin`
 is `Yes`, the shared storage account deployed with the template will be used.
 
-`azureCloudStorageAccountKey`::
-Optional storage account key associated with the existing storage account named
-in `azureCloudStorageAccountName` to configure Azure repository plugin. Required
-only when passing a value for `azureCloudStorageAccountName`.
+`azureCloudStorageAccountResourceGroup`::
+Optional name of the resource group in which the existing storage account named
+in `azureCloudStorageAccountName` is located, to configure Azure repository plugin. If the
+storage account exists in the resource group targeted by the deployment, this can be left
+empty.
 
 The Azure repository plugin does **not** create the container within the
 storage account when creating a repository using the {elasticdocs}/modules-snapshots.html[Snapshot API]; the container
@@ -1570,7 +1571,6 @@ PUT _snapshot/backup_1
     "container": "<container name>"
   }
 }
-
 ----
 // CONSOLE
 

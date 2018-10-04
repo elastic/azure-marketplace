@@ -155,18 +155,19 @@ value defined in the template.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>azureCloudPlugin</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install the Azure Cloud plugin for snapshot/restore. 
-    When set to <code>Yes</code>, both <code>azureCloudeStorageAccountName</code> 
-    and <code>azureCloudStorageAccountKey</code> must be specified to configure the plugin correctly.
+    <td>Either <code>Yes</code> or <code>No</code> to install the Azure Repository plugin for snapshot/restore. 
+    When set to <code>Yes</code>, at least <code>azureCloudStorageAccountName</code> 
+    must be specified to configure the plugin correctly.
     </td><td><code>No</code></td></tr>
 
   <tr><td>azureCloudStorageAccountName</td><td>string</td>
-    <td> The name of an existing storage account to use for snapshots with Azure Cloud plugin. 
+    <td> The name of an existing storage account to use for snapshots with Azure Repository plugin. 
     Must be a valid Azure Storage Account name.
     </td><td><code>""</code></td></tr>
 
-  <tr><td>azureCloudStorageAccountKey</td><td>securestring</td>
-    <td> The access key of an existing storage account to use for snapshots with Azure Cloud plugin.
+  <tr><td>azureCloudStorageAccountResourceGroup</td><td>string</td>
+    <td> The name of an existing resource group containing the storage account <code>azureCloudStorageAccountName</code> 
+    to use for snapshots with Azure Repository plugin. Must be a valid Resource Group name.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
