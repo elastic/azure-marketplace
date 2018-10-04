@@ -29,7 +29,7 @@ help()
     echo "-R read password"
     echo "-K kibana user password"
     echo "-S logstash_system user password"
-    echo "-X enable anonymous access with cluster monitoring role (for health probes)"
+    echo "-F beats_system user password"
 
     echo "-x configure as a dedicated master node"
     echo "-y configure as client only node (no master, no data)"
@@ -117,6 +117,7 @@ USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
 USER_KIBANA_PWD="changeme"
 USER_LOGSTASH_PWD="changeme"
+USER_BEATS_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
 
@@ -140,7 +141,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -163,6 +164,9 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname
       ;;
     S) #security logstash_system user pwd
       USER_LOGSTASH_PWD="${OPTARG}"
+      ;;
+    F) #security beats_system user pwd
+      USER_BEATS_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -505,29 +509,40 @@ apply_security_settings()
         #Make sure another deploy did not already change the elastic password
         curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
         if [[ $? != 0 ]]; then
-          log "[apply_security_settings] could not update the builtin elastic user"
+          log "[apply_security_settings] could not update the built-in elastic user"
           exit 10
         fi
       fi
-      log "[apply_security_settings] updated builtin elastic superuser password"
+      log "[apply_security_settings] updated built-in elastic superuser password"
 
       #update builtin `kibana` account
       local KIBANA_JSON=$(printf '{"password":"%s"}\n' $USER_KIBANA_PWD)
       echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/kibana/_password" -d @-
       if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the builtin kibana user"
+        log "[apply_security_settings] could not update the built-in kibana user"
         exit 10
       fi
-      log "[apply_security_settings] updated builtin kibana user password"
+      log "[apply_security_settings] updated built-in kibana user password"
 
       #update builtin `logstash_system` account
       local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
       echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
       if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the builtin logstash_system user"
+        log "[apply_security_settings] could not update the built-in logstash_system user"
         exit 10
       fi
-      log "[apply_security_settings] updated builtin logstash_system user password"
+      log "[apply_security_settings] updated built-in logstash_system user password"
+
+      #update builtin `beats_system` account for Elasticsearch 6.3.0+
+      if dpkg --compare-versions "$ES_VERSION" "ge" "6.3.0"; then
+        local BEATS_JSON=$(printf '{"password":"%s"}\n' $USER_BEATS_PWD)
+        echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
+        if [[ $? != 0 ]];  then
+          log "[apply_security_settings] could not update the built-in beats_system user"
+          exit 10
+        fi
+        log "[apply_security_settings] updated built-in beats_system user password"
+      fi
 
       #create a readonly role that mimics the `user` role in the old shield plugin
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'

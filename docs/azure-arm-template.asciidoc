@@ -152,7 +152,8 @@ az group deployment create \
                securityAdminPassword=adminPassword123 \
                securityReadPassword=readPassword123 \
                securityKibanaPassword=kibanaPassword123 \
-               securityLogstashPassword=logstashPassword123
+               securityLogstashPassword=logstashPassword123 \
+               securityBeatsPassword=beatsPassword123
 ----
 
 [source,powershell]
@@ -174,6 +175,7 @@ $parameters = @{
   "securityReadPassword" = "readPassword123"
   "securityKibanaPassword" = "kibanaPassword123"
   "securityLogstashPassword" = "logstashPassword123"
+  "securityBeatsPassword" = "beatsPassword123"
 }
 
 $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
@@ -1006,6 +1008,11 @@ Security password for the `logstash_system` built-in user account. This is the a
 Logstash can use to communicate with Elasticsearch. Must be greater
 than six characters in length.
 
+`securityBeatsPassword`::
+Security password for the `beats_system` built-in user account. This is the account that
+Beats can use to communicate with Elasticsearch. Must be greater
+than six characters in length. Valid only for Elasticsearch 6.3.0+
+
 `securityReadPassword`::
 Security password for an `es_read` user account configured with a user (read-only) role with
 the following definition
@@ -1241,6 +1248,7 @@ az group deployment create \
         securityReadPassword=ReadPassword123 \
         securityKibanaPassword=KibanaPassword123 \
         securityLogstashPassword=LogstashPassword123 \
+        securityBeatsPassword=BeatsPassword123 \
         kibanaCertBlob=$kibana_cert \
         kibanaKeyBlob=$kibana_key \
         samlMetadataUri=$metadata_uri
@@ -1276,6 +1284,7 @@ $parameters = @{
     "securityReadPassword" = "ReadPassword123"
     "securityKibanaPassword" = "KibanaPassword123"
     "securityLogstashPassword" = "LogstashPassword123"
+    "securityBeatsPassword" = "BeatsPassword123"
     "kibanaCertBlob" = $kibanaCert
     "kibanaKeyBlob" = $kibanaKey
     "samlMetadataUri" = $metadataUri
