@@ -163,7 +163,7 @@ install_kibana()
         exit $EXIT_CODE
     fi
     log "[install_kibana] download location $DOWNLOAD_URL"
-    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O "kibana-$KIBANA_VERSION.deb"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_kibana] error downloading Kibana $KIBANA_VERSION"
