@@ -354,21 +354,35 @@ install_java()
 # Install Elasticsearch
 install_es()
 {
-    DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
+    local PACKAGE="elasticsearch-$ES_VERSION.deb"
+    local SHASUM="$PACKAGE.sha512"
+    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/$PACKAGE?ultron=msft&gambit=azure"
+    local SHASUM_URL="https://artifacts.elastic.co/downloads/elasticsearch/$SHASUM?ultron=msft&gambit=azure"
 
     log "[install_es] installing Elasticsearch $ES_VERSION"
-    log "[install_es] download location - $DOWNLOAD_URL"
-    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error downloading Elasticsearch $ES_VERSION checksum"
+        exit $EXIT_CODE
+    fi
+    log "[install_es] download location - $DOWNLOAD_URL"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
+    EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_es] error downloading Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
     log "[install_es] downloaded Elasticsearch $ES_VERSION"
-    dpkg -i elasticsearch.deb
+    shasum -a 512 -c $SHASUM
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error validating checksum for Elasticsearch $ES_VERSION"
+        exit $EXIT_CODE
+    fi
+
+    dpkg -i $PACKAGE
     log "[install_es] installed Elasticsearch $ES_VERSION"
-    log "[install_es] disable Elasticsearch System-V style init scripts (will be using monit to manage Elasticsearch service)"
-    update-rc.d elasticsearch disable
 }
 
 ## Plugins
@@ -1085,7 +1099,6 @@ configure_elasticsearch()
     log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP"
     sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
-    log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
 
 configure_os_properties()
@@ -1104,13 +1117,24 @@ configure_os_properties()
     echo "elasticsearch hard memlock unlimited" >> /etc/security/limits.conf
 
     # Required for bootstrap memory lock
-    echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
+    #echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
+
+    {
+      echo "[Service]"
+      echo "LimitMEMLOCK=infinity"
+    } >> /etc/systemd/system/elasticsearch.service.d/override.conf
 
     # Maximum number of open files for elasticsearch user
     echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
 
     # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
     echo "session    required   pam_limits.so" >> /etc/pam.d/su
+
+
+
+    log "[configure_os_properties] configure systemd to start Elasticsearch service automatically when system boots"
+    systemctl daemon-reload
+    systemctl enable elasticsearch.service
 
     log "[configure_os_properties] configured operating system level configuration"
 }
@@ -1156,33 +1180,11 @@ install_ntp()
     systemctl start ntp.service
 }
 
-install_monit()
+start_systemd()
 {
-    log "[install_monit] installing monit"
-    (apt-get -yq install monit || (sleep 15; apt-get -yq install monit))
-    echo "set daemon 30" >> /etc/monit/monitrc
-    echo "set httpd port 2812 and" >> /etc/monit/monitrc
-    echo "    use address localhost" >> /etc/monit/monitrc
-    echo "    allow localhost" >> /etc/monit/monitrc
-    touch /etc/monit/conf.d/elasticsearch.conf
-    echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
-
-    # comment out include /etc/monit/conf-enabled/* as not needed. Prevents unuseful warning to stderr
-    sed -i 's|\s*include /etc/monit/conf-enabled/*|# include /etc/monit/conf-enabled/*|' /etc/monit/monitrc
-
-    log "[install_monit] installed monit"
-}
-
-start_monit()
-{
-    log "[start_monit] starting monit"
-    /etc/init.d/monit start
-    monit reload # use the new configuration
-    monit start all
-    log "[start_monit] started monit"
+    log "[start_systemd] starting Elasticsearch"
+    systemctl start elasticsearch.service
+    log "[start_systemd] started Elasticsearch"
 }
 
 port_forward()
@@ -1213,7 +1215,7 @@ port_forward()
 
 # if elasticsearch is already installed assume this is a redeploy
 # change yaml configuration and only restart the server when needed
-if monit status elasticsearch >& /dev/null; then
+if systemctl -q is-active elasticsearch.service; then
 
   configure_elasticsearch_yaml
 
@@ -1222,7 +1224,7 @@ if monit status elasticsearch >& /dev/null; then
 
   # restart elasticsearch if the configuration has changed
   cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
-    || monit restart elasticsearch
+    || systemctl reload-or-restart elasticsearch.service
 
   exit 0
 fi
@@ -1257,7 +1259,6 @@ if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
     install_repository_azure_plugin
 fi
 
-install_monit
 
 configure_elasticsearch_yaml
 
@@ -1267,7 +1268,7 @@ configure_os_properties
 
 port_forward
 
-start_monit
+start_systemd
 
 # patch roles and users through the REST API which is a tad trickier
 if [[ ${INSTALL_XPACK} -ne 0 ]]; then
