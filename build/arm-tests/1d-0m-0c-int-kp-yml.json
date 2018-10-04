@@ -1,5 +1,5 @@
 {
-  "description": "1 data node cluster using temp disk, with additional yaml configuration and azure repository plugin",
+  "description": "1 data node cluster using temp disk, with additional yaml configuration including special characters, and azure repository plugin",
 	"isValid" : true,
 	"deploy" : true,
 	"why" : "",
@@ -7,8 +7,8 @@
 	"parameters" : {
 		"loadBalancerType":{"value":"internal"},
     "kibana":{"value":"Yes"},
-    "kibanaAdditionalYaml":{"value":"server.name: \"My server\"\nserver.defaultRoute: \"/app/kibana\""},
-    "esAdditionalYaml":{"value":"action.auto_create_index: +.*\nindices.queries.cache.size: 5%"},
+    "kibanaAdditionalYaml":{"value":"server.name: \"My strangely named server $`'\\\\\"~;\"\nserver.defaultRoute: \"/app/kibana\""},
+    "esAdditionalYaml":{"value":"action.auto_create_index: \"+.*\"\nindices.queries.cache.size: 5%"},
     "azureCloudPlugin":{"value":"Yes"},
 		"jumpbox":{"value":"No"},
 		"vmSizeKibana":{"value":"Standard_DS1_v2"},
