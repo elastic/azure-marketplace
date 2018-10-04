@@ -16,45 +16,46 @@ export DEBIAN_FRONTEND=noninteractive
 help()
 {
     echo "This script installs Elasticsearch cluster on Ubuntu"
-    echo "Parameters:"
-    echo "-n elasticsearch cluster name"
-    echo "-v elasticsearch version e.g. 6.2.2"
-    echo "-p hostname prefix of nodes for unicast discovery"
-    echo "-m heap size in megabytes to allocate to JVM"
+    echo ""
+    echo "Options:"
+    echo "    -n      elasticsearch cluster name"
+    echo "    -v      elasticsearch version e.g. 6.4.1"
+    echo "    -p      hostname prefix of nodes for unicast discovery"
+    echo "    -m      heap size in megabytes to allocate to JVM"
 
-    echo "-d cluster uses dedicated masters"
-    echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "    -d      cluster uses dedicated masters"
+    echo "    -Z      <number of nodes> hint to the install script how many data nodes we are provisioning"
 
-    echo "-A admin password"
-    echo "-R read password"
-    echo "-K kibana user password"
-    echo "-S logstash_system user password"
-    echo "-F beats_system user password"
+    echo "    -A      admin password"
+    echo "    -R      read password"
+    echo "    -K      kibana user password"
+    echo "    -S      logstash_system user password"
+	echo "    -F      beats_system user password"
 
-    echo "-x configure as a dedicated master node"
-    echo "-y configure as client only node (no master, no data)"
-    echo "-z configure as data node (no master)"
-    echo "-l install plugins"
-    echo "-L <plugin;plugin> install additional plugins"
-    echo "-C <yaml\nyaml> additional yaml configuration"
+    echo "    -x      configure as a dedicated master node"
+    echo "    -y      configure as client only node (no master, no data)"
+    echo "    -z      configure as data node (no master)"
+    echo "    -l      install X-Pack plugin (<6.3.0) or apply trial license for Platinum features (6.3.0+)"
+    echo "    -L      <plugin;plugin> install additional plugins"
+    echo "    -C      <yaml\nyaml> additional yaml configuration"
 
-    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -G      password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -J      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
 
-    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
+    echo "    -T      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -W      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -N      password for the generated PKCS#12 archive used to secure the transport layer"
 
-    echo "-O URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
-    echo "-P Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
+    echo "    -O      URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
+    echo "    -P      Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
 
-    echo "-j install azure cloud plugin for snapshot and restore"
-    echo "-a set the default storage account for azure cloud plugin"
-    echo "-k set the key for the default storage account for azure cloud plugin"
+    echo "    -j      install azure cloud plugin for snapshot and restore"
+    echo "    -a      set the default storage account for azure cloud plugin"
+    echo "    -k      set the key for the default storage account for azure cloud plugin"
 
-    echo "-h view this help content"
+    echo "    -h      view this help content"
 }
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
 # The Script extension output the stdout/err buffer in intervals with duplicates.
@@ -97,7 +98,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.4.0"
+ES_VERSION="6.4.1"
 ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
@@ -1207,7 +1208,7 @@ if systemctl -q is-active elasticsearch.service; then
   check_data_disk
 
   # restart elasticsearch if the configuration has changed
-  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
+  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.bak \
     || systemctl reload-or-restart elasticsearch.service
 
   exit 0
