@@ -1175,7 +1175,432 @@
       "new": "[resourceGroup().name]",
       "existing": "[parameters('vNetExistingResourceGroup')]"
     },
-    "dataSkuSettings": 0,
+    "dataSkuSettings": {
+      "Standard_A0": {
+        "dataDisks": 1,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A1": {
+        "dataDisks": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A2": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A3": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A4": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A5": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A6": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A7": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A8": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A9": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A10": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_A11": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D1": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D2": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D3": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D4": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D11": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D12": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D13": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D14": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D1_v2": {
+        "dataDisks": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D2_v2": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D3_v2": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D4_v2": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D5_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D11_v2": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D12_v2": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D13_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D14_v2": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_D15_v2": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_DS1": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS2": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS3": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS4": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS11": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS12": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS13": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS14": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS1_v2": {
+        "dataDisks": 2,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS2_v2": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS3_v2": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS4_v2": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS5_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS11_v2": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS12_v2": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS13_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS14_v2": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_DS15_v2": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D2s_v3": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D4s_v3": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D8s_v3": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D16s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D32s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D64s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E2_v3": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E4_v3": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E8_v3": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E16_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E32_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E64_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E64i_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_E2s_v3": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E4s_v3": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E8s_v3": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E16s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E32s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E64s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E64is_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F1": {
+        "dataDisks": 2,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F2": {
+        "dataDisks": 4,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F4": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F8": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F16": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_F1s": {
+        "dataDisks": 2,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F2s": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F4s": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F8s": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_F16s": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_G1": {
+        "dataDisks": 8,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_G2": {
+        "dataDisks": 16,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_G3": {
+        "dataDisks": 32,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_G4": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_G5": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_GS1": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_GS2": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_GS3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_GS4": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_GS5": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L4s": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L8s": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L16s": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L32s": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M8ms": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M16ms": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M32ts": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M32ls": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M32ms": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M64s": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M64ls": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M64ms": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M128s": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M128ms": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M64": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M64m": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M128": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_M128m": {
+        "dataDisks": 64,
+        "storageAccountType": "Premium_LRS"
+      }
+    },
     "dataDiskSizes": {
       "XXLarge": 4095,
       "XLarge": 2048,

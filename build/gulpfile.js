@@ -8,21 +8,15 @@ var transform = require('gulp-transform');
 var path = require("path");
 var _ = require('lodash');
 
-require('requiredir')('tasks', { recurse: true })
+require('requiredir')('tasks', { recurse: true });
 
 _.mixin({
-
-  indexBy: function(list, func) {
-    for (var i = 0, l = list.length; i < l; i++) {
-      if (func(list[i])) return i;
-    }
-    return -1;
-  }
-
+  indexBy: _.keyBy
 });
 
 gulp.task("default", gulp.series(["sanity-checks", "patch"]), function() {
   var stream = gulp.src(["../src/**/*.json"])
+    // update tracking guids when creating release
     .pipe(transform('utf8', function (content, file) {
       return new Promise((resolve, reject) => {
         if (path.basename(file.path) === "mainTemplate.json") {
