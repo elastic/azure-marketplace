@@ -408,9 +408,6 @@
           "templateBaseUrl": {
             "value": "[parameters('templateBaseUrl')]"
           },
-          "storageAccountName": {
-            "value": "[parameters('commonVmSettings').storageAccountName]"
-          },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
           },
@@ -446,9 +443,6 @@
         "parameters": {
           "templateBaseUrl": {
             "value": "[parameters('templateBaseUrl')]"
-          },
-          "storageAccountName": {
-            "value": "[parameters('commonVmSettings').storageAccountName]"
           },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
