@@ -51,9 +51,9 @@ var bootstrapTest = (t, defaultVersion) =>
     if (test.parameters[k] && test.parameters[k].value) {
       var buffer = fs.readFileSync(test.parameters[k].value);
       if (k === "logstashConf") {
-        buffer = new Buffer(buffer.toString().replace("securityAdminPassword", config.deployments.securityPassword));
+        buffer = Buffer.from(buffer.toString().replace("securityAdminPassword", config.deployments.securityPassword));
       }
-      test.parameters[k].value = new Buffer(buffer).toString("base64");
+      test.parameters[k].value = Buffer.from(buffer).toString("base64");
     }
   });
 
@@ -589,16 +589,19 @@ var deployTemplate = (test, cb) => {
 }
 
 gulp.task("create-log-folder", (cb) => mkdirp(logDistTmp, cb));
-gulp.task("clean", gulp.series(["create-log-folder"]), () => del([ logDistTmp + "/**/*" ], { force: true }));
+gulp.task("clean", gulp.series("create-log-folder", (cb) => {
+  del([ logDistTmp + "/**/*" ], { force: true });
+  cb();
+}));
 
-gulp.task("test", gulp.series(["clean"]), (cb) => {
+gulp.task("test", gulp.series("clean", (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
-});
+}));
 
-gulp.task("deploy", gulp.series(["clean"]), (cb) => {
+gulp.task("deploy", gulp.series("clean", (cb) => {
   bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
-});
+}));
 
-gulp.task("azure-cleanup", gulp.series(["clean"]), (cb) => {
+gulp.task("azure-cleanup", gulp.series("clean", (cb) => {
   login(() => deleteAllTestGroups(() => logout(cb)));
-});
+}));

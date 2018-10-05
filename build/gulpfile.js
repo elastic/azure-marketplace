@@ -14,13 +14,13 @@ _.mixin({
   indexBy: _.keyBy
 });
 
-gulp.task("default", gulp.series(["sanity-checks", "patch"]), function() {
+gulp.task("default", gulp.series("sanity-checks", "patch", function() {
   var stream = gulp.src(["../src/**/*.json"])
     // update tracking guids when creating release
     .pipe(transform('utf8', function (content, file) {
       return new Promise((resolve, reject) => {
         if (path.basename(file.path) === "mainTemplate.json") {
-          var allowedValues = require("../allowedValues.json");
+          var allowedValues = require("./allowedValues.json");
           var mainTemplate = JSON.parse(content);
           mainTemplate.parameters.elasticTags.defaultValue.tracking = allowedValues.trackingGuids.marketplace;
           resolve(JSON.stringify(mainTemplate, null, 2) + "\n");
@@ -44,9 +44,9 @@ gulp.task("default", gulp.series(["sanity-checks", "patch"]), function() {
   stream.on("finish", function() {});
 
   return stream;
-});
+}));
 
-gulp.task("release", gulp.series(["default", "deploy"]), function() {
+gulp.task("release", gulp.series("default", "deploy", function() {
   var stream = gulp.src(["../dist/test-runs/tmp/*.log"])
     .pipe(zip("test-results" + timestamp +".zip"))
     .pipe(gulp.dest("../dist/releases"))
@@ -54,4 +54,4 @@ gulp.task("release", gulp.series(["default", "deploy"]), function() {
   stream.on("finish", function() {});
 
   return stream;
-});
+}));
