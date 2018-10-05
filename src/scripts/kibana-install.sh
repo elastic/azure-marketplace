@@ -226,9 +226,11 @@ configure_kibana_yaml()
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
 
-      log "[configure_kibana_yaml] Installing X-Pack plugin"
-      /usr/share/kibana/bin/kibana-plugin install x-pack
-      log "[configure_kibana_yaml] Installed X-Pack plugin"
+      if dpkg --compare-versions "$KIBANA_VERSION" "lt" "6.3.0"; then
+        log "[configure_kibana_yaml] Installing X-Pack plugin"
+        /usr/share/kibana/bin/kibana-plugin install x-pack
+        log "[configure_kibana_yaml] Installed X-Pack plugin"
+      fi
     fi
 
     # configure HTTPS if cert and private key supplied
