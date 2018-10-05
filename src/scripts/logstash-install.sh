@@ -391,11 +391,16 @@ configure_logstash_yaml()
 
 configure_logstash()
 {
-    if [[ "$LOGSTASH_HEAP" -ne "0" ]]; then
-      log "[configure_logstash] configure logstash heap size - $LOGSTASH_HEAP"
-      sed -i -e "s/^\-Xmx.*/-Xmx${LOGSTASH_HEAP}m/" /etc/logstash/jvm.options
-      sed -i -e "s/^\-Xms.*/-Xms${LOGSTASH_HEAP}m/" /etc/logstash/jvm.options
+    log "[configure_logstash] configuring Logstash default configuration"
+
+    if [[ "$LOGSTASH_HEAP" -eq "0" ]]; then
+      log "[configure_logstash] configuring heap size from available memory"
+      LOGSTASH_HEAP=`free -m | grep Mem | awk '{if ($2/2 > 8092) print 8092;else print int($2/2+0.5);}'`
     fi
+
+    log "[configure_logstash] configure logstash heap size - $LOGSTASH_HEAP megabytes"
+    sed -i -e "s/^\-Xmx.*/-Xmx${LOGSTASH_HEAP}m/" /etc/logstash/jvm.options
+    sed -i -e "s/^\-Xms.*/-Xms${LOGSTASH_HEAP}m/" /etc/logstash/jvm.options
 }
 
 install_additional_plugins()

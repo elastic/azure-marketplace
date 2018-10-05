@@ -1098,7 +1098,7 @@ configure_elasticsearch()
       ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
     fi
 
-    log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP"
+    log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP megabytes"
     sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
 }
