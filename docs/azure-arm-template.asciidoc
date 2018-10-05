@@ -1,7 +1,8 @@
 :marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
-:current: 6.3
+:current: 6.4
+:version: 6.4.2
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
@@ -29,7 +30,6 @@
 :owasp30: https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
 :jq: https://stedolan.github.io/jq/
 :systemd: https://www.freedesktop.org/wiki/Software/systemd/
-:version: 6.3.1
 :yamllint: http://www.yamllint.com/
 :openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
 :base64: https://linux.die.net/man/1/base64
@@ -137,16 +137,17 @@ Now that a resource group has been created, start a deployment of the ARM
 template
 
 [source,sh]
+[subs="attributes"]
 .Azure CLI 2.0
 ----
 template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
-template_version=6.3.1
+template_version={version}
 
 az group deployment create \
   --resource-group "<name>" \
   --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
   --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
-               esVersion=6.3.1 esClusterName=elasticsearch \
+               esVersion={version} esClusterName=elasticsearch \
                vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
                adminUsername=russ adminPassword=Password1234 \
                securityBootstrapPassword=bootstrapPassword123 \
@@ -158,14 +159,15 @@ az group deployment create \
 ----
 
 [source,powershell]
+[subs="attributes"]
 .Azure PowerShell
 ----
 $templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
-$templateVersion = "6.3.1"
+$templateVersion = "{version}"
 
 $parameters = @{
   "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
-  "esVersion" = "6.3.1"
+  "esVersion" = "{version}"
   "esClusterName" = "elasticsearch"
   "vmDataDiskCount" = 1
   "dataNodesAreMasterEligible" = "Yes"
@@ -187,8 +189,8 @@ $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
 This example will deploy
 
 * an Elasticsearch cluster named elasticsearch
-running version 6.3.1
-* Kibana 6.3.1.
+running version {version}
+* Kibana {version}.
 * The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
 * The cluster will have a trial license applied, providing access to Elastic Stack Platinum features for 30 days
 * Security feature is enabled, and the {xpackdocs}/built-in-roles.html[built-in roles] `elastic`, `kibana` and
