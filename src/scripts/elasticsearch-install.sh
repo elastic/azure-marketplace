@@ -16,46 +16,48 @@ export DEBIAN_FRONTEND=noninteractive
 help()
 {
     echo "This script installs Elasticsearch cluster on Ubuntu"
-    echo "Parameters:"
-    echo "-n elasticsearch cluster name"
-    echo "-v elasticsearch version e.g. 6.2.2"
-    echo "-p hostname prefix of nodes for unicast discovery"
-    echo "-m heap size in megabytes to allocate to JVM"
+    echo ""
+    echo "Options:"
+    echo "    -n      elasticsearch cluster name"
+    echo "    -v      elasticsearch version e.g. 6.4.1"
+    echo "    -p      hostname prefix of nodes for unicast discovery"
+    echo "    -m      heap size in megabytes to allocate to JVM"
 
-    echo "-d cluster uses dedicated masters"
-    echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "    -d      cluster uses dedicated masters"
+    echo "    -Z      <number of nodes> hint to the install script how many data nodes we are provisioning"
 
-    echo "-A admin password"
-    echo "-R read password"
-    echo "-K kibana user password"
-    echo "-S logstash_system user password"
-    echo "-F beats_system user password"
+    echo "    -A      admin password"
+    echo "    -R      read password"
+    echo "    -K      kibana user password"
+    echo "    -S      logstash_system user password"
+    echo "    -F      beats_system user password"
 
-    echo "-x configure as a dedicated master node"
-    echo "-y configure as client only node (no master, no data)"
-    echo "-z configure as data node (no master)"
-    echo "-l install plugins"
-    echo "-L <plugin;plugin> install additional plugins"
-    echo "-C <yaml\nyaml> additional yaml configuration"
+    echo "    -x      configure as a dedicated master node"
+    echo "    -y      configure as client only node (no master, no data)"
+    echo "    -z      configure as data node (no master)"
+    echo "    -l      install X-Pack plugin (<6.3.0) or apply trial license for Platinum features (6.3.0+)"
+    echo "    -L      <plugin;plugin> install additional plugins"
+    echo "    -C      <yaml\nyaml> additional yaml configuration"
 
-    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -G      password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -J      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
 
-    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
+    echo "    -T      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -W      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -N      password for the generated PKCS#12 archive used to secure the transport layer"
 
-    echo "-O URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
-    echo "-P Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
+    echo "    -O      URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
+    echo "    -P      Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
 
-    echo "-j install azure cloud plugin for snapshot and restore"
-    echo "-a set the default storage account for azure cloud plugin"
-    echo "-k set the key for the default storage account for azure cloud plugin"
+    echo "    -j      install azure cloud plugin for snapshot and restore"
+    echo "    -a      set the default storage account for azure cloud plugin"
+    echo "    -k      set the key for the default storage account for azure cloud plugin"
 
-    echo "-h view this help content"
+    echo "    -h      view this help content"
 }
+
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
 # The Script extension output the stdout/err buffer in intervals with duplicates.
 log()
@@ -97,7 +99,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.4.0"
+ES_VERSION="6.4.1"
 ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
@@ -354,21 +356,35 @@ install_java()
 # Install Elasticsearch
 install_es()
 {
-    DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
+    local PACKAGE="elasticsearch-$ES_VERSION.deb"
+    local SHASUM="$PACKAGE.sha512"
+    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/$PACKAGE?ultron=msft&gambit=azure"
+    local SHASUM_URL="https://artifacts.elastic.co/downloads/elasticsearch/$SHASUM?ultron=msft&gambit=azure"
 
     log "[install_es] installing Elasticsearch $ES_VERSION"
-    log "[install_es] download location - $DOWNLOAD_URL"
-    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error downloading Elasticsearch $ES_VERSION checksum"
+        exit $EXIT_CODE
+    fi
+    log "[install_es] download location - $DOWNLOAD_URL"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
+    EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_es] error downloading Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
     log "[install_es] downloaded Elasticsearch $ES_VERSION"
-    dpkg -i elasticsearch.deb
+    shasum -a 512 -c $SHASUM
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error validating checksum for Elasticsearch $ES_VERSION"
+        exit $EXIT_CODE
+    fi
+
+    dpkg -i $PACKAGE
     log "[install_es] installed Elasticsearch $ES_VERSION"
-    log "[install_es] disable Elasticsearch System-V style init scripts (will be using monit to manage Elasticsearch service)"
-    update-rc.d elasticsearch disable
 }
 
 ## Plugins
@@ -1085,7 +1101,6 @@ configure_elasticsearch()
     log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP"
     sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
-    log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
 
 configure_os_properties()
@@ -1095,22 +1110,17 @@ configure_os_properties()
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
     resolvconf -u
 
-    # Increase maximum mmap count
-    echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
+    # Required for bootstrap memory lock with systemd
+    local SYSTEMD_OVERRIDES=/etc/systemd/system/elasticsearch.service.d
+    [ -d $SYSTEMD_OVERRIDES ] || mkdir -p $SYSTEMD_OVERRIDES
+    {
+      echo "[Service]"
+      echo "LimitMEMLOCK=infinity"
+    } >> $SYSTEMD_OVERRIDES/override.conf
 
-    # Update pam_limits for bootstrap memory lock
-    echo "# allow user 'elasticsearch' mlockall" >> /etc/security/limits.conf
-    echo "elasticsearch soft memlock unlimited" >> /etc/security/limits.conf
-    echo "elasticsearch hard memlock unlimited" >> /etc/security/limits.conf
-
-    # Required for bootstrap memory lock
-    echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
-
-    # Maximum number of open files for elasticsearch user
-    echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
-
-    # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
-    echo "session    required   pam_limits.so" >> /etc/pam.d/su
+    log "[configure_os_properties] configure systemd to start Elasticsearch service automatically when system boots"
+    systemctl daemon-reload
+    systemctl enable elasticsearch.service
 
     log "[configure_os_properties] configured operating system level configuration"
 }
@@ -1156,33 +1166,11 @@ install_ntp()
     systemctl start ntp.service
 }
 
-install_monit()
+start_systemd()
 {
-    log "[install_monit] installing monit"
-    (apt-get -yq install monit || (sleep 15; apt-get -yq install monit))
-    echo "set daemon 30" >> /etc/monit/monitrc
-    echo "set httpd port 2812 and" >> /etc/monit/monitrc
-    echo "    use address localhost" >> /etc/monit/monitrc
-    echo "    allow localhost" >> /etc/monit/monitrc
-    touch /etc/monit/conf.d/elasticsearch.conf
-    echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
-
-    # comment out include /etc/monit/conf-enabled/* as not needed. Prevents unuseful warning to stderr
-    sed -i 's|\s*include /etc/monit/conf-enabled/*|# include /etc/monit/conf-enabled/*|' /etc/monit/monitrc
-
-    log "[install_monit] installed monit"
-}
-
-start_monit()
-{
-    log "[start_monit] starting monit"
-    /etc/init.d/monit start
-    monit reload # use the new configuration
-    monit start all
-    log "[start_monit] started monit"
+    log "[start_systemd] starting Elasticsearch"
+    systemctl start elasticsearch.service
+    log "[start_systemd] started Elasticsearch"
 }
 
 port_forward()
@@ -1213,7 +1201,7 @@ port_forward()
 
 # if elasticsearch is already installed assume this is a redeploy
 # change yaml configuration and only restart the server when needed
-if monit status elasticsearch >& /dev/null; then
+if systemctl -q is-active elasticsearch.service; then
 
   configure_elasticsearch_yaml
 
@@ -1221,8 +1209,8 @@ if monit status elasticsearch >& /dev/null; then
   check_data_disk
 
   # restart elasticsearch if the configuration has changed
-  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
-    || monit restart elasticsearch
+  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.bak \
+    || systemctl reload-or-restart elasticsearch.service
 
   exit 0
 fi
@@ -1257,7 +1245,6 @@ if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
     install_repository_azure_plugin
 fi
 
-install_monit
 
 configure_elasticsearch_yaml
 
@@ -1267,7 +1254,7 @@ configure_os_properties
 
 port_forward
 
-start_monit
+start_systemd
 
 # patch roles and users through the REST API which is a tad trickier
 if [[ ${INSTALL_XPACK} -ne 0 ]]; then

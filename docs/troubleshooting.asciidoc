@@ -45,7 +45,12 @@ example, the elasticsearch configuration file
 [source,sh]
 ----
 sudo su
+
+# check Elasticsearch configuration
 cat /etc/elasticsearch/elasticsearch.yml
+
+# check status of Elasticsearch service
+systemctl status elasticsearch.service
 ----
 
 [[azure-arm-template-troubleshooting-azure]]
@@ -110,10 +115,6 @@ A log file that contains log messages written to standard error (stderr) by the 
 `/var/lib/waagent/custom-script/download/0/stdout`::
 A log file that contains log messages written to standard output (stdout) by the Azure infrastructure when the Elasticsearch deployment script runs. There will be
 duplication of messages that have been written to `/var/log/arm-install.log`, in addition to other tooling related output such as apt package installations.
-
-`/var/log/monit.log`::
-A log file for {monit}[monit], the utility used to manage and monitor the
-Elasticsearch process. This log file is useful to check to ensure monit is running correctly.
 
 [[azure-arm-template-troubleshooting-elasticsearch-logs]]
 ==== Elasticsearch logs

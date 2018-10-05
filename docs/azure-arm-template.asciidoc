@@ -28,7 +28,7 @@
 :applicationmanifest: {microsoftdocs}/azure/active-directory/develop/active-directory-application-manifest
 :owasp30: https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
 :jq: https://stedolan.github.io/jq/
-:monit: https://mmonit.com/monit
+:systemd: https://www.freedesktop.org/wiki/Software/systemd/
 :version: 6.3.1
 :yamllint: http://www.yamllint.com/
 :openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
@@ -317,24 +317,22 @@ support to increase the limit for a VM SKU in a specific location.
 --
 
 Currently, the ARM template deploys _only_ to Ubuntu 16.04-LTS VMs, using images
-published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {monit}[monit] to manage and monitor the Elasticsearch process, with monit configured to run in daemon mode, checking
-the state of the Elasticsearch process every 30 seconds. If the process is found to not be running, monit will attempt to start the process.
+published to the Azure VM gallery by Canonical, and the {elasticdocs}/deb.html[Debian package distribution of Elasticsearch]. The template uses {systemd}[systemd] to run the Elasticsearch process, with Elasticsearch configured
+to start automatically when the system boots up.
 
-Elasticsearch can be stopped with monit <<azure-arm-template-troubleshooting-accessing-nodes, on an Elasticsearch VM node>> using
+Elasticsearch can be stopped with systemd <<azure-arm-template-troubleshooting-accessing-nodes, on an Elasticsearch VM node>> using
 
 [source,sh]
 ----
-sudo monit stop elasticsearch
+sudo systemctl stop elasticsearch.service
 ----
 
 and started with
 
 [source,sh]
 ----
-sudo monit start elasticsearch
+sudo systemctl start elasticsearch.service
 ----
-
-Refer to {monit}/documentation/monit.html[monit documentation] for further details.
 
 [[azure-arm-template-admin-username]]
 ==== Virtual machine admin username
