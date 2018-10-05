@@ -14,25 +14,26 @@ export DEBIAN_FRONTEND=noninteractive
 help()
 {
     echo "This script installs Logstash on a dedicated Ubuntu VM"
-    echo "Parameters:"
-    echo "-v Logstash version e.g. 6.2.2"
-    echo "-m heap size in megabytes to allocate to JVM"
-    echo "-u Elasticsearch URL to configure monitoring and make available to configuration through ELASTICSEARCH_URL variable"
+    echo ""
+    echo "Options:"
+    echo "    -v      Logstash version e.g. 6.4.0"
+    echo "    -m      heap size in megabytes to allocate to JVM"
+    echo "    -u      Elasticsearch URL to configure monitoring and make available to configuration through ELASTICSEARCH_URL variable"
 
-    echo "-S logstash_system user password"
-    echo "-l whether to install X-Pack plugins (or enable trial license in 6.3.0+)"
+    echo "    -S      logstash_system user password"
+    echo "    -l      whether to install X-Pack plugins (or enable trial license in 6.3.0+)"
 
-    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
-    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
-    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "    -G      password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
+    echo "    -J      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the Elasticsearch HTTP layer"
 
-    echo "-L <plugin;plugin> install additional plugins"
-    echo "-c base 64 encoded Logstash conf file"
-    echo "-K Logstash keystore password for Logstash 6.2.0+"
-    echo "-Y <yaml\nyaml> additional yaml configuration"
+    echo "    -L      <plugin;plugin> install additional plugins"
+    echo "    -c      base 64 encoded Logstash conf file"
+    echo "    -K      Logstash keystore password for Logstash 6.2.0+"
+    echo "    -Y      <yaml\nyaml> additional yaml configuration"
 
-    echo "-h view this help content"
+    echo "    -h      view this help content"
 }
 
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
@@ -143,18 +144,34 @@ install_java()
 # Install Logstash
 install_logstash()
 {
-  local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/logstash/logstash-$LOGSTASH_VERSION.deb?ultron=msft&gambit=azure"
+  local PACKAGE="logstash-$LOGSTASH_VERSION.deb"
+  local SHASUM="$PACKAGE.sha512"
+  local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/logstash/$PACKAGE?ultron=msft&gambit=azure"
+  local SHASUM_URL="https://artifacts.elastic.co/downloads/logstash/$SHASUM?ultron=msft&gambit=azure"
 
   log "[install_logstash] installing Logstash $LOGSTASH_VERSION"
-  log "[install_logstash] download location - $DOWNLOAD_URL"
-  wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O logstash.deb
+  wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
   local EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+      log "[install_logstash] error downloading Logstash $LOGSTASH_VERSION checksum"
+      exit $EXIT_CODE
+  fi
+  log "[install_logstash] download location - $DOWNLOAD_URL"
+  wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
+  EXIT_CODE=$?
   if [ $EXIT_CODE -ne 0 ]; then
       log "[install_logstash] error downloading Logstash $LOGSTASH_VERSION"
       exit $EXIT_CODE
   fi
   log "[install_logstash] downloaded Logstash $LOGSTASH_VERSION"
-  dpkg -i logstash.deb
+  shasum -a 512 -c $SHASUM
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+      log "[install_logstash] error validating checksum for Logstash $LOGSTASH_VERSION"
+      exit $EXIT_CODE
+  fi
+
+  dpkg -i $PACKAGE
   log "[install_logstash] installed Logstash $LOGSTASH_VERSION"
 }
 
@@ -398,11 +415,11 @@ install_additional_plugins()
     log "[install_additional_plugins] installed additional plugins"
 }
 
-start_service()
+start_systemd()
 {
-    log "[start_service] starting logstash"
+    log "[start_systemd] starting logstash"
     systemctl start logstash.service
-    log "[start_service] started logstash!"
+    log "[start_systemd] started logstash!"
 }
 
 install_apt_package()
@@ -455,7 +472,7 @@ if [[ -n "$INSTALL_ADDITIONAL_PLUGINS" ]]; then
   install_additional_plugins
 fi
 
-start_service
+start_systemd
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
 PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))

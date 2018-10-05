@@ -30,7 +30,7 @@ help()
     echo "    -R      read password"
     echo "    -K      kibana user password"
     echo "    -S      logstash_system user password"
-	echo "    -F      beats_system user password"
+    echo "    -F      beats_system user password"
 
     echo "    -x      configure as a dedicated master node"
     echo "    -y      configure as client only node (no master, no data)"
@@ -57,6 +57,7 @@ help()
 
     echo "    -h      view this help content"
 }
+
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
 # The Script extension output the stdout/err buffer in intervals with duplicates.
 log()
