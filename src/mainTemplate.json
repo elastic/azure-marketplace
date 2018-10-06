@@ -1068,31 +1068,31 @@
     "securityAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the built-in 'elastic' user. Must be > 6 characters"
+        "description": "Password for the built-in 'elastic' user. Should be 12 characters or more, with a minimum of 6 characters"
       }
     },
     "securityReadPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'es_read' user with user (read-only) role. Must be > 6 characters"
+        "description": "Password for the 'es_read' user with user (read-only) role. Should be 12 characters or more, with a minimum of 6 characters"
       }
     },
     "securityKibanaPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the built-in 'kibana' user. Must be > 6 characters"
+        "description": "Password for the built-in 'kibana' user. Should be 12 characters or more, with a minimum of 6 characters"
       }
     },
     "securityLogstashPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'logstash_system' user. Must be > 6 characters"
+        "description": "Password for the 'logstash_system' user. Should be 12 characters or more, with a minimum of 6 characters"
       }
     },
     "securityBeatsPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the 'beats_system' user. Must be > 6 characters. Required for Elasticsearch 6.3.0+ when xpackPlugins is 'Yes'"
+        "description": "Password for the 'beats_system' user. Should be 12 characters or more, with a minimum of 6 characters. Required for Elasticsearch 6.3.0+ when xpackPlugins is 'Yes'"
       }
     },
     "location": {

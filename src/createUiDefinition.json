@@ -1198,7 +1198,7 @@
                 "name": "logstashConf",
                 "type": "Microsoft.Common.FileUpload",
                 "label": "Logstash config file",
-                "toolTip": "A Logstash config file to use when Logstash starts. \"${ELASTICSEARCH_URL}\" can be used to reference the Elasticsearch URL",
+                "toolTip": "A Logstash config file to use when Logstash starts. \n\"${ELASTICSEARCH_URL}\" can be used within the config file to communicate with Elasticsearch through the internal loadbalancer",
                 "constraints": {
                   "accept": ".conf"
                 },
@@ -1216,6 +1216,10 @@
                 "label": "Additional Logstash plugins",
                 "defaultValue": "",
                 "toolTip": "Additional Logstash plugins to install. Each plugin name must be separated by a semicolon e.g. logstash-input-azure_event_hubs;logstash-input-http_poller",
+                "constraints": {
+                  "regex": "^[a-zA-Z0-9_\\-;]*$",
+                  "validationMessage": "Plugin names must contain alphanumeric, underscores and hyphen characters only, and be separated by semicolons"
+                },
                 "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]"
               }
             ]
@@ -1291,8 +1295,8 @@
                 "toolTip": "Password for the built-in 'elastic' user. This is a built-in superuser account with unlimited access",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -1315,8 +1319,8 @@
                 "toolTip": "Password for the built-in 'kibana' user. This is a built-in account that Kibana uses to communicate with Elasticsearch",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -1339,8 +1343,8 @@
                 "toolTip": "Password for the built-in 'logstash_system' user. This is a built-in account that Logstash uses to communicate with Elasticsearch.",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -1363,8 +1367,8 @@
                 "toolTip": "Password for the built-in 'beats_system' user. This is a built-in account that Beats uses to communicate with Elasticsearch. Required for Elasticsearch 6.3.0+",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -1387,8 +1391,8 @@
                 "toolTip": "Password to use for the 'es_read' user. This is a user account configured with limited read-only access",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
