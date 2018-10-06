@@ -921,6 +921,12 @@ of sufficient size is chosen to be able to handle the expected amount of traffic
 SKU will generally be faster and have better bandwidth than a smaller VM SKU.
 --
 
+`vmLogstashAcceleratedNetworking`::
+Whether to enable {acceleratednetworking}[accelerated networking] for Logstash,
+which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its
+networking performance. Valid values are `Default`, `Yes`, `No`. The default is `Default`, which
+enables accelerated networking for the VM SKUs known to support it.
+
 `logstashHeapSize`::
 The amount of memory, in megabytes, to allocate to Logstash for the JVM heap.
 Default will allocate whatever the default is within jvm.options for the version

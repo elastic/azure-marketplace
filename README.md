@@ -352,11 +352,13 @@ value defined in the template.
     <br />
     This is the built-in <code>elastic</code> user.
     <br />
-    must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityReadPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_read</code> user with user (read-only) role, must be &gt; 6 characters
+    <td>Security password for the <code>es_read</code> user with user (read-only) role. 
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityKibanaPassword</td><td>securestring</td>
@@ -364,19 +366,19 @@ value defined in the template.
     <br />
      This is the built-in <code>kibana</code> user.
     <br />
-     must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityLogstashPassword</td><td>securestring</td>
     <td>This is the built-in <code>logstash_system</code> user.
     <br />
-    must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityBeatsPassword</td><td>securestring</td>
     <td>This is the built-in <code>beats_system</code> user. Valid for Elasticsearch 6.3.0+
     <br />
-    must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
@@ -424,6 +426,16 @@ value defined in the template.
     <td>Azure VM size of the Logstash instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmLogstashAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Logstash, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td>logstashHeapSize</td><td>integer</td>
     <td>The size, <em>in megabytes</em>, of memory to allocate for the JVM heap for Logstash. If unspecified, Logstash will be configured with the default heap size for the distribution and version. 
