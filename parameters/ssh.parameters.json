@@ -28,6 +28,7 @@
   "kibanaAdditionalYaml": { "value":""},
   "logstash": { "value":"No"},
   "vmSizeLogstash": { "value":"Standard_D1"},
+  "vmLogstashAcceleratedNetworking":{"value":"Default"},
   "logstashHeapSize": { "value": 0 },
   "logstashConf": { "value": "" },
   "logstashKeystorePassword": { "value": "" },

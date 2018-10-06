@@ -505,6 +505,9 @@
           "vmSize": {
             "value": "[parameters('topologySettings').vmSizeLogstash]"
           },
+          "acceleratedNetworking": {
+            "value": "[if(equals(parameters('topologySettings').vmLogstashAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeLogstash), 'Yes', 'No'), parameters('topologySettings').vmLogstashAcceleratedNetworking)]"
+          },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }

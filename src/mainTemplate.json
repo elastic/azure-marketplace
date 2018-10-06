@@ -494,6 +494,18 @@
         "description": "Size of the Logstash nodes"
       }
     },
+    "vmLogstashAcceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for Logstash, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+      }
+    },
     "logstashHeapSize": {
       "type": "int",
       "defaultValue": 0,
@@ -1839,6 +1851,7 @@
       "kibanaHttps": "[variables('kibanaHttps')]",
       "kibanaYaml": "[parameters('kibanaAdditionalYaml')]",
       "vmSizeLogstash": "[parameters('vmSizeLogstash')]",
+      "vmLogstashAcceleratedNetworking": "[parameters('vmLogstashAcceleratedNetworking')]",
       "logstash": "[parameters('logstash')]",
       "logstashHeapSize": "[parameters('logstashHeapSize')]",
       "logstashConf": "[parameters('logstashConf')]",

@@ -45,6 +45,17 @@
         "description": "Size of the Logstash VM"
       }
     },
+    "acceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for Logstash, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+      }
+    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -93,6 +104,8 @@
       "dependsOn": [
       ],
       "properties": {
+        "primary": true,
+        "enableAcceleratedNetworking": "[equals(parameters('acceleratedNetworking'), 'Yes')]",
         "ipConfigurations": [
           {
             "name": "ipconfig1",
