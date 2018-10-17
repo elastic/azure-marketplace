@@ -79,11 +79,7 @@ ssh <admin username>@<internal IP address or VM hostname>
 See the <<azure-arm-template-troubleshooting, troubleshooting section>> for more details.
 
 Does the Marketplace solution deploy Logstash?::
-
-The Marketplace solution **does not** currently deploy Logstash, only Elasticsearch
-and Kibana. There is an {github}/issues/157[open issue] to track and discuss the inclusion of Logstash
-within the template.
-+
-You can deploy Logstash manually by creating a new VM, attaching it to the same
-virtual network to which the cluster is attached, and deploy Logstash onto the VM by
-using SSH through either the Kibana VM or Jumpbox VM.
+The Marketplace solution can also deploy Logstash, although it does not do so by default.
+To also deploy an instance of Logstash, select `Yes` for `Install Logstash?` in the
+`Kibana & Logstash` section. You can also deploy additional plugins and provide a
+Logstash config file to use.

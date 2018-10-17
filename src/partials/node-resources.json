@@ -207,7 +207,77 @@
       }
     },
     "normalizedLocation": "[replace(toLower(parameters('commonVmSettings').location), ' ', '')]",
-    "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]"
+    "platformFaultDomainCount": "[if(contains(variables('locations'), variables('normalizedLocation')), variables('locations')[variables('normalizedLocation')].platformFaultDomainCount, 2)]",
+    "vmAcceleratedNetworking": [
+      "Standard_D2_v2",
+      "Standard_D3_v2",
+      "Standard_D4_v2",
+      "Standard_D5_v2",
+      "Standard_D11_v2",
+      "Standard_D12_v2",
+      "Standard_D13_v2",
+      "Standard_D14_v2",
+      "Standard_D15_v2",
+      "Standard_DS2_v2",
+      "Standard_DS3_v2",
+      "Standard_DS4_v2",
+      "Standard_DS5_v2",
+      "Standard_DS11_v2",
+      "Standard_DS12_v2",
+      "Standard_DS13_v2",
+      "Standard_DS14_v2",
+      "Standard_DS15_v2",
+      "Standard_F2",
+      "Standard_F4",
+      "Standard_F8",
+      "Standard_F16",
+      "Standard_F2s",
+      "Standard_F4s",
+      "Standard_F8s",
+      "Standard_F16s",
+      "Standard_D4_v3",
+      "Standard_D8_v3",
+      "Standard_D16_v3",
+      "Standard_D32_v3",
+      "Standard_D64_v3",
+      "Standard_D4s_v3",
+      "Standard_D8s_v3",
+      "Standard_D16s_v3",
+      "Standard_D32s_v3",
+      "Standard_D64s_v3",
+      "Standard_E4_v3",
+      "Standard_E8_v3",
+      "Standard_E16_v3",
+      "Standard_E32_v3",
+      "Standard_E64_v3",
+      "Standard_E64i_v3",
+      "Standard_E4s_v3",
+      "Standard_E8s_v3",
+      "Standard_E16s_v3",
+      "Standard_E32s_v3",
+      "Standard_E64s_v3",
+      "Standard_E64is_v3",
+      "Standard_F4s_v2",
+      "Standard_F8s_v2",
+      "Standard_F16s_v2",
+      "Standard_F32s_v2",
+      "Standard_F64s_v2",
+      "Standard_F72s_v2",
+      "Standard_M8ms",
+      "Standard_M16ms",
+      "Standard_M32ts",
+      "Standard_M32ls",
+      "Standard_M32ms",
+      "Standard_M64s",
+      "Standard_M64ls",
+      "Standard_M64ms",
+      "Standard_M128s",
+      "Standard_M128ms",
+      "Standard_M64",
+      "Standard_M64m",
+      "Standard_M128",
+      "Standard_M128m"
+    ]
   },
   "resources": [
     {
@@ -237,7 +307,8 @@
               "useBackendPools": "No",
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmMasterNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeMasterNodes), 'Yes', 'No'), parameters('topologySettings').vmMasterNodeAcceleratedNetworking)]"
             }
           },
           "elasticTags": {
@@ -273,7 +344,8 @@
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmClientNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeClientNodes), 'Yes', 'No'), parameters('topologySettings').vmClientNodeAcceleratedNetworking)]"
             }
           },
           "elasticTags": {
@@ -308,7 +380,8 @@
               "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
-              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]"
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmDataNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeDataNodes), 'Yes', 'No'), parameters('topologySettings').vmDataNodeAcceleratedNetworking)]"
             }
           },
           "storageSettings": {
@@ -334,9 +407,6 @@
         "parameters": {
           "templateBaseUrl": {
             "value": "[parameters('templateBaseUrl')]"
-          },
-          "storageAccountName": {
-            "value": "[parameters('commonVmSettings').storageAccountName]"
           },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
@@ -374,9 +444,6 @@
           "templateBaseUrl": {
             "value": "[parameters('templateBaseUrl')]"
           },
-          "storageAccountName": {
-            "value": "[parameters('commonVmSettings').storageAccountName]"
-          },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
           },
@@ -394,6 +461,52 @@
           },
           "vmSize": {
             "value": "[parameters('topologySettings').vmSizeKibana]"
+          },
+          "acceleratedNetworking": {
+            "value": "[if(equals(parameters('topologySettings').vmKibanaAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeKibana), 'Yes', 'No'), parameters('topologySettings').vmKibanaAcceleratedNetworking)]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        }
+      }
+    },
+    {
+      "condition": "[equals(parameters('topologySettings').logstash, 'Yes')]",
+      "name": "logstash",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUrl'), 'machines/logstash-resources.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "credentials": {
+            "value": "[parameters('commonVmSettings').credentials]"
+          },
+          "location": {
+            "value": "[parameters('commonVmSettings').location]"
+          },
+          "namespace": {
+            "value": "[concat(parameters('commonVmSettings').namespacePrefix, 'logstash')]"
+          },
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "osSettings": {
+            "value": "[parameters('osSettings')]"
+          },
+          "vmSize": {
+            "value": "[parameters('topologySettings').vmSizeLogstash]"
+          },
+          "acceleratedNetworking": {
+            "value": "[if(equals(parameters('topologySettings').vmLogstashAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeLogstash), 'Yes', 'No'), parameters('topologySettings').vmLogstashAcceleratedNetworking)]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"

@@ -11,7 +11,7 @@
     "vm": {
       "type": "object",
       "metadata": {
-        "description": "Location where resources will be provisioned"
+        "description": "vm configuration"
       }
     },
     "index": {
@@ -80,6 +80,8 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "properties": {
+        "primary": true,
+        "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
         "ipConfigurations": [
           {
             "name": "ipconfig1",

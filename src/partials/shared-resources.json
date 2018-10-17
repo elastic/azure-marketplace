@@ -14,6 +14,17 @@
         "description": "Storage account used for share virtual machine images"
       }
     },
+    "azureCloudStorageAccount": {
+      "type": "object",
+      "defaultValue": {
+        "name": "",
+        "resourceGroup": "",
+        "install": "No"
+      },
+      "metadata": {
+        "description": "Existing storage account used to configure Azure Repository plugin"
+      }
+    },
     "elasticTags": {
       "type": "object",
       "defaultValue": {
@@ -42,12 +53,20 @@
     }
   ],
   "outputs": {
-    "sharedStorageAccountKey":{
+    "sharedStorageAccountKey": {
       "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2017-10-01').keys[0].value]",
       "type": "string"
     },
     "sharedStorageAccountSuffix": {
       "value": "[replace(replace(reference(parameters('storageAccountName')).primaryEndpoints.blob, concat('https://', parameters('storageAccountName'), '.blob.'), ''), '/', '')]",
+      "type": "string"
+    },
+    "existingStorageAccountKey": {
+      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), listKeys(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2017-10-01').keys[0].value, '')]",
+      "type": "string"
+    },
+    "existingStorageAccountSuffix": {
+      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), replace(replace(reference(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2017-10-01').primaryEndpoints.blob, concat('https://', parameters('azureCloudStorageAccount').name, '.blob.'), ''), '/', ''), '')]",
       "type": "string"
     }
   }

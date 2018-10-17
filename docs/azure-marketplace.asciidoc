@@ -17,7 +17,7 @@
 == Azure Marketplace solution
 
 The Azure Marketplace solution offering is a preconfigured
-template to deploy an Elasticsearch cluster and Kibana to Azure. It's available
+template to deploy an Elasticsearch cluster, Kibana and Logstash to Azure. It's available
 on {marketplace}[Microsoft's Azure Marketplace], making it easy to find and
 consume.
 
@@ -33,7 +33,7 @@ in a degraded mode.
 Navigate to the {marketplace}[Azure Marketplace] offering, and click the "Get it Now"
 button:
 
-image:images/marketplace.jpg[]
+image:images/marketplace.png[]
 
 This will take you straight to the solution from the Marketplace, within the
 {portal}[Azure portal]. If you're not already logged into the portal, you'll be
@@ -118,41 +118,26 @@ specified, the node will use the temp storage of the VM for the data directory.
 
 include::temp-storage-admonition.asciidoc[]
 
-[[user-configuration-step]]
-==== User configuration
-
-An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
-with a 30 day trial license that enables all of {subscriptions}[the Platinum features of the Elastic Stack],
-including {elasticstack}/security[Security]. Security features allow Basic Authentication configuration
-for the cluster, setting up three
-{xpackdocs}/setting-up-authentication.html[built-in user accounts]
-
-. The `elastic` user, a built-in superuser account
-. The `kibana` user, a built-in account that Kibana uses to connect and
-communicate with Elasticsearch
-. The `logstash_system` user, a built-in account that can be used by Logstash
-when storing monitoring information in Elasticsearch.
-
-Additionally, a read-only user account, `es_read`, is created that has read only
-access to indices:
-
-image:images/marketplace_step4.png[]
-
-Passwords must be specified for all of these accounts.
-
 [[external-access-step]]
-==== External access
+==== Kibana, Logstash and External Access
 
-The external access blade determines how the cluster can be accessed from outside
+The Kibana & Logstash blade determines whether to deploy Kibana and/or Logstash
+in addition to Elasticsearch, as well as how the cluster can be accessed from outside
 of the virtual network:
 
-image:images/marketplace_step5.png[]
+image:images/marketplace_step4.png[]
 
 When installing Kibana, a separate VM will be provisioned onto which Kibana will
 be deployed and a public IP address will be attached
 to the Kibana VM along with a Network Security group, allowing TCP access over ports
 5601 and 22. The former is used to connect to Kibana through the browser, whilst
 the latter is used to connect to the Kibana VM via SSH.
+
+image:images/marketplace_step4_2.png[]
+
+When installing Logstash, a separate VM will be provisioned onto which Logstash
+will be deployed. A Logstash configuration file can be specified, as well as additional
+Logstash plugins to install.
 
 A jumpbox VM can optionally be deployed, which can be connected to via SSH in order
 to gain access to the Elasticsearch VMs.
@@ -169,6 +154,7 @@ The Marketplace solution does not configure SSL/TLS for communication for any of
 
 * Communication from the browser to Kibana
 * Communication from Kibana to Elasticsearch through internal load balancer
+* Communication from Logstash to Elasticsearch through internal load balancer
 * Communication to Elasticsearch through external load balancer over the HTTP layer
 * Communication between Elasticsearch nodes in the cluster over the Transport layer
 
@@ -176,6 +162,30 @@ This is to keep the getting started experience simple through the Marketplace. I
 need to configure SSL/TLS, it is **recommended that you use {github}[the Azure Resource Manager
 template on GitHub directly].** Consult the <<azure-arm-template-security, Security>> section for more details.
 --
+
+[[user-configuration-step]]
+==== User configuration
+
+An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
+with a 30 day trial license that enables all of {subscriptions}[the Platinum features of the Elastic Stack],
+including {elasticstack}/security[Security]. Security features allow Basic Authentication configuration
+for the cluster, setting up three
+{xpackdocs}/setting-up-authentication.html[built-in user accounts]
+
+. The `elastic` user, a built-in superuser account
+. The `kibana` user, a built-in account that Kibana uses to connect and
+communicate with Elasticsearch
+. The `logstash_system` user, a built-in account that can be used by Logstash
+when storing monitoring information in Elasticsearch.
+. The `beats_system` user, a built-in account that can be used by Beats
+when storing monitoring information in Elasticsearch.
+
+Additionally, a read-only user account, `es_read`, is created that has read only
+access to indices:
+
+image:images/marketplace_step5.png[]
+
+Passwords must be specified for all of these accounts.
 
 [[azure-marketplace-summary]]
 ==== Summary
@@ -217,6 +227,12 @@ with port 5601. For example,
 ----
 http://kb-<random domain name>.<location>.cloudapp.azure.com:5601
 ----
+
+[[accessing-logstash]]
+==== Accessing Logstash
+
+Logstash can be accessed from outside of Azure through SSH, using Kibana as
+a jumpbox, or deploying the Jumpbox VM.
 
 [[accessing-virtual-machines]]
 ==== Accessing virtual machines

@@ -19,9 +19,9 @@ help()
     echo ""
     echo "Options:"
     echo "    -n      elasticsearch cluster name"
-    echo "    -v      kibana version e.g 6.2.2"
+    echo "    -v      kibana version e.g 6.4.1"
     echo "    -u      elasticsearch url e.g. http://10.0.0.4:9200"
-    echo "    -l      install plugins true/false"
+    echo "    -l      install X-Pack plugin (<6.3.0) or apply trial license for Platinum features (6.3.0+)"
     echo "    -S      kibana password"
     echo "    -C      kibana cert to encrypt communication between the browser and Kibana"
     echo "    -K      kibana key to encrypt communication between the browser and Kibana"
@@ -57,18 +57,13 @@ then
     exit 3
 fi
 
-if service --status-all | grep -Fq 'kibana'; then
-  log "Kibana already installed."
-  exit 0
-fi
-
 #########################
 # Parameter handling
 #########################
 
 #Script Parameters
 CLUSTER_NAME="elasticsearch"
-KIBANA_VERSION="6.2.4"
+KIBANA_VERSION="6.4.1"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
@@ -153,20 +148,38 @@ log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 # Installation steps as functions
 #########################
 
-download_kibana()
+install_kibana()
 {
-    log "[download_kibana] Download Kibana $KIBANA_VERSION"
-    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/kibana-$KIBANA_VERSION-amd64.deb"
-    log "[download_kibana] Download location $DOWNLOAD_URL"
-    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O "kibana-$KIBANA_VERSION.deb"
+    local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
+    local SHASUM="$PACKAGE.sha512"
+    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/$PACKAGE?ultron=msft&gambit=azure"
+    local SHASUM_URL="https://artifacts.elastic.co/downloads/kibana/$SHASUM?ultron=msft&gambit=azure"
+
+    log "[install_kibana] download Kibana $KIBANA_VERSION"
+    wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
-        log "[download_kibana] Error downloading Kibana $KIBANA_VERSION"
+        log "[install_kibana] error downloading Kibana $KIBANA_VERSION checksum"
         exit $EXIT_CODE
     fi
-    log "[download_kibana] Installing Kibana $KIBANA_VERSION"
-    dpkg -i "kibana-$KIBANA_VERSION.deb"
-    log "[download_kibana] Installed Kibana $KIBANA_VERSION"
+    log "[install_kibana] download location $DOWNLOAD_URL"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_kibana] error downloading Kibana $KIBANA_VERSION"
+        exit $EXIT_CODE
+    fi
+    log "[install_kibana] downloaded Kibana $KIBANA_VERSION"
+    shasum -a 512 -c $SHASUM
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_kibana] error validating checksum for Kibana $KIBANA_VERSION"
+        exit $EXIT_CODE
+    fi
+
+    log "[install_kibana] installing Kibana $KIBANA_VERSION"
+    dpkg -i $PACKAGE
+    log "[install_kibana] installed Kibana $KIBANA_VERSION"
 }
 
 ## Security
@@ -180,14 +193,14 @@ install_pwgen()
     fi
 }
 
-configuration_and_plugins()
+configure_kibana_yaml()
 {
     local KIBANA_CONF=/etc/kibana/kibana.yml
     local SSL_PATH=/etc/kibana/ssl
     # backup the current config
     mv $KIBANA_CONF $KIBANA_CONF.bak
 
-    log "[configuration_and_plugins] Configuring kibana.yml"
+    log "[configure_kibana_yaml] Configuring kibana.yml"
 
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
@@ -208,32 +221,34 @@ configuration_and_plugins()
       install_pwgen
       local ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-      log "[configuration_and_plugins] X-Pack Security encryption key generated"
+      log "[configure_kibana_yaml] X-Pack Security encryption key generated"
       ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-      log "[configuration_and_plugins] X-Pack Reporting encryption key generated"
+      log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
 
-      log "[configuration_and_plugins] Installing X-Pack plugin"
-      /usr/share/kibana/bin/kibana-plugin install x-pack
-      log "[configuration_and_plugins] Installed X-Pack plugin"
+      if dpkg --compare-versions "$KIBANA_VERSION" "lt" "6.3.0"; then
+        log "[configure_kibana_yaml] Installing X-Pack plugin"
+        /usr/share/kibana/bin/kibana-plugin install x-pack
+        log "[configure_kibana_yaml] Installed X-Pack plugin"
+      fi
     fi
 
     # configure HTTPS if cert and private key supplied
     if [[ -n "${SSL_CERT}" && -n "${SSL_KEY}" ]]; then
       [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
-      log "[configuration_and_plugins] Save kibana cert to file"
+      log "[configure_kibana_yaml] Save kibana cert to file"
       echo ${SSL_CERT} | base64 -d | tee $SSL_PATH/kibana.crt
-      log "[configuration_and_plugins] Save kibana key to file"
+      log "[configure_kibana_yaml] Save kibana key to file"
       echo ${SSL_KEY} | base64 -d | tee $SSL_PATH/kibana.key
 
-      log "[configuration_and_plugins] Configuring SSL/TLS to Kibana"
+      log "[configure_kibana_yaml] Configuring SSL/TLS to Kibana"
       echo "server.ssl.enabled: true" >> $KIBANA_CONF
       echo "server.ssl.key: $SSL_PATH/kibana.key" >> $KIBANA_CONF
       echo "server.ssl.certificate: $SSL_PATH/kibana.crt" >> $KIBANA_CONF
       if [[ -n "${SSL_PASSPHRASE}" ]]; then
           echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
       fi
-      log "[configuration_and_plugins] Configured SSL/TLS to Kibana"
+      log "[configure_kibana_yaml] Configured SSL/TLS to Kibana"
     fi
 
     # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
@@ -243,17 +258,17 @@ configuration_and_plugins()
 
       if [[ -n "${HTTP_CERT}" ]]; then
         # convert PKCS#12 certificate to PEM format
-        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch HTTP to file"
+        log "[configure_kibana_yaml] Save PKCS#12 archive for Elasticsearch HTTP to file"
         echo ${HTTP_CERT} | base64 -d | tee $SSL_PATH/elasticsearch-http.p12
-        log "[configuration_and_plugins] Extract CA cert from PKCS#12 archive for Elasticsearch HTTP"
+        log "[configure_kibana_yaml] Extract CA cert from PKCS#12 archive for Elasticsearch HTTP"
         echo "$HTTP_CERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/elasticsearch-http.p12 -out $SSL_PATH/elasticsearch-http-ca.crt -cacerts -nokeys -chain -passin stdin
 
-        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        log "[configure_kibana_yaml] Configuring TLS for Elasticsearch"
         if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
-            log "[configuration_and_plugins] No CA cert extracted from HTTP cert. Setting verification mode to none"
+            log "[configure_kibana_yaml] No CA cert extracted from HTTP cert. Setting verification mode to none"
             echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
         else
-            log "[configuration_and_plugins] CA cert extracted from HTTP PKCS#12 archive. Setting verification mode to certificate"
+            log "[configure_kibana_yaml] CA cert extracted from HTTP PKCS#12 archive. Setting verification mode to certificate"
             echo "elasticsearch.ssl.verificationMode: certificate" >> $KIBANA_CONF
             echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
         fi
@@ -262,29 +277,29 @@ configuration_and_plugins()
 
         # convert PKCS#12 CA certificate to PEM format
         local HTTP_CACERT_FILENAME=elasticsearch-http-ca.p12
-        log "[configuration_and_plugins] Save PKCS#12 archive for Elasticsearch HTTP CA to file"
+        log "[configure_kibana_yaml] Save PKCS#12 archive for Elasticsearch HTTP CA to file"
         echo ${HTTP_CACERT} | base64 -d | tee $SSL_PATH/$HTTP_CACERT_FILENAME
-        log "[configuration_and_plugins] Convert PKCS#12 archive for Elasticsearch HTTP CA to PEM format"
+        log "[configure_kibana_yaml] Convert PKCS#12 archive for Elasticsearch HTTP CA to PEM format"
         echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $SSL_PATH/$HTTP_CACERT_FILENAME -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -chain -passin stdin
 
-        log "[configuration_and_plugins] Configuring TLS for Elasticsearch"
+        log "[configure_kibana_yaml] Configuring TLS for Elasticsearch"
         if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -eq 0 ]]; then
-            log "[configuration_and_plugins] No CA cert extracted from HTTP CA. Setting verification mode to none"
+            log "[configure_kibana_yaml] No CA cert extracted from HTTP CA. Setting verification mode to none"
             echo "elasticsearch.ssl.verificationMode: none" >> $KIBANA_CONF
         else
-            log "[configuration_and_plugins] CA cert extracted from HTTP CA PKCS#12 archive. Setting verification mode to full"
+            log "[configure_kibana_yaml] CA cert extracted from HTTP CA PKCS#12 archive. Setting verification mode to full"
             echo "elasticsearch.ssl.verificationMode: full" >> $KIBANA_CONF
-            log "[configuration_and_plugins] Set CA cert in certificate authorities"
+            log "[configure_kibana_yaml] Set CA cert in certificate authorities"
             echo "elasticsearch.ssl.certificateAuthorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $KIBANA_CONF
         fi
       fi
       chown -R kibana: $SSL_PATH
-      log "[configuration_and_plugins] Configured TLS for Elasticsearch"
+      log "[configure_kibana_yaml] Configured TLS for Elasticsearch"
     fi
 
     # Configure SAML Single-Sign-On
     if [[ -n "$SAML_SP_URI" && ${INSTALL_XPACK} -ne 0 ]]; then
-      log "[configuration_and_plugins] Configuring Kibana for SAML Single-Sign-On"
+      log "[configure_kibana_yaml] Configuring Kibana for SAML Single-Sign-On"
       # Allow both saml and basic realms
       echo "xpack.security.authProviders: [ saml,basic ]" >> $KIBANA_CONF
       echo "server.xsrf.whitelist: [ /api/security/v1/saml ]" >> $KIBANA_CONF
@@ -306,12 +321,12 @@ configuration_and_plugins()
       echo "xpack.security.public.protocol: ${PROTOCOL%://}" >> $KIBANA_CONF
       echo "xpack.security.public.hostname: \"${HOSTNAME%/}\"" >> $KIBANA_CONF
       echo "xpack.security.public.port: ${PORT%/}" >> $KIBANA_CONF
-      log "[configuration_and_plugins] Configured Kibana for SAML Single-Sign-On"
+      log "[configure_kibana_yaml] Configured Kibana for SAML Single-Sign-On"
     fi
 
     # Additional yaml configuration
     if [[ -n "$YAML_CONFIGURATION" ]]; then
-        log "[configuration_and_plugins] include additional yaml configuration"
+        log "[configure_kibana_yaml] include additional yaml configuration"
         local SKIP_LINES="elasticsearch.username elasticsearch.password "
         SKIP_LINES+="server.ssl.key server.ssl.cert server.ssl.enabled "
         SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
@@ -325,22 +340,22 @@ configuration_and_plugins()
         for LINE in $(echo -e "$YAML_CONFIGURATION"); do
           if [[ -n "$LINE" ]]; then
               if [[ $LINE =~ $SKIP_REGEX ]]; then
-                  log "[configuration_and_plugins] Skipping line '$LINE'"
+                  log "[configure_kibana_yaml] Skipping line '$LINE'"
               else
-                  log "[configuration_and_plugins] Adding line '$LINE' to $KIBANA_CONF"
+                  log "[configure_kibana_yaml] Adding line '$LINE' to $KIBANA_CONF"
                   echo "$LINE" >> $KIBANA_CONF
               fi
           fi
         done
         unset IFS
-        log "[configuration_and_plugins] included additional yaml configuration"
-        log "[configuration_and_plugins] run yaml lint on configuration"
+        log "[configure_kibana_yaml] included additional yaml configuration"
+        log "[configure_kibana_yaml] run yaml lint on configuration"
         install_yamllint
         LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $KIBANA_CONF; exit ${PIPESTATUS[0]})
         EXIT_CODE=$?
-        log "[configuration_and_plugins] ran yaml lint (exit code $EXIT_CODE) $LINT"
+        log "[configure_kibana_yaml] ran yaml lint (exit code $EXIT_CODE) $LINT"
         if [ $EXIT_CODE -ne 0 ]; then
-            log "[configuration_and_plugins] errors in yaml configuration. exiting"
+            log "[configure_kibana_yaml] errors in yaml configuration. exiting"
             exit 11
         fi
     fi
@@ -353,27 +368,48 @@ install_yamllint()
     log "[install_yamllint] installed yamllint"
 }
 
-install_start_service()
+configure_systemd()
 {
-    log "[install_start_service] Configuring service for kibana to run at start"
-    update-rc.d kibana defaults 95 10
-    log "[install_start_service] Starting kibana!"
-    service kibana start
+    log "[configure_systemd] configure systemd to start Kibana service automatically when system boots"
+    systemctl daemon-reload
+    systemctl enable kibana.service
+}
+
+start_systemd()
+{
+    log "[start_systemd] starting Kibana"
+    systemctl start kibana.service
+    log "[start_systemd] started Kibana"
 }
 
 #########################
 # Installation sequence
 #########################
 
+# if kibana is already installed assume this is a redeploy
+# change yaml configuration and only restart the server when needed
+if systemctl -q is-active kibana.service; then
+
+  configure_kibana_yaml
+
+  # restart kibana if the configuration has changed
+  cmp --silent /etc/kibana/kibana.yml /etc/kibana/kibana.yml.bak \
+    || systemctl reload-or-restart kibana.service
+
+  exit 0
+fi
+
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
 log "[apt-get] updated apt-get"
 
-log "[install_sequence] Starting installation"
-download_kibana
-configuration_and_plugins
-install_start_service
-log "[install_sequence] Finished installation"
+install_kibana
+
+configure_kibana_yaml
+
+configure_systemd
+
+start_systemd
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
 PRETTY=$(printf '%dh:%dm:%ds\n' $(($ELAPSED_TIME/3600)) $(($ELAPSED_TIME%3600/60)) $(($ELAPSED_TIME%60)))

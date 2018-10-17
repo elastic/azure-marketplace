@@ -16,46 +16,48 @@ export DEBIAN_FRONTEND=noninteractive
 help()
 {
     echo "This script installs Elasticsearch cluster on Ubuntu"
-    echo "Parameters:"
-    echo "-n elasticsearch cluster name"
-    echo "-v elasticsearch version e.g. 6.2.2"
-    echo "-p hostname prefix of nodes for unicast discovery"
-    echo "-m heap size in megabytes to allocate to JVM"
+    echo ""
+    echo "Options:"
+    echo "    -n      elasticsearch cluster name"
+    echo "    -v      elasticsearch version e.g. 6.4.1"
+    echo "    -p      hostname prefix of nodes for unicast discovery"
+    echo "    -m      heap size in megabytes to allocate to JVM"
 
-    echo "-d cluster uses dedicated masters"
-    echo "-Z <number of nodes> hint to the install script how many data nodes we are provisioning"
+    echo "    -d      cluster uses dedicated masters"
+    echo "    -Z      <number of nodes> hint to the install script how many data nodes we are provisioning"
 
-    echo "-A admin password"
-    echo "-R read password"
-    echo "-K kibana user password"
-    echo "-S logstash_system user password"
-    echo "-X enable anonymous access with cluster monitoring role (for health probes)"
+    echo "    -A      admin password"
+    echo "    -R      read password"
+    echo "    -K      kibana user password"
+    echo "    -S      logstash_system user password"
+    echo "    -F      beats_system user password"
 
-    echo "-x configure as a dedicated master node"
-    echo "-y configure as client only node (no master, no data)"
-    echo "-z configure as data node (no master)"
-    echo "-l install plugins"
-    echo "-L <plugin;plugin> install additional plugins"
-    echo "-C <yaml\nyaml> additional yaml configuration"
+    echo "    -x      configure as a dedicated master node"
+    echo "    -y      configure as client only node (no master, no data)"
+    echo "    -z      configure as data node (no master)"
+    echo "    -l      install X-Pack plugin (<6.3.0) or apply trial license for Platinum features (6.3.0+)"
+    echo "    -L      <plugin;plugin> install additional plugins"
+    echo "    -C      <yaml\nyaml> additional yaml configuration"
 
-    echo "-H base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-G password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
-    echo "-V base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
-    echo "-J password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -H      base64 encoded PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -G      password for PKCS#12 archive (.p12/.pfx) containing the key and certificate used to secure the HTTP layer"
+    echo "    -V      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
+    echo "    -J      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the HTTP layer"
 
-    echo "-T base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-W password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
-    echo "-N password for the generated PKCS#12 archive used to secure the transport layer"
+    echo "    -T      base64 encoded PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -W      password for PKCS#12 archive (.p12/.pfx) containing the CA key and certificate used to secure the transport layer"
+    echo "    -N      password for the generated PKCS#12 archive used to secure the transport layer"
 
-    echo "-O URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
-    echo "-P Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
+    echo "    -O      URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
+    echo "    -P      Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
 
-    echo "-j install azure cloud plugin for snapshot and restore"
-    echo "-a set the default storage account for azure cloud plugin"
-    echo "-k set the key for the default storage account for azure cloud plugin"
+    echo "    -j      install azure cloud plugin for snapshot and restore"
+    echo "    -a      set the default storage account for azure cloud plugin"
+    echo "    -k      set the key for the default storage account for azure cloud plugin"
 
-    echo "-h view this help content"
+    echo "    -h      view this help content"
 }
+
 # Custom logging with time so we can easily relate running times, also log to separate file so order is guaranteed.
 # The Script extension output the stdout/err buffer in intervals with duplicates.
 log()
@@ -97,7 +99,7 @@ fi
 
 CLUSTER_NAME="elasticsearch"
 NAMESPACE_PREFIX=""
-ES_VERSION="6.2.4"
+ES_VERSION="6.4.1"
 ES_HEAP=0
 INSTALL_XPACK=0
 INSTALL_ADDITIONAL_PLUGINS=""
@@ -117,6 +119,7 @@ USER_ADMIN_PWD="changeme"
 USER_READ_PWD="changeme"
 USER_KIBANA_PWD="changeme"
 USER_LOGSTASH_PWD="changeme"
+USER_BEATS_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
 
@@ -140,7 +143,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -163,6 +166,9 @@ while getopts :n:m:v:A:R:K:S:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname
       ;;
     S) #security logstash_system user pwd
       USER_LOGSTASH_PWD="${OPTARG}"
+      ;;
+    F) #security beats_system user pwd
+      USER_BEATS_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -341,77 +347,44 @@ check_data_disk()
     fi
 }
 
-# Update the oracle-java8-installer to patch download of Java 8u171 to 8u181.
-# 8u171 download is now archived
-# TODO: Remove this once oracle-java8-installer package is updated
-install_java_package()
-{
-  apt-get -yq $@ install oracle-java8-installer || true \
-  && pushd /var/lib/dpkg/info \
-  && log "[install_java_package] update oracle-java8-installer to 8u181" \
-  && sed -i 's|JAVA_VERSION=8u171|JAVA_VERSION=8u181|' oracle-java8-installer.* \
-  && sed -i 's|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/|' oracle-java8-installer.* \
-  && sed -i 's|SHA256SUM_TGZ="b6dd2837efaaec4109b36cfbb94a774db100029f98b0d78be68c27bec0275982"|SHA256SUM_TGZ="1845567095bfbfebd42ed0d09397939796d05456290fb20a83c476ba09f991d3"|' oracle-java8-installer.* \
-  && sed -i 's|J_DIR=jdk1.8.0_171|J_DIR=jdk1.8.0_181|' oracle-java8-installer.* \
-  && popd \
-  && log "[install_java_package] updated oracle-java8-installer" \
-  && apt-get -yq $@ install oracle-java8-installer
-}
-
 # Install Oracle Java
 install_java()
 {
-    log "[install_java] adding apt repository for Java 8"
-    (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-    log "[install_java] updating apt-get"
-    (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
-    log "[install_java] updated apt-get"
-    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
-    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections
-    log "[install_java] installing Java"
-    (install_java_package || (sleep 15; install_java_package))
-    command -v java >/dev/null 2>&1 || { sleep 15; rm /var/cache/oracle-jdk8-installer/jdk-*; apt-get install -f; }
-
-    #if the previous did not install correctly we go nuclear, otherwise this loop will early exit
-    for i in $(seq 30); do
-      if $(command -v java >/dev/null 2>&1); then
-        log "[install_java] installed Java!"
-        return
-      else
-        sleep 5
-        rm /var/cache/oracle-jdk8-installer/jdk-*;
-        rm -f /var/lib/dpkg/info/oracle-java8-installer*
-        rm /etc/apt/sources.list.d/*java*
-        apt-get -yq purge oracle-java8-installer*
-        apt-get -yq autoremove
-        apt-get -yq clean
-        (add-apt-repository -y ppa:webupd8team/java || (sleep 15; add-apt-repository -y ppa:webupd8team/java))
-        apt-get -yq update
-        install_java_package --reinstall
-        log "[install_java] seeing if Java is installed after nuclear retry ${i}/30"
-      fi
-    done
-    command -v java >/dev/null 2>&1 || { log "[install_java] Java did not get installed properly even after a retry and a forced installation" >&2; exit 50; }
+  bash java-install.sh
 }
 
 # Install Elasticsearch
 install_es()
 {
-    DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.deb?ultron=msft&gambit=azure"
+    local PACKAGE="elasticsearch-$ES_VERSION.deb"
+    local SHASUM="$PACKAGE.sha512"
+    local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/$PACKAGE?ultron=msft&gambit=azure"
+    local SHASUM_URL="https://artifacts.elastic.co/downloads/elasticsearch/$SHASUM?ultron=msft&gambit=azure"
 
     log "[install_es] installing Elasticsearch $ES_VERSION"
-    log "[install_es] download location - $DOWNLOAD_URL"
-    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O elasticsearch.deb
+    wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error downloading Elasticsearch $ES_VERSION checksum"
+        exit $EXIT_CODE
+    fi
+    log "[install_es] download location - $DOWNLOAD_URL"
+    wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
+    EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_es] error downloading Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
     log "[install_es] downloaded Elasticsearch $ES_VERSION"
-    dpkg -i elasticsearch.deb
+    shasum -a 512 -c $SHASUM
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        log "[install_es] error validating checksum for Elasticsearch $ES_VERSION"
+        exit $EXIT_CODE
+    fi
+
+    dpkg -i $PACKAGE
     log "[install_es] installed Elasticsearch $ES_VERSION"
-    log "[install_es] disable Elasticsearch System-V style init scripts (will be using monit to manage Elasticsearch service)"
-    update-rc.d elasticsearch disable
 }
 
 ## Plugins
@@ -552,29 +525,40 @@ apply_security_settings()
         #Make sure another deploy did not already change the elastic password
         curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
         if [[ $? != 0 ]]; then
-          log "[apply_security_settings] could not update the builtin elastic user"
+          log "[apply_security_settings] could not update the built-in elastic user"
           exit 10
         fi
       fi
-      log "[apply_security_settings] updated builtin elastic superuser password"
+      log "[apply_security_settings] updated built-in elastic superuser password"
 
       #update builtin `kibana` account
       local KIBANA_JSON=$(printf '{"password":"%s"}\n' $USER_KIBANA_PWD)
       echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/kibana/_password" -d @-
       if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the builtin kibana user"
+        log "[apply_security_settings] could not update the built-in kibana user"
         exit 10
       fi
-      log "[apply_security_settings] updated builtin kibana user password"
+      log "[apply_security_settings] updated built-in kibana user password"
 
       #update builtin `logstash_system` account
       local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
       echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
       if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the builtin logstash_system user"
+        log "[apply_security_settings] could not update the built-in logstash_system user"
         exit 10
       fi
-      log "[apply_security_settings] updated builtin logstash_system user password"
+      log "[apply_security_settings] updated built-in logstash_system user password"
+
+      #update builtin `beats_system` account for Elasticsearch 6.3.0+
+      if dpkg --compare-versions "$ES_VERSION" "ge" "6.3.0"; then
+        local BEATS_JSON=$(printf '{"password":"%s"}\n' $USER_BEATS_PWD)
+        echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
+        if [[ $? != 0 ]];  then
+          log "[apply_security_settings] could not update the built-in beats_system user"
+          exit 10
+        fi
+        log "[apply_security_settings] updated built-in beats_system user password"
+      fi
 
       #create a readonly role that mimics the `user` role in the old shield plugin
       curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'
@@ -1114,10 +1098,9 @@ configure_elasticsearch()
       ES_HEAP=`free -m |grep Mem | awk '{if ($2/2 >31744) print 31744;else print int($2/2+0.5);}'`
     fi
 
-    log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP"
+    log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP megabytes"
     sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
-    log "[configure_elasticsearch] configured elasticsearch default configuration"
 }
 
 configure_os_properties()
@@ -1127,22 +1110,17 @@ configure_os_properties()
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
     resolvconf -u
 
-    # Increase maximum mmap count
-    echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
+    # Required for bootstrap memory lock with systemd
+    local SYSTEMD_OVERRIDES=/etc/systemd/system/elasticsearch.service.d
+    [ -d $SYSTEMD_OVERRIDES ] || mkdir -p $SYSTEMD_OVERRIDES
+    {
+      echo "[Service]"
+      echo "LimitMEMLOCK=infinity"
+    } >> $SYSTEMD_OVERRIDES/override.conf
 
-    # Update pam_limits for bootstrap memory lock
-    echo "# allow user 'elasticsearch' mlockall" >> /etc/security/limits.conf
-    echo "elasticsearch soft memlock unlimited" >> /etc/security/limits.conf
-    echo "elasticsearch hard memlock unlimited" >> /etc/security/limits.conf
-
-    # Required for bootstrap memory lock
-    echo "MAX_LOCKED_MEMORY=unlimited" >> /etc/default/elasticsearch
-
-    # Maximum number of open files for elasticsearch user
-    echo "elasticsearch - nofile 65536" >> /etc/security/limits.conf
-
-    # Ubuntu ignores the limits.conf file for processes started by init.d by default, so enable them
-    echo "session    required   pam_limits.so" >> /etc/pam.d/su
+    log "[configure_os_properties] configure systemd to start Elasticsearch service automatically when system boots"
+    systemctl daemon-reload
+    systemctl enable elasticsearch.service
 
     log "[configure_os_properties] configured operating system level configuration"
 }
@@ -1177,39 +1155,22 @@ install_yamllint()
 
 install_ntp()
 {
-    log "[install_ntp] installing ntp daemon"
-    (apt-get -yq install ntp || (sleep 15; apt-get -yq install ntp))
+    install_apt_package ntp
+    install_apt_package ntpdate
+
+    if systemctl -q is-active ntp.service; then
+      systemctl stop ntp.service
+    fi
+
     ntpdate pool.ntp.org
-    log "[install_ntp] installed ntp daemon and ntpdate"
+    systemctl start ntp.service
 }
 
-install_monit()
+start_systemd()
 {
-    log "[install_monit] installing monit"
-    (apt-get -yq install monit || (sleep 15; apt-get -yq install monit))
-    echo "set daemon 30" >> /etc/monit/monitrc
-    echo "set httpd port 2812 and" >> /etc/monit/monitrc
-    echo "    use address localhost" >> /etc/monit/monitrc
-    echo "    allow localhost" >> /etc/monit/monitrc
-    touch /etc/monit/conf.d/elasticsearch.conf
-    echo "check process elasticsearch with pidfile \"/var/run/elasticsearch/elasticsearch.pid\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  group elasticsearch" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  start program = \"/etc/init.d/elasticsearch start\"" >> /etc/monit/conf.d/elasticsearch.conf
-    echo "  stop program = \"/etc/init.d/elasticsearch stop\"" >> /etc/monit/conf.d/elasticsearch.conf
-
-    # comment out include /etc/monit/conf-enabled/* as not needed. Prevents unuseful warning to stderr
-    sed -i 's|\s*include /etc/monit/conf-enabled/*|# include /etc/monit/conf-enabled/*|' /etc/monit/monitrc
-
-    log "[install_monit] installed monit"
-}
-
-start_monit()
-{
-    log "[start_monit] starting monit"
-    /etc/init.d/monit start
-    monit reload # use the new configuration
-    monit start all
-    log "[start_monit] started monit"
+    log "[start_systemd] starting Elasticsearch"
+    systemctl start elasticsearch.service
+    log "[start_systemd] started Elasticsearch"
 }
 
 port_forward()
@@ -1240,7 +1201,7 @@ port_forward()
 
 # if elasticsearch is already installed assume this is a redeploy
 # change yaml configuration and only restart the server when needed
-if monit status elasticsearch >& /dev/null; then
+if systemctl -q is-active elasticsearch.service; then
 
   configure_elasticsearch_yaml
 
@@ -1248,8 +1209,8 @@ if monit status elasticsearch >& /dev/null; then
   check_data_disk
 
   # restart elasticsearch if the configuration has changed
-  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.bak \
-    || monit restart elasticsearch
+  cmp --silent /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.bak \
+    || systemctl reload-or-restart elasticsearch.service
 
   exit 0
 fi
@@ -1284,7 +1245,6 @@ if [ ${INSTALL_AZURECLOUD_PLUGIN} -ne 0 ]; then
     install_repository_azure_plugin
 fi
 
-install_monit
 
 configure_elasticsearch_yaml
 
@@ -1294,7 +1254,7 @@ configure_os_properties
 
 port_forward
 
-start_monit
+start_systemd
 
 # patch roles and users through the REST API which is a tad trickier
 if [[ ${INSTALL_XPACK} -ne 0 ]]; then
