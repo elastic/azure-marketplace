@@ -143,7 +143,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:X:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -241,6 +241,9 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     E) #azure storage account endpoint suffix
       STORAGE_SUFFIX="${OPTARG}"
+      ;;
+    X) #CNP environment for DNS setup
+      CNP_ENV="${OPTARG}"
       ;;
     h) #show help
       help
