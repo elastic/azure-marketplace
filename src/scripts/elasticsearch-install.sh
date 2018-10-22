@@ -1106,6 +1106,60 @@ configure_elasticsearch()
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
 }
 
+consul_registration_ip() {
+    case $CNP_ENV in
+        # TODO automate determining these IP addresses as they may change
+        # These are the IPs of the first node in the Consul cluster
+        sandbox)
+            echo 10.100.136.5
+            ;;
+        saat)
+            echo 10.100.72.4
+            ;;
+        sprod)
+            echo 10.100.8.7
+            ;;
+        demo)
+            echo 10.96.200.4
+            ;;
+        aat)
+            echo 10.96.136.7
+            ;;
+        prod)
+            echo 10.96.72.4
+            ;;
+        *)
+            log "[configure_dns] ERROR '$CNP_ENV' is an unkown Consul target"
+            # Add any missing environments
+            echo ""
+            ;;
+    esac
+}
+
+
+register_dns () {
+  hostname=$1
+  ip=$2
+
+  tmp_file=$(mktemp)
+  cat > $tmp_file <<-EOF
+    {
+    "ID": "$hostname",
+    "Name": "$hostname",
+    "Tags": [],
+    "Address": "$ip",
+    "Port": 443
+    }
+EOF
+
+  log "[configure_dns] registering DNS, hostname: $hostname, IP: $ip, env: $CNP_ENV, env: $(consul_ip)"
+  log "[configure_dns] Consul DNS data: $(cat $tmp_file)"
+  curl -T "$tmp_file" "http://$(consul_ip):8500/v1/agent/service/register"
+
+  rm $tmp_file
+}
+
+
 configure_os_properties()
 {
     log "[configure_os_properties] configuring operating system level configuration"
@@ -1115,6 +1169,8 @@ configure_os_properties()
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
     echo "search  service.core-compute-${CNP_ENV}.internal" >> /etc/resolvconf/resolv.conf.d/base
     resolvconf -u
+
+    register_dns $(hostname) $(hostname -I)
 
     # Required for bootstrap memory lock with systemd
     local SYSTEMD_OVERRIDES=/etc/systemd/system/elasticsearch.service.d
