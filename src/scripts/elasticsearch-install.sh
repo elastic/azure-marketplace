@@ -1109,8 +1109,11 @@ configure_elasticsearch()
 configure_os_properties()
 {
     log "[configure_os_properties] configuring operating system level configuration"
+
     # DNS Retry
+    log "[configure_dns] configuring DNS retry and search"
     echo "options timeout:10 attempts:5" >> /etc/resolvconf/resolv.conf.d/head
+    echo "search  service.core-compute-${CNP_ENV}.internal" >> /etc/resolvconf/resolv.conf.d/base
     resolvconf -u
 
     # Required for bootstrap memory lock with systemd
