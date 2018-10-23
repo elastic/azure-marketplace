@@ -1152,9 +1152,9 @@ register_dns () {
     }
 EOF
 
-  log "[configure_dns] registering DNS, hostname: $hostname, IP: $ip, env: $CNP_ENV, env: $(consul_ip)"
+  log "[configure_dns] registering DNS, hostname: $hostname, IP: $ip, env: $CNP_ENV, env: $(consul_registration_ip)"
   log "[configure_dns] Consul DNS data: $(cat $tmp_file)"
-  curl -T "$tmp_file" "http://$(consul_ip):8500/v1/agent/service/register"
+  curl -T "$tmp_file" "http://$(consul_registration_ip):8500/v1/agent/service/register"
 
   rm $tmp_file
 }
