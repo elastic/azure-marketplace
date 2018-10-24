@@ -1916,7 +1916,7 @@
     },
     "kibanaIpTemplates": {
       "No": "empty/empty-kibana-ip-resources.json",
-      "Yes": "ips/kibana-ip-resources.json"
+      "Yes": "empty/empty-kibana-ip-resources.json"
     },
     "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]"
   },
