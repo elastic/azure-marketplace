@@ -353,6 +353,12 @@ install_java()
   bash java-install.sh
 }
 
+# Install various tools
+install_tools()
+{
+  bash tools-install.sh
+}
+
 # Install Elasticsearch
 install_es()
 {
@@ -1224,6 +1230,8 @@ log "[apt-get] updated apt-get"
 install_ntp
 
 install_java
+
+install_tools
 
 install_es
 
