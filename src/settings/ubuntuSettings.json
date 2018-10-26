@@ -100,7 +100,8 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/logstash-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/java-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/tools-install.sh')]"
+      "[concat(parameters('templateBaseUrl'), 'scripts/tools-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/datadog-install.sh')]"
     ],
     "ubuntuSettings": {
       "imageReference": {
