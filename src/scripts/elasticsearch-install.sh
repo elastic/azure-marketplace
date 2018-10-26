@@ -393,6 +393,12 @@ install_es()
     log "[install_es] installed Elasticsearch $ES_VERSION"
 }
 
+# Install DataDog
+install_datadog()
+{
+    bash datadog-install.sh
+}
+
 ## Plugins
 ##----------------------------------
 
@@ -1234,6 +1240,8 @@ install_java
 install_tools
 
 install_es
+
+install_datadog
 
 setup_data_disk
 
