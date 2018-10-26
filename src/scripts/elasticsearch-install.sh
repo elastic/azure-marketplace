@@ -55,6 +55,9 @@ help()
     echo "    -a      set the default storage account for azure cloud plugin"
     echo "    -k      set the key for the default storage account for azure cloud plugin"
 
+    # SkyKick specific
+    echo "    -D      set the API Key for DataDog Agent installation"
+
     echo "    -h      view this help content"
 }
 
@@ -242,6 +245,9 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
     E) #azure storage account endpoint suffix
       STORAGE_SUFFIX="${OPTARG}"
       ;;
+    D) #datadog api key
+      DATADOG_API_KEY="${OPTARG}"
+      ;;
     h) #show help
       help
       exit 2
@@ -396,7 +402,7 @@ install_es()
 # Install DataDog
 install_datadog()
 {
-    bash datadog-install.sh
+    bash datadog-install.sh $DATADOG_API_KEY
 }
 
 ## Plugins

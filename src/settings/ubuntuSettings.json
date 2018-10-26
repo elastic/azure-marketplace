@@ -58,6 +58,12 @@
       "metadata": {
         "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
       }
+    },
+    "dataDogAPIKey":{
+      "type": "string",
+      "metadata": {
+        "description": "The API Key that is used to install DataDog onto nodes"
+      }
     }
   },
   "variables": {
@@ -121,7 +127,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -x', variables('commonShortOpts'), variables('commonInstallParams'), ' -D ', variables('quote'), parameters('dataDogAPIKey'), variables('quote'))]"
           }
         },
         "client": {
@@ -133,7 +139,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -y', variables('commonShortOpts'), variables('commonInstallParams'), ' -D ', variables('quote'), parameters('dataDogAPIKey'), variables('quote'))]"
           }
         },
         "data": {
@@ -145,7 +151,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' -D ', variables('quote'), parameters('dataDogAPIKey'), variables('quote'))]"
           }
         },
         "kibana": {
