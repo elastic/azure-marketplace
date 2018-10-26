@@ -55,7 +55,6 @@ help()
     echo "    -a      set the default storage account for azure cloud plugin"
     echo "    -k      set the key for the default storage account for azure cloud plugin"
 
-    # SkyKick specific
     echo "    -D      set the API Key for DataDog Agent installation"
 
     echo "    -h      view this help content"
