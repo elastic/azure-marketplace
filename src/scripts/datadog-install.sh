@@ -23,15 +23,17 @@ wget -q https://raw.githubusercontent.com/DataDog/datadog-agent/master/cmd/agent
 chmod +x $DD_AGENT
 DD_API_KEY=$1 $DD_AGENT
 rm /etc/datadog-agent/conf.d/elastic.d/auto_conf.yaml
-echo "ad_identifiers:" | tee -a $ELASTIC_CONFIG_FILE
-echo "  - elasticsearch" | tee -a $ELASTIC_CONFIG_FILE
-echo "instances:" | tee -a $ELASTIC_CONFIG_FILE
-echo "  - url: 'http://localhost:9200'" | tee -a $ELASTIC_CONFIG_FILE
-echo "    pshard_stats: true" | tee -a $ELASTIC_CONFIG_FILE
-echo "    cluster_stats: false" | tee -a $ELASTIC_CONFIG_FILE
-echo "    pending_task_stats: true" | tee -a $ELASTIC_CONFIG_FILE
-echo "    tags:" | tee -a $ELASTIC_CONFIG_FILE
-echo "      - 'elasticsearch-role:data-node'" | tee -a $ELASTIC_CONFIG_FILE
+
+echo "ad_identifiers:
+        - elasticsearch
+    instances:
+        - url: 'http://localhost:9200'
+    pshard_stats: true
+    cluster_stats: false
+    pending_task_stats: true
+    tags:
+      - 'elasticsearch-role:data-node'" >> $ELASTIC_CONFIG_FILE
+
 systemctl restart datadog-agent
 
 log "Finished installing DataDog plugin..."
