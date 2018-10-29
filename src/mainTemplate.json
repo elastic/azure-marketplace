@@ -1255,6 +1255,13 @@
       "metadata": {
         "description": "The Base-64 encoded certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
+    },
+    "datadogAPIKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The DataDog API Key used to authenticate with a DataDog subscription"
+      }
     }
   },
   "variables": {
@@ -1911,7 +1918,10 @@
       "No": "empty/empty-kibana-ip-resources.json",
       "Yes": "ips/kibana-ip-resources.json"
     },
-    "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]"
+    "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]",
+    "monitoringSettings":{
+      "datadogAPIKey": "[parameters('datadogAPIKey')]"
+    }
   },
   "resources": [
     {
