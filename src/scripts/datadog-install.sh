@@ -25,14 +25,14 @@ DD_API_KEY=$1 $DD_AGENT
 rm /etc/datadog-agent/conf.d/elastic.d/auto_conf.yaml
 
 echo "ad_identifiers:
-        - elasticsearch
-    instances:
-        - url: 'http://localhost:9200'
-    pshard_stats: true
-    cluster_stats: false
-    pending_task_stats: true
-    tags:
-      - 'elasticsearch-role:data-node'" >> $ELASTIC_CONFIG_FILE
+    - elasticsearch
+instances:
+    - url: 'http://localhost:9200'
+pshard_stats: true
+cluster_stats: false
+pending_task_stats: true
+tags:
+    - 'elasticsearch-role:data-node'" >> $ELASTIC_CONFIG_FILE
 
 systemctl restart datadog-agent
 
