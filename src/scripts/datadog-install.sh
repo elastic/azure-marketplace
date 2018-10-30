@@ -18,27 +18,9 @@ if [ "$1" == "" ]; then
 fi
 
 if [ "$2" == "" ]; then
-    log "Must provide a Node Type value (master=0;client=1;data=2)" >&2
+    log "Must provide a Node Type value: master, client, or data" >&2
     exit 1
 fi
-
-NODE_TYPE_NAME=""
-
-case $NODE_TYPE in
-    0)
-        NODE_TYPE_NAME="master"
-        ;;
-    1)
-        NODE_TYPE_NAME="client"
-        ;;
-    2)
-        NODE_TYPE_NAME="data"
-        ;;
-    *)
-        log "Invalid value for the NODE_TYPE argument. Must be either 0=master, 1=client or 2=data."
-        exit 1
-        ;;
-esac
 
 log "Installing DataDog plugin onto this machine using API Key [$1]"
 
@@ -55,7 +37,7 @@ pshard_stats: true
 cluster_stats: false
 pending_task_stats: true
 tags:
-    - 'elasticsearch-role:$NODE_TYPE_NAME-node'" >> $ELASTIC_CONFIG_FILE
+    - 'elasticsearch-role:$NODE_TYPE-node'" >> $ELASTIC_CONFIG_FILE
 
 systemctl restart datadog-agent
 

@@ -183,15 +183,15 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     x) #master node
       MASTER_ONLY_NODE=1
-      NODE_TYPE=0
+      NODE_TYPE="master"
       ;;
     y) #client node
       CLIENT_ONLY_NODE=1
-      NODE_TYPE=1
+      NODE_TYPE="client"
       ;;
     z) #data node
       DATA_ONLY_NODE=1
-      NODE_TYPE=2
+      NODE_TYPE="data"
       ;;
     l) #install X-Pack
       INSTALL_XPACK=1
