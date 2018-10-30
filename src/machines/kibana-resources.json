@@ -108,11 +108,11 @@
           {
             "name": "SSH",
             "properties": {
-              "description": "Allows inbound SSH traffic from anyone",
+              "description": "Allows inbound SSH traffic from VirtualNetwork",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('osSettings').managementPort]",
-              "sourceAddressPrefix": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 100,
@@ -122,11 +122,11 @@
           {
             "name": "Kibana",
             "properties": {
-              "description": "Allows inbound Kibana HTTP traffic from anyone",
+              "description": "Allows inbound Kibana HTTP traffic from VirtualNetwork",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "5601",
-              "sourceAddressPrefix": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 200,
