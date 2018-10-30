@@ -75,13 +75,13 @@ Tests use the template checked into the github repository branch, so be sure to 
 By default, tests always use the last version specified in the versions array in `build/allowedValues.json`, but you can specify a version using
 
 ```bash
-npm run test -- --version 6.2.4
+npm run test -- --esVersion 6.2.4
 ```
 
 A random value from the versions array can also be used
 
 ```bash
-npm run test -- --version random
+npm run test -- --esVersion random
 ```
 
 ### Specifying tests to run

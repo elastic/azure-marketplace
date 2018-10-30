@@ -89,12 +89,13 @@ var bootstrapTest = (t, defaultVersion) =>
 
 var bootstrap = (cb) => {
   var allowedValues = require('../allowedValues.json');
-  var defaultVersion = argv.version ?
-    argv.version == "random" ?
+  var defaultVersion = argv.esVersion ?
+    argv.esVersion == "random" ?
       _.sample(allowedValues.versions)
-      : argv.version
+      : argv.esVersion
     : _.last(allowedValues.versions);
 
+  log(`Using version ${defaultVersion} for tests`);
   if (!_.includes(allowedValues.versions, defaultVersion)){
     return bailOut(new Error(`No version in allowedValues.versions matching ${defaultVersion}`));
   }
