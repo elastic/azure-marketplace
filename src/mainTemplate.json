@@ -1256,6 +1256,36 @@
         "description": "The Base-64 encoded certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
     },
+    "publicEndpointUsername": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A user name for basic authentication, used by NGINX on client nodes."
+      }
+    },
+    "publicEndpointPassword": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A password basic authentication, used by NGINX on client nodes."
+      }
+    },
+    "publicEndpointTcpPort": {
+      "type": "int",
+      "defaultValue": 443,
+      "minValue": 0,
+      "maxValue": 65535,
+      "metadata": {
+        "description": "TCP port number for the load balancer and NGINX on client nodes."
+      }
+    },
+    "publicEndpointPfxBlob": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "A base64 encoded PFX that is used by NGINX for SSL termination on client nodes."
+      }
+    },
     "datadogAPIKey": {
       "type": "string",
       "defaultValue": "",
@@ -1919,7 +1949,13 @@
       "Yes": "ips/kibana-ip-resources.json"
     },
     "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]",
-    "monitoringSettings":{
+    "publicEndpointSettings": {
+      "username": "[parameters('publicEndpointUsername')]",
+      "password": "[parameters('publicEndpointPassword')]",
+      "tcpPort": "[parameters('publicEndpointTcpPort')]",
+      "pfxBlob": "[parameters('publicEndpointPfxBlob')]"
+    },
+    "monitoringSettings": {
       "datadogAPIKey": "[parameters('datadogAPIKey')]"
     }
   },
@@ -2094,6 +2130,9 @@
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
+          },
+          "publicEndpointSettings": {
+            "value": "[variables('publicEndpointSettings')]"
           }
         }
       }
