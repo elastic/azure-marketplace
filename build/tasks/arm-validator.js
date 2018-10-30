@@ -152,14 +152,9 @@ var bailOutNoCleanUp = (error)  => {
 
 var bailOut = (error, rg) => {
   if (!error) return;
-  if (!rg) log(error)
-  else log(`resourcegroup: ${rg} - ${error}`)
-
-  var cb = () => logout(() => { throw error; })
-
-  var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  if (groups.length > 0) deleteGroups(groups, cb);
-  else cb();
+  if (!rg) log(error);
+  else log(`resourcegroup: ${rg} - ${error}`);
+  deleteCurrentTestGroups(() => logout(() => { throw error; }));
 }
 
 var deleteGroups = (groups, cb) => {
