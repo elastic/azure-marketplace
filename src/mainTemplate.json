@@ -2070,6 +2070,9 @@
           "networkSettings": {
             "value": "[variables('networkSettings')]"
           },
+          "monitoringSettings": {
+            "value": "[variables('monitoringSettings')]"
+          },
           "azureCloudStorageAccount": {
             "value": {
               "name": "[variables('azureCloudStorageAccount').name]",

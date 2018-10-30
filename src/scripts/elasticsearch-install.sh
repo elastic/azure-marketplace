@@ -111,6 +111,9 @@ CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
 
+# Node Type : 0-master, 1-client, 2-data
+NODE_TYPE=-1
+
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
@@ -180,12 +183,15 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     x) #master node
       MASTER_ONLY_NODE=1
+      NODE_TYPE=0
       ;;
     y) #client node
       CLIENT_ONLY_NODE=1
+      NODE_TYPE=1
       ;;
     z) #data node
       DATA_ONLY_NODE=1
+      NODE_TYPE=2
       ;;
     l) #install X-Pack
       INSTALL_XPACK=1
@@ -401,7 +407,7 @@ install_es()
 # Install DataDog
 install_datadog()
 {
-    bash datadog-install.sh $DATADOG_API_KEY
+    bash datadog-install.sh $DATADOG_API_KEY $NODE_TYPE
 }
 
 ## Plugins
