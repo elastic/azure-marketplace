@@ -151,7 +151,12 @@ log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 install_kibana()
 {
     local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
-    local SHASUM="$PACKAGE.sha512"
+    local ALGORITHM="512"
+    if dpkg --compare-versions "$KIBANA_VERSION" "lt" "5.6.2"; then
+      ALGORITHM="1"
+    fi
+
+    local SHASUM="$PACKAGE.sha$ALGORITHM"
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/$PACKAGE?ultron=msft&gambit=azure"
     local SHASUM_URL="https://artifacts.elastic.co/downloads/kibana/$SHASUM?ultron=msft&gambit=azure"
 
@@ -159,7 +164,7 @@ install_kibana()
     wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
-        log "[install_kibana] error downloading Kibana $KIBANA_VERSION checksum"
+        log "[install_kibana] error downloading Kibana $KIBANA_VERSION sha$ALGORITHM checksum"
         exit $EXIT_CODE
     fi
     log "[install_kibana] download location $DOWNLOAD_URL"
@@ -170,7 +175,11 @@ install_kibana()
         exit $EXIT_CODE
     fi
     log "[install_kibana] downloaded Kibana $KIBANA_VERSION"
-    shasum -a 512 -c $SHASUM
+
+    # earlier sha files do not contain the package name. add it
+    grep -q "$PACKAGE" $SHASUM || sed -i "s/.*/&  $PACKAGE/" $SHASUM
+
+    shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_kibana] error validating checksum for Kibana $KIBANA_VERSION"

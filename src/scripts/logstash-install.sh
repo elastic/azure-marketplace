@@ -145,7 +145,12 @@ install_java()
 install_logstash()
 {
   local PACKAGE="logstash-$LOGSTASH_VERSION.deb"
-  local SHASUM="$PACKAGE.sha512"
+  local ALGORITHM="512"
+  if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "5.6.2"; then
+    ALGORITHM="1"
+  fi
+
+  local SHASUM="$PACKAGE.sha$ALGORITHM"
   local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/logstash/$PACKAGE?ultron=msft&gambit=azure"
   local SHASUM_URL="https://artifacts.elastic.co/downloads/logstash/$SHASUM?ultron=msft&gambit=azure"
 
@@ -153,7 +158,7 @@ install_logstash()
   wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
   local EXIT_CODE=$?
   if [ $EXIT_CODE -ne 0 ]; then
-      log "[install_logstash] error downloading Logstash $LOGSTASH_VERSION checksum"
+      log "[install_logstash] error downloading Logstash $LOGSTASH_VERSION sha$ALGORITHM checksum"
       exit $EXIT_CODE
   fi
   log "[install_logstash] download location - $DOWNLOAD_URL"
@@ -164,7 +169,11 @@ install_logstash()
       exit $EXIT_CODE
   fi
   log "[install_logstash] downloaded Logstash $LOGSTASH_VERSION"
-  shasum -a 512 -c $SHASUM
+
+  # earlier sha files do not contain the package name. add it
+  grep -q "$PACKAGE" $SHASUM || sed -i "s/.*/&  $PACKAGE/" $SHASUM
+
+  shasum -a $ALGORITHM -c $SHASUM
   EXIT_CODE=$?
   if [ $EXIT_CODE -ne 0 ]; then
       log "[install_logstash] error validating checksum for Logstash $LOGSTASH_VERSION"
