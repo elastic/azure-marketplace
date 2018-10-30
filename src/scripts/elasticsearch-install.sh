@@ -383,7 +383,7 @@ install_es()
     log "[install_es] downloaded Elasticsearch $ES_VERSION"
 
     # earlier sha files do not contain the package name. add it
-    grep -q "$PACKAGE" $SHASUM || sed -i "/s/.*/&  $PACKAGE" $SHASUM
+    grep -q "$PACKAGE" $SHASUM || sed -i "s/.*/&  $PACKAGE/" $SHASUM
 
     shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
