@@ -23,7 +23,6 @@
       "type": "string",
       "defaultValue": "6.4.2",
       "allowedValues": [
-        "5.4.3",
         "5.5.3",
         "5.6.12",
         "6.0.1",
