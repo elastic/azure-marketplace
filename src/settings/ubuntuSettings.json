@@ -91,7 +91,7 @@
       "Yes": ""
     },
     "dedicatedMasterNodesShortOpt": "[variables('dedicatedMasterNodesShortOpts')[parameters('topologySettings').dataNodesAreMasterEligible]]",
-    "nginxInstallParams": "[concat(' -u ', variables('quote'), parameters('publicEndpointSettings').username, variables('quote'), ' -p ', variables('quote'), parameters('publicEndpointSettings').password, variables('quote'), ' -n ', parameters('publicEndpointSettings').tcpPort, ' -c ', variables('quote'), parameters('publicEndpointSettings').pfxBlob, variables('quote'))]",
+    "nginxInstallParams": "[concat(' -u ', variables('quote'), parameters('publicEndpointSettings').username, variables('quote'), ' -p ', variables('quote'), parameters('publicEndpointSettings').password, variables('quote'), ' -n ', parameters('publicEndpointSettings').tcpPort, ' -c ', variables('quote'), parameters('publicEndpointSettings').pfxBlob, variables('quote'), ' -k ', variables('quote'), parameters('publicEndpointSettings').pfxSecret, variables('quote'))]",
     "installAzureCloudPluginShortOpts": {
       "No": "",
       "Yes": "j"

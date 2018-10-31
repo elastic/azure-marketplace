@@ -11,6 +11,7 @@ help()
     echo "    -p      Basic Authentication passowrd"
     echo "    -n      TCP port number for NGINX to listen"
     echo "    -c      BASE64-encoded PFX file for TLS connection"
+    echo "    -k      Optional password for PFX file needed to extract the RSA key"
     echo "    -h      view this help content"
 }
 
@@ -30,9 +31,10 @@ AUTH_USERNAME=""
 AUTH_PASSWORD=""
 NGINX_PORT=0
 PFX_B64=""
+PFX_PWD=""
 
 #Loop through options passed
-while getopts :u:p:n:c:h optname; do
+while getopts :u:p:n:c:k:h optname; do
   log "Option $optname set"
   case $optname in
     u) # basic auth user name
@@ -46,6 +48,9 @@ while getopts :u:p:n:c:h optname; do
       ;;
     c) # base64 encoded PFX file
       PFX_B64="${OPTARG}"
+      ;;
+    k) # password for the PFX file
+      PFX_PWD="${OPTARG}"
       ;;
     h) #show help
       help
@@ -109,8 +114,8 @@ install_certificate()
 {
   mkdir $CERT_DIR
   echo ${PFX_B64} | base64 -d >> $CERT_DIR/host.pfx
-  openssl pkcs12 -in $CERT_DIR/host.pfx -clcerts -nokeys -out $CRT_PATH -passin pass:
-  openssl pkcs12 -in $CERT_DIR/host.pfx -out $KEY_PATH -passin pass: -passout pass:
+  openssl pkcs12 -in $CERT_DIR/host.pfx -clcerts -nokeys -out $CRT_PATH -passin pass:"$PFX_PWD"
+  openssl pkcs12 -in $CERT_DIR/host.pfx -nodes -passin pass:"$PFX_PWD" | openssl rsa -out $KEY_PATH
   rm $CERT_DIR/host.pfx
 }
 

@@ -1286,6 +1286,13 @@
         "description": "A base64 encoded PFX that is used by NGINX for SSL termination on client nodes."
       }
     },
+    "publicEndpointPfxSecret": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional password for the PFX blob to extract the RSA key."
+      }
+    },
     "datadogAPIKey": {
       "type": "string",
       "defaultValue": "",
@@ -1953,7 +1960,8 @@
       "username": "[parameters('publicEndpointUsername')]",
       "password": "[parameters('publicEndpointPassword')]",
       "tcpPort": "[parameters('publicEndpointTcpPort')]",
-      "pfxBlob": "[parameters('publicEndpointPfxBlob')]"
+      "pfxBlob": "[parameters('publicEndpointPfxBlob')]",
+      "pfxSecret": "[parameters('publicEndpointPfxSecret')]"
     },
     "monitoringSettings": {
       "datadogAPIKey": "[parameters('datadogAPIKey')]"
