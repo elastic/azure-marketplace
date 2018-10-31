@@ -94,9 +94,15 @@ restart_nginx()
   systemctl restart nginx
 }
 
+# These utils contain the 'htpasswd'
+install_apache_utils()
+{
+  apt-get -yq install apache2-utils
+}
+
 create_basic_auth_file()
 {
-  htpasswd -cb $BASIC_AUTH_PATH $AUTH_USERNAME $AUTH_PASSWORD
+  htpasswd -cb $BASIC_AUTH_PATH "$AUTH_USERNAME" "$AUTH_PASSWORD"
 }
 
 install_certificate()
@@ -169,6 +175,9 @@ write_site_config()
 
 log "Install NGINX"
 install_nginx
+
+log "Install Apache2 utils"
+install_apache_utils
 
 log "Create user file for basic authentication"
 create_basic_auth_file
