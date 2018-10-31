@@ -37,7 +37,7 @@ pshard_stats: true
 cluster_stats: false
 pending_task_stats: true
 tags:
-    - 'elasticsearch-role:$NODE_TYPE-node'" >> $ELASTIC_CONFIG_FILE
+    - 'elasticsearch-role:$2-node'" >> $ELASTIC_CONFIG_FILE
 
 systemctl restart datadog-agent
 
