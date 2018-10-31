@@ -13,6 +13,7 @@ var request = require('request');
 var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
 var az = require("./lib/az");
+var semver = require("semver");
 var artifactsBaseUrl = "";
 var templateUri = "";
 var armTests = {};
@@ -38,6 +39,11 @@ var exampleParameters = require("../../parameters/password.parameters.json");
 var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
+
+  if (test.condition && !semver.satisfies(defaultVersion, test.condition.range)) {
+    log(`Skipping ${t} because ${test.condition.reason}`.yellow);
+    return null;
+  }
 
   // replace parameters with base64 encoded file values
   [ "esHttpCertBlob",
@@ -108,8 +114,9 @@ var bootstrap = (cb) => {
     log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))
       .filter(t => templateMatcher.test(t))
-      .indexBy((f) => f)
+      .indexBy(f => f)
       .mapValues(t => bootstrapTest(t, defaultVersion))
+      .filter(t => t != null)
       .value();
     cb();
   });
@@ -591,11 +598,23 @@ gulp.task("clean", gulp.series("create-log-folder", (cb) => {
 }));
 
 gulp.task("test", gulp.series("clean", (cb) => {
-  bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
+  bootstrap(() => {
+    if (armTests.length) {
+      login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))));
+    } else {
+      cb();
+    }
+  });
 }));
 
 gulp.task("deploy", gulp.series("clean", (cb) => {
-  bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
+  bootstrap(() => {
+    if (armTests.length) {
+      login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
+    } else {
+      cb();
+    }
+  });
 }));
 
 gulp.task("azure-cleanup", gulp.series("clean", (cb) => {
