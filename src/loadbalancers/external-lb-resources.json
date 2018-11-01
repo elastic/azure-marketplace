@@ -152,7 +152,7 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "es-http-external",
+            "name": "es-https-external",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/frontendIPConfigurations/LBFE')]"
@@ -161,19 +161,19 @@
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
               },
               "protocol": "Tcp",
-              "frontendPort": 9200,
-              "backendPort": 9201,
+              "frontendPort": 443,
+              "backendPort": 443,
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/es-http-external-probe')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/es-https-external-probe')]"
               }
             }
           }
         ],
         "probes": [
           {
-            "name": "es-http-external-probe",
+            "name": "es-https-external-probe",
             "properties": {
               "protocol": "Tcp",
               "port": 9201,
