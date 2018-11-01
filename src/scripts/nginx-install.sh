@@ -143,7 +143,7 @@ http {
 	gzip on;
 	gzip_disable "msie6";
 
-	ssl_protocols TLSv1.2 TLSv1.3; # omit SSLv3 because of POODLE (CVE-2014-3566)
+	ssl_protocols TLSv1.2; # omit SSLv3 because of POODLE (CVE-2014-3566)
 	ssl_prefer_server_ciphers on;
 	ssl_certificate $CRT_PATH;
 	ssl_certificate_key $KEY_PATH;
