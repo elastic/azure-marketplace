@@ -55,6 +55,8 @@ help()
     echo "    -a      set the default storage account for azure cloud plugin"
     echo "    -k      set the key for the default storage account for azure cloud plugin"
 
+    echo "    -M      set the API Key for DataDog Agent installation"
+
     echo "    -h      view this help content"
 }
 
@@ -109,6 +111,9 @@ CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
 
+# Node Type : 'master', 'client', or 'data'
+NODE_TYPE=""
+
 CLUSTER_USES_DEDICATED_MASTERS=0
 DATANODE_COUNT=0
 
@@ -143,7 +148,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:M:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -178,12 +183,15 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     x) #master node
       MASTER_ONLY_NODE=1
+      NODE_TYPE="master"
       ;;
     y) #client node
       CLIENT_ONLY_NODE=1
+      NODE_TYPE="client"
       ;;
     z) #data node
       DATA_ONLY_NODE=1
+      NODE_TYPE="data"
       ;;
     l) #install X-Pack
       INSTALL_XPACK=1
@@ -241,6 +249,9 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     E) #azure storage account endpoint suffix
       STORAGE_SUFFIX="${OPTARG}"
+      ;;
+    M) #datadog api key
+      DATADOG_API_KEY="${OPTARG}"
       ;;
     h) #show help
       help
@@ -391,6 +402,12 @@ install_es()
 
     dpkg -i $PACKAGE
     log "[install_es] installed Elasticsearch $ES_VERSION"
+}
+
+# Install DataDog
+install_datadog()
+{
+    bash datadog-install.sh -k "$DATADOG_API_KEY" -r "$NODE_TYPE"
 }
 
 ## Plugins
@@ -1234,6 +1251,8 @@ install_java
 install_tools
 
 install_es
+
+install_datadog
 
 setup_data_disk
 
