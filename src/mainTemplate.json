@@ -1956,13 +1956,6 @@
       "Yes": "ips/kibana-ip-resources.json"
     },
     "kibanaIpTemplateUrl": "[concat(variables('templateBaseUrl'), variables('kibanaIpTemplates')[variables('topologySettings').kibana])]",
-    "publicEndpointSettings": {
-      "username": "[parameters('publicEndpointUsername')]",
-      "password": "[parameters('publicEndpointPassword')]",
-      "tcpPort": "[parameters('publicEndpointTcpPort')]",
-      "pfxBlob": "[parameters('publicEndpointPfxBlob')]",
-      "pfxSecret": "[parameters('publicEndpointPfxSecret')]"
-    },
     "monitoringSettings": {
       "datadogAPIKey": "[parameters('datadogAPIKey')]"
     }
@@ -2138,9 +2131,6 @@
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
-          },
-          "publicEndpointSettings": {
-            "value": "[variables('publicEndpointSettings')]"
           }
         }
       }
