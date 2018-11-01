@@ -125,7 +125,7 @@
               "description": "Allows inbound Kibana HTTP traffic from anyone",
               "protocol": "Tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "5601",
+              "destinationPortRange": "443",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",

@@ -10,6 +10,7 @@ help()
     echo "    -u      Basic Authentication user name"
     echo "    -p      Basic Authentication passowrd"
     echo "    -n      TCP port number for NGINX to listen"
+    echo "    -t      Target TCP port on local machine"
     echo "    -c      BASE64-encoded PFX file for TLS connection"
     echo "    -k      Optional password for PFX file needed to extract the RSA key"
     echo "    -h      view this help content"
@@ -30,11 +31,12 @@ log()
 AUTH_USERNAME=""
 AUTH_PASSWORD=""
 NGINX_PORT=0
+TARGET_PORT=0
 PFX_B64=""
 PFX_PWD=""
 
 #Loop through options passed
-while getopts :u:p:n:c:k:h optname; do
+while getopts :u:p:n:t:c:k:h optname; do
   log "Option $optname set"
   case $optname in
     u) # basic auth user name
@@ -45,6 +47,9 @@ while getopts :u:p:n:c:k:h optname; do
       ;;
     n) # TCP port number
       NGINX_PORT=${OPTARG}
+      ;;
+    t) # TCP port number
+      TARGET_PORT=${OPTARG}
       ;;
     c) # base64 encoded PFX file
       PFX_B64="${OPTARG}"
@@ -65,7 +70,7 @@ while getopts :u:p:n:c:k:h optname; do
 done
 
 
-if [ "${AUTH_USERNAME}" == "" -o "${AUTH_PASSWORD}" == "" -o ${NGINX_PORT} -eq 0 -o "${PFX_B64}" == "" ];
+if [ "${AUTH_USERNAME}" == "" -o "${AUTH_PASSWORD}" == "" -o ${NGINX_PORT} -eq 0 -o ${TARGET_PORT} -eq 0 -o "${PFX_B64}" == "" ];
 then
     echo "ERROR: missing input arguments" >&2
     help
@@ -83,7 +88,6 @@ CERT_DIR=$NGINX_DIR/ssl
 CRT_PATH=$CERT_DIR/host.crt
 KEY_PATH=$CERT_DIR/host.key
 DEFAULT_SITE_PATH=$NGINX_DIR/sites-available/default
-ES_LOCAL_ADDRESS=http://localhost:9200
 
 #########################
 # Installation functions
@@ -166,8 +170,8 @@ write_site_config()
 	listen $NGINX_PORT ssl default_server;
 	listen [::]:$NGINX_PORT ssl default_server;
 	location / {
-		proxy_pass $ES_LOCAL_ADDRESS;
-		auth_basic "ElasticSearch!";
+		proxy_pass http://$(hostname):$TARGET_PORT;
+		auth_basic "You_Shall_Not_Pass!";
 		auth_basic_user_file $BASIC_AUTH_PATH;
 	}
 }" >> $DEFAULT_SITE_PATH
