@@ -55,7 +55,7 @@ help()
     echo "    -a      set the default storage account for azure cloud plugin"
     echo "    -k      set the key for the default storage account for azure cloud plugin"
 
-    echo "    -D      set the API Key for DataDog Agent installation"
+    echo "    -M      set the API Key for DataDog Agent installation"
 
     echo "    -h      view this help content"
 }
@@ -111,7 +111,7 @@ CLIENT_ONLY_NODE=0
 DATA_ONLY_NODE=0
 MASTER_ONLY_NODE=0
 
-# Node Type : 0-master, 1-client, 2-data
+# Node Type : 'master', 'client', or 'data'
 NODE_TYPE=""
 
 CLUSTER_USES_DEDICATED_MASTERS=0
@@ -148,7 +148,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:M:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -250,7 +250,7 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
     E) #azure storage account endpoint suffix
       STORAGE_SUFFIX="${OPTARG}"
       ;;
-    D) #datadog api key
+    M) #datadog api key
       DATADOG_API_KEY="${OPTARG}"
       ;;
     h) #show help
@@ -407,7 +407,7 @@ install_es()
 # Install DataDog
 install_datadog()
 {
-    bash datadog-install.sh $DATADOG_API_KEY $NODE_TYPE
+    bash datadog-install.sh -k "$DATADOG_API_KEY" -r "$NODE_TYPE"
 }
 
 ## Plugins
