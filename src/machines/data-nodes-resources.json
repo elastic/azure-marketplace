@@ -57,6 +57,19 @@
       }
     },
     {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "ccd-cluster-nsg",
+      "location": "[parameters('vm').shared.location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
+      ],
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {}
+    },
+    {
       "name": "[concat(variables('namespace'), 'asg')]",
       "type": "Microsoft.Network/applicationSecurityGroups",
       "apiVersion": "2018-08-01",
