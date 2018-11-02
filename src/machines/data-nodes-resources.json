@@ -57,7 +57,7 @@
       }
     },
     {
-      "apiVersion": "2017-10-01",
+      "apiVersion": "2018-01-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "ccd-cluster-nsg",
       "location": "[parameters('vm').shared.location]",
