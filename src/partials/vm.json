@@ -90,7 +90,12 @@
               "subnet": {
                 "id": "[parameters('vm').shared.subnetId]"
               },
-              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]",
+              "applicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ]
             }
           }
         ]

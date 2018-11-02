@@ -57,12 +57,125 @@
       }
     },
     {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "ccd-cluster-nsg",
+      "location": "[parameters('vm').shared.location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
+      ],
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "Allows SSH traffic",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ElasticQueries",
+            "properties": {
+              "description": "Allows ElasticSeach queries from the LoadBalancer",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ElasticClusterTransport",
+            "properties": {
+              "description": "Allows ElasticSeach communication only between nodes",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9300",
+              "sourceApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ConsulDNSPassthrough",
+            "properties": {
+              "description": "Allows ElasticSeach nodes to register their with Consul DNS",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "8500",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 130,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DenyAllOtherTraffic",
+            "properties": {
+              "description": "Deny all traffic that is not Elastic or SSH from anywhere",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 140,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat(variables('namespace'), 'asg')]",
+      "type": "Microsoft.Network/applicationSecurityGroups",
+      "apiVersion": "2018-08-01",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {}
+    },
+    {
       "condition": "[greater(parameters('storageSettings').dataDisks, 0)]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "dependsOn": [
-        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]",
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
       ],
       "copy": {
         "name": "[concat(variables('namespace'),'vm-creation-loop')]",

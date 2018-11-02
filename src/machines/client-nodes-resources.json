@@ -45,11 +45,22 @@
       }
     },
     {
+      "name": "[concat(variables('namespace'), 'asg')]",
+      "type": "Microsoft.Network/applicationSecurityGroups",
+      "apiVersion": "2018-08-01",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {}
+    },
+    {
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "dependsOn": [
-        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]",
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
       ],
       "copy": {
         "name": "[concat(variables('namespace'),'vm-creation-loop')]",
