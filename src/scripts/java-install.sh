@@ -44,18 +44,30 @@ while getopts h optname; do
   esac
 done
 
-# Update the oracle-java8-installer to patch download of Java 8u171 to 8u181.
-# 8u171 download is now archived
+# Update the oracle-java8-installer to patch download of Java 8u181 to 8u191.
+# 8u181 download is now archived
 # TODO: Remove this once oracle-java8-installer package is updated
 install_java_package()
 {
+  local ORACLE_DOWNLOAD_URL=http://download.oracle.com/otn-pub/java/jdk
+
+  local PACKAGE_VERSION=8u181
+  local PACKAGE_URL=8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/
+  local PACKAGE_SHASUM=1845567095bfbfebd42ed0d09397939796d05456290fb20a83c476ba09f991d3
+  local PACKAGE_DIR=jdk1.8.0_181
+
+  local PATCH_VERSION=8u191
+  local PATCH_URL=8u191-b12/2787e4a523244c269598db4e85c51e0c/
+  local PATCH_SHASUM=53c29507e2405a7ffdbba627e6d64856089b094867479edc5ede4105c1da0d65
+  local PATCH_DIR=jdk1.8.0_191
+
   apt-get -yq $@ install oracle-java8-installer || true \
   && pushd /var/lib/dpkg/info \
-  && log "[install_java_package] update oracle-java8-installer to 8u181" \
-  && sed -i 's|JAVA_VERSION=8u171|JAVA_VERSION=8u181|' oracle-java8-installer.* \
-  && sed -i 's|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/|' oracle-java8-installer.* \
-  && sed -i 's|SHA256SUM_TGZ="b6dd2837efaaec4109b36cfbb94a774db100029f98b0d78be68c27bec0275982"|SHA256SUM_TGZ="1845567095bfbfebd42ed0d09397939796d05456290fb20a83c476ba09f991d3"|' oracle-java8-installer.* \
-  && sed -i 's|J_DIR=jdk1.8.0_171|J_DIR=jdk1.8.0_181|' oracle-java8-installer.* \
+  && log "[install_java_package] update oracle-java8-installer to $PATCH_VERSION" \
+  && sed -i "s|JAVA_VERSION=$PACKAGE_VERSION|JAVA_VERSION=$PATCH_VERSION|" oracle-java8-installer.* \
+  && sed -i "s|PARTNER_URL=$ORACLE_DOWNLOAD_URL/$PACKAGE_URL|PARTNER_URL=$ORACLE_DOWNLOAD_URL/$PATCH_URL|" oracle-java8-installer.* \
+  && sed -i "s|SHA256SUM_TGZ=\"$PACKAGE_SHASUM\"|SHA256SUM_TGZ=\"$PATCH_SHASUM\"|" oracle-java8-installer.* \
+  && sed -i "s|J_DIR=$PACKAGE_DIR|J_DIR=$PATCH_DIR|" oracle-java8-installer.* \
   && popd \
   && log "[install_java_package] updated oracle-java8-installer" \
   && apt-get -yq $@ install oracle-java8-installer
