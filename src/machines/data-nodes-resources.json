@@ -143,6 +143,50 @@
             }
           },
           {
+            "name": "Kibana_to_Nodes",
+            "properties": {
+              "description": "Allows Kibana to see the cluster nodes for monitoring",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-kibana-asg')]"
+                }
+              ],
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 140,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Logstash_to_Nodes",
+            "properties": {
+              "description": "Allow Logstash to query the cluster nodes directly for loading data",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-logstash-asg')]"
+                }
+              ],
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
             "name": "DenyAllOtherTraffic",
             "properties": {
               "description": "Deny all traffic that is not Elastic or SSH from anywhere",
@@ -152,7 +196,7 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Deny",
-              "priority": 140,
+              "priority": 200,
               "direction": "Inbound"
             }
           }
