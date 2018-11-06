@@ -62,7 +62,8 @@
       "name": "ccd-cluster-nsg",
       "location": "[parameters('vm').shared.location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]",
+        "[resourceId('Microsoft.Network/applicationSecurityGroups/', 'ccd-logstash-asg')]"
       ],
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -160,6 +161,16 @@
     },
     {
       "name": "[concat(variables('namespace'), 'asg')]",
+      "type": "Microsoft.Network/applicationSecurityGroups",
+      "apiVersion": "2018-08-01",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {}
+    },
+    {
+      "name": "ccd-logstash-asg",
       "type": "Microsoft.Network/applicationSecurityGroups",
       "apiVersion": "2018-08-01",
       "location": "[parameters('vm').shared.location]",
