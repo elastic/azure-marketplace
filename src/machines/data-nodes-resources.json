@@ -62,7 +62,8 @@
       "name": "ccd-cluster-nsg",
       "location": "[parameters('vm').shared.location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]"
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), 'asg')]",
+        "[resourceId('Microsoft.Network/applicationSecurityGroups/', 'ccd-logstash-asg')]"
       ],
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -142,6 +143,50 @@
             }
           },
           {
+            "name": "Kibana_to_Nodes",
+            "properties": {
+              "description": "Allows Kibana to see the cluster nodes for monitoring",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-kibana-asg')]"
+                }
+              ],
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 140,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Logstash_to_Nodes",
+            "properties": {
+              "description": "Allow Logstash to query the cluster nodes directly for loading data",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-logstash-asg')]"
+                }
+              ],
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
             "name": "DenyAllOtherTraffic",
             "properties": {
               "description": "Deny all traffic that is not Elastic or SSH from anywhere",
@@ -151,7 +196,7 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Deny",
-              "priority": 140,
+              "priority": 200,
               "direction": "Inbound"
             }
           }
@@ -160,6 +205,16 @@
     },
     {
       "name": "[concat(variables('namespace'), 'asg')]",
+      "type": "Microsoft.Network/applicationSecurityGroups",
+      "apiVersion": "2018-08-01",
+      "location": "[parameters('vm').shared.location]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {}
+    },
+    {
+      "name": "ccd-logstash-asg",
       "type": "Microsoft.Network/applicationSecurityGroups",
       "apiVersion": "2018-08-01",
       "location": "[parameters('vm').shared.location]",
