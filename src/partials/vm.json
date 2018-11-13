@@ -82,6 +82,9 @@
       "properties": {
         "primary": true,
         "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'ccd-cluster-nsg')]"
+        },
         "ipConfigurations": [
           {
             "name": "ipconfig1",
