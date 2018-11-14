@@ -21,7 +21,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "6.4.2",
+      "defaultValue": "6.5.0",
       "allowedValues": [
         "5.5.3",
         "5.6.12",
@@ -30,7 +30,9 @@
         "6.2.4",
         "6.3.2",
         "6.4.1",
-        "6.4.2"
+        "6.4.2",
+        "6.4.3",
+        "6.5.0"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
