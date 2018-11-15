@@ -194,14 +194,6 @@ install_kibana()
 ## Security
 ##----------------------------------
 
-install_pwgen()
-{
-    log "[install_pwgen] Installing pwgen tool if needed"
-    if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-      (apt-get -yq install pwgen || (sleep 15; apt-get -yq install pwgen))
-    fi
-}
-
 configure_kibana_yaml()
 {
     local KIBANA_CONF=/etc/kibana/kibana.yml
@@ -370,11 +362,24 @@ configure_kibana_yaml()
     fi
 }
 
+install_apt_package()
+{
+  local PACKAGE=$1
+  if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    log "[install_$PACKAGE] installing $PACKAGE"
+    (apt-get -yq install $PACKAGE || (sleep 15; apt-get -yq install $PACKAGE))
+    log "[install_$PACKAGE] installed $PACKAGE"
+  fi
+}
+
+install_pwgen()
+{
+    install_apt_package pwgen
+}
+
 install_yamllint()
 {
-    log "[install_yamllint] installing yamllint"
-    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
-    log "[install_yamllint] installed yamllint"
+    install_apt_package yamllint
 }
 
 configure_systemd()
@@ -409,7 +414,7 @@ if systemctl -q is-active kibana.service; then
 fi
 
 log "[apt-get] updating apt-get"
-(apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
+(apt-get -y update || (sleep 15; apt-get -y update))
 log "[apt-get] updated apt-get"
 
 install_kibana
