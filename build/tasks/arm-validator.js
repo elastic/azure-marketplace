@@ -78,11 +78,13 @@ var bootstrapTest = (t, defaultVersion) =>
 
   // Some parameters are longer than the max allowed characters for cmd on Windows.
   // Persist to file and pass the file path for parameters
-  var resourceGroup = "test-" + hostname + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var name = t.replace(".json", "");
+  var resourceGroup = "test-" + hostname + "-" + name + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
   var testParametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
   fs.writeFileSync(testParametersFile, JSON.stringify(testParameters, null, 2));
 
   return {
+    name: name,
     resourceGroup: resourceGroup,
     location: test.location,
     isValid: test.isValid,
@@ -270,12 +272,12 @@ var validateTemplate = (test, cb) => {
       '--parameters', '@' + t.paramsFile,
       '--out', 'json'
     ];
-    log(`validating ${test} in resource group: ${rg}`);
+    log(`validating ${t.name} in resource group: ${rg}`);
     az(validateGroup, (error, stdout, stderr) => {
       log(test, `Expected result: ${t.isValid} because ${t.why}`);
       log(test, `validateResult:${stdout || stderr}`);
       if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr), rg);
-      else if (!t.isValid && !(error || stderr)) return bailOut(new Error(`expected ${test} to result in an error because ${t.why}`), rg);
+      else if (!t.isValid && !(error || stderr)) return bailOut(new Error(`expected ${t.name} to result in an error because ${t.why}`), rg);
       cb();
     });
   })
@@ -314,7 +316,7 @@ var showOperationList = (test, cb) => {
       .map(f=>f.properties.statusMessage)
       .value();
     errors.forEach(e => {
-      log(`${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      log(`${t.name} resulted in error: ${JSON.stringify(e, null, 2)}`);
     })
     cb();
   });
@@ -363,7 +365,7 @@ var sanityCheckApplicationGateway = (test, cb) => {
   az(operationList, (error, stdout, stderr) => {
     log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
     if (error || stderr) {
-      log(`getting public ip for ${appGateway} in ${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      log(`getting public ip for ${appGateway} in ${t.name} resulted in error: ${JSON.stringify(e, null, 2)}`);
       cb();
     }
 
@@ -487,11 +489,11 @@ var sanityCheckKibana = (test, url, cb) => {
             : "unknown"
       : "unknown";
 
-    log(`kibana is running in resource group: ${rg} with state: ${state}`);
+    log(`kibana is running in resource group: ${rg} with state: ${state[state.toLowerCase()]}`);
     log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
+
     //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
     //There is no guarantee kibana is not provisioned before the cluster is up
-
     if (state == "green") {
       log(`checking kibana monitoring endpoint for rg: ${rg}`);
 
@@ -580,7 +582,7 @@ var deployTemplate = (test, cb) => {
     '--parameters', '@' + t.paramsFile,
     '--out', 'json'
   ];
-  log(`deploying ${test} in resource group: ${rg}`);
+  log(`deploying ${t.name} in resource group: ${rg}`);
   az(deployGroup, (error, stdout, stderr) => {
     log(test, `deployResult: ${stdout || stderr}`);
     if (error || stderr) {
