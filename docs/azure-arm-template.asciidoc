@@ -1,8 +1,8 @@
 :marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
-:current: 6.4
-:version: 6.4.2
+:current: 6.5
+:version: 6.5.0
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
@@ -20,8 +20,8 @@
 :incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
 :vms: {microsoftdocs}/azure/virtual-machines/linux/sizes
 :azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
-:availabilitysets: {microsoftdocs}/virtual-machines/windows/manage-availability
-:availabilityzones: {microsoftdocs}/availability-zones/az-overview
+:availabilitysets: {microsoftdocs}/azure/virtual-machines/linux/manage-availability
+:availabilityzones: {microsoftdocs}/azure/availability-zones/az-overview
 :manageddisks: {microsoftdocs}/azure/virtual-machines/linux/managed-disks-overview
 :dns: {microsoftdocs}/azure/virtual-network/virtual-networks-name-resolution-for-vms-and-role-instances#name-resolution-that-uses-your-own-dns-server
 :applicationgateway: {microsoftdocs}/azure/application-gateway/application-gateway-introduction
@@ -900,6 +900,7 @@ Kibana is deployed with
 
 Kibana communicates with Elasticsearch through the <<internal-load-balancer, internal load balancer>>
 
+[[azure-arm-template-logstash]]
 === Logstash
 
 A single instance of Logstash can be deployed in addition to Elasticsearch, providing a pipeline for ingesting data into Elasticsearch.
