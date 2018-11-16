@@ -169,6 +169,8 @@ write_site_config()
   echo "server {
 	listen $NGINX_PORT ssl default_server;
 	listen [::]:$NGINX_PORT ssl default_server;
+	proxy_read_timeout 300s;
+	proxy_send_timeout 300s;
 	location / {
 		proxy_pass http://$(hostname):$TARGET_PORT;
 		auth_basic "You_Shall_Not_Pass!";
