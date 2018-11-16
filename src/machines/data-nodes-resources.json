@@ -94,7 +94,7 @@
               "description": "Allows ElasticSeach communication only between nodes",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9200,9300",
+              "destinationPortRanges": ["9200", "9300"],
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
@@ -130,7 +130,7 @@
               "description": "Allows Kibana to see the cluster nodes for monitoring",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9200",
+              "destinationPortRanges": ["9200", "9300"],
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-kibana-asg')]"
