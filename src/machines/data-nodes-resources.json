@@ -94,7 +94,7 @@
               "description": "Allows ElasticSeach communication only between nodes",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9300",
+              "destinationPortRange": "9200,9300",
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
@@ -174,7 +174,7 @@
               "description": "Allows ElasticSeach queries from the LoadBalancer.  Needed for LoadBalancer healthchecks.",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9200,9300",
+              "destinationPortRanges": ["9200", "9300"],
               "sourceAddressPrefix": "AzureLoadBalancer",
               "destinationApplicationSecurityGroups": [
                 {
