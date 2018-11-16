@@ -169,12 +169,12 @@
             }
           },
           {
-            "name": "ElasticQueries",
+            "name": "LB_To_ES",
             "properties": {
-              "description": "Allows ElasticSeach queries from the LoadBalancer",
+              "description": "Allows ElasticSeach queries from the LoadBalancer.  Needed for LoadBalancer healthchecks.",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9200",
+              "destinationPortRange": "9200,9300",
               "sourceAddressPrefix": "AzureLoadBalancer",
               "destinationApplicationSecurityGroups": [
                 {
@@ -182,7 +182,7 @@
                 }
               ],
               "access": "Allow",
-              "priority": 110,
+              "priority": 160,
               "direction": "Inbound"
             }
           },
