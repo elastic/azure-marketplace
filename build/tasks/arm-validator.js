@@ -13,6 +13,7 @@ var request = require('request');
 var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
 var az = require("./lib/az");
+var semver = require("semver");
 var artifactsBaseUrl = "";
 var templateUri = "";
 var armTests = {};
@@ -38,6 +39,11 @@ var exampleParameters = require("../../parameters/password.parameters.json");
 var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
+
+  if (test.condition && !semver.satisfies(defaultVersion, test.condition.range)) {
+    log(`Skipping ${t} because ${test.condition.reason}`.yellow);
+    return null;
+  }
 
   // replace parameters with base64 encoded file values
   [ "esHttpCertBlob",
@@ -72,11 +78,13 @@ var bootstrapTest = (t, defaultVersion) =>
 
   // Some parameters are longer than the max allowed characters for cmd on Windows.
   // Persist to file and pass the file path for parameters
-  var resourceGroup = "test-" + hostname + "-" + t.replace(".json", "") + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var name = t.replace(".json", "");
+  var resourceGroup = "test-" + hostname + "-" + name + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
   var testParametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
   fs.writeFileSync(testParametersFile, JSON.stringify(testParameters, null, 2));
 
   return {
+    name: name,
     resourceGroup: resourceGroup,
     location: test.location,
     isValid: test.isValid,
@@ -89,12 +97,13 @@ var bootstrapTest = (t, defaultVersion) =>
 
 var bootstrap = (cb) => {
   var allowedValues = require('../allowedValues.json');
-  var defaultVersion = argv.version ?
-    argv.version == "random" ?
+  var defaultVersion = argv.esVersion ?
+    argv.esVersion == "random" ?
       _.sample(allowedValues.versions)
-      : argv.version
+      : argv.esVersion
     : _.last(allowedValues.versions);
 
+  log(`Using version ${defaultVersion} for tests`);
   if (!_.includes(allowedValues.versions, defaultVersion)){
     return bailOut(new Error(`No version in allowedValues.versions matching ${defaultVersion}`));
   }
@@ -107,8 +116,9 @@ var bootstrap = (cb) => {
     log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))
       .filter(t => templateMatcher.test(t))
-      .indexBy((f) => f)
+      .indexBy(f => f)
       .mapValues(t => bootstrapTest(t, defaultVersion))
+      .filter(t => t != null)
       .value();
     cb();
   });
@@ -151,14 +161,9 @@ var bailOutNoCleanUp = (error)  => {
 
 var bailOut = (error, rg) => {
   if (!error) return;
-  if (!rg) log(error)
-  else log(`resourcegroup: ${rg} - ${error}`)
-
-  var cb = () => logout(() => { throw error; })
-
-  var groups = _.valuesIn(armTests).map(a=>a.resourceGroup);
-  if (groups.length > 0) deleteGroups(groups, cb);
-  else cb();
+  if (!rg) log(error);
+  else log(`resourcegroup: ${rg} - ${error}`);
+  deleteCurrentTestGroups(() => logout(() => { throw error; }));
 }
 
 var deleteGroups = (groups, cb) => {
@@ -267,12 +272,12 @@ var validateTemplate = (test, cb) => {
       '--parameters', '@' + t.paramsFile,
       '--out', 'json'
     ];
-    log(`validating ${test} in resource group: ${rg}`);
+    log(`validating ${t.name} in resource group: ${rg}`);
     az(validateGroup, (error, stdout, stderr) => {
       log(test, `Expected result: ${t.isValid} because ${t.why}`);
       log(test, `validateResult:${stdout || stderr}`);
       if (t.isValid && (error || stderr)) return bailOut(error || new Error(stderr), rg);
-      else if (!t.isValid && !(error || stderr)) return bailOut(new Error(`expected ${test} to result in an error because ${t.why}`), rg);
+      else if (!t.isValid && !(error || stderr)) return bailOut(new Error(`expected ${t.name} to result in an error because ${t.why}`), rg);
       cb();
     });
   })
@@ -311,7 +316,7 @@ var showOperationList = (test, cb) => {
       .map(f=>f.properties.statusMessage)
       .value();
     errors.forEach(e => {
-      log(`${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      log(`${t.name} resulted in error: ${JSON.stringify(e, null, 2)}`);
     })
     cb();
   });
@@ -360,7 +365,7 @@ var sanityCheckApplicationGateway = (test, cb) => {
   az(operationList, (error, stdout, stderr) => {
     log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
     if (error || stderr) {
-      log(`getting public ip for ${appGateway} in ${test} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      log(`getting public ip for ${appGateway} in ${t.name} resulted in error: ${JSON.stringify(e, null, 2)}`);
       cb();
     }
 
@@ -484,11 +489,11 @@ var sanityCheckKibana = (test, url, cb) => {
             : "unknown"
       : "unknown";
 
-    log(`kibana is running in resource group: ${rg} with state: ${state}`);
+    log(`kibana is running in resource group: ${rg} with state: ${state[state.toLowerCase()]}`);
     log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
+
     //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
     //There is no guarantee kibana is not provisioned before the cluster is up
-
     if (state == "green") {
       log(`checking kibana monitoring endpoint for rg: ${rg}`);
 
@@ -577,7 +582,7 @@ var deployTemplate = (test, cb) => {
     '--parameters', '@' + t.paramsFile,
     '--out', 'json'
   ];
-  log(`deploying ${test} in resource group: ${rg}`);
+  log(`deploying ${t.name} in resource group: ${rg}`);
   az(deployGroup, (error, stdout, stderr) => {
     log(test, `deployResult: ${stdout || stderr}`);
     if (error || stderr) {
@@ -595,11 +600,23 @@ gulp.task("clean", gulp.series("create-log-folder", (cb) => {
 }));
 
 gulp.task("test", gulp.series("clean", (cb) => {
-  bootstrap(() => login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
+  bootstrap(() => {
+    if (armTests.length) {
+      login(() => validateTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))));
+    } else {
+      cb();
+    }
+  });
 }));
 
 gulp.task("deploy", gulp.series("clean", (cb) => {
-  bootstrap(() => login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb)))))));
+  bootstrap(() => {
+    if (armTests.length) {
+      login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
+    } else {
+      cb();
+    }
+  });
 }));
 
 gulp.task("azure-cleanup", gulp.series("clean", (cb) => {

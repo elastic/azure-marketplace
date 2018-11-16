@@ -1,6 +1,5 @@
 {
   "versions": [
-    "5.4.3",
     "5.5.3",
     "5.6.12",
     "6.0.1",
@@ -8,7 +7,9 @@
     "6.2.4",
     "6.3.2",
     "6.4.1",
-    "6.4.2"
+    "6.4.2",
+    "6.4.3",
+    "6.5.0"
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
@@ -240,56 +241,11 @@
     "centralus": { "platformFaultDomainCount": 3 },
     "northcentralus": { "platformFaultDomainCount": 3 },
     "southcentralus": { "platformFaultDomainCount": 3 },
-    "westcentralus": { "platformFaultDomainCount": 2 },
+
     "westus": { "platformFaultDomainCount": 3 },
-    "westus2": { "platformFaultDomainCount": 2 },
-    "canadaeast": { "platformFaultDomainCount": 2 },
-    "canadacentral": { "platformFaultDomainCount": 2 },
-    "brazilsouth": { "platformFaultDomainCount": 2 },
 
     "northeurope": { "platformFaultDomainCount": 3 },
-    "westeurope": { "platformFaultDomainCount": 3 },
-    "francecentral": { "platformFaultDomainCount": 2 },
-    "francesouth": { "platformFaultDomainCount": 2 },
-    "ukwest": { "platformFaultDomainCount": 2 },
-    "uksouth": { "platformFaultDomainCount": 2 },
-    "germanycentral": { "platformFaultDomainCount": 2 },
-    "germanynortheast": { "platformFaultDomainCount": 2 },
-
-    "germanynorth": { "platformFaultDomainCount": 2 },
-    "germanywestcentral": { "platformFaultDomainCount": 2 },
-    "switzerlandnorth": { "platformFaultDomainCount": 2 },
-    "switzerlandwest": { "platformFaultDomainCount": 2 },
-
-    "southeastasia": { "platformFaultDomainCount": 2 },
-    "eastasia": { "platformFaultDomainCount": 2 },
-    "australiaeast": { "platformFaultDomainCount": 2 },
-    "australiasoutheast": { "platformFaultDomainCount": 2 },
-    "australiacentral": { "platformFaultDomainCount": 2 },
-    "australiacentral2": { "platformFaultDomainCount": 2 },
-    "chinaeast": { "platformFaultDomainCount": 2 },
-    "chinanorth": { "platformFaultDomainCount": 2 },
-    "centralindia": { "platformFaultDomainCount": 2 },
-    "westindia": { "platformFaultDomainCount": 2 },
-    "southindia": { "platformFaultDomainCount": 2 },
-    "japaneast": { "platformFaultDomainCount": 2 },
-    "japanwest": { "platformFaultDomainCount": 2 },
-    "koreacentral": { "platformFaultDomainCount": 2 },
-    "koreasouth": { "platformFaultDomainCount": 2 },
-
-    "southafricawest": { "platformFaultDomainCount": 2 },
-    "southafricanorth": { "platformFaultDomainCount": 2 },
-    "uaecentral": { "platformFaultDomainCount": 2 },
-    "uaenorth": { "platformFaultDomainCount": 2 },
-
-    "usgovvirginia": { "platformFaultDomainCount": 2 },
-    "usgoviowa": { "platformFaultDomainCount": 2 },
-    "usgovarizona": { "platformFaultDomainCount": 2 },
-    "usgovtexas": { "platformFaultDomainCount": 2 },
-    "usdodeast": { "platformFaultDomainCount": 2 },
-    "usdodcentral": { "platformFaultDomainCount": 2 },
-    "usseceast": { "platformFaultDomainCount": 2 },
-    "ussecwest": { "platformFaultDomainCount": 2 }
+    "westeurope": { "platformFaultDomainCount": 3 }
   },
   "trackingGuids": {
     "marketplace": "pid-53DEEEE7-A572-4F07-99DC-151B67BB6F1F"

@@ -151,7 +151,12 @@ log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 install_kibana()
 {
     local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
-    local SHASUM="$PACKAGE.sha512"
+    local ALGORITHM="512"
+    if dpkg --compare-versions "$KIBANA_VERSION" "lt" "5.6.2"; then
+      ALGORITHM="1"
+    fi
+
+    local SHASUM="$PACKAGE.sha$ALGORITHM"
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/$PACKAGE?ultron=msft&gambit=azure"
     local SHASUM_URL="https://artifacts.elastic.co/downloads/kibana/$SHASUM?ultron=msft&gambit=azure"
 
@@ -159,7 +164,7 @@ install_kibana()
     wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
-        log "[install_kibana] error downloading Kibana $KIBANA_VERSION checksum"
+        log "[install_kibana] error downloading Kibana $KIBANA_VERSION sha$ALGORITHM checksum"
         exit $EXIT_CODE
     fi
     log "[install_kibana] download location $DOWNLOAD_URL"
@@ -170,7 +175,11 @@ install_kibana()
         exit $EXIT_CODE
     fi
     log "[install_kibana] downloaded Kibana $KIBANA_VERSION"
-    shasum -a 512 -c $SHASUM
+
+    # earlier sha files do not contain the package name. add it
+    grep -q "$PACKAGE" $SHASUM || sed -i "s/.*/&  $PACKAGE/" $SHASUM
+
+    shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_kibana] error validating checksum for Kibana $KIBANA_VERSION"
@@ -184,14 +193,6 @@ install_kibana()
 
 ## Security
 ##----------------------------------
-
-install_pwgen()
-{
-    log "[install_pwgen] Installing pwgen tool if needed"
-    if [ $(dpkg-query -W -f='${Status}' pwgen 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-      (apt-get -yq install pwgen || (sleep 15; apt-get -yq install pwgen))
-    fi
-}
 
 configure_kibana_yaml()
 {
@@ -361,11 +362,24 @@ configure_kibana_yaml()
     fi
 }
 
+install_apt_package()
+{
+  local PACKAGE=$1
+  if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    log "[install_$PACKAGE] installing $PACKAGE"
+    (apt-get -yq install $PACKAGE || (sleep 15; apt-get -yq install $PACKAGE))
+    log "[install_$PACKAGE] installed $PACKAGE"
+  fi
+}
+
+install_pwgen()
+{
+    install_apt_package pwgen
+}
+
 install_yamllint()
 {
-    log "[install_yamllint] installing yamllint"
-    (apt-get -yq install yamllint || (sleep 15; apt-get -yq install yamllint))
-    log "[install_yamllint] installed yamllint"
+    install_apt_package yamllint
 }
 
 configure_systemd()
@@ -400,7 +414,7 @@ if systemctl -q is-active kibana.service; then
 fi
 
 log "[apt-get] updating apt-get"
-(apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
+(apt-get -y update || (sleep 15; apt-get -y update))
 log "[apt-get] updated apt-get"
 
 install_kibana

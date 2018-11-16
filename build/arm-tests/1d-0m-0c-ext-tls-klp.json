@@ -1,6 +1,9 @@
 {
   "description": "1 data node cluster with logstash",
-  "notes": "the use of xpack.monitoring.collection.enabled requires version to be 6.3.0+",
+  "condition" : {
+    "range": ">=6.3.0",
+    "reason": "the use of xpack.monitoring.collection.enabled requires version to be 6.3.0+"
+  },
   "isValid" : true,
   "deploy" : true,
   "why" : "",

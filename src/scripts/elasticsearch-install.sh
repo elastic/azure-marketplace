@@ -374,7 +374,12 @@ install_tools()
 install_es()
 {
     local PACKAGE="elasticsearch-$ES_VERSION.deb"
-    local SHASUM="$PACKAGE.sha512"
+    local ALGORITHM="512"
+    if dpkg --compare-versions "$ES_VERSION" "lt" "5.6.2"; then
+      ALGORITHM="1"
+    fi
+
+    local SHASUM="$PACKAGE.sha$ALGORITHM"
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/$PACKAGE?ultron=msft&gambit=azure"
     local SHASUM_URL="https://artifacts.elastic.co/downloads/elasticsearch/$SHASUM?ultron=msft&gambit=azure"
 
@@ -382,7 +387,7 @@ install_es()
     wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
-        log "[install_es] error downloading Elasticsearch $ES_VERSION checksum"
+        log "[install_es] error downloading Elasticsearch $ES_VERSION sha$ALGORITHM checksum"
         exit $EXIT_CODE
     fi
     log "[install_es] download location - $DOWNLOAD_URL"
@@ -393,7 +398,11 @@ install_es()
         exit $EXIT_CODE
     fi
     log "[install_es] downloaded Elasticsearch $ES_VERSION"
-    shasum -a 512 -c $SHASUM
+
+    # earlier sha files do not contain the package name. add it
+    grep -q "$PACKAGE" $SHASUM || sed -i "s/.*/&  $PACKAGE/" $SHASUM
+
+    shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         log "[install_es] error validating checksum for Elasticsearch $ES_VERSION"
