@@ -89,24 +89,6 @@
             }
           },
           {
-            "name": "ElasticQueries",
-            "properties": {
-              "description": "Allows ElasticSeach queries from the LoadBalancer",
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "9200",
-              "sourceAddressPrefix": "AzureLoadBalancer",
-              "destinationApplicationSecurityGroups": [
-                {
-                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
-                }
-              ],
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Inbound"
-            }
-          },
-          {
             "name": "ElasticClusterTransport",
             "properties": {
               "description": "Allows ElasticSeach communication only between nodes",
@@ -183,6 +165,24 @@
               ],
               "access": "Allow",
               "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ElasticQueries",
+            "properties": {
+              "description": "Allows ElasticSeach queries from the LoadBalancer",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9200",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 110,
               "direction": "Inbound"
             }
           },
