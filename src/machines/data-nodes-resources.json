@@ -89,30 +89,12 @@
             }
           },
           {
-            "name": "ElasticQueries",
-            "properties": {
-              "description": "Allows ElasticSeach queries from the LoadBalancer",
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "9200",
-              "sourceAddressPrefix": "AzureLoadBalancer",
-              "destinationApplicationSecurityGroups": [
-                {
-                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
-                }
-              ],
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Inbound"
-            }
-          },
-          {
             "name": "ElasticClusterTransport",
             "properties": {
               "description": "Allows ElasticSeach communication only between nodes",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9300",
+              "destinationPortRanges": ["9200", "9300"],
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
@@ -148,7 +130,7 @@
               "description": "Allows Kibana to see the cluster nodes for monitoring",
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "9200",
+              "destinationPortRanges": ["9200", "9300"],
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ccd-kibana-asg')]"
@@ -187,6 +169,24 @@
             }
           },
           {
+            "name": "LB_To_ES",
+            "properties": {
+              "description": "Allows ElasticSeach queries from the LoadBalancer.  Needed for LoadBalancer healthchecks.",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRanges": ["9200", "9300"],
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationApplicationSecurityGroups": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', concat(variables('namespace'), 'asg'))]"
+                }
+              ],
+              "access": "Allow",
+              "priority": 160,
+              "direction": "Inbound"
+            }
+          },
+          {
             "name": "DenyAllOtherTraffic",
             "properties": {
               "description": "Deny all traffic that is not Elastic or SSH from anywhere",
@@ -196,7 +196,7 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Deny",
-              "priority": 200,
+              "priority": 300,
               "direction": "Inbound"
             }
           }
