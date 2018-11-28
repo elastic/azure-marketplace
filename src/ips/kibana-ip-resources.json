@@ -63,7 +63,7 @@
   ],
   "outputs": {
     "fqdn": {
-      "value": "[concat(variables('https'), reference(variables('publicIpName')).dnsSettings.fqdn, ':5601')]",
+      "value": "[concat(variables('https'), reference(variables('publicIpName')).dnsSettings.fqdn, ':80')]",
       "type": "string"
     }
   }

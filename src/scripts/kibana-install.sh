@@ -208,6 +208,7 @@ configure_kibana_yaml()
     # set the elasticsearch URL
     echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
+    echo "server.port: 80"  >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
     touch /var/log/kibana.log
@@ -333,7 +334,7 @@ configure_kibana_yaml()
         local SKIP_LINES="elasticsearch.username elasticsearch.password "
         SKIP_LINES+="server.ssl.key server.ssl.cert server.ssl.enabled "
         SKIP_LINES+="xpack.security.encryptionKey xpack.reporting.encryptionKey "
-        SKIP_LINES+="elasticsearch.url server.host logging.dest logging.silent "
+        SKIP_LINES+="elasticsearch.url server.host server.port logging.dest logging.silent "
         SKIP_LINES+="elasticsearch.ssl.certificate elasticsearch.ssl.key elasticsearch.ssl.certificateAuthorities "
         SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
         SKIP_LINES+="xpack.security.authProviders server.xsrf.whitelist "
@@ -413,7 +414,7 @@ register_dns () {
     "Name": "$hostname",
     "Tags": [],
     "Address": "$ip",
-    "Port": 443
+    "Port": 80
     }
 EOF
 
@@ -434,6 +435,10 @@ configure_os_properties()
     resolvconf -u
 
     register_dns $(hostname) $(hostname -I)
+
+    # Make Kibana executable on ports <1024
+    log "[configure_port_80] allow Kibana node to run on ports<1024"
+    setcap 'cap_net_bind_service=+ep' /usr/share/kibana/bin/../node/bin/node
 
     log "[configure_os_properties] configured operating system level configuration"
 }
