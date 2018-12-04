@@ -467,6 +467,12 @@
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
+          },
+          "logAnalyticsId": {
+            "value": "[parameters('commonVmSettings').logAnalyticsId]"
+          },
+          "logAnalyticsKey": {
+            "value": "[parameters('commonVmSettings').logAnalyticsKey]"
           }
         }
       }

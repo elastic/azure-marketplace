@@ -153,6 +153,27 @@
             "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
           ],
           "properties": "[parameters('vm').installScript]"
+        },
+        {
+          "condition": "[not(empty(parameters('vm').shared.logAnalyticsId))]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(variables('namespace'), parameters('index'), '/OMSExtension')]",
+          "apiVersion": "2018-06-01",
+          "location": "[parameters('vm').shared.location]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+            "type": "OmsAgentForLinux",
+            "typeHandlerVersion": "1.7",
+            "settings": {
+              "workspaceId": "[parameters('vm').shared.logAnalyticsId]"
+            },
+            "protectedSettings": {
+              "workspaceKey": "[parameters('vm').shared.logAnalyticsKey]"
+            }
+          }
         }
       ]
     }
