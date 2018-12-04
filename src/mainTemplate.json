@@ -1259,6 +1259,20 @@
       "metadata": {
         "description": "The Base-64 encoded certificate (.cer) used to secure the HTTP layer of Elasticsearch. Used by the Application Gateway to whitelist certificates used by the backend pool. Must be set if using esHttpCertBlob to secure the HTTP layer of Elasticsearch"
       }
+    },
+    "logAnalyticsId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Log Anytics ID. Used by VMs for logging."
+      }
+    },
+    "logAnalyticsKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Log Anytics Key. Used by VMs for logging."
+      }
     }
   },
   "variables": {
@@ -1893,6 +1907,8 @@
       "location": "[variables('location')]",
       "subnet": "[variables('networkSettings').subnet]",
       "subnetId": "[concat(resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', variables('networkSettings').name), '/subnets/', variables('networkSettings').subnet.name)]",
+      "logAnalyticsId": "[parameters('logAnalyticsId')]",
+      "logAnalyticsKey": "[parameters('logAnalyticsKey')]",
       "credentials": {
         "adminUsername": "[parameters('adminUsername')]",
         "password": "[parameters('adminPassword')]",
