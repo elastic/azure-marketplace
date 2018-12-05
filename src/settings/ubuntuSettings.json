@@ -100,6 +100,8 @@
       "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/logstash-install.sh')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/custom-install.sh')]",
+      "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch.conf')]",
       "[concat(parameters('templateBaseUrl'), 'scripts/java-install.sh')]"
     ],
     "ubuntuSettings": {
@@ -144,7 +146,7 @@
             "fileUris": "[variables('ubuntuScripts')]"
           },
           "protectedSettings": {
-            "commandToExecute": "[concat('bash elasticsearch-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'))]"
+            "commandToExecute": "[concat('bash elasticsearch-install.sh -', variables('dataNodeShortOpt'), variables('commonShortOpts'), variables('commonInstallParams'), ' && ', 'bash custom-install.sh ', parameters('commonVmSettings').logAnalyticsId)]"
           }
         },
         "kibana": {
