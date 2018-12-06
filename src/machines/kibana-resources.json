@@ -168,7 +168,8 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupName'))]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupName'))]",
+        "[concat('Microsoft.Network/applicationSecurityGroups/', variables('namespace'), '-asg')]"
       ],
       "properties": {
         "primary": true,
@@ -236,7 +237,8 @@
           "apiVersion": "2017-12-01",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('namespace'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('namespace'))]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('namespace'), 'OMSExtension')]"
           ],
           "properties": "[parameters('osSettings').extensionSettings.kibana]"
         },

@@ -150,7 +150,8 @@
           "apiVersion": "2017-12-01",
           "location": "[parameters('vm').shared.location]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('namespace'), parameters('index')), 'OMSExtension')]"
           ],
           "properties": "[parameters('vm').installScript]"
         },
