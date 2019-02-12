@@ -1135,19 +1135,8 @@ upon successful authentication
 
 image:images/saml_token_attributes.png[]
 
-Add the `role` attribute to the User attributes using the Add Attribute section
-
-image:images/saml_token_add_attribute.png[]
-
-with the following details
-
-[horizontal]
-Name:: `role`
-Mapping:: `user.assignedroles`
-Namespace:: `http://schemas.microsoft.com/ws/2008/06/identity/claims`
-
-Now, the role(s) assigned to a user within the Enterprise application will be
-sent in the SAML token, in the SAML `role` claim.
+You can add here any additional attributes that you wish to be included as
+claims in the SAML token returned after successful authentication.
 
 [[application-manifest]]
 ===== Application manifest
@@ -1221,10 +1210,11 @@ Elasticsearch, for example, the `superuser` role, etc. Each role needs a unique 
 After adding the necessary roles, save the manifest.
 
 [[assign-users-to-enterprise-application]]
-===== Assign users to Enterprise application
+===== Assign users and groups to Enterprise application
 
-Now that the Enterprise application roles are configured, users within AAD can be granted
-access to the Enterprise application and be assigned one of the application roles
+Now that the Enterprise application roles are configured, users and groups within
+AAD can be granted access to the Enterprise application and be assigned one of
+the application roles
 
 image:images/add_user_to_role.png[]
 
