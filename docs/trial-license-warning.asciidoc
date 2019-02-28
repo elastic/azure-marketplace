@@ -1,4 +1,4 @@
-:current: 6.5
+:current: 6.6
 :register: https://register.elastic.co
 :elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/{current}
 :licenseexpiration: {stackdocs}/license-expiration.html
