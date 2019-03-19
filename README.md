@@ -1,5 +1,21 @@
 # Elastic Stack Azure Marketplace offering
 
+### :warning: VERY IMPORTANT
+
+By default, this template does not configure*
+
+* SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer
+* SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway
+* SSL/TLS for communication between Elasticsearch nodes via the Transport layer
+* SSL/TLS for communication beween the browser and Kibana
+
+**It is strongly recommended that you secure communication before using in production.**
+
+Please read the [Configuring TLS](#configuring-tls) section for securing communication with
+Transport Layer Security.
+
+---
+
 Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
 [**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
@@ -34,22 +50,6 @@ It will always bootstrap an Elasticsearch cluster complete with a trial license 
 
 Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch on Azure, but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
 <a href="#command-line-deploy">Check out the CLI examples.</a>
-
----
-
-### VERY IMPORTANT
-
-**By default, this template does not configure** 
-
-* **SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
-* **SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway**
-* **SSL/TLS for communication between Elasticsearch nodes via the Transport layer**
-* **SSL/TLS for communication beween the browser and Kibana**
-
-**It is strongly recommended that you secure communication before using in production.**
-
-Please read the [Configuring TLS](#configuring-tls) section for securing communication with
-Transport Layer Security.
 
 ---
 
