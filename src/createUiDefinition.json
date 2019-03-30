@@ -54,7 +54,7 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v6.6.1",
+            "defaultValue": "v6.7.0",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
@@ -87,12 +87,12 @@
                   "value": "6.5.4"
                 },
                 {
-                  "label": "v6.6.0",
-                  "value": "6.6.0"
+                  "label": "v6.6.2",
+                  "value": "6.6.2"
                 },
                 {
-                  "label": "v6.6.1",
-                  "value": "6.6.1"
+                  "label": "v6.7.0",
+                  "value": "6.7.0"
                 }
               ]
             }
