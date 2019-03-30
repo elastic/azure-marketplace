@@ -18,7 +18,8 @@ Transport Layer Security.
 
 Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
-[**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
+This readme provides an overview of usage and features. For more comprehensive documentation, 
+please refer to the [**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
 
 This repository consists of:
 
@@ -83,12 +84,13 @@ posts for further information
 * [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
 * [SAML based Single Sign-On with Elasticsearch and Azure Active Directory](https://www.elastic.co/blog/saml-based-single-sign-on-with-elasticsearch-and-azure-active-directory?blade=tw&hulk=social)
 
-### X-Pack features
+### Elastic Stack features (formerly known as X-Pack)
 
-Starting with Elasticsearch, Kibana and Logstash 6.3.0, The template deploys with X-Pack features bundled as part of the deployment, and
+Starting with Elasticsearch, Kibana and Logstash 6.3.0, The template deploys with Elastic Stack features bundled as part of the deployment, and
 includes the free features under the [Basic license](https://www.elastic.co/subscriptions) level.
 The [`xpackPlugins`](#x-pack) parameter determines whether a self-generated trial license is applied,
-offering a trial period of 30 days of the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
+offering a trial period of 30 days to the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
+The license level applied determines the Elastic Stack features activated to use.
 
 For Elasticsearch, Kibana and Logstash prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
 and a self-generated trial license is applied. In difference to 6.3.0 however, a value of `No` for `xpackPlugins` means that 
@@ -615,21 +617,24 @@ where `<name>` refers to the resource group you just created.
   Select-AzureRmSubscription -SubscriptionId "<subscriptionId>"
   ```
 
-3. Define the parameters object for your deployment
+3. Define the parameters object for your deployment as a PowerShell hashtable. The keys
+  correspond the parameters defined in the [Parameters section](#parameters)
 
   ```powershell
   $clusterParameters = @{
       "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/6.7/src"
-      "esVersion" = "6.3.0"
+      "esVersion" = "6.7.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
       "adminUsername" = "russ"
       "adminPassword" = "Password1234"
-      "securityAdminPassword" = "Password123"
-      "securityReadPassword" = "Password123"
-      "securityKibanaPassword" = "Password123"
-      "securityLogstashPassword" = "Password123"
+      "securityBootstrapPassword" = "Password1234"
+      "securityAdminPassword" = "Password1234"
+      "securityReadPassword" = "Password1234"
+      "securityKibanaPassword" = "Password1234"
+      "securityLogstashPassword" = "Password1234"
+      "securityBeatsPassword" = "Password1234"
   }
   ```
 
@@ -647,26 +652,29 @@ where `<name>` refers to the resource group you just created.
 
 ## Targeting a specific template version
 
-You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
+You can target a specific version of the template by modifying the URI of the template and 
+the artifactsBaseUrl parameter of the template to point to a specific tagged release.
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`6.2.4` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.4)
+For example, to target the [`6.6.1` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.6.1)
 
 ```powershell
-$templateVersion = "6.2.4"
+$templateVersion = "6.6.1"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
-    "artifactsBaseUrl" = $templateBaseUrl
-    "esVersion" = "6.2.4"
-    "adminUsername" = "russ"
-    "adminPassword" = "Password1234"
-    "securityAdminPassword" = "Password123"
-    "securityReadPassword" = "Password123"
-    "securityKibanaPassword" = "Password123"
-    "securityLogstashPassword" = "Password123"
+  "artifactsBaseUrl" = $templateBaseUrl
+  "esVersion" = "6.6.1"
+  "adminUsername" = "russ"
+  "adminPassword" = "Password1234"
+  "securityBootstrapPassword" = "Password1234"
+  "securityAdminPassword" = "Password1234"
+  "securityReadPassword" = "Password1234"
+  "securityKibanaPassword" = "Password1234"
+  "securityLogstashPassword" = "Password1234"
+  "securityBeatsPassword" = "Password1234"
 }
 
 $resourceGroup = "my-azure-cluster"
@@ -680,8 +688,14 @@ New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup
 ## Configuring TLS
 
 It is strongly recommended that you secure communication when using the template
-in production. X-Pack Security can provide Authentication and Role Based Access control,
-and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
+in production. The Elastic Stack security features can provide Authentication and 
+Role Based Access control, and Transport Layer Security (TLS) can be configured 
+for both Elasticsearch and Kibana. For more details, please refer to 
+[the Security documentation](https://www.elastic.co/guide/en/elastic-stack-deploy/current/azure-arm-template-security.html).
+
+The Elastic Stack security features require a license level higher than basic.
+They can be configured with a trial license, which provides access to the 
+security features for 30 days.
 
 ### TLS for Kibana
 
@@ -696,12 +710,13 @@ Transport layer. Configuring TLS for the Transport layer requires
 `xPackPlugins` be set to `Yes`.
 
 You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
-passphrase with `esTransportCaCertPassword`) containing the CA which should be used to generate
+passphrase with `esTransportCaCertPassword`) containing the CA cert which should be used to generate
 a certificate for each node within the cluster. An optional
 passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
 on each node.
 
-One way to generate a PKCS#12 archive containing a CA certificate and key is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
+One way to generate a PKCS#12 archive containing a CA certificate and key is using 
+[Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 The simplest command to generate a CA certificate is
 
 ```sh
@@ -730,7 +745,7 @@ secure the HTTP layer. This certificate will be used by all nodes within the clu
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
 a certificate for each node within the cluster to secure the HTTP layer.
 Kibana will be configured to trust the CA and perform hostname verification for presented
-certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 
 #### Application Gateway
 
@@ -742,7 +757,8 @@ One way to generate a PKCS#12 archive is using [Elastic's certutil command](http
 
 [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/)
 performs SSL offload, so communication from Application Gateway to
-Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
+Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your 
+needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
 
 * supply a PKCS#12 archive containing the key and certificate with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
@@ -857,4 +873,5 @@ Parameters such as <code>esHttpCertBlob</code> and <code>kibanaCertBlob</code> m
 
 ## License
 
-This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)
+This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and was originally forked from 
+the [Elasticsearch Azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)
