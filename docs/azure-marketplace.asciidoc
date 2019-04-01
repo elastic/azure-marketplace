@@ -169,7 +169,7 @@ template on GitHub directly].** Consult the <<azure-arm-template-security, Secur
 An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
 with a 30 day trial license that enables all of {subscriptions}[the Platinum features of the Elastic Stack],
 including {elasticstack}/security[Security]. Security features allow Basic Authentication configuration
-for the cluster, setting up three
+for the cluster, setting up four
 {xpackdocs}/setting-up-authentication.html[built-in user accounts]
 
 . The `elastic` user, a built-in superuser account
@@ -207,7 +207,7 @@ and within minutes, you'll have Elasticsearch running on Azure!
 ==== Accessing Elasticsearch
 
 Elasticsearch can be accessed from outside of Azure through the external load
-balancer, by navigating to the external load balancer public IP address resource
+balancer, if deployed, by navigating to the external load balancer public IP address resource
 and using either the IP address or public domain name along with port 9200.
 For example,
 
