@@ -291,11 +291,11 @@ value defined in the template.
     </td><td><a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes">Maximum number supported disks for data node VM size</a></td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of each attached disk. Choose <code>XXLarge</code> (4095Gb), <code>XLarge</code> (2048Gb), <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
-    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P50, P40, P30, P20 and P10</a>
+    <td>The disk size of each attached disk. Choose <code>32TiB</code>, <code>16TiB</code>, <code>8TiB</code>, <code>4TiB</code>, <code>2TiB</code>, <code>1TiB</code>, <code>512GiB</code>, <code>256GiB</code>, <code>128GiB</code>, <code>64GiB</code> or <code>32GiB</code>.
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P80, P70, P60, P50, P40, P30, P20, P15, P10 and P6</a>
     storage disk types, respectively.
     </td>
-  </td><td><code>Large</code></td></tr>
+  </td><td><code>1TiB</code></td></tr>
 
   <tr><td>storageAccountType</td><td>string</td>
     <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. 

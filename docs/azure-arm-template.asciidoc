@@ -525,14 +525,20 @@ managed disks, and Standard HDD disks for those that do not. The default is `Def
 The size of each attached managed disk. Choose between
 +
 [horizontal]
-`XXLarge`::: 4095 GB
-`XLarge`::: 2048 GB
-`Large`::: 1024 GB
-`Medium`::: 512 GB
-`Small`::: 128 GB
+`32TiB`::: 32 Tebibytes
+`16TiB`::: 16 Tebibytes
+`8TiB`::: 8 Tebibytes
+`4TiB`::: 4 Tebibytes
+`2TiB`::: 2 Tebibytes
+`1TiB`::: 1 Tebibyte
+`512GiB`::: 512 Gibibytes
+`256GiB`::: 256 Gibibytes
+`128GiB`::: 126 Gibibytes
+`64GiB`::: 64 Gibibytes
+`32GiB`::: 32 Gibibytes
 
 +
-Default is `Large`.
+Default is `1TiB`.
 
 `vmDataDiskCount`::
 The number of managed disks to attach to _each_ data node. The total number of

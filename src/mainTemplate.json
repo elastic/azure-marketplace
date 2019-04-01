@@ -725,16 +725,22 @@
     },
     "vmDataDiskSize": {
       "type": "string",
-      "defaultValue": "Large",
+      "defaultValue": "1TiB",
       "allowedValues": [
-        "Small",
-        "Medium",
-        "Large",
-        "XLarge",
-        "XXLarge"
+        "32GiB",
+        "64GiB",
+        "128GiB",
+        "256GiB",
+        "512GiB",
+        "1TiB",
+        "2TiB",
+        "4TiB",
+        "8TiB",
+        "16TiB",
+        "32TiB"
       ],
       "metadata": {
-        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb), Large (1024Gb), XLarge (2048Gb) and XXLarge (4095Gb). For Premium Storage, this equates to P10, P20, P30, P40 and P50, respectively."
+        "description": "The disk size of each attached managed disk, 32GiB, 64GiB, 128GiB, 256 GiB, 512GiB, 1TiB, 2TiB, 4TiB, 8TiB, 16TiB and 32TiB. Default is 1TiB. For Premium Storage, this equates to P6, P10, P15, P20, P30, P40, P50, P60, P70 and P80, respectively."
       }
     },
     "vmDataNodeCount": {
@@ -753,7 +759,7 @@
         "Standard"
       ],
       "metadata": {
-        "description": "The storage account type of the attached disks (Default or Standard). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard Storage for those that do not."
+        "description": "The storage account type of the attached managed disks and OS disks (Default or Standard). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard HDD Storage for those that do not."
       }
     },
     "dataNodesAreMasterEligible": {
@@ -917,7 +923,7 @@
       "defaultValue": 0,
       "minValue": 0,
       "metadata": {
-        "description": "Number of Elasticsearch coordinating nodes to provision. A value of 0 puts the data nodes on the load balancer"
+        "description": "Number of Elasticsearch coordinating nodes to provision. A value of 0 puts the data nodes in the load balancer backend pool"
       }
     },
     "vmSizeClientNodes": {
@@ -1825,11 +1831,17 @@
       }
     },
     "dataDiskSizes": {
-      "XXLarge": 4095,
-      "XLarge": 2048,
-      "Large": 1024,
-      "Medium": 512,
-      "Small": 128
+      "32GiB": 32,
+      "64GiB": 64,
+      "128GiB": 128,
+      "256GiB": 256,
+      "512GiB": 512,
+      "1TiB": 1024,
+      "2TiB": 2048,
+      "4TiB": 4096,
+      "8TiB": 8192,
+      "16TiB": 16384,
+      "32TiB": 32767
     },
     "backendPoolConfigurations": {
       "internal": [

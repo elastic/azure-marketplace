@@ -55,7 +55,7 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
         main.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
         main.parameters.vmDataDiskSize.allowedValues = diskSizes;
-        main.parameters.vmDataDiskSize.defaultValue = "Large";
+        main.parameters.vmDataDiskSize.defaultValue = allowedValues.defaultDiskSize;
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
@@ -72,13 +72,12 @@ gulp.task("patch", function(cb) {
               return el.name == "esVersion";
             });
             versionControl.constraints.allowedValues = _.map(versions, function(v) {
-              return { label: "v" + v, value : v};
+              return { label: "v" + v, value : v };
             });
             versionControl.defaultValue = "v" + _.last(versions);
 
             //patch allowedVMSizes on the nodesStep
             var nodesStep = _.find(ui.parameters.steps, function (step) { return step.name == "nodesStep"; });
-
             var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
             var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
             var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
@@ -120,6 +119,14 @@ gulp.task("patch", function(cb) {
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;
             var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
             clientNodeCountControl.constraints.allowedValues = clientNodeValues;
+
+            var dataNodesDisksSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodesDisks"; });
+            var dataDisksControl = _.find(dataNodesDisksSection.elements, function (el) { return el.name == "vmDataDiskSize"; });
+
+            dataDisksControl.constraints.allowedValues = _.map(diskSizes, function(d) {
+              return { label: d, value : d };
+            });
+            dataDisksControl.defaultValue = allowedValues.defaultDiskSize;;
 
             jsonfile.writeFile(uiTemplate, ui, function (err) {
               cb();
