@@ -458,29 +458,53 @@
                 "type": "Microsoft.Common.DropDown",
                 "label": "Size of each managed disk",
                 "visible": "[greater(steps('nodesStep').dataNodesDisks.vmDataDiskCount, 0)]",
-                "defaultValue": "Large (1024Gb)",
+                "defaultValue": "1TiB",
                 "toolTip": "The size of each data disk to attach to each data node",
                 "constraints": {
                   "allowedValues": [
                     {
-                      "label": "Small (128Gb)",
-                      "value": "Small"
+                      "label": "32GiB",
+                      "value": "32GiB"
                     },
                     {
-                      "label": "Medium (512Gb)",
-                      "value": "Medium"
+                      "label": "64GiB",
+                      "value": "64GiB"
                     },
                     {
-                      "label": "Large (1024Gb)",
-                      "value": "Large"
+                      "label": "128GiB",
+                      "value": "128GiB"
                     },
                     {
-                      "label": "Extra Large (2048Gb)",
-                      "value": "XLarge"
+                      "label": "256GiB",
+                      "value": "256GiB"
                     },
                     {
-                      "label": "Extra Extra Large (4095Gb)",
-                      "value": "XXLarge"
+                      "label": "512GiB",
+                      "value": "512GiB"
+                    },
+                    {
+                      "label": "1TiB",
+                      "value": "1TiB"
+                    },
+                    {
+                      "label": "2TiB",
+                      "value": "2TiB"
+                    },
+                    {
+                      "label": "4TiB",
+                      "value": "4TiB"
+                    },
+                    {
+                      "label": "8TiB",
+                      "value": "8TiB"
+                    },
+                    {
+                      "label": "16TiB",
+                      "value": "16TiB"
+                    },
+                    {
+                      "label": "32TiB",
+                      "value": "32TiB"
                     }
                   ]
                 }

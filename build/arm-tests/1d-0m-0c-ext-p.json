@@ -12,7 +12,7 @@
 		"vmSizeDataNodes":{"value":"Standard_DS1_v2"},
 		"vmDataNodeCount":{"value":1},
 		"vmDataDiskCount":{"value":0},
-		"vmDataDiskSize":{"value":"Small"},
+		"vmDataDiskSize":{"value":"32GiB"},
 		"storageAccountType":{"value":"Default"},
 		"dataNodesAreMasterEligible":{"value":"Yes"},
 		"vmSizeMasterNodes":{"value":"Standard_DS2"},
