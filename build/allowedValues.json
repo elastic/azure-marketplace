@@ -216,6 +216,12 @@
     ["Standard_L16s", 64, "Premium", false],
     ["Standard_L32s", 64, "Premium", false],
 
+    ["Standard_L8s_v2", 16, "Premium", false],
+    ["Standard_L16s_v2", 32, "Premium", false],
+    ["Standard_L32s_v2", 32, "Premium", false],
+    ["Standard_L64s_v2", 32, "Premium", false],
+    ["Standard_L80s_v2", 32, "Premium", false],
+
     ["Standard_M8ms", 8, "Premium", false],
     ["Standard_M16ms", 16, "Premium", false],
     ["Standard_M32ts", 32, "Premium", false],
