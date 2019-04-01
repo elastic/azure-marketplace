@@ -56,7 +56,7 @@ Deploying through the Marketplace is great and easy way to get your feet wet for
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F6.7%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F6.7%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -563,7 +563,7 @@ value defined in the template.
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F6.7%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -597,7 +597,7 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 ```sh
 az group deployment create \
   --resource-group <name> \
-  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/6.7/src/mainTemplate.json \
+  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json \
   --parameters @parameters/password.parameters.json
 ```
 
@@ -622,7 +622,7 @@ where `<name>` refers to the resource group you just created.
 
   ```powershell
   $clusterParameters = @{
-      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/6.7/src"
+      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"
       "esVersion" = "6.7.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
@@ -647,7 +647,7 @@ where `<name>` refers to the resource group you just created.
 5. Use our template directly from GitHub
 
   ```powershell
-  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/6.7/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
+  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
 
 ## Targeting a specific template version
