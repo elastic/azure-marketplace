@@ -877,7 +877,7 @@ temporary storage space and network bandwidth. The Kibana VM always uses standar
 [NOTE]
 --
 The template deploys only a single instance of Kibana. You should ensure that a VM SKU
-of sufficient size is chosen to be service the expected amount of traffic. A larger VM
+of sufficient size is chosen to service the expected amount of traffic. A larger VM
 SKU will generally be faster to optimize browser bundles and start up than a smaller
 VM SKU.
 --
