@@ -74,6 +74,7 @@ var bootstrapTest = (t, defaultVersion) =>
   testParameters.securityReadPassword.value = config.deployments.securityPassword;
   testParameters.securityKibanaPassword.value = config.deployments.securityPassword;
   testParameters.securityLogstashPassword.value = config.deployments.securityPassword;
+  testParameters.securityBeatsPassword.value = config.deployments.securityPassword;
   testParameters.esVersion.value = defaultVersion;
 
   // Some parameters are longer than the max allowed characters for cmd on Windows.

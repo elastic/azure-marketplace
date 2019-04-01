@@ -11,7 +11,7 @@ and network interfaces
 * 1 availability set for master nodes
 * 3 data node Standard DS1 v2 SKU VMs running Ubuntu 16.04 with OS disks, network
 interfaces and one
-1024Gb managed disk per data node
+1TiB managed disk per data node
 * 1 availability set for data nodes
 * 1 Kibana Standard D1 SKU VM running Ubuntu 16.04 with OS disk, network interface,
 network security group and public IP address

@@ -12,7 +12,8 @@
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
-  "diskSizes" : ["Small", "Medium", "Large", "XLarge", "XXLarge"],
+  "diskSizes" : ["32GiB", "64GiB", "128GiB", "256GiB", "512GiB", "1TiB", "2TiB", "4TiB", "8TiB", "16TiB", "32TiB"],
+  "defaultDiskSize": "1TiB",
   "vmAcceleratedNetworking": [
     "Standard_D2_v2",
     "Standard_D3_v2",
