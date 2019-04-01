@@ -108,7 +108,7 @@ Some post install checks are performed on the deployed cluster to assert success
 
 **NOTE:** Be sure that you have sufficient core quota in the subscription and location into which you're deploying.
 
-### Keeping reosource groups around after testing/deploying
+### Keeping resource groups around after testing/deploying
 
 Both `test` and `deploy` will attempt to clean up the resource groups created as part of a test run,
 but whilst developing, this may not be desirable. You can use the `--nodestroy` parameter to
@@ -118,16 +118,19 @@ keep resource groups around after the tests have finished, whether successfully 
 npm run deploy -- --nodestroy
 ```
 
+Be sure to delete resource groups after you've finished with them.
+
 ### Cleaning up resource groups
 
 Both `test` and `deploy` will attempt to clean up the resource groups created as part of a test run, but sometimes this
-may not happen e.g. testing process stopped part-way through. When this happens, you can run
+may not happen e.g. testing process manually stopped part-way through. When this happens, you can run
 
 ```bash
 npm run azure-cleanup
 ```
 
-to remove all resource-groups starting with `test-<hostname>-*`
+to remove all resource-groups starting with `test-<hostname>-*`, where `<hostname>` is the name of
+your machine.
 
 ## Automated UI tests
 
