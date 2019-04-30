@@ -204,7 +204,7 @@ configure_kibana_yaml()
     log "[configure_kibana_yaml] Configuring kibana.yml"
 
     # set the elasticsearch URL
-    if dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; then
+    if dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.0.0"; then
       echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
     else
       echo "elasticsearch.hosts: [\"$ELASTICSEARCH_URL\"]" >> $KIBANA_CONF
