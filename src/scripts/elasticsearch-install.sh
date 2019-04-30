@@ -270,7 +270,7 @@ else
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi
 
-if [[ "${ES_VERSION}" == \6* && ${INSTALL_XPACK} -ne 0 ]]; then
+if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0") -eq 0 && ${INSTALL_XPACK} -ne 0 ]]; then
     log "using bootstrap password as the seed password"
     SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi
@@ -347,10 +347,10 @@ check_data_disk()
     fi
 }
 
-# Install Oracle Java
+# Install OpenJDK
 install_java()
 {
-  bash java-install.sh
+  bash java-install.sh -v "$ES_VERSION"
 }
 
 # Install Elasticsearch
@@ -425,6 +425,12 @@ install_repository_azure_plugin()
 install_additional_plugins()
 {
     SKIP_PLUGINS="license shield watcher marvel-agent graph cloud-azure x-pack repository-azure"
+
+    if dpkg --compare-versions "$ES_VERSION" "ge" "6.7.0"; then
+      # plugins are bundled in the distribution
+      SKIP_PLUGINS+=" ingest-geoip ingest-user-agent"
+    fi
+
     log "[install_additional_plugins] Installing additional plugins"
     for PLUGIN in $(echo $INSTALL_ADDITIONAL_PLUGINS | tr ";" "\n")
     do
@@ -446,21 +452,27 @@ install_additional_plugins()
 
 node_is_up()
 {
-  curl --output /dev/null --silent --head --fail $PROTOCOL://localhost:9200 -u elastic:$1 -H 'Content-Type: application/json' $CURL_SWITCH
+  curl --output /dev/null --silent --head --fail $PROTOCOL://localhost:9200 -u "elastic:$1" -H 'Content-Type: application/json' $CURL_SWITCH
   return $?
 }
 
 elastic_user_exists()
 {
-  local USER_TYPENAME curl_error_code http_code
+  local ELASTIC_USER_NAME USER_TYPENAME curl_error_code http_code
   if [[ "${ES_VERSION}" == \5* ]]; then
     USER_TYPENAME="reserved-user"
-  else
+    ELASTIC_USER_NAME="elastic"
+  elif [[ "${ES_VERSION}" == \6* ]]; then
     USER_TYPENAME="doc"
+    ELASTIC_USER_NAME="reserved-user-elastic"
+  else
+    # 7.x +
+    USER_TYPENAME="_doc"
+    ELASTIC_USER_NAME="reserved-user-elastic"
   fi
 
   exec 17>&1
-  http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' $PROTOCOL://localhost:9200/.security/$USER_TYPENAME/elastic -u elastic:$1 $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
+  http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' $PROTOCOL://localhost:9200/.security/$USER_TYPENAME/$ELASTIC_USER_NAME -u "elastic:$1" $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
   curl_error_code=$?
   exec 17>&-
   if [ $http_code -eq 200 ]; then
@@ -524,8 +536,15 @@ apply_security_settings()
     else
       log "[apply_security_settings] start updating roles and users"
 
-      local XPACK_USER_ENDPOINT="$PROTOCOL://localhost:9200/_xpack/security/user"
-      local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/_xpack/security/role"
+      local XPACK_SECURITY_PATH
+      if dpkg --compare-versions "$ES_VERSION" "ge" "7.0.0"; then
+        XPACK_SECURITY_PATH="_security"
+      else
+        XPACK_SECURITY_PATH="_xpack/security"
+      fi
+
+      local XPACK_USER_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/user"
+      local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/role"
 
       #update builtin `elastic` account.
       local ADMIN_JSON=$(printf '{"password":"%s"}\n' $USER_ADMIN_PWD)
@@ -712,7 +731,7 @@ configure_http_tls()
     log "[configure_http_tls] configuring SSL/TLS for HTTP layer"
     echo "xpack.security.http.ssl.enabled: true" >> $ES_CONF
 
-    if [[ "${ES_VERSION}" == \6* ]]; then
+    if dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; then
       if [[ -f $HTTP_CERT_PATH ]]; then
           # dealing with PKCS#12 archive
           echo "xpack.security.http.ssl.keystore.path: $HTTP_CERT_PATH" >> $ES_CONF
@@ -865,7 +884,7 @@ configure_transport_tls()
     log "[configure_transport_tls] configuring SSL/TLS for Transport layer"
     echo "xpack.security.transport.ssl.enabled: true" >> $ES_CONF
 
-    if [[ "${ES_VERSION}" == \6* ]]; then
+    if dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; then
       if [[ -f $TRANSPORT_CERT_PATH ]]; then
           echo "xpack.security.transport.ssl.keystore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
           echo "xpack.security.transport.ssl.truststore.path: $TRANSPORT_CERT_PATH" >> $ES_CONF
@@ -959,8 +978,15 @@ configure_elasticsearch_yaml()
     echo "path.data: $DATAPATH_CONFIG" >> $ES_CONF
 
     # Configure discovery
-    log "[configure_elasticsearch_yaml] update configuration with hosts configuration of $UNICAST_HOSTS"
-    echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> $ES_CONF
+    if dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; then
+      log "[configure_elasticsearch_yaml] update configuration with discovery.zen.ping.unicast.hosts set to $UNICAST_HOSTS"
+      echo "discovery.zen.ping.unicast.hosts: $UNICAST_HOSTS" >> $ES_CONF
+      echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
+    else
+      log "[configure_elasticsearch_yaml] update configuration with discovery.seed_hosts and cluster.initial_master_nodes set to $UNICAST_HOSTS"
+      echo "discovery.seed_hosts: $UNICAST_HOSTS" >> $ES_CONF
+      echo "cluster.initial_master_nodes: $UNICAST_HOSTS" >> $ES_CONF
+    fi
 
     # Configure Elasticsearch node type
     log "[configure_elasticsearch_yaml] configure master/client/data node type flags only master-$MASTER_ONLY_NODE only data-$DATA_ONLY_NODE"
@@ -981,8 +1007,7 @@ configure_elasticsearch_yaml()
         echo "node.master: true" >> $ES_CONF
         echo "node.data: true" >> $ES_CONF
     fi
-
-    echo "discovery.zen.minimum_master_nodes: $MINIMUM_MASTER_NODES" >> $ES_CONF
+    
     echo "network.host: [_site_, _local_]" >> $ES_CONF
     echo "node.max_local_storage_nodes: 1" >> $ES_CONF
 
@@ -996,7 +1021,7 @@ configure_elasticsearch_yaml()
 
     # Configure Azure Cloud plugin
     if [[ -n "$STORAGE_ACCOUNT" && -n "$STORAGE_KEY" && -n "$STORAGE_SUFFIX" ]]; then
-      if [[ "${ES_VERSION}" == \6* ]]; then
+      if dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; then
         log "[configure_elasticsearch_yaml] configure storage for repository-azure plugin in keystore"
         create_keystore_if_not_exists
         echo "$STORAGE_ACCOUNT" | /usr/share/elasticsearch/bin/elasticsearch-keystore add azure.client.default.account -xf
@@ -1024,6 +1049,7 @@ configure_elasticsearch_yaml()
 
         local SKIP_LINES="cluster.name node.name path.data discovery.zen.ping.unicast.hosts "
         SKIP_LINES+="node.master node.data discovery.zen.minimum_master_nodes network.host "
+        SKIP_LINES+="discovery.seed_hosts cluster.initial_master_nodes "
         SKIP_LINES+="discovery.zen.ping.multicast.enabled marvel.agent.enabled "
         SKIP_LINES+="node.max_local_storage_nodes plugin.mandatory cloud.azure.storage.default.account "
         SKIP_LINES+="cloud.azure.storage.default.key azure.client.default.endpoint_suffix xpack.security.authc "
@@ -1081,8 +1107,13 @@ configure_elasticsearch_yaml()
       local IDP_ENTITY_ID="$(grep -oP '\sentityID="(.*?)"\s' /etc/elasticsearch/saml/metadata.xml | sed 's/^.*"\(.*\)".*/\1/')"
       {
           echo -e ""
-          echo -e "xpack.security.authc.realms.saml_aad:"
-          echo -e "  type: saml"
+          # include the realm type in the setting name in 7.x +
+          if dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; then
+            echo -e "xpack.security.authc.realms.saml_aad:"
+            echo -e "  type: saml"
+          else
+            echo -e "xpack.security.authc.realms.saml.saml_aad:"
+          fi
           echo -e "  order: 2"
           echo -e "  idp.metadata.path: /etc/elasticsearch/saml/metadata.xml"
           echo -e "  idp.entity_id: \"$IDP_ENTITY_ID\""
@@ -1240,8 +1271,8 @@ setup_data_disk
 
 if [ ${INSTALL_XPACK} -ne 0 ]; then
     install_xpack
-    # in 6.x we need to set up the bootstrap.password in the keystore to use when setting up users
-    if [[ "${ES_VERSION}" == \6* ]]; then
+    # in 6.x + we need to set up the bootstrap.password in the keystore to use when setting up users
+    if dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; then
         setup_bootstrap_password
     fi
 fi

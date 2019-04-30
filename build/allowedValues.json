@@ -8,7 +8,8 @@
     "6.4.3",
     "6.5.4",
     "6.6.2",
-    "6.7.0"
+    "6.7.1",
+    "7.0.0"
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
@@ -44,8 +45,6 @@
     "Standard_F4s",
     "Standard_F8s",
     "Standard_F16s",
-
-
 
     "Standard_D4_v3",
     "Standard_D8_v3",
