@@ -270,7 +270,7 @@ else
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi
 
-if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0") -eq 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; echo $?) -eq 0 && ${INSTALL_XPACK} -ne 0 ]]; then
     log "using bootstrap password as the seed password"
     SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi
@@ -1097,7 +1097,7 @@ configure_elasticsearch_yaml()
     fi
 
     # Configure SAML realm only for valid versions of Elasticsearch and if the conditions are met
-    if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.2.0") -eq 0 && -n "$SAML_METADATA_URI" && -n "$SAML_SP_URI" && ( -n "$HTTP_CERT" || -n "$HTTP_CACERT" ) && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.2.0"; echo $?) -eq 0 && -n "$SAML_METADATA_URI" && -n "$SAML_SP_URI" && ( -n "$HTTP_CERT" || -n "$HTTP_CACERT" ) && ${INSTALL_XPACK} -ne 0 ]]; then
       log "[configure_elasticsearch_yaml] configuring SAML realm named 'saml_aad' for $SAML_SP_URI"
       [ -d /etc/elasticsearch/saml ] || mkdir -p /etc/elasticsearch/saml
       wget --retry-connrefused --waitretry=1 -q "$SAML_METADATA_URI" -O /etc/elasticsearch/saml/metadata.xml

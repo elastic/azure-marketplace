@@ -62,7 +62,7 @@ log "updating apt-get"
 log "updated apt-get"
 
 # Only install Java if not bundled with Elasticsearch
-if [[ -z "$ES_VERSION" || $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0") -eq 0 ]]; then
+if [[ -z "$ES_VERSION" || $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0 ]]; then
   install_java
 else
   log "not installing java, using JDK bundled with distribution"
