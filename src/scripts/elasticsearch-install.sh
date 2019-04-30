@@ -356,7 +356,12 @@ install_java()
 # Install Elasticsearch
 install_es()
 {
-    local PACKAGE="elasticsearch-$ES_VERSION.deb"
+    local OS_SUFFIX=""
+    if dpkg --compare-versions "$ES_VERSION" "ge" "7.0.0"; then
+      OS_SUFFIX="-amd64"
+    fi
+    local PACKAGE="elasticsearch-${ES_VERSION}${OS_SUFFIX}.deb"
+
     local ALGORITHM="512"
     if dpkg --compare-versions "$ES_VERSION" "lt" "5.6.2"; then
       ALGORITHM="1"
