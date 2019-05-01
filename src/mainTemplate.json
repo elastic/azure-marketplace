@@ -1326,7 +1326,7 @@
       "transportCaCertBlob": "[parameters('esTransportCaCertBlob')]",
       "transportCaCertPassword": "[parameters('esTransportCaCertPassword')]",
       "transportCertPassword": "[parameters('esTransportCertPassword')]",
-      "securityAdminPwd": "[parameters('securityAdminPassword')]",  
+      "securityAdminPwd": "[parameters('securityAdminPassword')]",
       "securityKibanaPwd": "[parameters('securityKibanaPassword')]",
       "securityLogstashPwd": "[parameters('securityLogstashPassword')]",
       "securityBeatsPwd": "[parameters('securityBeatsPassword')]",
