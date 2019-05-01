@@ -151,11 +151,12 @@ az group deployment create \
                vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
                adminUsername=russ adminPassword=Password1234 \
                securityBootstrapPassword=bootstrapPassword123 \
-               securityAdminPassword=adminPassword123 \
-               securityReadPassword=readPassword123 \
+               securityAdminPassword=adminPassword123 \              
                securityKibanaPassword=kibanaPassword123 \
                securityLogstashPassword=logstashPassword123 \
-               securityBeatsPassword=beatsPassword123
+               securityBeatsPassword=beatsPassword123 \
+               securityApmPassword=apmPassword123 \
+               securityRemoteMonitoringPassword=remoteMonitoringPassword123
 ----
 
 [source,powershell]
@@ -175,10 +176,11 @@ $parameters = @{
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "bootstrapPassword123"
   "securityAdminPassword" = "adminPassword123"
-  "securityReadPassword" = "readPassword123"
   "securityKibanaPassword" = "kibanaPassword123"
   "securityLogstashPassword" = "logstashPassword123"
   "securityBeatsPassword" = "beatsPassword123"
+  "securityApmPassword" = "apmPassword123"
+  "securityRemoteMonitoringPassword" = "remoteMonitoringPassword123"
 }
 
 $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
@@ -1051,24 +1053,16 @@ Security password for the `beats_system` built-in user account. This is the acco
 Beats can use to communicate with Elasticsearch. Must be greater
 than six characters in length. Valid only for Elasticsearch 6.3.0+
 
-`securityReadPassword`::
-Security password for an `es_read` user account configured with a user (read-only) role with
-the following definition
-+
-[source,json]
---
-{
-  "cluster": [ "monitor" ],
-  "indices": [
-    {
-      "names": [ "*" ],
-      "privileges": [ "read", "monitor", "view_index_metadata" ]
-    }
-  ]
-}
---
-+
-Must be greater than six characters in length.
+`securityApmPassword`::
+Security password for the `apm_system` built-in user account. This is the account that the 
+APM server can use to communicate with Elasticsearch. Must be greater
+than six characters in length. Valid only for Elasticsearch 6.5.0+
+
+`securityRemoteMonitoringPassword`::
+Security password for the `remote_monitoring_user` built-in user account. This is the account that 
+Metricbeat uses when collecting and storing monitoring information in Elasticsearch. 
+It has the `remote_monitoring_agent` and `remote_monitoring_collector` built-in roles.
+Valid only for Elasticsearch 6.5.0+
 
 It is recommended after deployment to use the `elastic` superuser account to create
 the individual user accounts that will be needed for the users and applications
@@ -1273,10 +1267,11 @@ az group deployment create \
         adminPassword=Password1234 \
         securityBootstrapPassword=BootstrapPassword123 \
         securityAdminPassword=AdminPassword123 \
-        securityReadPassword=ReadPassword123 \
         securityKibanaPassword=KibanaPassword123 \
         securityLogstashPassword=LogstashPassword123 \
         securityBeatsPassword=BeatsPassword123 \
+        securityApmPassword=ApmPassword123 \
+        securityRemoteMonitoringPassword=RemoteMonitoringPassword123 \
         kibanaCertBlob=$kibana_cert \
         kibanaKeyBlob=$kibana_key \
         samlMetadataUri=$metadata_uri
@@ -1309,10 +1304,11 @@ $parameters = @{
     "adminPassword" = "Password1234"
     "securityBootstrapPassword" = "BootstrapPassword123"
     "securityAdminPassword" = "AdminPassword123"
-    "securityReadPassword" = "ReadPassword123"
     "securityKibanaPassword" = "KibanaPassword123"
     "securityLogstashPassword" = "LogstashPassword123"
     "securityBeatsPassword" = "BeatsPassword123"
+    "securityApmPassword" = "ApmPassword123"
+    "securityRemoteMonitoringPassword" = "RemoteMonitoringPassword123"
     "kibanaCertBlob" = $kibanaCert
     "kibanaKeyBlob" = $kibanaKey
     "samlMetadataUri" = $metadataUri

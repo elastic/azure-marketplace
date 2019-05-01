@@ -357,12 +357,6 @@ value defined in the template.
     should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
-  <tr><td>securityReadPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_read</code> user with user (read-only) role. 
-    <br />
-    should be a minimum of 12 characters, and must be greater than 6 characters.
-    </td><td><code>""</code></td></tr>
-
   <tr><td>securityKibanaPassword</td><td>securestring</td>
     <td>Security password Kibana.
     <br />
@@ -379,6 +373,18 @@ value defined in the template.
 
   <tr><td>securityBeatsPassword</td><td>securestring</td>
     <td>This is the built-in <code>beats_system</code> user. Valid for Elasticsearch 6.3.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>securityApmPassword</td><td>securestring</td>
+    <td>This is the built-in <code>apm_system</code> user. Valid for Elasticsearch 6.5.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+  
+  <tr><td>securityRemoteMonitoringPassword</td><td>securestring</td>
+    <td>This is the built-in <code>remote_monitoring_user</code> user. Valid for Elasticsearch 6.5.0+
     <br />
     should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
@@ -630,11 +636,12 @@ where `<name>` refers to the resource group you just created.
       "adminUsername" = "russ"
       "adminPassword" = "Password1234"
       "securityBootstrapPassword" = "Password1234"
-      "securityAdminPassword" = "Password1234"
-      "securityReadPassword" = "Password1234"
+      "securityAdminPassword" = "Password1234"     
       "securityKibanaPassword" = "Password1234"
       "securityLogstashPassword" = "Password1234"
       "securityBeatsPassword" = "Password1234"
+      "securityApmPassword" = "Password1234"
+      "securityRemoteMonitoringPassword" = "Password1234"
   }
   ```
 
@@ -671,10 +678,11 @@ $clusterParameters = @{
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "Password1234"
   "securityAdminPassword" = "Password1234"
-  "securityReadPassword" = "Password1234"
   "securityKibanaPassword" = "Password1234"
   "securityLogstashPassword" = "Password1234"
   "securityBeatsPassword" = "Password1234"
+  "securityApmPassword" = "Password1234"
+  "securityRemoteMonitoringPassword" = "Password1234"
 }
 
 $resourceGroup = "my-azure-cluster"

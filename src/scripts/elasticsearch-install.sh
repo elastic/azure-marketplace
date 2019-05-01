@@ -19,18 +19,20 @@ help()
     echo ""
     echo "Options:"
     echo "    -n      elasticsearch cluster name"
-    echo "    -v      elasticsearch version e.g. 6.4.1"
+    echo "    -v      elasticsearch version e.g. 7.0.0"
     echo "    -p      hostname prefix of nodes for unicast discovery"
     echo "    -m      heap size in megabytes to allocate to JVM"
 
     echo "    -d      cluster uses dedicated masters"
     echo "    -Z      <number of nodes> hint to the install script how many data nodes we are provisioning"
 
-    echo "    -A      admin password"
-    echo "    -R      read password"
+    echo "    -B      bootstrap password" 
+    echo "    -A      elastic user password"  
     echo "    -K      kibana user password"
     echo "    -S      logstash_system user password"
     echo "    -F      beats_system user password"
+    echo "    -M      apm_system user password"
+    echo "    -R      remote_monitoring_user user password"
 
     echo "    -x      configure as a dedicated master node"
     echo "    -y      configure as client only node (no master, no data)"
@@ -50,10 +52,12 @@ help()
 
     echo "    -O      URI from which to retrieve the metadata file for the Identity Provider to configure SAML Single-Sign-On"
     echo "    -P      Public domain name for the instance of Kibana to configure SAML Single-Sign-On"
+    echo "    -D      Internal Load Balancer IP address"
 
-    echo "    -j      install azure cloud plugin for snapshot and restore"
-    echo "    -a      set the default storage account for azure cloud plugin"
-    echo "    -k      set the key for the default storage account for azure cloud plugin"
+    echo "    -j      install repository-azure plugin for snapshot and restore"
+    echo "    -a      set the default storage account for repository-azure plugin"
+    echo "    -k      set the key for the default storage account for repository-azure plugin"
+    echo "    -E      set the storage account suffix for repository-azure plugin"
 
     echo "    -h      view this help content"
 }
@@ -117,10 +121,11 @@ UNICAST_HOST_PORT=":9300"
 UNICAST_HOSTS='["'"$NAMESPACE_PREFIX"'master-0'"$UNICAST_HOST_PORT"'","'"$NAMESPACE_PREFIX"'master-1'"$UNICAST_HOST_PORT"'","'"$NAMESPACE_PREFIX"'master-2'"$UNICAST_HOST_PORT"'"]'
 
 USER_ADMIN_PWD="changeme"
-USER_READ_PWD="changeme"
+USER_REMOTE_MONITORING_PWD="changeme"
 USER_KIBANA_PWD="changeme"
 USER_LOGSTASH_PWD="changeme"
 USER_BEATS_PWD="changeme"
+USER_APM_PWD="changeme"
 BOOTSTRAP_PASSWORD="changeme"
 SEED_PASSWORD="changeme"
 
@@ -144,7 +149,7 @@ SAML_METADATA_URI=""
 SAML_SP_URI=""
 
 #Loop through options passed
-while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
+while getopts :n:m:v:A:R:M:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optname; do
   log "Option $optname set"
   case $optname in
     n) #set cluster name
@@ -159,8 +164,8 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
     A) #security admin pwd
       USER_ADMIN_PWD="${OPTARG}"
       ;;
-    R) #security readonly pwd
-      USER_READ_PWD="${OPTARG}"
+    R) #security remote_monitoring_user pwd
+      USER_REMOTE_MONITORING_PWD="${OPTARG}"
       ;;
     K) #security kibana user pwd
       USER_KIBANA_PWD="${OPTARG}"
@@ -170,6 +175,9 @@ while getopts :n:m:v:A:R:K:S:F:Z:p:a:k:L:C:B:E:H:G:T:W:V:J:N:D:O:P:xyzldjh optna
       ;;
     F) #security beats_system user pwd
       USER_BEATS_PWD="${OPTARG}"
+      ;;
+    M) #security apm_system user pwd
+      USER_APM_PWD="${OPTARG}"
       ;;
     B) #bootstrap password
       BOOTSTRAP_PASSWORD="${OPTARG}"
@@ -599,32 +607,26 @@ apply_security_settings()
         log "[apply_security_settings] updated built-in beats_system user password"
       fi
 
-      #create a readonly role that mimics the `user` role in the old shield plugin
-      curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_ROLE_ENDPOINT/user" -d'
-      {
-        "cluster": [ "monitor" ],
-        "indices": [
-          {
-            "names": [ "*" ],
-            "privileges": [ "read", "monitor", "view_index_metadata" ]
-          }
-        ]
-      }'
-      if [[ $? != 0 ]]; then
-        log "[apply_security_settings] could not create user role"
-        exit 10
-      fi
-      log "[apply_security_settings] added user role"
-
-      # add `es_read` user with the newly created `user` role
-      local USER_JSON=$(printf '{"password":"%s","roles":["user"]}\n' $USER_READ_PWD)
-      echo $USER_JSON | curl_ignore_409 -XPOST -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/es_read" -d @-
-      if [[ $? != 0 ]]; then
-        log "[apply_security_settings] could not add es_read"
-        exit 10
-      fi
-      log "[apply_security_settings] added es_read account"
-      log "[apply_security_settings] updated roles and users"
+      
+      if dpkg --compare-versions "$ES_VERSION" "ge" "6.5.0"; then
+        #update builtin `apm_system` account for Elasticsearch 6.5.0+
+        local APM_JSON=$(printf '{"password":"%s"}\n' $USER_APM_PWD)
+        echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
+        if [[ $? != 0 ]];  then
+          log "[apply_security_settings] could not update the built-in apm_system user"
+          exit 10
+        fi
+        log "[apply_security_settings] updated built-in apm_system user password"
+      
+        #update builtin `remote_monitoring_user` account for Elasticsearch 6.5.0+
+        local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $USER_REMOTE_MONITORING_PWD)
+        echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
+        if [[ $? != 0 ]];  then
+          log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
+          exit 10
+        fi
+        log "[apply_security_settings] updated built-in remote_monitoring_user user password"     
+      fi   
     fi
 }
 
