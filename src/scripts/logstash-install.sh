@@ -287,14 +287,22 @@ configure_logstash_yaml()
         log "[configure_logstash_yaml] installed x-pack plugin"
       fi
 
-      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
+        echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+      else
+        echo 'xpack.monitoring.elasticsearch.hosts: ["${ELASTICSEARCH_URL}"]' >> $LOGSTASH_CONF
+      fi
 
       # assumes Security is enabled, so configure monitoring credentials
       echo "xpack.monitoring.elasticsearch.username: logstash_system" >> $LOGSTASH_CONF
       echo 'xpack.monitoring.elasticsearch.password: "${LOGSTASH_SYSTEM_PASSWORD}"' >> $LOGSTASH_CONF
     elif [[ $XPACK_BUNDLED -eq 0 ]]; then
       # configure monitoring for basic
-      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
+        echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+      else
+        echo 'xpack.monitoring.elasticsearch.hosts: ["${ELASTICSEARCH_URL}"]' >> $LOGSTASH_CONF
+      fi
     fi
 
     local MONITORING='true'
@@ -369,7 +377,7 @@ configure_logstash_yaml()
     if [[ -n "$YAML_CONFIGURATION" ]]; then
         log "[configure_logstash] include additional yaml configuration"
 
-        local SKIP_LINES="node.name path.data path.logs "
+        local SKIP_LINES="node.name path.data path.logs xpack.monitoring.elasticsearch.url xpack.monitoring.elasticsearch.hosts "
         SKIP_LINES+="xpack.monitoring.elasticsearch.username xpack.monitoring.elasticsearch.password "
         SKIP_LINES+="xpack.monitoring.enabled xpack.monitoring.elasticsearch.ssl.ca xpack.monitoring.elasticsearch.ssl.verification_mode "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
