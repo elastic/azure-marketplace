@@ -54,7 +54,7 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v6.7.0",
+            "defaultValue": "v7.0.0",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
@@ -91,8 +91,12 @@
                   "value": "6.6.2"
                 },
                 {
-                  "label": "v6.7.0",
-                  "value": "6.7.0"
+                  "label": "v6.7.1",
+                  "value": "6.7.1"
+                },
+                {
+                  "label": "v7.0.0",
+                  "value": "7.0.0"
                 }
               ]
             }
@@ -1426,18 +1430,42 @@
             ]
           },
           {
-            "name": "es_read",
+            "name": "es_apm",
             "type": "Microsoft.Common.Section",
-            "label": "es_read (read only) user account",
+            "label": "APM system user account",
             "elements": [
               {
-                "name": "securityReadPassword",
+                "name": "securityApmPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "'es_read' user password",
+                  "password": "'apm_system' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the 'es_read' user. This is a user account configured with limited read-only access",
+                "toolTip": "Password to use for the built-in 'apm_system' user. This is a built-in account that APM server uses to communicate with Elasticsearch. Required for Elasticsearch 6.5.0+",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_remote",
+            "type": "Microsoft.Common.Section",
+            "label": "Remote monitoring user system user account",
+            "elements": [
+              {
+                "name": "securityRemoteMonitoringPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "'remote_monitoring_user' built-in user password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the built-in 'remote_monitoring_user' user. This is a built-in account that Metricbeat uses when collecting and storing monitoring information in Elasticsearch. Required for Elasticsearch 6.5.0+",
                 "constraints": {
                   "required": true,
                   "regex": "^.{12,}",
@@ -1516,10 +1544,11 @@
       "sshPublicKey": "[basics('password').sshPublicKey]",
       "securityBootstrapPassword": "",
       "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
-      "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
       "securityLogstashPassword": "[steps('securityStep').es_logstash.securityLogstashPassword]",
       "securityBeatsPassword": "[steps('securityStep').es_beats.securityBeatsPassword]",
+      "securityApmPassword": "[steps('securityStep').es_apm.securityApmPassword]",
+      "securityRemoteMonitoringPassword": "[steps('securityStep').es_remote.securityRemoteMonitoringPassword]",
       "appGatewayTier": "Standard",
       "appGatewaySku": "Small",
       "appGatewayCount": 1,

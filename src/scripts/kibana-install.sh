@@ -204,7 +204,12 @@ configure_kibana_yaml()
     log "[configure_kibana_yaml] Configuring kibana.yml"
 
     # set the elasticsearch URL
-    echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
+    if dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.0.0"; then
+      echo "elasticsearch.url: \"$ELASTICSEARCH_URL\"" >> $KIBANA_CONF
+    else
+      echo "elasticsearch.hosts: [\"$ELASTICSEARCH_URL\"]" >> $KIBANA_CONF
+    fi
+    
     echo "server.host:" $(hostname -I) >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
@@ -302,7 +307,7 @@ configure_kibana_yaml()
     if [[ -n "$SAML_SP_URI" && ${INSTALL_XPACK} -ne 0 ]]; then
       log "[configure_kibana_yaml] Configuring Kibana for SAML Single-Sign-On"
       # Allow both saml and basic realms
-      echo "xpack.security.authProviders: [ saml,basic ]" >> $KIBANA_CONF
+      echo "xpack.security.authProviders: [ saml, basic ]" >> $KIBANA_CONF
       echo "server.xsrf.whitelist: [ /api/security/v1/saml ]" >> $KIBANA_CONF
 
       local PROTOCOL="`echo $SAML_SP_URI | grep '://' | sed -e's,^\(.*://\).*,\1,g'`"

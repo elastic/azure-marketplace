@@ -56,7 +56,7 @@ Deploying through the Marketplace is great and easy way to get your feet wet for
 
 ![Example UI Flow](images/ui.gif)
 
-You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FcreateUiDefinition.json"}})
+You can view the UI in developer mode by [clicking here](https://portal.azure.com/#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F7.0%2Fsrc%2FcreateUiDefinition.json"}}). If you feel something is cached improperly use [this client unoptimized link instead](https://portal.azure.com/?clientOptimizations=false#blade/Microsoft_Azure_Compute/CreateMultiVmWizardBlade/internal_bladeCallId/anything/internal_bladeCallerParams/{"initialData":{},"providerConfig":{"createUiDefinition":"https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F7.0%2Fsrc%2FcreateUiDefinition.json"}})
 
 ## Reporting bugs
 
@@ -357,12 +357,6 @@ value defined in the template.
     should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
-  <tr><td>securityReadPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_read</code> user with user (read-only) role. 
-    <br />
-    should be a minimum of 12 characters, and must be greater than 6 characters.
-    </td><td><code>""</code></td></tr>
-
   <tr><td>securityKibanaPassword</td><td>securestring</td>
     <td>Security password Kibana.
     <br />
@@ -379,6 +373,18 @@ value defined in the template.
 
   <tr><td>securityBeatsPassword</td><td>securestring</td>
     <td>This is the built-in <code>beats_system</code> user. Valid for Elasticsearch 6.3.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>securityApmPassword</td><td>securestring</td>
+    <td>This is the built-in <code>apm_system</code> user. Valid for Elasticsearch 6.5.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+  
+  <tr><td>securityRemoteMonitoringPassword</td><td>securestring</td>
+    <td>This is the built-in <code>remote_monitoring_user</code> user. Valid for Elasticsearch 6.5.0+
     <br />
     should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
@@ -563,7 +569,7 @@ value defined in the template.
 
 ### Web based deploy
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2Fmaster%2Fsrc%2FmainTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Felastic%2Fazure-marketplace%2F7.0%2Fsrc%2FmainTemplate.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -597,7 +603,7 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 ```sh
 az group deployment create \
   --resource-group <name> \
-  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json \
+  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/7.0/src/mainTemplate.json \
   --parameters @parameters/password.parameters.json
 ```
 
@@ -622,7 +628,7 @@ where `<name>` refers to the resource group you just created.
 
   ```powershell
   $clusterParameters = @{
-      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/master/src"
+      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/7.0/src"
       "esVersion" = "6.7.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
@@ -630,11 +636,12 @@ where `<name>` refers to the resource group you just created.
       "adminUsername" = "russ"
       "adminPassword" = "Password1234"
       "securityBootstrapPassword" = "Password1234"
-      "securityAdminPassword" = "Password1234"
-      "securityReadPassword" = "Password1234"
+      "securityAdminPassword" = "Password1234"     
       "securityKibanaPassword" = "Password1234"
       "securityLogstashPassword" = "Password1234"
       "securityBeatsPassword" = "Password1234"
+      "securityApmPassword" = "Password1234"
+      "securityRemoteMonitoringPassword" = "Password1234"
   }
   ```
 
@@ -647,7 +654,7 @@ where `<name>` refers to the resource group you just created.
 5. Use our template directly from GitHub
 
   ```powershell
-  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
+  New-AzureRmResourceGroupDeployment -Name "<deployment name>" -ResourceGroupName "<name>" -TemplateUri "https://raw.githubusercontent.com/elastic/azure-marketplace/7.0/src/mainTemplate.json" -TemplateParameterObject $clusterParameters
   ```
 
 ## Targeting a specific template version
@@ -657,24 +664,25 @@ the artifactsBaseUrl parameter of the template to point to a specific tagged rel
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`6.6.1` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.6.1)
+For example, to target the [`7.0.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.6.1)
 
 ```powershell
-$templateVersion = "6.6.1"
+$templateVersion = "7.0.0"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
   "artifactsBaseUrl" = $templateBaseUrl
-  "esVersion" = "6.6.1"
+  "esVersion" = "7.0.0"
   "adminUsername" = "russ"
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "Password1234"
   "securityAdminPassword" = "Password1234"
-  "securityReadPassword" = "Password1234"
   "securityKibanaPassword" = "Password1234"
   "securityLogstashPassword" = "Password1234"
   "securityBeatsPassword" = "Password1234"
+  "securityApmPassword" = "Password1234"
+  "securityRemoteMonitoringPassword" = "Password1234"
 }
 
 $resourceGroup = "my-azure-cluster"

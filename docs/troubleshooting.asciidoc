@@ -159,10 +159,11 @@ az group deployment create \
                adminUsername=russ adminPassword=Password1234 \
                securityBootstrapPassword=bootstrapPassword123 \
                securityAdminPassword=adminPassword123 \
-               securityReadPassword=readPassword123 \
                securityKibanaPassword=kibanaPassword123 \
                securityLogstashPassword=logstashPassword123 \
-               securityBeatsPassword=beatsPassword123
+               securityBeatsPassword=beatsPassword123 \
+               securityApmPassword=apmPassword123 \
+               securityRemoteMonitoringPassword=remoteMonitoringPassword123
 ----
 
 [source,powershell]
@@ -182,10 +183,11 @@ $parameters = @{
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "bootstrapPassword123"
   "securityAdminPassword" = "adminPassword123"
-  "securityReadPassword" = "readPassword123"
   "securityKibanaPassword" = "kibanaPassword123"
   "securityLogstashPassword" = "logstashPassword123"
   "securityBeatsPassword" = "beatsPassword123"
+  "securityApmPassword" = "apmPassword123"
+  "securityRemoteMonitoringPassword" = "remoteMonitoringPassword123"
 }
 
 $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
