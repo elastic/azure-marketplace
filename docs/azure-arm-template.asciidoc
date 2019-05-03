@@ -195,9 +195,8 @@ running version {version}
 * Kibana {version}.
 * The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
 * The cluster will have a trial license applied, providing access to Elastic Stack Platinum features for 30 days
-* Security feature is enabled, and the {xpackdocs}/built-in-roles.html[built-in roles] `elastic`, `kibana` and
-`logstash_system` are configured, along with an `es_read` user account with readonly
-access.
+* Security feature is enabled, and the {xpackdocs}/built-in-roles.html[built-in users] `elastic`, `kibana`,
+`logstash_system`, `apm_system` and `remote_monitoring_user` are configured.
 
 The ARM template accepts _many_ {github}#parameters[parameters], many of which are optional. When a value is not supplied for a parameter, a default value defined within the
 ARM template will be used. In the example above, the number of data nodes deployed
