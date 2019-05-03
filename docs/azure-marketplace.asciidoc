@@ -179,9 +179,10 @@ communicate with Elasticsearch
 when storing monitoring information in Elasticsearch.
 . The `beats_system` user, a built-in account that can be used by Beats
 when storing monitoring information in Elasticsearch.
-
-Additionally, a read-only user account, `es_read`, is created that has read only
-access to indices:
+. The `apm_system` user, a built-in account that can be used by APM server
+when storing APM information in Elasticsearch.
+. The `remote_monitoring_user` user, a built-in account that can be used
+by Metricbeat when collecting and storing monitoring information in Elasticsearch. 
 
 image:images/marketplace_step5.png[]
 
