@@ -1128,6 +1128,12 @@ consul_registration_ip() {
         prod)
             echo 10.96.72.4
             ;;
+        perftest)
+            echo 10.112.136.4
+            ;;
+        ithc)
+            echo 10.112.8.4
+            ;;
         *)
             log "[configure_dns] ERROR '$CNP_ENV' is an unkown Consul target"
             # Add any missing environments
