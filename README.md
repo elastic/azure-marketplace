@@ -399,7 +399,7 @@ value defined in the template.
   <tr><td>vmSizeKibana</td><td>string</td>
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
-    </td><td><code>Standard_A2</code></td></tr>
+    </td><td><code>Standard_A2_v2</code></td></tr>
 
   <tr><td>vmKibanaAcceleratedNetworking</td><td>string</td>
     <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Kibana, which enables single root I/O virtualization (SR-IOV) 

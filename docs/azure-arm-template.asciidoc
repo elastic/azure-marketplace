@@ -873,7 +873,7 @@ Whether to deploy Kibana in addition to Elasticsearch. A value of `Yes` will als
 
 `vmSizeKibana`::
 The {vms}[Azure VM SKU] to use for Kibana. Different VM SKUs have different CPU, RAM,
-temporary storage space and network bandwidth. The Kibana VM always uses standard storage for the OS disk. The default value is `Standard_A2`.
+temporary storage space and network bandwidth. The Kibana VM always uses standard storage for the OS disk. The default value is `Standard_A2_v2`.
 
 [NOTE]
 --
