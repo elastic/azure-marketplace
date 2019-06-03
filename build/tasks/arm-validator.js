@@ -129,8 +129,12 @@ var bootstrap = (cb) => {
 var login = (cb) => {
   var version = [ '--version' ];
   az(version, (error, stdout, stderr) => {
-    if (error || stderr) return bailOut(error || new Error(stderr));
-    log(`Using ${stdout.split('\n')[0]}` );
+    // ignore stderr if it's simply a warning about an older version of Azure CLI
+    if (error || (stderr && !/^WARNING: You have \d+ updates available/.test(stderr))) {
+      return bailOut(error || new Error(stderr));
+    }
+
+    log(`Using ${stdout.split('\n')[0].replace('*', '').replace(/\s\s+/g, ' ')}` );
 
     var login = [ 'login',
       '--service-principal',
