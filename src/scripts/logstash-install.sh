@@ -66,6 +66,7 @@ LOGSTASH_VERSION="6.4.0"
 LOGSTASH_HEAP=0
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
+BASIC_SECURITY=0
 INSTALL_ADDITIONAL_PLUGINS=""
 USER_LOGSTASH_PWD="changeme"
 LOGSTASH_KEYSTORE_PWD="changeme"
@@ -132,13 +133,16 @@ while getopts :v:m:u:S:H:G:V:J:L:c:K:Y:lh optname; do
 done
 
 #########################
-# Installation steps as functions
+# Parameter state changes
 #########################
 
-BASIC_SECURITY=0
-if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+if [[ $(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
   BASIC_SECURITY=1
 fi
+
+#########################
+# Installation steps as functions
+#########################
 
 # Install Oracle Java
 install_java()

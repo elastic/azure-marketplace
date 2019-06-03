@@ -106,6 +106,7 @@ NAMESPACE_PREFIX=""
 ES_VERSION="6.4.1"
 ES_HEAP=0
 INSTALL_XPACK=0
+BASIC_SECURITY=0
 INSTALL_ADDITIONAL_PLUGINS=""
 YAML_CONFIGURATION=""
 MANDATORY_PLUGINS=""
@@ -267,7 +268,6 @@ done
 # Parameter state changes
 #########################
 
-BASIC_SECURITY=0
 if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
   BASIC_SECURITY=1
 fi
