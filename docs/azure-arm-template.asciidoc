@@ -1511,7 +1511,7 @@ A trial license for the Platinum features of the Elastic Stack can be deployed f
 Elasticsearch, and Kibana if also deployed, using the following parameter
 
 `xPackPlugins`::
-Select `Yes` to install a trial license of the platinum features. A trial license
+Select `Yes` to install a trial license of the Elastic Stack platinum features. A trial license
 provides access to platinum features for 30 days. a value of `No`
 +
 . for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license

@@ -1296,6 +1296,8 @@
     }
   },
   "variables": {
+    "esVersionMajor": "[int(split(parameters('esVersion'), '.')[0])]",
+    "esVersionMinor": "[int(split(parameters('esVersion'), '.')[1])]",
     "templateBaseUrl": "[concat(parameters('artifactsBaseUrl'), '/')]",
     "sharedTemplateUrl": "[concat(variables('templateBaseUrl'), 'partials/shared-resources.json')]",
     "networkTemplateUrl": "[concat(variables('templateBaseUrl'), 'networks/virtual-network-resources.json')]",
@@ -1937,7 +1939,7 @@
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
-      "https": "[if(and(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), equals(parameters('xpackPlugins'), 'Yes')), 'Yes', 'No')]",
+      "https": "[if(and(or(greater(length(parameters('esHttpCertBlob')), 0), greater(length(parameters('esHttpCaCertBlob')), 0)), or(equals(parameters('xpackPlugins'), 'Yes'), and(greaterOrEquals(variables('esVersionMajor'), 7), greaterOrEquals(variables('esVersionMinor'), 1)), and(equals(variables('esVersionMajor'), 6), greaterOrEquals(variables('esVersionMinor'), 8)))), 'Yes', 'No')]",
       "subnet": {
         "name": "[parameters('vNetClusterSubnetName')]",
         "addressPrefix": "[parameters('vNetNewClusterSubnetAddressPrefix')]",
