@@ -1529,7 +1529,7 @@
                   "uploadMode": "file",
                   "encoding": "UTF-8"
                 },
-                "visible": "[equals(steps('certificatesStep').esCerts.esHttpCert, 'ca')]"
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'ca')]"
               },
               {
                 "name": "esHttpCaCertPassword",
@@ -1545,7 +1545,7 @@
                 "options": {
                   "hideConfirmation": false
                 },
-                "visible": "[equals(steps('certificatesStep').esCerts.esHttpCert, 'ca')]"
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'ca')]"
               },
               {
                 "name": "esHttpCertBlob",
@@ -1562,7 +1562,7 @@
                   "uploadMode": "file",
                   "encoding": "UTF-8"
                 },
-                "visible": "[equals(steps('certificatesStep').esCerts.esHttpCert, 'cert')]"
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'cert')]"
               },
               {
                 "name": "esHttpCertPassword",
