@@ -1637,7 +1637,7 @@
                 "visible": true
               }
             ]
-          }
+          },
           {
             "name": "kibanaCerts",
             "type": "Microsoft.Common.Section",
