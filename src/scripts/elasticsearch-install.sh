@@ -1099,13 +1099,18 @@ configure_elasticsearch_yaml()
     log "[configure_elasticsearch_yaml] setting bootstrap.memory_lock: true"
     echo "bootstrap.memory_lock: true" >> $ES_CONF
 
+    local INSTALL_CERTS=0
+    if [[ ${INSTALL_XPACK} -ne 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0)) ]]; then
+      INSTALL_CERTS=1
+    fi
+
     # Configure SSL/TLS for HTTP layer
-    if [[ -n "${HTTP_CERT}" || -n "$HTTP_CACERT" && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ -n "${HTTP_CERT}" || -n "$HTTP_CACERT" && ${INSTALL_CERTS} -ne 0 ]]; then
         configure_http_tls $ES_CONF
     fi
 
     # Configure TLS for Transport layer
-    if [[ -n "${TRANSPORT_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ -n "${TRANSPORT_CACERT}" && ${INSTALL_CERTS} -ne 0 ]]; then
         configure_transport_tls $ES_CONF
     fi
 
