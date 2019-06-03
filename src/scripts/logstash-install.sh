@@ -496,6 +496,7 @@ fi
 
 log "installing logstash $LOGSTASH_VERSION"
 log "installing X-Pack plugins is set to: $INSTALL_XPACK"
+log "basic security it set to: $BASIC_SECURITY"
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
 log "[apt-get] updated apt-get"
