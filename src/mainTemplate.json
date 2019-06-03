@@ -21,18 +21,18 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "7.0.0",
+      "defaultValue": "7.1.1",
       "allowedValues": [
         "5.6.15",
-        "6.0.1",
-        "6.1.3",
         "6.2.4",
         "6.3.2",
         "6.4.3",
         "6.5.4",
         "6.6.2",
-        "6.7.1",
-        "7.0.0"
+        "6.7.2",
+        "6.8.0",
+        "7.0.1",
+        "7.1.1"
       ],
       "metadata": {
         "description": "Elasticsearch version to install"
