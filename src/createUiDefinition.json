@@ -1495,10 +1495,10 @@
             "elements": [
               {
                 "name": "esHttpCert",
-                "type": "Microsoft.Common.DropDown",
+                "type": "Microsoft.Common.OptionsGroup",
                 "label": "HTTP certificate type",
-                "defaultValue": "cert",
-                "toolTip": "",
+                "defaultValue": "Certificate",
+                "toolTip": "Whether to provide a single PKCS#12 archive containing the certificate and key with which to secure the HTTP layer, or provide a PKCS#12 archive containing a Certificate Authority (CA) and key with which to generate a certificate for each node in the cluster.",
                 "constraints": {
                   "allowedValues": [
                     {
@@ -1506,7 +1506,7 @@
                       "value": "cert"
                     },
                     {
-                      "label": "Certificate Authority",
+                      "label": "Certificate Authority (CA)",
                       "value": "ca"
                     }
                   ],
