@@ -270,7 +270,7 @@ configure_kibana_yaml()
     # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
     # Kibana x-pack installed implies it's also installed for Elasticsearch
     local INSTALL_CERTS=0
-    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0) ]]; then
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
       INSTALL_CERTS=1
     fi
 
