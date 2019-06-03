@@ -267,6 +267,11 @@ done
 # Parameter state changes
 #########################
 
+BASIC_SECURITY=0
+if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+  BASIC_SECURITY=1
+fi
+
 # zen2 should emit the ports from hosts
 if dpkg --compare-versions "$ES_VERSION" "ge" "7.0.0"; then
   UNICAST_HOST_PORT=""
@@ -284,7 +289,7 @@ else
     UNICAST_HOSTS="${UNICAST_HOSTS%?}]"
 fi
 
-if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; echo $?) -eq 0 && ${INSTALL_XPACK} -ne 0 ]]; then
+if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; echo $?) -eq 0 && (${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0) ]]; then
     log "using bootstrap password as the seed password"
     SEED_PASSWORD="$BOOTSTRAP_PASSWORD"
 fi
@@ -292,6 +297,7 @@ fi
 log "bootstrapping an Elasticsearch $ES_VERSION cluster named '$CLUSTER_NAME' with minimum_master_nodes set to $MINIMUM_MASTER_NODES"
 log "cluster uses dedicated master nodes is set to $CLUSTER_USES_DEDICATED_MASTERS and unicast goes to $UNICAST_HOSTS"
 log "cluster install X-Pack plugin is set to $INSTALL_XPACK"
+log "cluster basic security is set to $BASIC_SECURITY"
 
 #########################
 # Installation steps as functions
@@ -1047,7 +1053,7 @@ configure_elasticsearch_yaml()
       fi
     fi
 
-    if [ ${INSTALL_XPACK} -ne 0 ]; then
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
         if dpkg --compare-versions "$ES_VERSION" "ge" "6.3.0"; then
             log "[configure_elasticsearch_yaml] Set generated license type to trial"
             echo "xpack.license.self_generated.type: trial" >> $ES_CONF
@@ -1100,7 +1106,7 @@ configure_elasticsearch_yaml()
     echo "bootstrap.memory_lock: true" >> $ES_CONF
 
     local INSTALL_CERTS=0
-    if [[ ${INSTALL_XPACK} -ne 0 || $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
       INSTALL_CERTS=1
     fi
 
@@ -1287,7 +1293,7 @@ install_es
 
 setup_data_disk
 
-if [ ${INSTALL_XPACK} -ne 0 ]; then
+if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
     install_xpack
     # in 6.x + we need to set up the bootstrap.password in the keystore to use when setting up users
     if dpkg --compare-versions "$ES_VERSION" "ge" "6.0.0"; then
@@ -1315,7 +1321,7 @@ port_forward
 start_systemd
 
 # patch roles and users through the REST API which is a tad trickier
-if [[ ${INSTALL_XPACK} -ne 0 ]]; then
+if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
   wait_for_started
   apply_security_settings
 fi

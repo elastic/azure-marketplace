@@ -140,8 +140,14 @@ done
 # Parameter state changes
 #########################
 
+BASIC_SECURITY=0
+if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+  BASIC_SECURITY=1
+fi
+
 log "Installing Kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
 log "Installing X-Pack plugins is set to: $INSTALL_XPACK"
+log "Basic Security is set to: $BASIC_SECURITY"
 log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
@@ -219,8 +225,8 @@ configure_kibana_yaml()
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    # install x-pack
-    if [ ${INSTALL_XPACK} -ne 0 ]; then
+    # configure security
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
       echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
@@ -228,6 +234,10 @@ configure_kibana_yaml()
       local ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Security encryption key generated"
+    fi
+
+    # install x-pack
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
       ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
@@ -260,7 +270,7 @@ configure_kibana_yaml()
     # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
     # Kibana x-pack installed implies it's also installed for Elasticsearch
     local INSTALL_CERTS=0
-    if [[ ${INSTALL_XPACK} -ne 0 || $(dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$KIBANA_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0) ]]; then
       INSTALL_CERTS=1
     fi
 
