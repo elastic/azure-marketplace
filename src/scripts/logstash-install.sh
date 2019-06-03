@@ -310,7 +310,7 @@ configure_logstash_yaml()
     # Make the HTTP CA cert for communication with Elasticsearch available to
     # Logstash conf files through ${ELASTICSEARCH_CACERT}
     local INSTALL_CERTS=0
-    if [[ ${INSTALL_XPACK} -ne 0 || $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+    if [[ ${INSTALL_XPACK} -ne 0 || $(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
       INSTALL_CERTS=1
     fi
 
