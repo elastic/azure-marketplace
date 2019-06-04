@@ -216,7 +216,7 @@ configure_kibana_yaml()
       echo "elasticsearch.hosts: [\"$ELASTICSEARCH_URL\"]" >> $KIBANA_CONF
     fi
     
-    echo "server.host: \"$(hostname -I)\"" >> $KIBANA_CONF
+    echo "server.host: $(hostname -i)" >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
     touch /var/log/kibana.log
