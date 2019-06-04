@@ -268,6 +268,7 @@ done
 # Parameter state changes
 #########################
 
+# supports security features with a basic license
 if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$ES_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
   BASIC_SECURITY=1
 fi
