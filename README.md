@@ -23,8 +23,10 @@ please refer to the [**Azure Marketplace and ARM template documentation**](https
 
 This repository consists of:
 
-* [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.
-* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. This file produces an output JSON that the ARM template can accept as input parameters.
+* [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. 
+The template itself is composed of many nested linked templates, with the main template acting as the entry point.
+* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. 
+This file produces an output JSON that the ARM template can accept as input parameters.
 
 ## Building
 
@@ -47,7 +49,7 @@ For more details around developing the template, take a look at the [Development
 
 The [Azure Marketplace Elastic Stack offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
-It will always bootstrap an Elasticsearch cluster complete with a trial license of the [Elastic Stack's commercial features](https://www.elastic.co/products/stack).
+It will always bootstrap an Elasticsearch cluster complete with a trial license of the [Elastic Stack's platinum features](https://www.elastic.co/products/stack).
 
 Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch on Azure, but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
 <a href="#command-line-deploy">Check out the CLI examples.</a>
@@ -74,7 +76,6 @@ not exposed within the Marketplace UI, such as configuring
 
 * Azure Storage account to use with Azure Repository plugin for Snapshot/Restore
 * Application Gateway to use for SSL/TLS and SSL offload
-* The number and size of disks to attach to each data node VM
 
 Check out our [**examples repository**](https://github.com/elastic/azure-marketplace-examples)
 for examples of common scenarios and also take a look at the following blog
@@ -142,12 +143,12 @@ value defined in the template.
     load balancer.</li>
     </ul>
     <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like 
-    <a href="https://www.elastic.co/products/x-pack/security">X-Pack Security</a>, in addition to configuring SSL/TLS.</strong></p>
+    <a href="https://www.elastic.co/products/x-pack/security">Elastic Stack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
   <tr><td id="x-pack">xpackPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    features such as <a href="https://www.elastic.co/products/stack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/stack/security">Security</a>, <a href="https://www.elastic.co/products/stack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/stack/graph">Graph</a>, <a href="https://www.elastic.co/products/stack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/stack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/stack/reporting">Reporting</a> and Profiler installed.
+    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the <a href="https://www.elastic.co/products/x-pack">Elastic Stack features (formerly X-Pack)</a>
+    such as <a href="https://www.elastic.co/products/stack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/stack/security">Security</a>, <a href="https://www.elastic.co/products/stack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/stack/graph">Graph</a>, <a href="https://www.elastic.co/products/stack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/stack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/stack/reporting">Reporting</a> and Profiler installed.
     <br /><br />
     A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
     will include only the Open Source features.
@@ -186,33 +187,33 @@ value defined in the template.
     </td><td><code>0</code></td></tr>
 
   <tr><td>esHttpCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCertPassword</td><td>securestring</td>
     <td>The password for the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be protected with a password. <br /><br />
     If using <code>esHttpCaCertBlob</code>, this password will be used to protect the generated PKCS#12 archive on each node.
-    <strong>X-Pack plugin must be installed</strong>
+    <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for the HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for the HTTP layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
   
   <tr><td>esTransportCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
-    <td>The password to protect the generated PKCS#12 archive on each node. <strong>X-Pack plugin must be installed</strong>
+    <td>The password to protect the generated PKCS#12 archive on each node. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>samlMetadataUri</td><td>string</td>
@@ -392,8 +393,7 @@ value defined in the template.
   <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
 
   <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    a trial license of the <a href="https://www.elastic.co/products/stack">commercial Kibana features</a> will be applied and activated.
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
@@ -426,8 +426,7 @@ value defined in the template.
   <tr><td colspan="4" style="font-size:120%"><strong>Logstash related settings</strong></td></tr>
 
   <tr><td>logstash</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Logstash installed. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    a trial license for the <a href="https://www.elastic.co/products/stack">commercial Logstash features</a> will be applied and activated.
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Logstash installed.
     </td><td><code>No</code></td></tr>
 
   <tr><td>vmSizeLogstash</td><td>string</td>
@@ -471,7 +470,7 @@ value defined in the template.
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
     <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
-    as a jumpbox.
+    as a jumpbox, so a separate jumpbox VM is not needed.
   </td><td><code>No</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Virtual network related settings</strong></td></tr>
@@ -629,7 +628,7 @@ where `<name>` refers to the resource group you just created.
   ```powershell
   $clusterParameters = @{
       "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/feature/7.1.1/src"
-      "esVersion" = "6.7.0"
+      "esVersion" = "7.1.1"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
@@ -664,7 +663,7 @@ the artifactsBaseUrl parameter of the template to point to a specific tagged rel
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`7.0.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.6.1)
+For example, to target the [`7.0.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.0.0)
 
 ```powershell
 $templateVersion = "7.0.0"
@@ -701,9 +700,11 @@ Role Based Access control, and Transport Layer Security (TLS) can be configured
 for both Elasticsearch and Kibana. For more details, please refer to 
 [the Security documentation](https://www.elastic.co/guide/en/elastic-stack-deploy/current/azure-arm-template-security.html).
 
-The Elastic Stack security features require a license level higher than basic.
-They can be configured with a trial license, which provides access to the 
-security features for 30 days.
+For Elasticsearch versions 6.8.0+ (and less than 7.0.0), and 7.1.0+, the Elastic Stack security features
+that allow configuring TLS and role based access control are available in the free basic license level. 
+For all other versions, the Elastic Stack security 
+features require a license level higher than basic; They can be configured with a trial license, 
+which provides access to the security features for 30 days.
 
 ### TLS for Kibana
 
@@ -715,7 +716,7 @@ a certificate and private key in PEM format with `kibanaCertBlob` and
 
 You can secure communication between nodes in the cluster with TLS on the
 Transport layer. Configuring TLS for the Transport layer requires
-`xPackPlugins` be set to `Yes`.
+`xPackPlugins` be set to `Yes`, or an Elasticsearch version 6.8.0+ (and less than 7.0.0) or 7.1.0+.
 
 You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
 passphrase with `esTransportCaCertPassword`) containing the CA cert which should be used to generate
@@ -737,7 +738,7 @@ and follow the instructions.
 
 You can secure external access to the cluster with TLS with an external
 loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
-`xPackPlugins` be set to `Yes`.
+`xPackPlugins` be set to `Yes`, or an Elasticsearch version 6.8.0+ (and less than 7.0.0) or 7.1.0+.
 
 #### External load balancer
 
