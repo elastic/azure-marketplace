@@ -1491,7 +1491,7 @@
           {
             "name": "esHttpCerts",
             "type": "Microsoft.Common.Section",
-            "label": "Elasticsearch HTTP layer",
+            "label": "Elasticsearch HTTP layer",           
             "elements": [
               {
                 "name": "esHttpCert",
@@ -1518,7 +1518,7 @@
                 "name": "esHttpCaCertBlob",
                 "type": "Microsoft.Common.FileUpload",
                 "label": "HTTP Certificate Authority (CA) certificate",
-                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and key with which to generate a certificate for each node within the cluster for securing the HTTP layer.",
+                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and private key with which to generate a certificate for each node within the cluster for securing the HTTP layer. A CA certificate can be generated using a number of different tools including elasticsearch-certutil, openssl, amongst others",
                 "constraints": {
                   "required": false,
                   "accept": ".p12,.pfx"
@@ -1551,7 +1551,7 @@
                 "name": "esHttpCertBlob",
                 "type": "Microsoft.Common.FileUpload",
                 "label": "HTTP certificate",
-                "toolTip": "A PKCS#12 archive containing the certificate and key with which to secure the HTTP layer. This certificate will be used by all nodes within the cluster",
+                "toolTip": "A PKCS#12 archive containing the certificate and private key with which to secure the HTTP layer. This certificate will be used by all nodes within the cluster",
                 "constraints": {
                   "required": false,
                   "accept": ".p12,.pfx"
@@ -1591,9 +1591,9 @@
                 "name": "esTransportCaCertBlob",
                 "type": "Microsoft.Common.FileUpload",
                 "label": "Transport Certificate Authority (CA) certificate",
-                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and private key, used to generate a unique certificate for each node within the cluster to secure the Transport layer",
+                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and private key, used to generate a unique certificate for each node within the cluster to secure the Transport layer. A CA certificate can be generated using a number of different tools including elasticsearch-certutil, openssl, amongst others",
                 "constraints": {
-                  "required": true,
+                  "required": false,
                   "accept": ".p12,.pfx"
                 },
                 "options": {
