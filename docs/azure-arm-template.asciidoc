@@ -1,8 +1,8 @@
 :marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
-:current: 7.0
-:version: 7.0.0
+:current: 7.1
+:version: 7.1.1
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
@@ -12,6 +12,7 @@
 :bootstrappassword: : {stackdocs}/built-in-users.html#bootstrap-elastic-passwords
 :licenseexpiration: {stackdocs}/license-expiration.html
 :microsoftdocs: https://docs.microsoft.com
+:azuredocs: https://azure.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
 :azurepowershell: {microsoftdocs}/powershell/azure/overview
 :subscriptions: https://www.elastic.co/subscriptions
@@ -19,7 +20,7 @@
 :resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
 :incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
 :vms: {microsoftdocs}/azure/virtual-machines/linux/sizes
-:azurelocations: https://azure.microsoft.com/en-au/global-infrastructure/locations/
+:azurelocations: {azuredocs}/en-au/global-infrastructure/locations/
 :availabilitysets: {microsoftdocs}/azure/virtual-machines/linux/manage-availability
 :availabilityzones: {microsoftdocs}/azure/availability-zones/az-overview
 :manageddisks: {microsoftdocs}/azure/virtual-machines/linux/managed-disks-overview
@@ -33,9 +34,7 @@
 :yamllint: http://www.yamllint.com/
 :openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
 :base64: https://linux.die.net/man/1/base64
-:acceleratednetworking: https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/
-
-
+:acceleratednetworking: {azuredocs}/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -1018,6 +1017,8 @@ cluster.
 
 include::trial-license-warning.asciidoc[]
 
+include::basic-security.asciidoc[]
+
 The following parameters are used to configure initial user accounts
 
 `securityBootstrapPassword`::
@@ -1065,7 +1066,7 @@ Valid only for Elasticsearch 6.5.0+
 
 It is recommended after deployment to use the `elastic` superuser account to create
 the individual user accounts that will be needed for the users and applications
-that will interact with Elasticsearch and Kibana, then use those accounts going
+that will interact with Elasticsearch and Kibana, then to use these accounts going
 forward.
 
 [[saml-single-sign-on]]
@@ -1507,12 +1508,12 @@ can be downloaded from a public URI at deployment time.
 [float]
 === Elastic Stack features (formerly X-Pack)
 
-A trial license for the Platinum features of the Elastic Stack can be deployed for
-Elasticsearch, and Kibana if also deployed, using the following parameter
+A trial license for the platinum features of the Elastic Stack can be deployed for
+Elasticsearch, and Kibana and Logstash if also deployed, using the following parameter
 
 `xPackPlugins`::
 Select `Yes` to install a trial license of the Elastic Stack platinum features. A trial license
-provides access to platinum features for 30 days. a value of `No`
+provides access to {subscriptions}[platinum features] for 30 days. a value of `No`
 +
 . for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual license
 providing access to the basic features. These versions use a distribution with
