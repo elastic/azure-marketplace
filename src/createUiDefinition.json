@@ -1491,7 +1491,7 @@
           {
             "name": "esHttpCerts",
             "type": "Microsoft.Common.Section",
-            "label": "Elasticsearch HTTP layer",           
+            "label": "Elasticsearch HTTP layer",
             "elements": [
               {
                 "name": "esHttpCert",

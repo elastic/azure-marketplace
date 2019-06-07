@@ -1856,20 +1856,20 @@
     "backendPoolConfigurations": {
       "internal": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         }
       ],
       "external": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         },
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         }
       ],
       "gateway": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         }
       ]
     },

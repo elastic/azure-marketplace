@@ -25,7 +25,7 @@
     }
   },
   "variables": {
-    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'es-internal-lb')]"
+    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'internal-lb')]"
   },
   "resources": [
     {

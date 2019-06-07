@@ -25,9 +25,9 @@
     }
   },
   "variables": {
-    "applicationGatewayName": "[concat(parameters('networkSettings').namespacePrefix, 'es-app-gateway')]",
-    "applicationGatewayIp": "[concat(parameters('networkSettings').namespacePrefix, 'es-app-gateway-ip')]",
-    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'es-internal-lb')]",
+    "applicationGatewayName": "[concat(parameters('networkSettings').namespacePrefix, 'app-gateway')]",
+    "applicationGatewayIp": "[concat(parameters('networkSettings').namespacePrefix, 'app-gateway-ip')]",
+    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'internal-lb')]",
     "applicationGatewayId": "[resourceId('Microsoft.Network/applicationGateways',variables('applicationGatewayName'))]",
     "authenticationCertsOpts": {
       "Yes": [

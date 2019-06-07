@@ -30,9 +30,9 @@
       "No" : "http://"
     },
     "https": "[variables('httpsOpts')[parameters('networkSettings').https]]",
-    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'es-internal-lb')]",
-    "externalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'es-external-lb')]",
-    "externalLoadBalancerIp": "[concat(parameters('networkSettings').namespacePrefix, 'es-external-lb-ip')]"
+    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'internal-lb')]",
+    "externalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'external-lb')]",
+    "externalLoadBalancerIp": "[concat(parameters('networkSettings').namespacePrefix, 'external-lb-ip')]"
   },
   "resources": [
     {
