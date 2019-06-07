@@ -66,6 +66,7 @@ LOGSTASH_VERSION="6.4.0"
 LOGSTASH_HEAP=0
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
+BASIC_SECURITY=0
 INSTALL_ADDITIONAL_PLUGINS=""
 USER_LOGSTASH_PWD="changeme"
 LOGSTASH_KEYSTORE_PWD="changeme"
@@ -130,6 +131,15 @@ while getopts :v:m:u:S:H:G:V:J:L:c:K:Y:lh optname; do
       ;;
   esac
 done
+
+#########################
+# Parameter state changes
+#########################
+
+# supports security features with a basic license
+if [[ $(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+  BASIC_SECURITY=1
+fi
 
 #########################
 # Installation steps as functions
@@ -309,7 +319,12 @@ configure_logstash_yaml()
 
     # Make the HTTP CA cert for communication with Elasticsearch available to
     # Logstash conf files through ${ELASTICSEARCH_CACERT}
-    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+    local INSTALL_CERTS=0
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
+      INSTALL_CERTS=1
+    fi
+
+    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_CERTS} -ne 0 ]]; then
 
       MONITORING='false'
 
@@ -486,6 +501,7 @@ fi
 
 log "installing logstash $LOGSTASH_VERSION"
 log "installing X-Pack plugins is set to: $INSTALL_XPACK"
+log "basic security it set to: $BASIC_SECURITY"
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update)) > /dev/null
 log "[apt-get] updated apt-get"
