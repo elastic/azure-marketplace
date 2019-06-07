@@ -67,6 +67,7 @@ KIBANA_VERSION="6.4.1"
 #Default internal load balancer ip
 ELASTICSEARCH_URL="http://10.0.0.4:9200"
 INSTALL_XPACK=0
+BASIC_SECURITY=0
 USER_KIBANA_PWD="changeme"
 SSL_CERT=""
 SSL_KEY=""
@@ -140,8 +141,14 @@ done
 # Parameter state changes
 #########################
 
-log "Installing Kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
-log "Installing X-Pack plugins is set to: $INSTALL_XPACK"
+# supports security features with a basic license
+if [[ $(dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.1.0"; echo $?) -eq 0 || ($(dpkg --compare-versions "$KIBANA_VERSION" "ge" "6.8.0"; echo $?) -eq 0 && $(dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.0.0"; echo $?) -eq 0) ]]; then
+  BASIC_SECURITY=1
+fi
+
+log "installing Kibana $KIBANA_VERSION for Elasticsearch cluster: $CLUSTER_NAME"
+log "installing X-Pack plugins is set to: $INSTALL_XPACK"
+log "basic security is set to: $BASIC_SECURITY"
 log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 
 #########################
@@ -210,7 +217,7 @@ configure_kibana_yaml()
       echo "elasticsearch.hosts: [\"$ELASTICSEARCH_URL\"]" >> $KIBANA_CONF
     fi
     
-    echo "server.host:" $(hostname -I) >> $KIBANA_CONF
+    echo "server.host: $(hostname -i)" >> $KIBANA_CONF
     # specify kibana log location
     echo "logging.dest: /var/log/kibana.log" >> $KIBANA_CONF
     touch /var/log/kibana.log
@@ -219,24 +226,30 @@ configure_kibana_yaml()
     # set logging to silent by default
     echo "logging.silent: true" >> $KIBANA_CONF
 
-    # install x-pack
-    if [ ${INSTALL_XPACK} -ne 0 ]; then
+    # configure security
+    local ENCRYPTION_KEY
+
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
       echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
       install_pwgen
-      local ENCRYPTION_KEY=$(pwgen 64 1)
+      ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Security encryption key generated"
-      ENCRYPTION_KEY=$(pwgen 64 1)
-      echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
-      log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
+    fi
 
+    # install x-pack
+    if [ ${INSTALL_XPACK} -ne 0 ]; then
       if dpkg --compare-versions "$KIBANA_VERSION" "lt" "6.3.0"; then
         log "[configure_kibana_yaml] Installing X-Pack plugin"
         /usr/share/kibana/bin/kibana-plugin install x-pack
         log "[configure_kibana_yaml] Installed X-Pack plugin"
       fi
+
+      ENCRYPTION_KEY=$(pwgen 64 1)
+      echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
+      log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
     fi
 
     # configure HTTPS if cert and private key supplied
@@ -259,7 +272,12 @@ configure_kibana_yaml()
 
     # configure HTTPS communication with Elasticsearch if cert supplied and x-pack installed.
     # Kibana x-pack installed implies it's also installed for Elasticsearch
-    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_XPACK} -ne 0 ]]; then
+    local INSTALL_CERTS=0
+    if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
+      INSTALL_CERTS=1
+    fi
+
+    if [[ -n "${HTTP_CERT}" || -n "${HTTP_CACERT}" && ${INSTALL_CERTS} -ne 0 ]]; then
       [ -d $SSL_PATH ] || mkdir -p $SSL_PATH
 
       if [[ -n "${HTTP_CERT}" ]]; then
