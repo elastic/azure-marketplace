@@ -1,0 +1,34 @@
+{
+  "description": "1 data node cluster with basic license and TLS",
+  "condition" : {
+    "range": ">=7.1.0 || >=6.8.0 <7.0.0",
+    "reason": "the use of TLS with a basic license requires 6.8.0+ (and less than 7.0.0), or 7.1.0+"
+  },
+  "isValid" : true,
+  "deploy" : true,
+  "why" : "",
+  "location" : "westeurope",
+  "parameters" : {
+    "loadBalancerType":{"value":"external"},
+    "esAdditionalYaml":{"value":""},
+    "xpackPlugins":{"value":"No"},
+    "esHttpCaCertBlob":{"value":"certs/ca-cert-with-password.pfx"},
+    "esHttpCaCertPassword":{"value":"Password123"},
+    "esTransportCaCertBlob":{"value":"certs/ca-cert-with-password.pfx"},
+    "esTransportCaCertPassword":{"value":"Password123"},
+    "esTransportCertPassword":{"value":"Password1234"},
+    "kibana":{"value":"Yes"},
+    "vmSizeKibana":{"value":"Standard_DS1_v2"},
+    "logstash":{"value":"Yes"},
+    "vmSizeLogstash":{"value":"Standard_DS1_v2"},
+    "logstashAdditionalPlugins":{"value":"logstash-input-heartbeat"},
+    "logstashConf":{"value":"conf/logstash-tls.conf"},
+    "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+    "vmDataNodeCount":{"value":1},
+    "vmDataDiskCount":{"value":1},
+    "vmDataDiskSize":{"value":"32GiB"},
+    "storageAccountType":{"value":"Default"},
+    "dataNodesAreMasterEligible":{"value":"Yes"},
+    "authenticationType":{"value":"password"}
+	}
+}
