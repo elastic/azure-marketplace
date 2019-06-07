@@ -1936,6 +1936,7 @@
     },
     "networkSettings": {
       "name": "[parameters('vNetName')]",
+      "namespacePrefix": "[parameters('vmHostNamePrefix')]",
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
