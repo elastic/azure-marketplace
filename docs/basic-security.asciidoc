@@ -1,0 +1,14 @@
+:security-blog-post: https://www.elastic.co/blog/security-for-elasticsearch-is-now-free
+
+[IMPORTANT]
+--
+Starting with Elastic Stack 6.8.0 and onwards in the 6.x major version lineage, and
+7.1.0 onwards, Security features including Basic Authentication and Transport Layer
+Security are enabled for the free basic license level. 
+
+What this means is that if you deploy one of these versions of the Elastic Stack, 
+Basic Authentication will be enabled and configured, and if certificates are supplied 
+for Elasticsearch HTTP and Transport layers, and  Kibana, <<tls, Transport Layer Security>> will be configured.
+
+Please read the {security-blog-post}[Security for Elasticsearch is now free] blog post for more details.
+--
