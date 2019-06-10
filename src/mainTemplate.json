@@ -2132,18 +2132,18 @@
               "name": "[variables('azureCloudStorageAccount').name]",
               "resourceGroup": "[variables('azureCloudStorageAccount').resourceGroup]",
               "install": "[variables('azureCloudStorageAccount').install]",
-              "key": "[reference('shared').outputs.existingStorageAccountKey.value]",
-              "suffix": "[reference('shared').outputs.existingStorageAccountSuffix.value]"
+              "key": "[if(and(not(empty(variables('azureCloudStorageAccount').name)), equals(variables('azureCloudStorageAccount').install, 'Yes')), listKeys(resourceId(variables('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', variables('azureCloudStorageAccount').name), '2017-10-01').keys[0].value, '')]",
+              "suffix": "[if(and(not(empty(variables('azureCloudStorageAccount').name)), equals(variables('azureCloudStorageAccount').install, 'Yes')), replace(replace(reference(resourceId(variables('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', variables('azureCloudStorageAccount').name), '2017-10-01').primaryEndpoints.blob, concat('https://', variables('azureCloudStorageAccount').name, '.blob.'), ''), '/', ''), '')]"
             }
           },
           "kibanaIp": {
-            "value": "[reference('kibana-ip').outputs.fqdn.value]"
+            "value": "[if(equals(parameters('kibana'), 'Yes'), concat(if(equals(variables('topologySettings').kibanaHttps, 'Yes'), 'https://', 'http://'), reference(concat(variables('commonVmSettings').namespacePrefix, 'kibana-ip')).dnsSettings.fqdn, ':5601'), 'N/A')]"
           },
           "sharedStorageAccount": {
             "value": {
               "name": "[variables('commonVmSettings').storageAccountName]",
-              "key": "[reference('shared').outputs.sharedStorageAccountKey.value]",
-              "suffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]"
+              "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('commonVmSettings').storageAccountName), '2017-10-01').keys[0].value]",
+              "suffix": "[replace(replace(reference(variables('commonVmSettings').storageAccountName).primaryEndpoints.blob, concat('https://', variables('commonVmSettings').storageAccountName, '.blob.'), ''), '/', '')]"
             }
           },
           "elasticTags": {
