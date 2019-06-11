@@ -1,9 +1,32 @@
-# Elasticsearch Azure Marketplace offering
+# Elastic Stack Azure Marketplace offering
+
+### :warning: VERY IMPORTANT
+
+By default, this template does not configure*
+
+* SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer
+* SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway
+* SSL/TLS for communication between Elasticsearch nodes via the Transport layer
+* SSL/TLS for communication beween the browser and Kibana
+
+**It is strongly recommended that you secure communication before using in production.**
+
+Please read the [Configuring TLS](#configuring-tls) section for securing communication with
+Transport Layer Security.
+
+---
+
+Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
+
+This readme provides an overview of usage and features. For more comprehensive documentation, 
+please refer to the [**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
 
 This repository consists of:
 
-* [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. The template itself is composed of many nested linked templates with the main template acting as the entry point.
-* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. This file produces an output JSON that the ARM template can accept as input parameters.
+* [src/mainTemplate.json](src/mainTemplate.json) - The main Azure Resource Management (ARM) template. 
+The template itself is composed of many nested linked templates, with the main template acting as the entry point.
+* [src/createUiDefinition](src/createUiDefinition.json) - UI definition file for our Azure Marketplace offering. 
+This file produces an output JSON that the ARM template can accept as input parameters.
 
 ## Building
 
@@ -24,28 +47,12 @@ For more details around developing the template, take a look at the [Development
 
 ## Azure Marketplace
 
-The [Azure Marketplace Elasticsearch offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
+The [Azure Marketplace Elastic Stack offering](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch) offers a simplified UI and installation experience over the full power of the ARM template.
 
-It will always bootstrap a cluster complete with a trial license of Elastic's commercial [X-Pack features](https://www.elastic.co/products/x-pack).
+It will always bootstrap an Elasticsearch cluster complete with a trial license of the [Elastic Stack's platinum features](https://www.elastic.co/products/stack).
 
-Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch (on Azure) but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
-<a href="#command-line-deploy">Check out the examples.</a>
-
----
-
-### VERY IMPORTANT
-
-**By default, this template does not configure** 
-
-* **SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer**
-* **SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway**
-* **SSL/TLS for communication between Elasticsearch nodes via the Transport layer**
-* **SSL/TLS for communication beween the browser and Kibana**
-
-**It is strongly recommended that you secure communication before using in production.**
-
-Please read the [Configuring TLS](#configuring-tls) section for securing communication with
-Transport Layer Security.
+Deploying through the Marketplace is great and easy way to get your feet wet for the first time with Elasticsearch on Azure, but in the long run, you'll want to deploy the templates directly from GitHub using the Azure CLI or PowerShell SDKs.
+<a href="#command-line-deploy">Check out the CLI examples.</a>
 
 ---
 
@@ -69,7 +76,6 @@ not exposed within the Marketplace UI, such as configuring
 
 * Azure Storage account to use with Azure Repository plugin for Snapshot/Restore
 * Application Gateway to use for SSL/TLS and SSL offload
-* The number and size of disks to attach to each data node VM
 
 Check out our [**examples repository**](https://github.com/elastic/azure-marketplace-examples)
 for examples of common scenarios and also take a look at the following blog
@@ -79,14 +85,15 @@ posts for further information
 * [Elasticsearch and Kibana deployments on Azure](https://www.elastic.co/blog/elasticsearch-and-kibana-deployments-on-azure)
 * [SAML based Single Sign-On with Elasticsearch and Azure Active Directory](https://www.elastic.co/blog/saml-based-single-sign-on-with-elasticsearch-and-azure-active-directory?blade=tw&hulk=social)
 
-### X-Pack features
+### Elastic Stack features (formerly known as X-Pack)
 
-Starting with Elasticsearch and Kibana 6.3.0, The template deploys with X-Pack features bundled as part of the deployment, and
+Starting with Elasticsearch, Kibana and Logstash 6.3.0, The template deploys with Elastic Stack features bundled as part of the deployment, and
 includes the free features under the [Basic license](https://www.elastic.co/subscriptions) level.
 The [`xpackPlugins`](#x-pack) parameter determines whether a self-generated trial license is applied,
-offering a trial period of 30 days of the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
+offering a trial period of 30 days to the Platinum license features. A value of `Yes` applies a trial license, a value of `No` applies the Basic license.
+The license level applied determines the Elastic Stack features activated to use.
 
-For Elasticsearch and Kibana prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
+For Elasticsearch, Kibana and Logstash prior to 6.3.0, The [`xpackPlugins`](#x-pack) parameter determines whether X-Pack plugins are installed
 and a self-generated trial license is applied. In difference to 6.3.0 however, a value of `No` for `xpackPlugins` means that 
 X-Pack plugins are not installed, and therefore does not provide the free features under the Basic license level, offering the Open Source features only.
 For these versions, you can install X-Pack plugins and [**register for a free Basic license** to apply to the deployment](https://register.elastic.co/), in 
@@ -94,8 +101,9 @@ order to use the free features available under the Basic license level.
 
 ## Parameters
 
-The ARM template accepts a _lot_ of parameters, although many of them are optional and only used
-in conjunction with other parameters.
+The ARM template accepts a _lot_ of parameters, but don't fear! Most of them are **optional** and only used
+in conjunction with other parameters. Where a parameter value is not explicitly provided, it will take the default
+value defined in the template.
 
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
@@ -135,12 +143,12 @@ in conjunction with other parameters.
     load balancer.</li>
     </ul>
     <p><strong>If you are setting up Elasticsearch or Kibana on a publicly available IP address, it is highly recommended to secure access to the cluster with a product like 
-    <a href="https://www.elastic.co/products/x-pack/security">X-Pack Security</a>, in addition to configuring SSL/TLS.</strong></p>
+    <a href="https://www.elastic.co/products/x-pack/security">Elastic Stack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
   <tr><td id="x-pack">xpackPlugins</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a>
-    features such as <a href="https://www.elastic.co/products/x-pack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/x-pack/security">Security</a>, <a href="https://www.elastic.co/products/x-pack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/x-pack/graph">Graph</a>, <a href="https://www.elastic.co/products/x-pack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/x-pack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/x-pack/reporting">Reporting</a> and Profiler installed.
+    <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the <a href="https://www.elastic.co/products/x-pack">Elastic Stack features (formerly X-Pack)</a>
+    such as <a href="https://www.elastic.co/products/stack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/stack/security">Security</a>, <a href="https://www.elastic.co/products/stack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/stack/graph">Graph</a>, <a href="https://www.elastic.co/products/stack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/stack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/stack/reporting">Reporting</a> and Profiler installed.
     <br /><br />
     A value of <code>No</code> for Elasticsearch and Kibana prior to 6.3.0,
     will include only the Open Source features.
@@ -150,18 +158,19 @@ in conjunction with other parameters.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>azureCloudPlugin</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to install the Azure Cloud plugin for snapshot/restore. 
-    When set to <code>Yes</code>, both <code>azureCloudeStorageAccountName</code> 
-    and <code>azureCloudStorageAccountKey</code> must be specified to configure the plugin correctly.
+    <td>Either <code>Yes</code> or <code>No</code> to install the Azure Repository plugin for snapshot/restore. 
+    When set to <code>Yes</code>, at least <code>azureCloudStorageAccountName</code> 
+    must be specified to configure the plugin correctly.
     </td><td><code>No</code></td></tr>
 
   <tr><td>azureCloudStorageAccountName</td><td>string</td>
-    <td> The name of an existing storage account to use for snapshots with Azure Cloud plugin. 
+    <td> The name of an existing storage account to use for snapshots with Azure Repository plugin. 
     Must be a valid Azure Storage Account name.
     </td><td><code>""</code></td></tr>
 
-  <tr><td>azureCloudStorageAccountKey</td><td>securestring</td>
-    <td> The access key of an existing storage account to use for snapshots with Azure Cloud plugin.
+  <tr><td>azureCloudStorageAccountResourceGroup</td><td>string</td>
+    <td> The name of an existing resource group containing the storage account <code>azureCloudStorageAccountName</code> 
+    to use for snapshots with Azure Repository plugin. Must be a valid Resource Group name.
     </td><td><code>""</code></td></tr>
 
   <tr><td>esAdditionalPlugins</td><td>string</td>
@@ -178,33 +187,33 @@ in conjunction with other parameters.
     </td><td><code>0</code></td></tr>
 
   <tr><td>esHttpCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCertPassword</td><td>securestring</td>
     <td>The password for the PKCS#12 archive (.p12/.pfx) containing the certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be protected with a password. <br /><br />
     If using <code>esHttpCaCertBlob</code>, this password will be used to protect the generated PKCS#12 archive on each node.
-    <strong>X-Pack plugin must be installed</strong>
+    <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for the HTTP layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for the HTTP layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esHttpCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for HTTP layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
-
+  
   <tr><td>esTransportCaCertBlob</td><td>string</td>
-    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong>X-Pack plugin must be installed</strong>
+    <td>A Base-64 encoded form of a PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to use to generate certificates on each Elasticsearch node, to secure communication for Transport layer to Elasticsearch. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCaCertPassword</td><td>securestring</td>
-    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong>X-Pack plugin must be installed</strong>
+    <td>The password for the PKCS#12 archive (.p12/.pfx) containing the Certificate Authority (CA) certificate and key to secure communication for Transport layer to Elasticsearch. Optional as the archive may not be be protected with a password. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>esTransportCertPassword</td><td>securestring</td>
-    <td>The password to protect the generated PKCS#12 archive on each node. <strong>X-Pack plugin must be installed</strong>
+    <td>The password to protect the generated PKCS#12 archive on each node. <strong><code>xpackPlugins</code> must be <code>Yes</code>, or <code>esVersion</code> must be 6.8.0 or above (and less than 7.0.0) or 7.1.0 and above.</strong>
     </td><td><code>""</code></td></tr>
 
   <tr><td>samlMetadataUri</td><td>string</td>
@@ -229,6 +238,16 @@ in conjunction with other parameters.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
 
+  <tr><td>vmMasterNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Master nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
+
   <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#data-node">Data node</a> related settings</strong></td></tr>
 
   <tr><td>dataNodesAreMasterEligible</td><td>string</td>
@@ -240,6 +259,16 @@ in conjunction with other parameters.
     <td>Azure VM size of the data nodes. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmDataNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Data nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td>vmDataNodeCount</td><td>int</td>
     <td>The number of data nodes you wish to deploy. <strong>Must be greater than 0</strong>.
@@ -263,11 +292,11 @@ in conjunction with other parameters.
     </td><td><a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes">Maximum number supported disks for data node VM size</a></td></tr>
 
   <tr><td>vmDataDiskSize</td><td>string</td>
-    <td>The disk size of each attached disk. Choose <code>XXLarge</code> (4095Gb), <code>XLarge</code> (2048Gb), <code>Large</code> (1024Gb), <code>Medium</code> (512Gb) or <code>Small</code> (128Gb).
-    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P50, P40, P30, P20 and P10</a>
+    <td>The disk size of each attached disk. Choose <code>32TiB</code>, <code>16TiB</code>, <code>8TiB</code>, <code>4TiB</code>, <code>2TiB</code>, <code>1TiB</code>, <code>512GiB</code>, <code>256GiB</code>, <code>128GiB</code>, <code>64GiB</code> or <code>32GiB</code>.
+    For Premium Storage, disk sizes equate to <a href="https://docs.microsoft.com/en-us/azure/storage/storage-premium-storage#premium-storage-disks-limits">P80, P70, P60, P50, P40, P30, P20, P15, P10 and P6</a>
     storage disk types, respectively.
     </td>
-  </td><td><code>Large</code></td></tr>
+  </td><td><code>1TiB</code></td></tr>
 
   <tr><td>storageAccountType</td><td>string</td>
     <td>The storage account type of the attached disks. Choose either <code>Default</code> or <code>Standard</code>. 
@@ -275,17 +304,27 @@ in conjunction with other parameters.
     support Premium Storage and Standard Storage for those that do not. <code>Standard</code> will use Standard Storage.
     </td><td><code>Default</code></td></tr>
 
-  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Client (Coordinating only) node</a> related settings</strong></td></tr>
+  <tr><td colspan="4" style="font-size:120%"><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#coordinating-only-node">Coordinating node</a> related settings</strong></td></tr>
 
   <tr><td>vmClientNodeCount</td><td>int</td>
-    <td> The number of client nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
-    if you provision client nodes, these will be added to the loadbalancer instead. Client nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
+    <td> The number of coordinating nodes to provision. Must be a positive integer. By default, the data nodes are added to the backend pool of the loadbalancer but
+    if you provision coordinating nodes, these will be added to the loadbalancer instead. Coordinating nodes can be useful in offloading the <em>gather</em> process from data nodes and are necessary to scale an Elasticsearch cluster deployed with this template beyond 100 data nodes (the maximum number of VMs that can be added to a load balancer backend pool).
     </td><td><code>0</code></td></tr>
 
   <tr><td>vmSizeClientNodes</td><td>string</td>
-    <td> Azure VM size of the client nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <td> Azure VM size of the coordinating nodes see <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you choose is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmClientNodeAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for coordinating nodes, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Security related settings</strong></td></tr>
 
@@ -316,11 +355,7 @@ in conjunction with other parameters.
     <br />
     This is the built-in <code>elastic</code> user.
     <br />
-    must be &gt; 6 characters
-    </td><td><code>""</code></td></tr>
-
-  <tr><td>securityReadPassword</td><td>securestring</td>
-    <td>Security password for the <code>es_read</code> user with user (read-only) role, must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityKibanaPassword</td><td>securestring</td>
@@ -328,27 +363,53 @@ in conjunction with other parameters.
     <br />
      This is the built-in <code>kibana</code> user.
     <br />
-     must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityLogstashPassword</td><td>securestring</td>
     <td>This is the built-in <code>logstash_system</code> user.
     <br />
-    must be &gt; 6 characters
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>securityBeatsPassword</td><td>securestring</td>
+    <td>This is the built-in <code>beats_system</code> user. Valid for Elasticsearch 6.3.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>securityApmPassword</td><td>securestring</td>
+    <td>This is the built-in <code>apm_system</code> user. Valid for Elasticsearch 6.5.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
+    </td><td><code>""</code></td></tr>
+  
+  <tr><td>securityRemoteMonitoringPassword</td><td>securestring</td>
+    <td>This is the built-in <code>remote_monitoring_user</code> user. Valid for Elasticsearch 6.5.0+
+    <br />
+    should be a minimum of 12 characters, and must be greater than 6 characters.
     </td><td><code>""</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
 
   <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    has Kibana installed on it. If you have opted to also install the X-Pack plugins using <code>xpackPlugins</code>,
-    a trial license of the commercial <a href="https://www.elastic.co/products/x-pack">X-Pack</a> Kibana plugins will be installed.
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it.
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
     <td>Azure VM size of the Kibana instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_A2</code></td></tr>
+
+  <tr><td>vmKibanaAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Kibana, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
 
   <tr><td>kibanaCertBlob</td><td>string</td>
     <td>A Base-64 encoded form of the certificate (.crt) in PEM format to secure HTTPS communication between the browser and Kibana.</td><td><code>""</code></td></tr>
@@ -362,12 +423,54 @@ in conjunction with other parameters.
   <tr><td>kibanaAdditionalYaml</td><td>string</td>
     <td>Additional configuration for Kibana yaml configuration file. Each line must be separated by a <code>\n</code> newline character e.g. <code>"server.name: \"My server\"\nkibana.defaultAppId: home"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong></td><td><code>""</code></td></tr>
 
+  <tr><td colspan="4" style="font-size:120%"><strong>Logstash related settings</strong></td></tr>
+
+  <tr><td>logstash</td><td>string</td>
+    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Logstash installed.
+    </td><td><code>No</code></td></tr>
+
+  <tr><td>vmSizeLogstash</td><td>string</td>
+    <td>Azure VM size of the Logstash instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
+    <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
+    </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmLogstashAcceleratedNetworking</td><td>string</td>
+    <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Logstash, which enables single root I/O virtualization (SR-IOV) 
+    to a VM, greatly improving its networking performance. Valid values are
+    <ul>
+      <li><code>Default</code>: enables accelerated networking for VMs known to support it</li>
+      <li><code>Yes</code>: enables accelerated networking.</li>
+      <li><code>No</code>: does not enable accelerated networking</li>
+    </ul>
+    </td><td><code>Default</code></td></tr>
+
+  <tr><td>logstashHeapSize</td><td>integer</td>
+    <td>The size, <em>in megabytes</em>, of memory to allocate for the JVM heap for Logstash. If unspecified, Logstash will be configured with the default heap size for the distribution and version. 
+    Take a look at <a href="https://www.elastic.co/guide/en/logstash/current/tuning-logstash.html#profiling-the-heap" target="_blank">the Logstash documentation</a> on profiling heap size for more information. <br /><br /> <strong>This is an expert level feature - setting a heap size too low, or larger than available memory on the Logstash VM SKU will fail the deployment.</strong>
+    </td><td><code>0</code></td></tr>
+
+  <tr><td>logstashConf</td><td>securestring</td>
+    <td>A Base-64 encoded form of a <a href="https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#configuration-file-structure" target="_blank">Logstash config file</a> to deploy.
+    </td><td><code>""</code></td></tr>  
+
+  <tr><td>logstashKeystorePassword</td><td>securestring</td>
+    <td>The password to protect the Logstash keystore. If no value is supplied, a value will be generated using the ARM template <code>uniqueString()</code> function. Used only in 6.2.0+
+    </td><td><code>""</code></td></tr>  
+
+  <tr><td>logstashAdditionalPlugins</td><td>string</td>
+    <td>Additional Logstash plugins to install. Each plugin must be separated by a semicolon. e.g. <code>logstash-input-heartbeat;logstash-input-twitter</code>
+    </td><td><code>""</code></td></tr>
+
+  <tr><td>logstashAdditionalYaml</td><td>string</td>
+    <td>Additional configuration for Logstash yaml configuration file. Each line must be separated by a newline character <code>\n</code> e.g. <code>"pipeline.batch.size: 125\npipeline.batch.delay: 50"</code>. <br /><br /><strong>This is an expert level feature - It is recommended that you run your additional yaml through a <a href="http://www.yamllint.com/">linter</a> before starting a deployment.</strong>
+    </td><td><code>""</code></td></tr>  
+
   <tr><td colspan="4" style="font-size:120%"><strong>Jumpbox related settings</strong></td></tr>
 
   <tr><td>jumpbox</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to optionally add a virtual machine with a public IP to the deployment, which you can use to connect and manage virtual machines on the internal network.
     <strong>NOTE:</strong> If you are deploying Kibana, the Kibana VM can act
-    as a jumpbox.
+    as a jumpbox, so a separate jumpbox VM is not needed.
   </td><td><code>No</code></td></tr>
 
   <tr><td colspan="4" style="font-size:120%"><strong>Virtual network related settings</strong></td></tr>
@@ -485,9 +588,9 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 
 1. Log into Azure
 
-  ```sh
+```sh
   az login
-  ```
+```
 2. Create a resource group `<name>` in a `<location>` (e.g `westeurope`) where we can deploy too
 
   ```sh
@@ -519,21 +622,25 @@ where `<name>` refers to the resource group you just created.
   Select-AzureRmSubscription -SubscriptionId "<subscriptionId>"
   ```
 
-3. Define the parameters object for your deployment
+3. Define the parameters object for your deployment as a PowerShell hashtable. The keys
+  correspond the parameters defined in the [Parameters section](#parameters)
 
   ```powershell
   $clusterParameters = @{
       "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/benchmarking/src"
-      "esVersion" = "6.3.0"
+      "esVersion" = "7.1.1"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
       "adminUsername" = "russ"
       "adminPassword" = "Password1234"
-      "securityAdminPassword" = "Password123"
-      "securityReadPassword" = "Password123"
-      "securityKibanaPassword" = "Password123"
-      "securityLogstashPassword" = "Password123"
+      "securityBootstrapPassword" = "Password1234"
+      "securityAdminPassword" = "Password1234"     
+      "securityKibanaPassword" = "Password1234"
+      "securityLogstashPassword" = "Password1234"
+      "securityBeatsPassword" = "Password1234"
+      "securityApmPassword" = "Password1234"
+      "securityRemoteMonitoringPassword" = "Password1234"
   }
   ```
 
@@ -551,26 +658,30 @@ where `<name>` refers to the resource group you just created.
 
 ## Targeting a specific template version
 
-You can target a specific version of the template by modifying the URI of the template and the artifactsBaseUrl parameter of the template.
+You can target a specific version of the template by modifying the URI of the template and 
+the artifactsBaseUrl parameter of the template to point to a specific tagged release.
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`6.2.4` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/6.2.4)
+For example, to target the [`7.0.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.0.0)
 
 ```powershell
-$templateVersion = "6.2.4"
+$templateVersion = "7.0.0"
 $templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
     "artifactsBaseUrl" = $templateBaseUrl
-    "esVersion" = "6.2.4"
+  "esVersion" = "7.0.0"
     "adminUsername" = "russ"
     "adminPassword" = "Password1234"
-    "securityAdminPassword" = "Password123"
-    "securityReadPassword" = "Password123"
-    "securityKibanaPassword" = "Password123"
-    "securityLogstashPassword" = "Password123"
+  "securityBootstrapPassword" = "Password1234"
+  "securityAdminPassword" = "Password1234"
+  "securityKibanaPassword" = "Password1234"
+  "securityLogstashPassword" = "Password1234"
+  "securityBeatsPassword" = "Password1234"
+  "securityApmPassword" = "Password1234"
+  "securityRemoteMonitoringPassword" = "Password1234"
 }
 
 $resourceGroup = "my-azure-cluster"
@@ -584,8 +695,16 @@ New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup
 ## Configuring TLS
 
 It is strongly recommended that you secure communication when using the template
-in production. X-Pack Security can provide Authentication and Role Based Access control,
-and Transport Layer Security (TLS) can be configured for both Elasticsearch and Kibana.
+in production. The Elastic Stack security features can provide Authentication and 
+Role Based Access control, and Transport Layer Security (TLS) can be configured 
+for both Elasticsearch and Kibana. For more details, please refer to 
+[the Security documentation](https://www.elastic.co/guide/en/elastic-stack-deploy/current/azure-arm-template-security.html).
+
+For Elasticsearch versions 6.8.0+ (and less than 7.0.0), and 7.1.0+, the Elastic Stack security features
+that allow configuring TLS and role based access control are available in the free basic license level. 
+For all other versions, the Elastic Stack security 
+features require a license level higher than basic; They can be configured with a trial license, 
+which provides access to the security features for 30 days.
 
 ### TLS for Kibana
 
@@ -597,15 +716,16 @@ a certificate and private key in PEM format with `kibanaCertBlob` and
 
 You can secure communication between nodes in the cluster with TLS on the
 Transport layer. Configuring TLS for the Transport layer requires
-`xPackPlugins` be set to `Yes`.
+`xPackPlugins` be set to `Yes`, or an Elasticsearch version 6.8.0+ (and less than 7.0.0) or 7.1.0+.
 
 You must supply a PKCS#12 archive with the `esTransportCaCertBlob` parameter (and optional
-passphrase with `esTransportCaCertPassword`) containing the CA which should be used to generate
+passphrase with `esTransportCaCertPassword`) containing the CA cert which should be used to generate
 a certificate for each node within the cluster. An optional
 passphrase can be passed with `esTransportCertPassword` to encrypt the generated certificate
 on each node.
 
-One way to generate a PKCS#12 archive containing a CA certificate and key is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
+One way to generate a PKCS#12 archive containing a CA certificate and key is using 
+[Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 The simplest command to generate a CA certificate is
 
 ```sh
@@ -618,7 +738,7 @@ and follow the instructions.
 
 You can secure external access to the cluster with TLS with an external
 loadbalancer or Application Gateway. Configuring TLS for the HTTP layer requires
-`xPackPlugins` be set to `Yes`.
+`xPackPlugins` be set to `Yes`, or an Elasticsearch version 6.8.0+ (and less than 7.0.0) or 7.1.0+.
 
 #### External load balancer
 
@@ -634,7 +754,7 @@ secure the HTTP layer. This certificate will be used by all nodes within the clu
 passphrase with `esHttpCaCertPassword`) containing the CA which should be used to generate
 a certificate for each node within the cluster to secure the HTTP layer.
 Kibana will be configured to trust the CA and perform hostname verification for presented
-certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html)
+certificates. One way to generate a PKCS#12 archive is using [Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 
 #### Application Gateway
 
@@ -646,7 +766,8 @@ One way to generate a PKCS#12 archive is using [Elastic's certutil command](http
 
 [Application Gateway](https://azure.microsoft.com/en-au/services/application-gateway/)
 performs SSL offload, so communication from Application Gateway to
-Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
+Elasticsearch is not encrypted with TLS by default. TLS to Application Gateway may be sufficient for your 
+needs, but if you would like end-to-end encryption by also configuring TLS for Elasticsearch HTTP layer, you can
 
 * supply a PKCS#12 archive containing the key and certificate with the `esHttpCertBlob` parameter (and optional 
 passphrase with `esHttpCertPassword`) containing the certs and private key to
@@ -664,7 +785,7 @@ be extracted from the PKCS#12 archive of the `esHttpCertBlob` parameter using
 [`openssl pkcs12`](https://www.openssl.org/docs/man1.0.2/apps/pkcs12.html)
 
     ```sh
-    openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -clcerts -nokeys
+    openssl pkcs12 -in http_cert.p12 -out http_public_cert.cer -nokeys
     ```
 
     and provide the passphrase for the archive when prompted.
@@ -676,7 +797,7 @@ Gateway's whitelisting mechanism. This can be checked using
 [`openssl x509`](https://www.openssl.org/docs/man1.0.2/apps/x509.html)
 
 ```sh
-openssl x509 -in public_key.cer -text -noout
+openssl x509 -in http_public_cert.cer -text -noout
 ```
 
 which will output something similar to
@@ -761,4 +882,5 @@ Parameters such as <code>esHttpCertBlob</code> and <code>kibanaCertBlob</code> m
 
 ## License
 
-This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and is based on the [Elasticsearch azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)
+This project is [MIT Licensed](https://github.com/elastic/azure-marketplace/blob/master/LICENSE.txt) and was originally forked from 
+the [Elasticsearch Azure quick start arm template](https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch)

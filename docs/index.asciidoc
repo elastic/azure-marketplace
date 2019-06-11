@@ -1,0 +1,45 @@
+:marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
+:portal: https://portal.azure.com
+:github: https://github.com/elastic/azure-marketplace
+:elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
+:microsoftdocs: https://docs.microsoft.com
+:azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
+:azurepowershell: {microsoftdocs}/powershell/azure/overview
+:subscriptions: https://www.elastic.co/subscriptions
+:sshkey: {microsoftdocs}/azure/virtual-machines/linux/ssh-from-windows
+:resourcegroup: {microsoftdocs}/azure/azure-resource-manager/resource-group-portal
+:incrementalmode: {microsoftdocs}/azure/azure-resource-manager/resource-group-template-deploy#incremental-and-complete-deployments
+
+[[azure-marketplace-arm-template]]
+= Deploying with Azure Marketplace and Resource Manager (ARM) template
+
+[[azure-marketplace-arm-template-introduction]]
+== Introduction
+
+The {marketplace}[Microsoft Azure Marketplace] solution is a preconfigured
+template to deploy an Elasticsearch cluster and Kibana to Azure.
+
+The solution provides a UI within the {portal}[Azure portal] that guides you through a
+series of steps in which you provide the minimum number of input parameters needed
+to deploy an Elasticsearch cluster to Azure. Following the last step,
+the UI feeds the provided parameter values to an <<azure-arm-template, Azure Resource Manager (ARM)
+template>> which deploys the requested Azure resources to a resource group, and,
+in a matter of minutes, you have a running cluster!
+
+The {github}[ARM template] used by the Marketplace offering for deploying
+resources can be used independently from and outside of the Azure portal using
+{azurecli}[Azure CLI] or {azurepowershell}[Azure PowerShell] command line tools.
+
+Read on to see how to use either to get a cluster up and running on Azure.
+
+include::azure-marketplace.asciidoc[]
+
+include::azure-arm-template.asciidoc[]
+
+include::faqs.asciidoc[]
+
+include::troubleshooting.asciidoc[]
+
+
+
+

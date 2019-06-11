@@ -1,0 +1,14 @@
+[IMPORTANT]
+--
+https://blogs.msdn.microsoft.com/mast/2013/12/06/understanding-the-temporary-drive-on-windows-azure-virtual-machines/[Temp storage], with filesystem `/dev/sdb1` mounted on `/mnt` in Ubuntu,
+is present on the physical machine hosting the VM. It is ephemeral in nature and
+not persistent; A VM can move to a different host at _any_ point in time for various
+reasons, including hardware failures. When this happens, the VM will be created on
+the new host using the OS disk from the storage account, and __new temp storage
+will be created on the new host__.
+
+Using temp storage _can_ be a cost effective way of running an
+Elasticsearch cluster on Azure with decent performance, _so long_ as you understand
+the tradeoffs in doing so, by snapshotting frequently and ensuring adequate data
+redundancy through sufficient replica shards.
+--

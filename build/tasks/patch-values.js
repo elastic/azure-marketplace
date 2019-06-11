@@ -31,6 +31,7 @@ gulp.task("patch", function(cb) {
   jsonfile.readFile(nodeResources, function(err, resources) {
 
     resources.variables.locations = allowedValues.locations;
+    resources.variables.vmAcceleratedNetworking = allowedValues.vmAcceleratedNetworking;
 
     jsonfile.writeFile(nodeResources, resources, function(err) {
 
@@ -54,10 +55,11 @@ gulp.task("patch", function(cb) {
         main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
         main.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
         main.parameters.vmDataDiskSize.allowedValues = diskSizes;
-        main.parameters.vmDataDiskSize.defaultValue = "Large";
+        main.parameters.vmDataDiskSize.defaultValue = allowedValues.defaultDiskSize;
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+        main.parameters.vmSizeLogstash.allowedValues = vmSizes;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {
@@ -70,13 +72,12 @@ gulp.task("patch", function(cb) {
               return el.name == "esVersion";
             });
             versionControl.constraints.allowedValues = _.map(versions, function(v) {
-              return { label: "v" + v, value : v};
+              return { label: "v" + v, value : v };
             });
             versionControl.defaultValue = "v" + _.last(versions);
 
             //patch allowedVMSizes on the nodesStep
             var nodesStep = _.find(ui.parameters.steps, function (step) { return step.name == "nodesStep"; });
-
             var dataNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodes"; });
             var masterNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "masterNodes"; });
             var clientNodesSection = _.find(nodesStep.elements, function (el) { return el.name == "clientNodes"; });
@@ -84,7 +85,12 @@ gulp.task("patch", function(cb) {
             var masterSizeControl = _.find(masterNodesSection.elements, function (el) { return el.name == "vmSizeMasterNodes"; });
             var dataSizeControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmSizeDataNodes"; });
             var clientSizeControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmSizeClientNodes"; });
-            var kibanaSizeControl = _.find(externalAccessStep.elements, function (el) { return el.name == "vmSizeKibana"; });
+
+            var kibanaSection = _.find(externalAccessStep.elements, function (el) { return el.name == "kibanaSection"; });
+            var kibanaSizeControl = _.find(kibanaSection.elements, function (el) { return el.name == "vmSizeKibana"; });
+
+            var logstashSection = _.find(externalAccessStep.elements, function (el) { return el.name == "logstashSection"; });
+            var logstashSizeControl = _.find(logstashSection.elements, function (el) { return el.name == "vmSizeLogstash"; });
 
             var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
               delete control.constraints.allowedValues;
@@ -94,7 +100,7 @@ gulp.task("patch", function(cb) {
                 if (recommendedSize) {
                   var fromIndex = sizes.indexOf(recommendedSize);
                   if (fromIndex == -1) {
-                    throw new Error("recommendSize '" + recommendedSize + "' not found in recommendedSizes [" + recommendedSizes.join("','") + "]");
+                    throw new Error(`recommendSize '${recommendedSize}' not found in recommendedSizes [${recommendedSizes.join("','")}]`);
                   }
                   sizes.splice(fromIndex);
                   sizes.unshift(recommendedSize);
@@ -107,11 +113,20 @@ gulp.task("patch", function(cb) {
             patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
             patchVmSizes(clientSizeControl, vmSizes);
             patchVmSizes(kibanaSizeControl, kibanaVmSizes);
+            patchVmSizes(logstashSizeControl, vmSizes);
 
             var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;
             var clientNodeCountControl = _.find(clientNodesSection.elements, function (el) { return el.name == "vmClientNodeCount"; });
             clientNodeCountControl.constraints.allowedValues = clientNodeValues;
+
+            var dataNodesDisksSection = _.find(nodesStep.elements, function (el) { return el.name == "dataNodesDisks"; });
+            var dataDisksControl = _.find(dataNodesDisksSection.elements, function (el) { return el.name == "vmDataDiskSize"; });
+
+            dataDisksControl.constraints.allowedValues = _.map(diskSizes, function(d) {
+              return { label: d, value : d };
+            });
+            dataDisksControl.defaultValue = allowedValues.defaultDiskSize;;
 
             jsonfile.writeFile(uiTemplate, ui, function (err) {
               cb();

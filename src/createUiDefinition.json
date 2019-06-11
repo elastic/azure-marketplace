@@ -54,101 +54,49 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v6.3.1",
+            "defaultValue": "v7.1.1",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v5.3.2",
-                  "value": "5.3.2"
-                },
-                {
-                  "label": "v5.4.0",
-                  "value": "5.4.0"
-                },
-                {
-                  "label": "v5.4.2",
-                  "value": "5.4.2"
-                },
-                {
-                  "label": "v5.4.3",
-                  "value": "5.4.3"
-                },
-                {
-                  "label": "v5.5.0",
-                  "value": "5.5.0"
-                },
-                {
-                  "label": "v5.5.1",
-                  "value": "5.5.1"
-                },
-                {
-                  "label": "v5.5.2",
-                  "value": "5.5.2"
-                },
-                {
-                  "label": "v5.5.3",
-                  "value": "5.5.3"
-                },
-                {
-                  "label": "v5.6.3",
-                  "value": "5.6.3"
-                },
-                {
-                  "label": "v5.6.5",
-                  "value": "5.6.5"
-                },
-                {
-                  "label": "v5.6.6",
-                  "value": "5.6.6"
-                },
-                {
-                  "label": "v5.6.7",
-                  "value": "5.6.7"
-                },
-                {
-                  "label": "v5.6.8",
-                  "value": "5.6.8"
-                },
-                {
-                  "label": "v5.6.9",
-                  "value": "5.6.9"
-                },
-                {
-                  "label": "v5.6.10",
-                  "value": "5.6.10"
-                },
-                {
-                  "label": "v6.0.1",
-                  "value": "6.0.1"
-                },
-                {
-                  "label": "v6.1.3",
-                  "value": "6.1.3"
-                },
-                {
-                  "label": "v6.2.1",
-                  "value": "6.2.1"
-                },
-                {
-                  "label": "v6.2.2",
-                  "value": "6.2.2"
-                },
-                {
-                  "label": "v6.2.3",
-                  "value": "6.2.3"
+                  "label": "v5.6.15",
+                  "value": "5.6.15"
                 },
                 {
                   "label": "v6.2.4",
                   "value": "6.2.4"
                 },
                 {
-                  "label": "v6.3.0",
-                  "value": "6.3.0"
+                  "label": "v6.3.2",
+                  "value": "6.3.2"
                 },
                 {
-                  "label": "v6.3.1",
-                  "value": "6.3.1"
+                  "label": "v6.4.3",
+                  "value": "6.4.3"
+                },
+                {
+                  "label": "v6.5.4",
+                  "value": "6.5.4"
+                },
+                {
+                  "label": "v6.6.2",
+                  "value": "6.6.2"
+                },
+                {
+                  "label": "v6.7.2",
+                  "value": "6.7.2"
+                },
+                {
+                  "label": "v6.8.0",
+                  "value": "6.8.0"
+                },
+                {
+                  "label": "v7.0.1",
+                  "value": "7.0.1"
+                },
+                {
+                  "label": "v7.1.1",
+                  "value": "7.1.1"
                 }
               ]
             }
@@ -336,8 +284,9 @@
                   "Standard_DS1_v2",
                   "Standard_DS2_v2",
                   "Standard_DS3_v2",
-                  "Standard_DS11_v2",
-                  "Standard_DS12_v2"
+                  "Standard_D2s_v3",
+                  "Standard_D4s_v3",
+                  "Standard_D8s_v3"
                 ],
                 "constraints": {
                   "allowedSizes": [
@@ -371,6 +320,12 @@
                     "Standard_D13_v2",
                     "Standard_D14_v2",
                     "Standard_D15_v2",
+                    "Standard_D2_v3",
+                    "Standard_D4_v3",
+                    "Standard_D8_v3",
+                    "Standard_D16_v3",
+                    "Standard_D32_v3",
+                    "Standard_D64_v3",
                     "Standard_DS1",
                     "Standard_DS2",
                     "Standard_DS3",
@@ -419,6 +374,13 @@
                     "Standard_F4s",
                     "Standard_F8s",
                     "Standard_F16s",
+                    "Standard_F2s_v2",
+                    "Standard_F4s_v2",
+                    "Standard_F8s_v2",
+                    "Standard_F16s_v2",
+                    "Standard_F32s_v2",
+                    "Standard_F64s_v2",
+                    "Standard_F72s_v2",
                     "Standard_G1",
                     "Standard_G2",
                     "Standard_G3",
@@ -433,6 +395,11 @@
                     "Standard_L8s",
                     "Standard_L16s",
                     "Standard_L32s",
+                    "Standard_L8s_v2",
+                    "Standard_L16s_v2",
+                    "Standard_L32s_v2",
+                    "Standard_L64s_v2",
+                    "Standard_L80s_v2",
                     "Standard_M8ms",
                     "Standard_M16ms",
                     "Standard_M32ts",
@@ -495,29 +462,53 @@
                 "type": "Microsoft.Common.DropDown",
                 "label": "Size of each managed disk",
                 "visible": "[greater(steps('nodesStep').dataNodesDisks.vmDataDiskCount, 0)]",
-                "defaultValue": "Large (1024Gb)",
+                "defaultValue": "1TiB",
                 "toolTip": "The size of each data disk to attach to each data node",
                 "constraints": {
                   "allowedValues": [
                     {
-                      "label": "Small (128Gb)",
-                      "value": "Small"
+                      "label": "32GiB",
+                      "value": "32GiB"
                     },
                     {
-                      "label": "Medium (512Gb)",
-                      "value": "Medium"
+                      "label": "64GiB",
+                      "value": "64GiB"
                     },
                     {
-                      "label": "Large (1024Gb)",
-                      "value": "Large"
+                      "label": "128GiB",
+                      "value": "128GiB"
                     },
                     {
-                      "label": "Extra Large (2048Gb)",
-                      "value": "XLarge"
+                      "label": "256GiB",
+                      "value": "256GiB"
                     },
                     {
-                      "label": "Extra Extra Large (4095Gb)",
-                      "value": "XXLarge"
+                      "label": "512GiB",
+                      "value": "512GiB"
+                    },
+                    {
+                      "label": "1TiB",
+                      "value": "1TiB"
+                    },
+                    {
+                      "label": "2TiB",
+                      "value": "2TiB"
+                    },
+                    {
+                      "label": "4TiB",
+                      "value": "4TiB"
+                    },
+                    {
+                      "label": "8TiB",
+                      "value": "8TiB"
+                    },
+                    {
+                      "label": "16TiB",
+                      "value": "16TiB"
+                    },
+                    {
+                      "label": "32TiB",
+                      "value": "32TiB"
                     }
                   ]
                 }
@@ -592,6 +583,12 @@
                     "Standard_D13_v2",
                     "Standard_D14_v2",
                     "Standard_D15_v2",
+                    "Standard_D2_v3",
+                    "Standard_D4_v3",
+                    "Standard_D8_v3",
+                    "Standard_D16_v3",
+                    "Standard_D32_v3",
+                    "Standard_D64_v3",
                     "Standard_DS1",
                     "Standard_DS2",
                     "Standard_DS3",
@@ -640,6 +637,13 @@
                     "Standard_F4s",
                     "Standard_F8s",
                     "Standard_F16s",
+                    "Standard_F2s_v2",
+                    "Standard_F4s_v2",
+                    "Standard_F8s_v2",
+                    "Standard_F16s_v2",
+                    "Standard_F32s_v2",
+                    "Standard_F64s_v2",
+                    "Standard_F72s_v2",
                     "Standard_G1",
                     "Standard_G2",
                     "Standard_G3",
@@ -654,6 +658,11 @@
                     "Standard_L8s",
                     "Standard_L16s",
                     "Standard_L32s",
+                    "Standard_L8s_v2",
+                    "Standard_L16s_v2",
+                    "Standard_L32s_v2",
+                    "Standard_L64s_v2",
+                    "Standard_L80s_v2",
                     "Standard_M8ms",
                     "Standard_M16ms",
                     "Standard_M32ts",
@@ -794,6 +803,12 @@
                     "Standard_D13_v2",
                     "Standard_D14_v2",
                     "Standard_D15_v2",
+                    "Standard_D2_v3",
+                    "Standard_D4_v3",
+                    "Standard_D8_v3",
+                    "Standard_D16_v3",
+                    "Standard_D32_v3",
+                    "Standard_D64_v3",
                     "Standard_DS1",
                     "Standard_DS2",
                     "Standard_DS3",
@@ -842,6 +857,13 @@
                     "Standard_F4s",
                     "Standard_F8s",
                     "Standard_F16s",
+                    "Standard_F2s_v2",
+                    "Standard_F4s_v2",
+                    "Standard_F8s_v2",
+                    "Standard_F16s_v2",
+                    "Standard_F32s_v2",
+                    "Standard_F64s_v2",
+                    "Standard_F72s_v2",
                     "Standard_G1",
                     "Standard_G2",
                     "Standard_G3",
@@ -856,6 +878,11 @@
                     "Standard_L8s",
                     "Standard_L16s",
                     "Standard_L32s",
+                    "Standard_L8s_v2",
+                    "Standard_L16s_v2",
+                    "Standard_L32s_v2",
+                    "Standard_L64s_v2",
+                    "Standard_L80s_v2",
                     "Standard_M8ms",
                     "Standard_M16ms",
                     "Standard_M32ts",
@@ -880,13 +907,431 @@
         ]
       },
       {
-        "name": "securityStep",
-        "label": "User Configuration",
+        "name": "externalAccessStep",
+        "label": "Kibana & Logstash",
         "subLabel": {
           "preValidation": "Required",
           "postValidation": "Done"
         },
-        "bladeTitle": "User Configuration",
+        "bladeTitle": "Kibana & Logstash",
+        "elements": [
+          {
+            "name": "kibanaSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Kibana",
+            "elements": [
+              {
+                "name": "kibana",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Install Kibana?",
+                "defaultValue": "Yes",
+                "toolTip": "Yes, to provision a single Kibana instance.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "vmSizeKibana",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Kibana VM size",
+                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "visible": "[equals(steps('externalAccessStep').kibanaSection.kibana, 'Yes')]",
+                "recommendedSizes": [
+                  "Standard_D1",
+                  "Standard_D2",
+                  "Standard_D3"
+                ],
+                "constraints": {
+                  "allowedSizes": [
+                    "Standard_A2",
+                    "Standard_A3",
+                    "Standard_A4",
+                    "Standard_A5",
+                    "Standard_A6",
+                    "Standard_A7",
+                    "Standard_A8",
+                    "Standard_A9",
+                    "Standard_A10",
+                    "Standard_A11",
+                    "Standard_D1",
+                    "Standard_D2",
+                    "Standard_D3",
+                    "Standard_D4",
+                    "Standard_D11",
+                    "Standard_D12",
+                    "Standard_D13",
+                    "Standard_D14",
+                    "Standard_D1_v2",
+                    "Standard_D2_v2",
+                    "Standard_D3_v2",
+                    "Standard_D4_v2",
+                    "Standard_D5_v2",
+                    "Standard_D11_v2",
+                    "Standard_D12_v2",
+                    "Standard_D13_v2",
+                    "Standard_D14_v2",
+                    "Standard_D15_v2",
+                    "Standard_D2_v3",
+                    "Standard_D4_v3",
+                    "Standard_D8_v3",
+                    "Standard_D16_v3",
+                    "Standard_D32_v3",
+                    "Standard_D64_v3",
+                    "Standard_DS1",
+                    "Standard_DS2",
+                    "Standard_DS3",
+                    "Standard_DS4",
+                    "Standard_DS11",
+                    "Standard_DS12",
+                    "Standard_DS13",
+                    "Standard_DS14",
+                    "Standard_DS1_v2",
+                    "Standard_DS2_v2",
+                    "Standard_DS3_v2",
+                    "Standard_DS4_v2",
+                    "Standard_DS5_v2",
+                    "Standard_DS11_v2",
+                    "Standard_DS12_v2",
+                    "Standard_DS13_v2",
+                    "Standard_DS14_v2",
+                    "Standard_DS15_v2",
+                    "Standard_D2s_v3",
+                    "Standard_D4s_v3",
+                    "Standard_D8s_v3",
+                    "Standard_D16s_v3",
+                    "Standard_D32s_v3",
+                    "Standard_D64s_v3",
+                    "Standard_E2_v3",
+                    "Standard_E4_v3",
+                    "Standard_E8_v3",
+                    "Standard_E16_v3",
+                    "Standard_E32_v3",
+                    "Standard_E64_v3",
+                    "Standard_E64i_v3",
+                    "Standard_E2s_v3",
+                    "Standard_E4s_v3",
+                    "Standard_E8s_v3",
+                    "Standard_E16s_v3",
+                    "Standard_E32s_v3",
+                    "Standard_E64s_v3",
+                    "Standard_E64is_v3",
+                    "Standard_F1",
+                    "Standard_F2",
+                    "Standard_F4",
+                    "Standard_F8",
+                    "Standard_F16",
+                    "Standard_F1s",
+                    "Standard_F2s",
+                    "Standard_F4s",
+                    "Standard_F8s",
+                    "Standard_F16s",
+                    "Standard_F2s_v2",
+                    "Standard_F4s_v2",
+                    "Standard_F8s_v2",
+                    "Standard_F16s_v2",
+                    "Standard_F32s_v2",
+                    "Standard_F64s_v2",
+                    "Standard_F72s_v2",
+                    "Standard_G1",
+                    "Standard_G2",
+                    "Standard_G3",
+                    "Standard_G4",
+                    "Standard_G5",
+                    "Standard_GS1",
+                    "Standard_GS2",
+                    "Standard_GS3",
+                    "Standard_GS4",
+                    "Standard_GS5",
+                    "Standard_L4s",
+                    "Standard_L8s",
+                    "Standard_L16s",
+                    "Standard_L32s",
+                    "Standard_L8s_v2",
+                    "Standard_L16s_v2",
+                    "Standard_L32s_v2",
+                    "Standard_L64s_v2",
+                    "Standard_L80s_v2",
+                    "Standard_M8ms",
+                    "Standard_M16ms",
+                    "Standard_M32ts",
+                    "Standard_M32ls",
+                    "Standard_M32ms",
+                    "Standard_M64s",
+                    "Standard_M64ls",
+                    "Standard_M64ms",
+                    "Standard_M128s",
+                    "Standard_M128ms",
+                    "Standard_M64",
+                    "Standard_M64m",
+                    "Standard_M128",
+                    "Standard_M128m"
+                  ]
+                },
+                "osPlatform": "Linux",
+                "count": "1"
+              }
+            ]
+          },
+          {
+            "name": "logstashSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Logstash",
+            "elements": [
+              {
+                "name": "logstash",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Install Logstash?",
+                "defaultValue": "No",
+                "toolTip": "Yes, to provision a single Logstash instance.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "vmSizeLogstash",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Logstash VM size",
+                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]",
+                "recommendedSizes": [
+                  "Standard_D1",
+                  "Standard_D2",
+                  "Standard_D3"
+                ],
+                "constraints": {
+                  "allowedSizes": [
+                    "Standard_A0",
+                    "Standard_A1",
+                    "Standard_A2",
+                    "Standard_A3",
+                    "Standard_A4",
+                    "Standard_A5",
+                    "Standard_A6",
+                    "Standard_A7",
+                    "Standard_A8",
+                    "Standard_A9",
+                    "Standard_A10",
+                    "Standard_A11",
+                    "Standard_D1",
+                    "Standard_D2",
+                    "Standard_D3",
+                    "Standard_D4",
+                    "Standard_D11",
+                    "Standard_D12",
+                    "Standard_D13",
+                    "Standard_D14",
+                    "Standard_D1_v2",
+                    "Standard_D2_v2",
+                    "Standard_D3_v2",
+                    "Standard_D4_v2",
+                    "Standard_D5_v2",
+                    "Standard_D11_v2",
+                    "Standard_D12_v2",
+                    "Standard_D13_v2",
+                    "Standard_D14_v2",
+                    "Standard_D15_v2",
+                    "Standard_D2_v3",
+                    "Standard_D4_v3",
+                    "Standard_D8_v3",
+                    "Standard_D16_v3",
+                    "Standard_D32_v3",
+                    "Standard_D64_v3",
+                    "Standard_DS1",
+                    "Standard_DS2",
+                    "Standard_DS3",
+                    "Standard_DS4",
+                    "Standard_DS11",
+                    "Standard_DS12",
+                    "Standard_DS13",
+                    "Standard_DS14",
+                    "Standard_DS1_v2",
+                    "Standard_DS2_v2",
+                    "Standard_DS3_v2",
+                    "Standard_DS4_v2",
+                    "Standard_DS5_v2",
+                    "Standard_DS11_v2",
+                    "Standard_DS12_v2",
+                    "Standard_DS13_v2",
+                    "Standard_DS14_v2",
+                    "Standard_DS15_v2",
+                    "Standard_D2s_v3",
+                    "Standard_D4s_v3",
+                    "Standard_D8s_v3",
+                    "Standard_D16s_v3",
+                    "Standard_D32s_v3",
+                    "Standard_D64s_v3",
+                    "Standard_E2_v3",
+                    "Standard_E4_v3",
+                    "Standard_E8_v3",
+                    "Standard_E16_v3",
+                    "Standard_E32_v3",
+                    "Standard_E64_v3",
+                    "Standard_E64i_v3",
+                    "Standard_E2s_v3",
+                    "Standard_E4s_v3",
+                    "Standard_E8s_v3",
+                    "Standard_E16s_v3",
+                    "Standard_E32s_v3",
+                    "Standard_E64s_v3",
+                    "Standard_E64is_v3",
+                    "Standard_F1",
+                    "Standard_F2",
+                    "Standard_F4",
+                    "Standard_F8",
+                    "Standard_F16",
+                    "Standard_F1s",
+                    "Standard_F2s",
+                    "Standard_F4s",
+                    "Standard_F8s",
+                    "Standard_F16s",
+                    "Standard_F2s_v2",
+                    "Standard_F4s_v2",
+                    "Standard_F8s_v2",
+                    "Standard_F16s_v2",
+                    "Standard_F32s_v2",
+                    "Standard_F64s_v2",
+                    "Standard_F72s_v2",
+                    "Standard_G1",
+                    "Standard_G2",
+                    "Standard_G3",
+                    "Standard_G4",
+                    "Standard_G5",
+                    "Standard_GS1",
+                    "Standard_GS2",
+                    "Standard_GS3",
+                    "Standard_GS4",
+                    "Standard_GS5",
+                    "Standard_L4s",
+                    "Standard_L8s",
+                    "Standard_L16s",
+                    "Standard_L32s",
+                    "Standard_L8s_v2",
+                    "Standard_L16s_v2",
+                    "Standard_L32s_v2",
+                    "Standard_L64s_v2",
+                    "Standard_L80s_v2",
+                    "Standard_M8ms",
+                    "Standard_M16ms",
+                    "Standard_M32ts",
+                    "Standard_M32ls",
+                    "Standard_M32ms",
+                    "Standard_M64s",
+                    "Standard_M64ls",
+                    "Standard_M64ms",
+                    "Standard_M128s",
+                    "Standard_M128ms",
+                    "Standard_M64",
+                    "Standard_M64m",
+                    "Standard_M128",
+                    "Standard_M128m"
+                  ]
+                },
+                "osPlatform": "Linux",
+                "count": "1"
+              },
+              {
+                "name": "logstashConf",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Logstash config file",
+                "toolTip": "A Logstash config file to use when Logstash starts. \n\"${ELASTICSEARCH_URL}\" can be used within the config file to communicate with Elasticsearch through the internal loadbalancer",
+                "constraints": {
+                  "accept": ".conf"
+                },
+                "options": {
+                  "multiple": false,
+                  "uploadMode": "file",
+                  "openMode": "binary",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]"
+              },
+              {
+                "name": "logstashAdditionalPlugins",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Additional Logstash plugins",
+                "defaultValue": "",
+                "toolTip": "Additional Logstash plugins to install. Each plugin name must be separated by a semicolon e.g. logstash-input-azure_event_hubs;logstash-input-http_poller",
+                "constraints": {
+                  "regex": "^[a-zA-Z0-9_\\-;]*$",
+                  "validationMessage": "Plugin names must contain alphanumeric, underscores and hyphen characters only, and be separated by semicolons"
+                },
+                "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]"
+              }
+            ]
+          },
+          {
+            "name": "externalAccessSection",
+            "type": "Microsoft.Common.Section",
+            "label": "External Access",
+            "elements": [
+              {
+                "name": "jumpbox",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Use a jump box?",
+                "defaultValue": "No",
+                "toolTip": "A jump box allows you to connect to your cluster from a public access point like SSH. This is usually not necessary if Kibana is installed, since Kibana itself acts as a jump box.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No",
+                      "value": "No"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "loadBalancerType",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Load balancer type",
+                "defaultValue": "Internal",
+                "toolTip": "Choose whether the load balancer should be public facing (external) or internal.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Internal",
+                      "value": "internal"
+                    },
+                    {
+                      "label": "External",
+                      "value": "external"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "securityStep",
+        "label": "Security",
+        "subLabel": {
+          "preValidation": "Required",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Security",
         "elements": [
           {
             "name": "es_admin",
@@ -903,8 +1348,8 @@
                 "toolTip": "Password for the built-in 'elastic' user. This is a built-in superuser account with unlimited access",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -927,8 +1372,8 @@
                 "toolTip": "Password for the built-in 'kibana' user. This is a built-in account that Kibana uses to communicate with Elasticsearch",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -951,8 +1396,8 @@
                 "toolTip": "Password for the built-in 'logstash_system' user. This is a built-in account that Logstash uses to communicate with Elasticsearch.",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -961,22 +1406,70 @@
             ]
           },
           {
-            "name": "es_read",
+            "name": "es_beats",
             "type": "Microsoft.Common.Section",
-            "label": "es_read (read only) user account",
+            "label": "Beats system user account",
             "elements": [
               {
-                "name": "securityReadPassword",
+                "name": "securityBeatsPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "'es_read' user password",
+                  "password": "'beats_system' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password to use for the 'es_read' user. This is a user account configured with limited read-only access",
+                "toolTip": "Password for the built-in 'beats_system' user. This is a built-in account that Beats uses to communicate with Elasticsearch. Required for Elasticsearch 6.3.0+",
                 "constraints": {
                   "required": true,
-                  "regex": "^.{6,}",
-                  "validationMessage": "Password must be at least 6 characters long"
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_apm",
+            "type": "Microsoft.Common.Section",
+            "label": "APM system user account",
+            "elements": [
+              {
+                "name": "securityApmPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "'apm_system' built-in user password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the built-in 'apm_system' user. This is a built-in account that APM server uses to communicate with Elasticsearch. Required for Elasticsearch 6.5.0+",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "es_remote",
+            "type": "Microsoft.Common.Section",
+            "label": "Remote monitoring user system user account",
+            "elements": [
+              {
+                "name": "securityRemoteMonitoringPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "'remote_monitoring_user' built-in user password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Password to use for the built-in 'remote_monitoring_user' user. This is a built-in account that Metricbeat uses when collecting and storing monitoring information in Elasticsearch. Required for Elasticsearch 6.5.0+",
+                "constraints": {
+                  "required": true,
+                  "regex": "^.{12,}",
+                  "validationMessage": "Password must be at least 12 characters long"
                 },
                 "options": {
                   "hideConfirmation": false
@@ -987,192 +1480,220 @@
         ]
       },
       {
-        "name": "externalAccessStep",
-        "label": "External Access",
+        "name": "certificatesStep",
+        "label": "Certificates",
         "subLabel": {
           "preValidation": "Required",
           "postValidation": "Done"
         },
-        "bladeTitle": "External Access Control",
+        "bladeTitle": "Certificates",
         "elements": [
           {
-            "name": "kibana",
-            "type": "Microsoft.Common.OptionsGroup",
-            "label": "Install Kibana?",
-            "defaultValue": "Yes",
-            "toolTip": "Yes, to provision a single Kibana instance.",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "Yes",
-                  "value": "Yes"
+            "name": "esHttpCerts",
+            "type": "Microsoft.Common.Section",
+            "label": "Elasticsearch HTTP layer",
+            "elements": [
+              {
+                "name": "esHttpCert",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "HTTP certificate type",
+                "defaultValue": "Certificate",
+                "toolTip": "Whether to provide a single PKCS#12 archive containing the certificate and key with which to secure the HTTP layer, or provide a PKCS#12 archive containing a Certificate Authority (CA) and key with which to generate a certificate for each node in the cluster.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Certificate",
+                      "value": "cert"
+                    },
+                    {
+                      "label": "Certificate Authority (CA)",
+                      "value": "ca"
+                    }
+                  ],
+                  "required": true
                 },
-                {
-                  "label": "No",
-                  "value": "No"
-                }
-              ]
-            }
+                "visible": true
+              },
+              {
+                "name": "esHttpCaCertBlob",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "HTTP Certificate Authority (CA) certificate",
+                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and private key with which to generate a certificate for each node within the cluster for securing the HTTP layer. A CA certificate can be generated using a number of different tools including elasticsearch-certutil, openssl, amongst others",
+                "constraints": {
+                  "required": false,
+                  "accept": ".p12,.pfx"
+                },
+                "options": {
+                  "multiple": false,
+                  "openMode": "binary",
+                  "uploadMode": "file",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'ca')]"
+              },
+              {
+                "name": "esHttpCaCertPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "HTTP Certificate Authority password",
+                  "confirmPassword": "Confirm HTTP Certificate Authority password"
+                },
+                "toolTip": "Optional passphrase for the PKCS#12 archive containing the Certificate Authority (CA) certificate and key used to generate a certificate for each node within the cluster for securing the HTTP layer",
+                "constraints": {
+                  "required": false
+                },
+                "options": {
+                  "hideConfirmation": false
+                },
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'ca')]"
+              },
+              {
+                "name": "esHttpCertBlob",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "HTTP certificate",
+                "toolTip": "A PKCS#12 archive containing the certificate and private key with which to secure the HTTP layer. This certificate will be used by all nodes within the cluster",
+                "constraints": {
+                  "required": false,
+                  "accept": ".p12,.pfx"
+                },
+                "options": {
+                  "multiple": false,
+                  "openMode": "binary",
+                  "uploadMode": "file",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('certificatesStep').esHttpCerts.esHttpCert, 'cert')]"
+              },
+              {
+                "name": "esHttpCertPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "HTTP certificate password",
+                  "confirmPassword": "Confirm HTTP certificate password"
+                },
+                "toolTip": "Optional passphrase for the PKCS#12 archive containing the certificate and key with which to secure the HTTP layer. If a Certificate Authority is provided for the HTTP layer, this passphrase will be used to protect PKCS#12 archives generated by the Certificate Authority",
+                "constraints": {
+                  "required": false
+                },
+                "options": {
+                  "hideConfirmation": false
+                },
+                "visible": true
+              }
+            ]
           },
           {
-            "name": "vmSizeKibana",
-            "type": "Microsoft.Compute.SizeSelector",
-            "label": "Kibana VM size",
-            "toolTip": "Choose VM SKU, Standard D1, D2, D3",
-            "visible": "[equals(steps('externalAccessStep').kibana, 'Yes')]",
-            "recommendedSizes": [
-              "Standard_D1",
-              "Standard_D2",
-              "Standard_D3"
-            ],
-            "constraints": {
-              "allowedSizes": [
-                "Standard_A2",
-                "Standard_A3",
-                "Standard_A4",
-                "Standard_A5",
-                "Standard_A6",
-                "Standard_A7",
-                "Standard_A8",
-                "Standard_A9",
-                "Standard_A10",
-                "Standard_A11",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D11",
-                "Standard_D12",
-                "Standard_D13",
-                "Standard_D14",
-                "Standard_D1_v2",
-                "Standard_D2_v2",
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D11_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_DS1",
-                "Standard_DS2",
-                "Standard_DS3",
-                "Standard_DS4",
-                "Standard_DS11",
-                "Standard_DS12",
-                "Standard_DS13",
-                "Standard_DS14",
-                "Standard_DS1_v2",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_DS4_v2",
-                "Standard_DS5_v2",
-                "Standard_DS11_v2",
-                "Standard_DS12_v2",
-                "Standard_DS13_v2",
-                "Standard_DS14_v2",
-                "Standard_DS15_v2",
-                "Standard_D2s_v3",
-                "Standard_D4s_v3",
-                "Standard_D8s_v3",
-                "Standard_D16s_v3",
-                "Standard_D32s_v3",
-                "Standard_D64s_v3",
-                "Standard_E2_v3",
-                "Standard_E4_v3",
-                "Standard_E8_v3",
-                "Standard_E16_v3",
-                "Standard_E32_v3",
-                "Standard_E64_v3",
-                "Standard_E64i_v3",
-                "Standard_E2s_v3",
-                "Standard_E4s_v3",
-                "Standard_E8s_v3",
-                "Standard_E16s_v3",
-                "Standard_E32s_v3",
-                "Standard_E64s_v3",
-                "Standard_E64is_v3",
-                "Standard_F1",
-                "Standard_F2",
-                "Standard_F4",
-                "Standard_F8",
-                "Standard_F16",
-                "Standard_F1s",
-                "Standard_F2s",
-                "Standard_F4s",
-                "Standard_F8s",
-                "Standard_F16s",
-                "Standard_G1",
-                "Standard_G2",
-                "Standard_G3",
-                "Standard_G4",
-                "Standard_G5",
-                "Standard_GS1",
-                "Standard_GS2",
-                "Standard_GS3",
-                "Standard_GS4",
-                "Standard_GS5",
-                "Standard_L4s",
-                "Standard_L8s",
-                "Standard_L16s",
-                "Standard_L32s",
-                "Standard_M8ms",
-                "Standard_M16ms",
-                "Standard_M32ts",
-                "Standard_M32ls",
-                "Standard_M32ms",
-                "Standard_M64s",
-                "Standard_M64ls",
-                "Standard_M64ms",
-                "Standard_M128s",
-                "Standard_M128ms",
-                "Standard_M64",
-                "Standard_M64m",
-                "Standard_M128",
-                "Standard_M128m"
-              ]
-            },
-            "osPlatform": "Linux",
-            "count": "1"
+            "name": "esTransportCerts",
+            "type": "Microsoft.Common.Section",
+            "label": "Elasticsearch Transport Layer",
+            "elements": [
+              {
+                "name": "esTransportCaCertBlob",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Transport Certificate Authority (CA) certificate",
+                "toolTip": "A PKCS#12 archive containing the Certificate Authority (CA) certificate and private key, used to generate a unique certificate for each node within the cluster to secure the Transport layer. A CA certificate can be generated using a number of different tools including elasticsearch-certutil, openssl, amongst others",
+                "constraints": {
+                  "required": false,
+                  "accept": ".p12,.pfx"
+                },
+                "options": {
+                  "multiple": false,
+                  "openMode": "binary",
+                  "uploadMode": "file",
+                  "encoding": "UTF-8"
+                },
+                "visible": true
+              },
+              {
+                "name": "esTransportCaCertPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Transport Certificate Authority password",
+                  "confirmPassword": "Confirm Transport Certificate Authority password"
+                },
+                "toolTip": "Optional passphrase for the PKCS#12 archive containing the Certificate Authority (CA) certificate and private key",
+                "constraints": {
+                  "required": false
+                },
+                "options": {
+                  "hideConfirmation": false
+                },
+                "visible": true
+              },
+              {
+                "name": "esTransportCertPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Transport certificate password",
+                  "confirmPassword": "Confirm Transport certificate password"
+                },
+                "toolTip": "Optional passphrase used to protect each PKCS#12 archive generated by the Certificate Authority and used to secure the Transport layer",
+                "constraints": {
+                  "required": false
+                },
+                "options": {
+                  "hideConfirmation": false
+                },
+                "visible": true
+              }
+            ]
           },
           {
-            "name": "jumpbox",
-            "type": "Microsoft.Common.OptionsGroup",
-            "label": "Use a jump box?",
-            "defaultValue": "No",
-            "toolTip": "A jump box allows you to connect to your cluster from a public access point like SSH. This is usually not necessary if Kibana is installed, since Kibana itself acts as a jump box.",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "Yes",
-                  "value": "Yes"
+            "name": "kibanaCerts",
+            "type": "Microsoft.Common.Section",
+            "label": "Kibana",
+            "elements": [
+              {
+                "name": "kibanaCertBlob",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Kibana certificate file",
+                "toolTip": "A PEM certificate used to secure communication between the browser and Kibana.",
+                "constraints": {
+                  "required": false,
+                  "accept": ".crt,.cer"
                 },
-                {
-                  "label": "No",
-                  "value": "No"
-                }
-              ]
-            }
-          },
-          {
-            "name": "loadBalancerType",
-            "type": "Microsoft.Common.OptionsGroup",
-            "label": "Load balancer type",
-            "defaultValue": "Internal",
-            "toolTip": "Choose whether the load balancer should be public facing (external) or internal.",
-            "constraints": {
-              "allowedValues": [
-                {
-                  "label": "Internal",
-                  "value": "internal"
+                "options": {
+                  "multiple": false,
+                  "openMode": "binary",
+                  "uploadMode": "file",
+                  "encoding": "UTF-8"
                 },
-                {
-                  "label": "External",
-                  "value": "external"
-                }
-              ]
-            }
+                "visible": "[equals(steps('externalAccessStep').kibanaSection.kibana, 'Yes')]"
+              },
+              {
+                "name": "kibanaKeyBlob",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Kibana key file",
+                "toolTip": "The private key for the PEM certificate used to secure communication between the browser and Kibana.",
+                "constraints": {
+                  "required": false,
+                  "accept": ".key"
+                },
+                "options": {
+                  "multiple": false,
+                  "openMode": "binary",
+                  "uploadMode": "file",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('externalAccessStep').kibanaSection.kibana, 'Yes')]"
+              },
+              {
+                "name": "kibanaKeyPassphrase",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Kibana key password",
+                  "confirmPassword": "Confirm Kibana key password"
+                },
+                "toolTip": "Optional passphrase for the private key for the PEM certificate used to secure communication between the browser and Kibana.",
+                "constraints": {
+                  "required": false
+                },
+                "options": {
+                  "hideConfirmation": false
+                },
+                "visible": "[equals(steps('externalAccessStep').kibanaSection.kibana, 'Yes')]"
+              }
+            ]
           }
         ]
       }
@@ -1182,21 +1703,21 @@
       "esClusterName": "[steps('clusterSettingsStep').esClusterName]",
       "azureCloudPlugin": "No",
       "azureCloudStorageAccountName": "",
-      "azureCloudStorageAccountKey": "",
+      "azureCloudStorageAccountResourceGroup": "",
       "xpackPlugins": "Yes",
       "esAdditionalPlugins": "",
       "esAdditionalYaml": "",
-      "esHttpCertBlob": "",
-      "esHttpCertPassword": "",
-      "esHttpCaCertBlob": "",
-      "esHttpCaCertPassword": "",
-      "esTransportCaCertBlob": "",
-      "esTransportCaCertPassword": "",
-      "esTransportCertPassword": "",
+      "esHttpCertBlob": "[steps('certificatesStep').esHttpCerts.esHttpCertBlob]",
+      "esHttpCertPassword": "[steps('certificatesStep').esHttpCerts.esHttpCertPassword]",
+      "esHttpCaCertBlob": "[steps('certificatesStep').esHttpCerts.esHttpCaCertBlob]",
+      "esHttpCaCertPassword": "[steps('certificatesStep').esHttpCerts.esHttpCaCertPassword]",
+      "esTransportCaCertBlob": "[steps('certificatesStep').esTransportCerts.esTransportCaCertBlob]",
+      "esTransportCaCertPassword": "[steps('certificatesStep').esTransportCerts.esTransportCaCertPassword]",
+      "esTransportCertPassword": "[steps('certificatesStep').esTransportCerts.esTransportCertPassword]",
       "samlMetadataUri": "",
       "samlServiceProviderUri": "",
       "esHeapSize": 0,
-      "loadBalancerType": "[steps('externalAccessStep').loadBalancerType]",
+      "loadBalancerType": "[steps('externalAccessStep').externalAccessSection.loadBalancerType]",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
       "vNetClusterSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
@@ -1206,14 +1727,24 @@
       "vNetNewClusterSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",
       "vNetAppGatewaySubnetName": "es-gateway-subnet",
       "vNetNewAppGatewaySubnetAddressPrefix": "10.0.0.128/28",
-      "kibana": "[steps('externalAccessStep').kibana]",
-      "vmSizeKibana": "[steps('externalAccessStep').vmSizeKibana]",
-      "kibanaKeyBlob": "",
-      "kibanaCertBlob": "",
-      "kibanaKeyPassphrase": "",
+      "kibana": "[steps('externalAccessStep').kibanaSection.kibana]",
+      "vmSizeKibana": "[steps('externalAccessStep').kibanaSection.vmSizeKibana]",
+      "vmKibanaAcceleratedNetworking": "Default",
+      "kibanaKeyBlob": "[steps('certificatesStep').kibanaCerts.kibanaKeyBlob]",
+      "kibanaCertBlob": "[steps('certificatesStep').kibanaCerts.kibanaCertBlob]",
+      "kibanaKeyPassphrase": "[steps('certificatesStep').kibanaCerts.kibanaKeyPassphrase]",
       "kibanaAdditionalYaml": "",
-      "jumpbox": "[steps('externalAccessStep').jumpbox]",
+      "logstash": "[steps('externalAccessStep').logstashSection.logstash]",
+      "vmSizeLogstash": "[steps('externalAccessStep').logstashSection.vmSizeLogstash]",
+      "vmLogstashAcceleratedNetworking": "Default",
+      "logstashHeapSize": 0,
+      "logstashConf": "[steps('externalAccessStep').logstashSection.logstashConf]",
+      "logstashKeystorePassword": "",
+      "logstashAdditionalPlugins": "[steps('externalAccessStep').logstashSection.logstashAdditionalPlugins]",
+      "logstashAdditionalYaml": "",
+      "jumpbox": "[steps('externalAccessStep').externalAccessSection.jumpbox]",
       "vmSizeDataNodes": "[steps('nodesStep').dataNodes.vmSizeDataNodes]",
+      "vmDataNodeAcceleratedNetworking": "Default",
       "vmDataDiskCount": "[int(steps('nodesStep').dataNodesDisks.vmDataDiskCount)]",
       "vmDataDiskSize": "[steps('nodesStep').dataNodesDisks.vmDataDiskSize]",
       "vmDataNodeCount": "[steps('nodesStep').dataNodes.vmDataNodeCount]",
@@ -1221,17 +1752,21 @@
       "dataNodesAreMasterEligible": "[steps('nodesStep').dataNodes.dataNodesAreMasterEligible]",
       "vmHostNamePrefix": "[steps('nodesStep').vmHostNamePrefix]",
       "vmSizeMasterNodes": "[steps('nodesStep').masterNodes.vmSizeMasterNodes]",
+      "vmMasterNodeAcceleratedNetworking": "Default",
       "vmClientNodeCount": "[steps('nodesStep').clientNodes.vmClientNodeCount]",
       "vmSizeClientNodes": "[steps('nodesStep').clientNodes.vmSizeClientNodes]",
+      "vmClientNodeAcceleratedNetworking": "Default",
       "adminUsername": "[basics('adminUsername')]",
       "authenticationType": "[basics('password').authenticationType]",
       "adminPassword": "[basics('password').password]",
       "sshPublicKey": "[basics('password').sshPublicKey]",
       "securityBootstrapPassword": "",
       "securityAdminPassword": "[steps('securityStep').es_admin.securityAdminPassword]",
-      "securityReadPassword": "[steps('securityStep').es_read.securityReadPassword]",
       "securityKibanaPassword": "[steps('securityStep').es_kibana.securityKibanaPassword]",
       "securityLogstashPassword": "[steps('securityStep').es_logstash.securityLogstashPassword]",
+      "securityBeatsPassword": "[steps('securityStep').es_beats.securityBeatsPassword]",
+      "securityApmPassword": "[steps('securityStep').es_apm.securityApmPassword]",
+      "securityRemoteMonitoringPassword": "[steps('securityStep').es_remote.securityRemoteMonitoringPassword]",
       "appGatewayTier": "Standard",
       "appGatewaySku": "Small",
       "appGatewayCount": 1,

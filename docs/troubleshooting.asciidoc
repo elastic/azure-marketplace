@@ -1,0 +1,196 @@
+[[azure-arm-template-troubleshooting]]
+== Troubleshooting
+
+Sometimes, things may go wrong with the deployment for a number of different
+reasons including, but not limited to
+
+- Incorrect or invalid parameters passed to the template,
+that pass initial validation but fail at deployment time
+- Transient errors associated with ARM template dependencies
+- Transient errors associated with the Azure infrastructure
+
+When such issues arise, you'll need to know where to look to ascertain what the
+underlying problem is, in order to determine what action to take to rectify.
+
+[[azure-arm-template-troubleshooting-accessing-nodes]]
+=== Accessing nodes
+
+Elasticsearch node VMs are not accessible from outside of the virtual network to which
+the cluster is attached. The VMs can be accessed through SSH by either using Kibana
+as a jumpbox, or deploying a specific Jumpbox VM. In both cases, a network security
+group is configured to allow TCP traffic from the public internet on port 22 to allow
+access through SSH.
+
+SSH Authentication will use the authentication mechanism defined by the
+`authenticationType` parameter, either `password` or `sshPublicKey`:
+
+[source,sh]
+----
+ssh <admin username>@<kibana or jumpbox public IP address> <1>
+----
+<1> admin username is the value provided for `adminUsername` parameter
+
+Once connected to the Kibana or Jumpbox VM, other VMs on the virtual network can
+be accessed using SSH with either the private IP address or VM hostname, if using
+Azure DNS to resolve addresses from hostnames
+
+[source,sh]
+----
+ssh <admin username>@<internal IP address or VM hostname>
+----
+
+Many utilities and file paths may require elevated permissions to access, for
+example, the elasticsearch configuration file
+
+[source,sh]
+----
+sudo su
+
+# check Elasticsearch configuration
+cat /etc/elasticsearch/elasticsearch.yml
+
+# check status of Elasticsearch service
+systemctl status elasticsearch.service
+----
+
+[[azure-arm-template-troubleshooting-azure]]
+=== Diagnosing through Azure
+
+There may be transient deployment issues that prevent one or more resources from
+being deployed successfully. An overview of the status of deploying resources can
+be found within the Azure portal by selecting the resource group, then navigating
+to the Deployments menu item:
+
+image::images/deployments.png[]
+
+The status of each deployment is listed, along with the duration. Each deployment
+name listed refers to the names of resources within the ARM template, with
+resources in linked templates listed under the linked template resource name.
+
+The same information can be retrieved using Azure CLI tools
+
+[source,sh]
+.Azure CLI 2.0
+----
+# Get all operations
+az group deployment operation list --name mainTemplate \
+    --resource-group "<resource group>" \
+    --out json
+
+# Check those that haven't been provisioned successfully
+az group deployment operation list --name mainTemplate \
+    --resource-group "<resource group>" \
+    --out json \
+    --query "[?properties.provisioningState != 'Succeeded']"
+----
+
+[source, powershell]
+.Azure PowerShell
+----
+# Get all operations
+Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
+    -ResourceGroupName "<resource group>"
+
+# Check those that haven't been provisioned successfully
+Get-AzureRmResourceGroupDeploymentOperation -DeploymentName mainTemplate `
+    -ResourceGroupName "<resource group>" | ?{ $_.Properties.ProvisioningState -ne "Succeeded" }
+----
+
+[[azure-arm-template-troubleshooting-azure-logs]]
+=== Diagnosing through logs
+
+The log files on each of the Elasticsearch node VMs are a great resource to
+understand the current state of the system. The following in particular are most
+useful, which you may need administrative privileges on the VM to access:
+
+`/var/log/arm-install.log`::
+A log file that the Elasticsearch deployment script writes to. This provides a
+chronological timeline for the important events that occur at deployment time,
+also giving an indication of how long each takes. Looking at this first provides
+an indication as to whether the deployment script completed successfully.
+
+`/var/lib/waagent/custom-script/download/0/stderr`::
+A log file that contains log messages written to standard error (stderr) by the Azure infrastructure when the Elasticsearch deployment script runs.
+
+`/var/lib/waagent/custom-script/download/0/stdout`::
+A log file that contains log messages written to standard output (stdout) by the Azure infrastructure when the Elasticsearch deployment script runs. There will be
+duplication of messages that have been written to `/var/log/arm-install.log`, in addition to other tooling related output such as apt package installations.
+
+[[azure-arm-template-troubleshooting-elasticsearch-logs]]
+==== Elasticsearch logs
+
+In addition to template specific and Azure related logs, Elasticsearch log
+and configuration files provide invaluable information
+
+Log files in `/var/log/elasticsearch/`::
+A collection of different log files written to by the running Elasticsearch
+process.
+
+`/etc/elasticsearch/elasticsearch.yml`::
+The Elasticsearch configuration log file.
+
+[[azure-arm-template-repeatable-deployments]]
+=== Repeatable deployments
+
+For repeatable deployments, it is recommended to target a specific template release
+within the {github}[GitHub repository]; Each release is identified by tagging the
+commit and the {github}/releases[release notes] indicate the changes in the release.
+
+Targeting a specific release ensures that the template parameters remain the same,
+in addition to which resources are deployed and how they are configured. Furthermore,
+a release undergoes considerable testing before being considered ready for public
+release.
+
+As an example, to {github}/releases/tag/{version}[target {version} release] of the template
+
+[source,sh]
+[subs="attributes"]
+.Azure CLI 2.0
+----
+template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
+template_version={version}
+
+az group deployment create \
+  --resource-group "<name>" \
+  --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
+  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
+               esVersion={version} esClusterName=elasticsearch \
+               vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
+               adminUsername=russ adminPassword=Password1234 \
+               securityBootstrapPassword=bootstrapPassword123 \
+               securityAdminPassword=adminPassword123 \
+               securityKibanaPassword=kibanaPassword123 \
+               securityLogstashPassword=logstashPassword123 \
+               securityBeatsPassword=beatsPassword123 \
+               securityApmPassword=apmPassword123 \
+               securityRemoteMonitoringPassword=remoteMonitoringPassword123
+----
+
+[source,powershell]
+[subs="attributes"]
+.Azure PowerShell
+----
+$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
+$templateVersion = "{version}"
+
+$parameters = @{
+  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
+  "esVersion" = "{version}"
+  "esClusterName" = "elasticsearch"
+  "vmDataDiskCount" = 1
+  "dataNodesAreMasterEligible" = "Yes"
+  "adminUsername" = "russ"
+  "adminPassword" = "Password1234"
+  "securityBootstrapPassword" = "bootstrapPassword123"
+  "securityAdminPassword" = "adminPassword123"
+  "securityKibanaPassword" = "kibanaPassword123"
+  "securityLogstashPassword" = "logstashPassword123"
+  "securityBeatsPassword" = "beatsPassword123"
+  "securityApmPassword" = "apmPassword123"
+  "securityRemoteMonitoringPassword" = "remoteMonitoringPassword123"
+}
+
+$deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName "<name>" `
+  -TemplateUri "$templateBaseUri/$templateVersion/src/mainTemplate.json" `
+  -TemplateParameterObject $parameters
+----

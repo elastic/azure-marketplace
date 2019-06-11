@@ -26,12 +26,6 @@
         "description": "Network settings"
       }
     },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
-      }
-    },
     "credentials": {
       "type": "secureObject",
       "metadata": {
@@ -49,6 +43,17 @@
       "defaultValue": "Standard_A1",
       "metadata": {
         "description": "Size of the Kibana VM"
+      }
+    },
+    "acceleratedNetworking": {
+      "type": "string",
+      "defaultValue": "No",
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "metadata": {
+        "description": "Whether to enable accelerated networking for Kibana, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
       }
     },
     "elasticTags": {
@@ -143,6 +148,8 @@
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupName'))]"
       ],
       "properties": {
+        "primary": true,
+        "enableAcceleratedNetworking": "[equals(parameters('acceleratedNetworking'), 'Yes')]",
         "ipConfigurations": [
           {
             "name": "ipconfig1",
@@ -181,7 +188,7 @@
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
-            "name": "osdisk",
+            "name": "[concat(variables('namespace'), '-osdisk')]",
             "managedDisk": {
               "storageAccountType": "Standard_LRS"
             },

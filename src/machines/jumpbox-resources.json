@@ -26,12 +26,6 @@
         "description": "Network settings"
       }
     },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Existing Storage Account where the Virtual Machine's disks will be placed"
-      }
-    },
     "credentials": {
       "type": "secureObject",
       "metadata": {
@@ -120,7 +114,7 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id))]"
+          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id, deployment().name))]"
         }
       }
     },
@@ -159,7 +153,7 @@
     {
       "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('namespace'), '-0')]",
+      "name": "[variables('namespace')]",
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -175,7 +169,7 @@
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
-            "name": "osdisk",
+            "name": "[concat(variables('namespace'), '-osdisk')]",
             "managedDisk": {
               "storageAccountType": "Standard_LRS"
             },
