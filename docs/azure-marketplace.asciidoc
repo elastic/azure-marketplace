@@ -95,6 +95,22 @@ group. This is particularly useful in situations where resources may already be
 deployed in another resource group, and the cluster should be accessible to those
 resources on the same network, and possibly same subnet.
 
+[IMPORTANT]
+--
+The Azure Marketplace constrains the available existing subnets to those that 
+have a prefix size of `/25` i.e. 128 addresses or more. The prefix size must
+be large enough to be able to accommodate the largest size cluster/deployment 
+that the Marketplace offering can deploy, and the prefix size chosen is the smallest
+that meets this requirement. The ability to dynamically adjust the prefix size
+based on the cluster topology to be deployed is not possible.
+
+Fortunately, this is _only_ a Marketplace UI constraint and not an ARM template constraint! 
+It is possible to deploy a cluster <<azure-arm-template, using the ARM template from our GitHub repository directly>>, 
+and select the existing virtual network and subnet that you want to use, 
+using the <<azure-arm-template-networking, networking parameters>>. Be sure to target a 
+specific GitHub tag release for <<azure-arm-template-repeatable-deployments, repeatable deployments>>. 
+--
+
 [[nodes-configuration-step]]
 ==== Nodes configuration
 
