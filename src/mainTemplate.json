@@ -4,7 +4,7 @@
   "parameters": {
     "artifactsBaseUrl": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/7.1/src",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src",
       "metadata": {
         "artifactsBaseUrl": "Base URL of the Elastic template gallery package"
       }
@@ -568,7 +568,7 @@
       "defaultValue": "",
       "maxLength": 5,
       "metadata": {
-        "description": "The prefix to use for hostnames when naming virtual machines in the cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix to differentiate the hostnames of this cluster from an existing cluster"
+        "description": "The prefix to use for resources and hostnames when naming virtual machines in the cluster. Can be up to 5 characters in length, must begin with an alphanumeric character and can contain alphanumeric and hyphen characters. Hostnames are used for resolution of master nodes so if you are deploying a cluster into an existing virtual network containing an existing Elasticsearch cluster, be sure to set this to a unique prefix to differentiate the hostnames of this cluster from an existing cluster"
       }
     },
     "vmSizeDataNodes": {
@@ -1856,20 +1856,20 @@
     "backendPoolConfigurations": {
       "internal": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         }
       ],
       "external": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         },
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'external-lb')),'/backendAddressPools/LBBE')]"
         }
       ],
       "gateway": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
         }
       ]
     },
@@ -1936,6 +1936,7 @@
     },
     "networkSettings": {
       "name": "[parameters('vNetName')]",
+      "namespacePrefix": "[parameters('vmHostNamePrefix')]",
       "resourceGroup": "[variables('networkResourceGroupMap')[parameters('vNetNewOrExisting')]]",
       "location": "[variables('location')]",
       "addressPrefix": "[parameters('vNetNewAddressPrefix')]",
