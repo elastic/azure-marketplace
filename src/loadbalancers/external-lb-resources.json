@@ -29,12 +29,15 @@
       "Yes" : "https://",
       "No" : "http://"
     },
-    "https": "[variables('httpsOpts')[parameters('networkSettings').https]]"
+    "https": "[variables('httpsOpts')[parameters('networkSettings').https]]",
+    "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'internal-lb')]",
+    "externalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'external-lb')]",
+    "externalLoadBalancerIp": "[concat(parameters('networkSettings').namespacePrefix, 'external-lb-ip')]"
   },
   "resources": [
     {
       "apiVersion": "2017-10-01",
-      "name": "es-internal-lb",
+      "name": "[variables('internalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
       "tags": {
@@ -63,10 +66,10 @@
             "name": "es-http-internal",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/frontendIPConfigurations/LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/backendAddressPools/LBBE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 9200,
@@ -74,7 +77,7 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/probes/es-probe-internal-http')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/probes/es-probe-internal-http')]"
               }
             }
           },
@@ -82,10 +85,10 @@
             "name": "es-transport-internal",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/frontendIPConfigurations/LBFE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/frontendIPConfigurations/LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-internal-lb'),'/backendAddressPools/LBBE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/backendAddressPools/LBBE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 9300,
@@ -111,7 +114,7 @@
     {
       "apiVersion": "2017-10-01",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "es-external-lb-ip",
+      "name": "[variables('externalLoadBalancerIp')]",
       "location": "[parameters('networkSettings').location]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -119,20 +122,20 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[concat('lb-', uniqueString(resourceGroup().id))]"
+          "domainNameLabel": "[concat('lb-', uniqueString(resourceGroup().id, deployment().name))]"
         }
       }
     },
     {
       "apiVersion": "2017-10-01",
-      "name": "es-external-lb",
+      "name": "[variables('externalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', 'es-external-lb-ip')]"
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('externalLoadBalancerIp'))]"
       ],
       "properties": {
         "frontendIPConfigurations": [
@@ -140,7 +143,7 @@
             "name": "LBFE",
             "properties": {
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses','es-external-lb-ip')]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('externalLoadBalancerIp'))]"
               }
             }
           }
@@ -155,10 +158,10 @@
             "name": "es-http-external",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/frontendIPConfigurations/LBFE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('externalLoadBalancerName')),'/frontendIPConfigurations/LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/backendAddressPools/LBBE')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('externalLoadBalancerName')),'/backendAddressPools/LBBE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 9200,
@@ -166,7 +169,7 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','es-external-lb'),'/probes/es-http-external-probe')]"
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('externalLoadBalancerName')),'/probes/es-http-external-probe')]"
               }
             }
           }
@@ -187,7 +190,7 @@
   ],
   "outputs" : {
     "fqdn": {
-      "value": "[concat(variables('https'), reference('es-external-lb-ip').dnsSettings.fqdn, ':9200')]",
+      "value": "[concat(variables('https'), reference(variables('externalLoadBalancerIp')).dnsSettings.fqdn, ':9200')]",
       "type": "string"
     }
   }

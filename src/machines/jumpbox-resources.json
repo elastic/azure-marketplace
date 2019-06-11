@@ -114,7 +114,7 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id))]"
+          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id, deployment().name))]"
         }
       }
     },
