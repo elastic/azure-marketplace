@@ -362,7 +362,7 @@ var sanityCheckApplicationGateway = (test, cb) => {
   var appGateway = "application gateway";
 
   var operationList = [ 'network', 'public-ip', 'show',
-    '--name', 'es-app-gateway-ip',
+    '--name', 'app-gateway-ip',
     '--resource-group', rg,
     '--out', 'json'
   ];
@@ -371,7 +371,7 @@ var sanityCheckApplicationGateway = (test, cb) => {
   az(operationList, (error, stdout, stderr) => {
     log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
     if (error || stderr) {
-      log(`getting public ip for ${appGateway} in ${t.name} resulted in error: ${JSON.stringify(e, null, 2)}`);
+      log(`getting public ip for ${appGateway} in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
       cb();
     }
 
