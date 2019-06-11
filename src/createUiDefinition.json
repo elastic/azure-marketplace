@@ -1491,7 +1491,7 @@
           {
             "name": "certs",
             "type": "Microsoft.Common.OptionsGroup",
-            "label": "Configure Transport Layer Security (SSL/TLS)",
+            "label": "Configure Transport Layer Security",
             "defaultValue": "Yes",
             "toolTip": "Whether to configure Transport Layer Security (SSL/TLS) for Elasticsearch and Kibana, using supplied certificates",
             "constraints": {
@@ -1529,8 +1529,7 @@
                       "label": "Certificate Authority (CA)",
                       "value": "ca"
                     }
-                  ],
-                  "required": true
+                  ]
                 },
                 "visible": true
               },
@@ -1605,7 +1604,7 @@
           {
             "name": "esTransportCerts",
             "type": "Microsoft.Common.Section",
-            "label": "Elasticsearch Transport Layer",
+            "label": "Elasticsearch Transport layer",
             "visible": "[equals(steps('certificatesStep').certs, 'Yes')]",
             "elements": [
               {
