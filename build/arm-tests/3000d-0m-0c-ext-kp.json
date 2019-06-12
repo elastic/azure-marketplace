@@ -1,5 +1,5 @@
 {
-	"isValid" : false,
+	"isValid" : true,
 	"deploy" : false,
 	"why" : "we are creating way too many (3000) nodes",
 	"location" : "westeurope",
