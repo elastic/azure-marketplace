@@ -1,5 +1,5 @@
 {
-	"isValid" : false,
+	"isValid" : true,
 	"deploy" : false,
 	"why" : "We expect this to hit the core limit because westus location is using the default core quota limits",
 	"location" : "westus",
