@@ -2281,11 +2281,11 @@
       "type": "string"
     },
     "endpointSuffix": {
-      "value": "[reference('shared').outputs.endpointSuffix.value]",
+      "value": "[reference('shared').outputs.sharedStorageAccountSuffix.value]",
       "type": "string"
     },
     "storageAccountKey": {
-      "value": "[reference('shared').outputs.storageAccountKey.value]",
+      "value": "[reference('shared').outputs.sharedStorageAccountKey.value]",
       "type": "string"
     }
   }
