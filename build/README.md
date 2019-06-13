@@ -155,30 +155,35 @@ $templateUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$tem
 $elasticTemplate = "$templateUrl/mainTemplate.json"
 $resourceGroup = "benchmark-premium"
 $name = $resourceGroup
+$password = "Password1234"
 
 $clusterParameters = @{
     "artifactsBaseUrl"= $templateUrl
-    "esVersion" = "6.2.4"
+    "esVersion" = "7.1.1"
     "esClusterName" = $name
     # A single attached disk per data node
     "vmDataDiskCount" = 1
+    "vmDataDiskSize" = "2TiB"
     "vmDataNodeCount" = 3
     "vmSizeDataNodes" = "Standard_DS1_v2"
     "vmSizeMasterNodes" = "Standard_DS1"
     "dataNodesAreMasterEligible" = "Yes"
     "kibana" = "No"
     "storageAccountType" = "Default"
+    # Deploy a benchmark VM with rally
     "benchmark" = "Yes"
     "loadBalancerType" = "external"
     "xpackPlugins" = "Yes"
     "adminUsername" = "russ"
     "authenticationType" = "password"
-    "adminPassword" = "Password1234"
-    "securityBootstrapPassword" = "Password123"
-    "securityAdminPassword" = "Password123"
-    "securityReadPassword" = "Password123"
-    "securityKibanaPassword" = "Password123"
-    "securityLogstashPassword" = "Password123"
+    "adminPassword" = $password
+    "securityBootstrapPassword" = $password
+    "securityAdminPassword" = $password
+    "securityRemoteMonitoringPassword" = $password
+    "securityApmPassword" = $password
+    "securityBeatsPassword" = $password
+    "securityKibanaPassword" = $password
+    "securityLogstashPassword" = $password
     # disable ml, alerting and monitoring X-Pack features
     "esAdditionalYaml" = "xpack.ml.enabled: false\nxpack.monitoring.enabled: false\nxpack.watcher.enabled: false"
 }
@@ -239,6 +244,8 @@ Now to run a benchmark; In this example
 which is a reasonable track for benchmarking indexing latency and throughput
 2. The addresses to all data nodes are provided
 3. Rally is configured to abort when there is a request error
+
+(You may need to grant permissions to `/datadisks/disk1/` for esrally)
 
 ```sh
 esrally --pipeline=benchmark-only --target-hosts=data-0:9200,data-1:9200,data-2:9200 \
