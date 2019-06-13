@@ -1138,14 +1138,22 @@
     },
     "vmBenchmarkDiskSize": {
       "type": "string",
-      "defaultValue": "Large",
+      "defaultValue": "1TiB",
       "allowedValues": [
-        "Small",
-        "Medium",
-        "Large"
+        "32GiB",
+        "64GiB",
+        "128GiB",
+        "256GiB",
+        "512GiB",
+        "1TiB",
+        "2TiB",
+        "4TiB",
+        "8TiB",
+        "16TiB",
+        "32TiB"
       ],
       "metadata": {
-        "description": "The disk size of each attached disk, Small (128Gb), Medium (512Gb) or Large (1024Gb). For Premium Storage, this equates to P10, P20 and P30, respectively."
+        "description": "The disk size of each attached managed disk for the benchmark VM, 32GiB, 64GiB, 128GiB, 256 GiB, 512GiB, 1TiB, 2TiB, 4TiB, 8TiB, 16TiB and 32TiB. Default is 1TiB. For Premium Storage, this equates to P6, P10, P15, P20, P30, P40, P50, P60, P70 and P80, respectively."
       }
     },
     "adminUsername": {
