@@ -2239,15 +2239,15 @@
           "sharedStorageAccount": {
             "value": {
               "name": "[variables('commonVmSettings').storageAccountName]",
-              "key": "[reference('shared').outputs.storageAccountKey.value]",
-              "suffix": "[reference('shared').outputs.endpointSuffix.value]"
+              "key": "[reference('shared').outputs.sharedStorageAccountKey.value]",
+              "suffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]"
             }
           },
           "azureFilesSettings": {
             "value": {
               "storageAccountName": "[variables('commonVmSettings').storageAccountName]",
-              "storageAccountKey": "[reference('shared').outputs.storageAccountKey.value]",
-              "endpointSuffix": "[reference('shared').outputs.endpointSuffix.value]",
+              "storageAccountKey": "[reference('shared').outputs.sharedStorageAccountKey.value]",
+              "endpointSuffix": "[reference('shared').outputs.sharedStorageAccountSuffix.value]",
               "quota": "[parameters('azureFileShareSize')]",
               "install": "[parameters('azureFileShare')]"
             }
