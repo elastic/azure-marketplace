@@ -1,21 +1,5 @@
 # Elastic Stack Azure Marketplace offering
 
-### :warning: VERY IMPORTANT
-
-By default, this template does not configure*
-
-* SSL/TLS for communication with Elasticsearch via the HTTP layer through an external load balancer
-* SSL/TLS for communication with Elasticsearch via the HTTP layer through Application Gateway
-* SSL/TLS for communication between Elasticsearch nodes via the Transport layer
-* SSL/TLS for communication beween the browser and Kibana
-
-**It is strongly recommended that you secure communication before using in production.**
-
-Please read the [Configuring TLS](#configuring-tls) section for securing communication with
-Transport Layer Security.
-
----
-
 Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
 This readme provides an overview of usage and features. For more comprehensive documentation, 
@@ -694,17 +678,16 @@ New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup
 
 ## Configuring TLS
 
-It is strongly recommended that you secure communication when using the template
-in production. The Elastic Stack security features can provide Authentication and 
-Role Based Access control, and Transport Layer Security (TLS) can be configured 
+**It is strongly recommended that you secure communication using Transport Layer Security when using the template**. 
+The Elastic Stack security features can provide Basic Authentication, 
+Role Based Access control, and Transport Layer Security (TLS)
 for both Elasticsearch and Kibana. For more details, please refer to 
 [the Security documentation](https://www.elastic.co/guide/en/elastic-stack-deploy/current/azure-arm-template-security.html).
 
 For Elasticsearch versions 6.8.0+ (and less than 7.0.0), and 7.1.0+, the Elastic Stack security features
-that allow configuring TLS and role based access control are available in the free basic license level. 
-For all other versions, the Elastic Stack security 
-features require a license level higher than basic; They can be configured with a trial license, 
-which provides access to the security features for 30 days.
+that allow configuring TLS and role based access control are available in the free basic license tier. 
+For all other versions, the Elastic Stack security features require a license level higher than basic; 
+They can be configured with a trial license, which provides access to the Security features for 30 days.
 
 ### TLS for Kibana
 
