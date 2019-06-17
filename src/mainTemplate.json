@@ -1856,20 +1856,20 @@
     "backendPoolConfigurations": {
       "internal": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
+          "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', concat(parameters('vmHostNamePrefix'), 'internal-lb'), 'LBBE')]"
         }
       ],
       "external": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
+          "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', concat(parameters('vmHostNamePrefix'), 'internal-lb'), 'LBBE')]"
         },
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'external-lb')),'/backendAddressPools/LBBE')]"
+          "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', concat(parameters('vmHostNamePrefix'), 'external-lb'), 'LBBE')]"
         }
       ],
       "gateway": [
         {
-          "id": "[concat(resourceId('Microsoft.Network/loadBalancers',concat(parameters('vmHostNamePrefix'), 'internal-lb')),'/backendAddressPools/LBBE')]"
+          "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', concat(parameters('vmHostNamePrefix'), 'internal-lb'), 'LBBE')]"
         }
       ]
     },
@@ -1956,7 +1956,7 @@
       "storageAccountName": "[concat('elastic', uniqueString(resourceGroup().id, deployment().name))]",
       "location": "[variables('location')]",
       "subnet": "[variables('networkSettings').subnet]",
-      "subnetId": "[concat(resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', variables('networkSettings').name), '/subnets/', variables('networkSettings').subnet.name)]",
+      "subnetId": "[resourceId(variables('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', variables('networkSettings').name, variables('networkSettings').subnet.name)]",
       "credentials": {
         "adminUsername": "[parameters('adminUsername')]",
         "password": "[parameters('adminPassword')]",
