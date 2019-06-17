@@ -42,7 +42,7 @@
             "name": "LBFE",
             "properties": {
               "subnet": {
-                "id": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks',parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]"
+                "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]"
               },
               "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
               "privateIPAllocationMethod": "Static"
@@ -59,10 +59,10 @@
             "name": "es-http-internal",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/frontendIPConfigurations/LBFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/backendAddressPools/LBBE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 9200,
@@ -70,7 +70,7 @@
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5,
               "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/probes/es-probe-internal-http')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('internalLoadBalancerName'), 'es-probe-internal-http')]"
               }
             }
           },
@@ -78,10 +78,10 @@
             "name": "es-transport-internal",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/frontendIPConfigurations/LBFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers',variables('internalLoadBalancerName')),'/backendAddressPools/LBBE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 9300,

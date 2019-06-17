@@ -68,7 +68,7 @@
   },
   "variables": {
     "namespace": "[parameters('namespace')]",
-    "subnetId": "[concat(resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks', parameters('networkSettings').name), '/subnets/', parameters('networkSettings').subnet.name)]",
+    "subnetId": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]",
     "nicName": "[concat(variables('namespace'), '-nic')]",
     "password_osProfile": {
       "computername": "[parameters('namespace')]",
