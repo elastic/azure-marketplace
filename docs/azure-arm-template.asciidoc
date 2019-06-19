@@ -1,8 +1,8 @@
 :marketplace: https://azuremarketplace.microsoft.com/en-au/marketplace/apps/elastic.elasticsearch
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
-:current: 7.1
-:version: 7.1.1
+:current: 7.2
+:version: 7.2.0
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
