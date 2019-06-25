@@ -1122,7 +1122,21 @@ configure_elasticsearch_yaml()
     fi
 
     # Configure SAML realm only for valid versions of Elasticsearch and if the conditions are met
-    if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.2.0"; echo $?) -eq 0 && -n "$SAML_METADATA_URI" && -n "$SAML_SP_URI" && ( -n "$HTTP_CERT" || -n "$HTTP_CACERT" ) && ${INSTALL_XPACK} -ne 0 ]]; then
+    if [[ $(dpkg --compare-versions "$ES_VERSION" "ge" "6.2.0"; echo $?) -eq 0 && -n "$SAML_METADATA_URI" && -n "$SAML_SP_URI" && ( -n "$HTTP_CERT" || -n "$HTTP_CACERT" ) && ${INSTALL_XPACK} -ne 0 ]]; then     
+      log "[configure_elasticsearch_yaml] configuring native realm name 'native1' as SAML realm will be configured"     
+      {
+          echo -e ""
+          # include the realm type in the setting name in 7.x +
+          if dpkg --compare-versions "$ES_VERSION" "lt" "7.0.0"; then
+            echo -e "xpack.security.authc.realms.native1:"
+            echo -e "  type: native"
+          else
+            echo -e "xpack.security.authc.realms.native.native1:"
+          fi
+          echo -e "  order: 0"
+          echo -e ""
+      } >> $ES_CONF
+      log "[configure_elasticsearch_yaml] configured native realm"    
       log "[configure_elasticsearch_yaml] configuring SAML realm named 'saml_aad' for $SAML_SP_URI"
       [ -d /etc/elasticsearch/saml ] || mkdir -p /etc/elasticsearch/saml
       wget --retry-connrefused --waitretry=1 -q "$SAML_METADATA_URI" -O /etc/elasticsearch/saml/metadata.xml
