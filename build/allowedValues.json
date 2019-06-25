@@ -108,6 +108,8 @@
     ["Standard_A10", 32, "Standard", false],
     ["Standard_A11", 64, "Standard", false],
 
+    ["Standard_B8ms", 8, "Standard", false],
+    
     ["Standard_D1", 4, "Standard", false],
     ["Standard_D2", 8, "Standard", false],
     ["Standard_D3", 16, "Standard", false],
