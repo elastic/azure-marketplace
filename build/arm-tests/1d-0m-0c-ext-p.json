@@ -6,7 +6,7 @@
 	"location" : "westeurope",
 	"parameters" : {
 		"loadBalancerType":{"value":"external"},
-    "kibana":{"value":"No"},
+		"kibana":{"value":"No"},
 		"jumpbox":{"value":"Yes"},
 		"vmSizeKibana":{"value":"Standard_DS1_v2"},
 		"vmSizeDataNodes":{"value":"Standard_DS1_v2"},

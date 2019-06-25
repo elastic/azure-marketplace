@@ -3,6 +3,8 @@
   "esVersion":{"value":"6.7.0"},
   "esClusterName":{"value":"my-azure-cluster"},
   "loadBalancerType":{"value":"internal"},
+  "loadBalancerInternalSku":{"value":"Basic"},
+  "loadBalancerExternalSku":{"value":"Basic"},
   "azureCloudPlugin":{"value":"No"},
   "azureCloudStorageAccountName":{"value":""},
   "azureCloudStorageAccountResourceGroup":{"value":""},
