@@ -126,7 +126,7 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "[if(equals(parameters('networkSettings').externalSku, 'Standard'), 'Static', 'Dynamic')]",
         "dnsSettings": {
           "domainNameLabel": "[concat('lb-', uniqueString(resourceGroup().id, deployment().name))]"
         }
