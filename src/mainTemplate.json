@@ -1392,7 +1392,6 @@
         "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
       },
-      ,
       "Standard_B8ms": {
         "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
