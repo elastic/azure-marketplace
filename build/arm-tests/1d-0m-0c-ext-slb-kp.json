@@ -1,0 +1,20 @@
+{
+  "description": "1 data node cluster with Standard internal and external loadbalancers",
+	"isValid" : true,
+	"deploy" : true,
+	"why" : "",
+	"location" : "westeurope",
+	"parameters" : {
+      "loadBalancerType":{"value":"external"},
+      "loadBalancerInternalSku":{"value":"Standard"},
+      "loadBalancerExternalSku":{"value":"Standard"},
+      "kibana":{"value":"Yes"},
+      "vmSizeKibana":{"value":"Standard_DS1_v2"},
+      "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+      "vmDataNodeCount":{"value":1},
+      "vmDataDiskCount":{"value":0},
+      "vmDataDiskSize":{"value":"32GiB"},
+      "dataNodesAreMasterEligible":{"value":"Yes"},
+      "authenticationType":{"value":"password"}
+	}
+}

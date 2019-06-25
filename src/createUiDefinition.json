@@ -1743,6 +1743,8 @@
       "samlServiceProviderUri": "",
       "esHeapSize": 0,
       "loadBalancerType": "[steps('externalAccessStep').externalAccessSection.loadBalancerType]",
+      "loadBalancerInternalSku": "Basic",
+      "loadBalancerExternalSku": "Basic",
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
       "vNetClusterSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
