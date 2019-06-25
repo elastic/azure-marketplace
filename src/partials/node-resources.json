@@ -178,7 +178,6 @@
               "size": "[parameters('topologySettings').vmSizeMasterNodes]",
               "storageAccountType": "Standard_LRS",
               "count": 3,
-              "useBackendPools": "No",
               "backendPools": [],
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
@@ -215,7 +214,6 @@
               "size": "[parameters('topologySettings').vmSizeClientNodes]",
               "count": "[parameters('topologySettings').vmClientNodeCount]",
               "storageAccountType": "Standard_LRS",
-              "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').loadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
@@ -251,7 +249,6 @@
               "size": "[parameters('topologySettings').vmSizeDataNodes]",
               "storageAccountType": "[parameters('topologySettings').vmDataNodeStorageAccountType]",
               "count": "[parameters('topologySettings').vmDataNodeCount]",
-              "useBackendPools": "Yes",
               "backendPools": "[parameters('topologySettings').dataLoadBalancerBackEndPools]",
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
@@ -361,26 +358,19 @@
           "templateBaseUrl": {
             "value": "[parameters('templateBaseUrl')]"
           },
-          "credentials": {
-            "value": "[parameters('commonVmSettings').credentials]"
-          },
-          "location": {
-            "value": "[parameters('commonVmSettings').location]"
-          },
-          "namespace": {
-            "value": "[concat(parameters('commonVmSettings').namespacePrefix, 'logstash')]"
-          },
-          "networkSettings": {
-            "value": "[parameters('networkSettings')]"
-          },
-          "osSettings": {
-            "value": "[parameters('osSettings')]"
-          },
-          "vmSize": {
-            "value": "[parameters('topologySettings').vmSizeLogstash]"
-          },
-          "acceleratedNetworking": {
-            "value": "[if(equals(parameters('topologySettings').vmLogstashAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeLogstash), 'Yes', 'No'), parameters('topologySettings').vmLogstashAcceleratedNetworking)]"
+          "vm": {
+            "value": {
+              "shared": "[parameters('commonVmSettings')]",
+              "namespace": "[concat(parameters('commonVmSettings').namespacePrefix, 'logstash-')]",
+              "installScript": "[parameters('osSettings').extensionSettings.logstash]",
+              "size": "[parameters('topologySettings').vmSizeLogstash]",
+              "storageAccountType": "Standard_LRS",
+              "count": "[parameters('topologySettings').vmLogstashCount]",
+              "backendPools": [],
+              "imageReference": "[parameters('osSettings').imageReference]",
+              "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
+              "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmLogstashAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeLogstash), 'Yes', 'No'), parameters('topologySettings').vmLogstashAcceleratedNetworking)]"
+            }
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"

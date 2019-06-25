@@ -424,13 +424,17 @@ value defined in the template.
   <tr><td colspan="4" style="font-size:120%"><strong>Logstash related settings</strong></td></tr>
 
   <tr><td>logstash</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Logstash installed.
+    <td>Either <code>Yes</code> or <code>No</code> to provision Logstash VMs.
     </td><td><code>No</code></td></tr>
 
   <tr><td>vmSizeLogstash</td><td>string</td>
     <td>Azure VM size of the Logstash instance. See <a href="https://github.com/elastic/azure-marketplace/blob/master/build/allowedValues.json">this list for supported sizes</a>.
     <strong>Check that the size you select is <a href="https://azure.microsoft.com/en-au/regions/services/">available in the region you choose</a></strong>.
     </td><td><code>Standard_D1</code></td></tr>
+
+  <tr><td>vmLogstashCount</td><td>int</td>
+    <td>The number of Logstash instances
+    </td><td><code>1</code></td></tr>
 
   <tr><td>vmLogstashAcceleratedNetworking</td><td>string</td>
     <td>Whether to enable <a href="https://azure.microsoft.com/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/">accelerated networking</a> for Logstash, which enables single root I/O virtualization (SR-IOV) 

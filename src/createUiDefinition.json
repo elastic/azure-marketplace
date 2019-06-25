@@ -1095,7 +1095,7 @@
                 "type": "Microsoft.Common.OptionsGroup",
                 "label": "Install Logstash?",
                 "defaultValue": "No",
-                "toolTip": "Yes, to provision a single Logstash instance.",
+                "toolTip": "Yes, to provision Logstash instances",
                 "constraints": {
                   "allowedValues": [
                     {
@@ -1110,10 +1110,62 @@
                 }
               },
               {
+                "name": "vmLogstashCount",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Number of Logstash VMs",
+                "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]",
+                "defaultValue": "1",
+                "toolTip": "Specify the number of Logstash instances to deploy.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "1",
+                      "value": 1
+                    },
+                    {
+                      "label": "2",
+                      "value": 2
+                    },
+                    {
+                      "label": "3",
+                      "value": 3
+                    },
+                    {
+                      "label": "4",
+                      "value": 4
+                    },
+                    {
+                      "label": "5",
+                      "value": 5
+                    },
+                    {
+                      "label": "6",
+                      "value": 6
+                    },
+                    {
+                      "label": "7",
+                      "value": 7
+                    },
+                    {
+                      "label": "8",
+                      "value": 8
+                    },
+                    {
+                      "label": "9",
+                      "value": 9
+                    },
+                    {
+                      "label": "10",
+                      "value": 10
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "vmSizeLogstash",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "Logstash VM size",
-                "toolTip": "Choose VM SKU, Standard D1, D2, D3",
+                "toolTip": "Choose VM SKU for Logstash",
                 "visible": "[equals(steps('externalAccessStep').logstashSection.logstash, 'Yes')]",
                 "recommendedSizes": [
                   "Standard_D1",
@@ -1249,7 +1301,7 @@
                   ]
                 },
                 "osPlatform": "Linux",
-                "count": "1"
+                "count": "[steps('externalAccessStep').logstashSection.vmLogstashCount]"
               },
               {
                 "name": "logstashConf",
@@ -1763,6 +1815,7 @@
       "kibanaAdditionalYaml": "",
       "logstash": "[steps('externalAccessStep').logstashSection.logstash]",
       "vmSizeLogstash": "[steps('externalAccessStep').logstashSection.vmSizeLogstash]",
+      "vmLogstashCount": "[steps('externalAccessStep').logstashSection.vmLogstashCount]",
       "vmLogstashAcceleratedNetworking": "Default",
       "logstashHeapSize": 0,
       "logstashConf": "[steps('externalAccessStep').logstashSection.logstashConf]",

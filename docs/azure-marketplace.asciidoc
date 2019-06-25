@@ -152,9 +152,9 @@ the latter is used to connect to the Kibana VM via SSH.
 
 image:images/marketplace_step4_2.png[]
 
-When installing Logstash, a separate VM will be provisioned onto which Logstash
+When installing Logstash, separate VMs will be provisioned onto which Logstash
 will be deployed. A Logstash configuration file can be specified, as well as additional
-Logstash plugins to install.
+Logstash plugins to install. The Logstash VMs are placed in an Availability set.
 
 A jumpbox VM can optionally be deployed, which can be connected to via SSH in order
 to gain access to the Elasticsearch VMs.

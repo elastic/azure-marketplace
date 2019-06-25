@@ -927,7 +927,7 @@ Kibana communicates with Elasticsearch through the <<internal-load-balancer, int
 [[azure-arm-template-logstash]]
 === Logstash
 
-A single instance of Logstash can be deployed in addition to Elasticsearch, providing a pipeline for ingesting data into Elasticsearch.
+Multiple instances of Logstash can be deployed in addition to Elasticsearch, providing a pipeline for ingesting data into Elasticsearch.
 The version of Logstash deployed is always the same as the version of Elasticsearch, ensuring compatibility between products.
 
 The following parameters can be used to deploy Logstash, and control additional configuration
@@ -939,12 +939,8 @@ Whether to deploy Logstash in addition to Elasticsearch. A value of `Yes` will a
 The {vms}[Azure VM SKU] to use for Logstash. Different VM SKUs have different CPU, RAM,
 temporary storage space and network bandwidth. The Logstash VM always uses standard storage for the OS disk. The default value is `Standard_D1`.
 
-[NOTE]
---
-The template deploys only a single instance of Logstash. You should ensure that a VM SKU
-of sufficient size is chosen to be able to handle the expected amount of traffic. A larger VM
-SKU will generally be faster and have better bandwidth than a smaller VM SKU.
---
+`vmLogstashCount`::
+The number of Logstash VMs to deploy. Defaults to `1`.
 
 `vmLogstashAcceleratedNetworking`::
 Whether to enable {acceleratednetworking}[accelerated networking] for Logstash,

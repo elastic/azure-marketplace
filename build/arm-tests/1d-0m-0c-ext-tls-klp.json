@@ -1,5 +1,5 @@
 {
-  "description": "1 data node cluster with logstash",
+  "description": "1 data node cluster with 2 instances of logstash",
   "condition" : {
     "range": ">=6.3.0",
     "reason": "the use of xpack.monitoring.collection.enabled requires version to be 6.3.0+"
@@ -20,6 +20,7 @@
     "vmSizeKibana":{"value":"Standard_DS1_v2"},
     "logstash":{"value":"Yes"},
     "vmSizeLogstash":{"value":"Standard_DS1_v2"},
+    "vmLogstashCount":{"value":2},
     "logstashAdditionalPlugins":{"value":"logstash-input-heartbeat"},
     "logstashConf":{"value":"conf/logstash-tls.conf"},
     "vmSizeDataNodes":{"value":"Standard_DS1_v2"},

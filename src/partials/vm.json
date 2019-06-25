@@ -23,7 +23,7 @@
     "availabilitySet": {
       "type": "string",
       "metadata": {
-        "description": "Base uri of resources"
+        "description": "The name of the availability set"
       }
     },
     "dataDisks": {

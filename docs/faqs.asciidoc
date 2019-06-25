@@ -79,7 +79,7 @@ ssh <admin username>@<internal IP address or VM hostname>
 See the <<azure-arm-template-troubleshooting, troubleshooting section>> for more details.
 
 Does the Marketplace solution deploy Logstash?::
-The Marketplace solution can also deploy Logstash, although it does not do so by default.
-To also deploy an instance of Logstash, select `Yes` for `Install Logstash?` in the
+The Marketplace solution can also deploy multiple instances of Logstash, although it does not do so by default.
+To also deploy instances of Logstash, select `Yes` for `Install Logstash?` in the
 `Kibana & Logstash` section. You can also deploy additional plugins and provide a
 Logstash config file to use.
