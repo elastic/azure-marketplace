@@ -8,52 +8,10 @@
         "description": "Base uri of resources"
       }
     },
-    "location": {
-      "type": "string",
-      "metadata": {
-        "description": "Location where resources will be provisioned"
-      }
-    },
-    "namespace": {
-      "type": "string",
-      "metadata": {
-        "description": "The unique namespace for the Kibana VM"
-      }
-    },
-    "networkSettings": {
+    "vm": {
       "type": "object",
       "metadata": {
-        "description": "Network settings"
-      }
-    },
-    "credentials": {
-      "type": "secureObject",
-      "metadata": {
-        "description": "Credentials information block"
-      }
-    },
-    "osSettings": {
-      "type": "object",
-      "metadata": {
-        "description": "Platform and OS settings"
-      }
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_D1",
-      "metadata": {
-        "description": "Size of the Logstash VM"
-      }
-    },
-    "acceleratedNetworking": {
-      "type": "string",
-      "defaultValue": "No",
-      "allowedValues": [
-        "Yes",
-        "No"
-      ],
-      "metadata": {
-        "description": "Whether to enable accelerated networking for Logstash, which enables single root I/O virtualization (SR-IOV) to a VM, greatly improving its networking performance. Valid only for specific VM SKUs"
+        "description": "vm configuration"
       }
     },
     "elasticTags": {
@@ -67,105 +25,60 @@
     }
   },
   "variables": {
-    "namespace": "[parameters('namespace')]",
-    "subnetId": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]",
-    "nicName": "[concat(variables('namespace'), '-nic')]",
-    "password_osProfile": {
-      "computername": "[parameters('namespace')]",
-      "adminUsername": "[parameters('credentials').adminUsername]",
-      "adminPassword": "[parameters('credentials').password]"
-    },
-    "sshPublicKey_osProfile": {
-      "computername": "[parameters('namespace')]",
-      "adminUsername": "[parameters('credentials').adminUsername]",
-      "linuxConfiguration": {
-        "disablePasswordAuthentication": "true",
-        "ssh": {
-          "publicKeys": [
-            {
-              "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
-              "keyData": "[parameters('credentials').sshPublicKey]"
-            }
-          ]
-      }
-      }
-    },
-    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
+    "namespace": "[parameters('vm').namespace]"
   },
   "resources": [
     {
-      "apiVersion": "2017-10-01",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
-      "location": "[parameters('location')]",
+      "apiVersion": "2017-03-30",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[concat(variables('namespace'), 'av-set')]",
+      "location": "[parameters('vm').shared.location]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "dependsOn": [
-      ],
       "properties": {
-        "primary": true,
-        "enableAcceleratedNetworking": "[equals(parameters('acceleratedNetworking'), 'Yes')]",
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('subnetId')]"
-              }
-            }
-          }
-        ]
+        "platformUpdateDomainCount": 20,
+        "platformFaultDomainCount": "[parameters('vm').platformFaultDomainCount]"
+      },
+      "sku": {
+        "name": "Aligned"
       }
     },
     {
-      "apiVersion": "2017-12-01",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[parameters('namespace')]",
-      "location": "[parameters('location')]",
-      "tags": {
-        "provider": "[toUpper(parameters('elasticTags').provider)]"
-      },
+      "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
       ],
-      "properties": {
-        "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
-        },
-        "osProfile": "[variables('osProfile')]",
-        "storageProfile": {
-          "imageReference": "[parameters('osSettings').imageReference]",
-          "osDisk": {
-            "name": "[concat(variables('namespace'), '-osdisk')]",
-            "managedDisk": {
-              "storageAccountType": "Standard_LRS"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-            }
-          ]
-        }
+      "copy": {
+        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
+        "count": "[parameters('vm').count]"
       },
-      "resources": [
-        {
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('namespace'), '/script')]",
-          "apiVersion": "2017-12-01",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('namespace'))]"
-          ],
-          "properties": "[parameters('osSettings').extensionSettings.logstash]"
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUrl'), 'partials/vm.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "templateBaseUrl": {
+            "value": "[parameters('templateBaseUrl')]"
+          },
+          "vm": {
+            "value": "[parameters('vm')]"
+          },
+          "availabilitySet": {
+            "value": "[concat(variables('namespace'), 'av-set')]"
+          },
+          "index": {
+            "value": "[copyindex()]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
         }
-      ]
+      }
     }
   ],
   "outputs": {}
