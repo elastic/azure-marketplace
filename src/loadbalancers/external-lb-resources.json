@@ -40,7 +40,9 @@
       "name": "[variables('internalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
-      "sku": "[parameters('networkSettings').internalSku]",
+      "sku": {
+        "name": "[parameters('networkSettings').internalSku]"
+      },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
@@ -132,7 +134,9 @@
       "name": "[variables('externalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
-      "sku": "[parameters('networkSettings').externalSku]",
+      "sku": { 
+        "name": "[parameters('networkSettings').externalSku]" 
+      },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },

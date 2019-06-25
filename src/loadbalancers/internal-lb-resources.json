@@ -33,7 +33,9 @@
       "name": "[variables('internalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
-      "sku": "[parameters('networkSettings').internalSku]",
+      "sku": { 
+        "name": "[parameters('networkSettings').internalSku]" 
+      },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
