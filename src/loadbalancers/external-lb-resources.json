@@ -119,6 +119,9 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('externalLoadBalancerIp')]",
       "location": "[parameters('networkSettings').location]",
+      "sku": {
+        "name": "[parameters('networkSettings').externalSku]"
+      },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },

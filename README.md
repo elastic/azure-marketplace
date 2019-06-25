@@ -137,7 +137,9 @@ value defined in the template.
 
   <tr><td>loadBalancerExternalSku</td><td>string</td>
     <td>The external load balancer SKU. Can be <code>Basic</code> or <code>Standard</code>.
-      Only relevant when <code>loadBalancerType</code> is <code>external</code>.
+      Only relevant when <code>loadBalancerType</code> is <code>external</code>. When the <code>Standard</code> 
+      load balancer SKU is selected, the public IP address SKU attached to the external load balancer 
+      will also be <code>Standard</code>.
     </td>
     </td><td><code>Basic</code></td>
   </tr>
