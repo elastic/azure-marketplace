@@ -505,6 +505,14 @@
         "description": "Size of the Logstash nodes"
       }
     },
+    "vmLogstashCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "The number of Logstash VMs to deploy"
+      }
+    },
     "vmLogstashAcceleratedNetworking": {
       "type": "string",
       "defaultValue": "Default",
@@ -1918,6 +1926,7 @@
       "kibanaHttps": "[variables('kibanaHttps')]",
       "kibanaYaml": "[parameters('kibanaAdditionalYaml')]",
       "vmSizeLogstash": "[parameters('vmSizeLogstash')]",
+      "vmLogstashCount": "[parameters('vmLogstashCount')]",
       "vmLogstashAcceleratedNetworking": "[parameters('vmLogstashAcceleratedNetworking')]",
       "logstash": "[parameters('logstash')]",
       "logstashHeapSize": "[parameters('logstashHeapSize')]",
