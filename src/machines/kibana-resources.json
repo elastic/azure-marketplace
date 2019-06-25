@@ -122,7 +122,7 @@
           {
             "name": "Kibana",
             "properties": {
-              "description": "Allows inbound Kibana HTTP traffic from anyone",
+              "description": "Allows inbound Kibana traffic from anyone",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "5601",

@@ -57,6 +57,28 @@
         "description": "Set up an internal or external load balancer, or use Application Gateway (gateway) for load balancing and SSL offload. If you are setting up Elasticsearch on a publicly available endpoint, it is *strongly recommended* to secure your nodes with a product like the Elastic Stack's Security features"
       }
     },
+    "loadBalancerInternalSku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "The internal load balancer SKU type."
+      }
+    },
+    "loadBalancerExternalSku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "The external load balancer SKU type. Only valid when loadBalancerType is 'external'"
+      }
+    },
     "azureCloudPlugin": {
       "type": "string",
       "allowedValues": [
@@ -1949,7 +1971,9 @@
       "applicationGatewaySubnet": {
         "name": "[parameters('vNetAppGatewaySubnetName')]",
         "addressPrefix": "[parameters('vNetNewAppGatewaySubnetAddressPrefix')]"
-      }
+      },
+      "internalSku": "[parameters('loadBalancerInternalSku')]",
+      "externalSku": "[parameters('loadBalancerExternalSku')]"
     },
     "commonVmSettings": {
       "namespacePrefix": "[parameters('vmHostNamePrefix')]",

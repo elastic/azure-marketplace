@@ -35,6 +35,7 @@
 :openssl: https://www.openssl.org/docs/man1.0.2/apps/openssl.html
 :base64: https://linux.die.net/man/1/base64
 :acceleratednetworking: {azuredocs}/en-us/blog/maximize-your-vm-s-performance-with-accelerated-networking-now-generally-available-for-both-windows-and-linux/
+:loadbalancers: {microsoftdocs}/azure/load-balancer/load-balancer-standard-overview
 
 [[azure-arm-template]]
 == Azure Resource Manager (ARM) template
@@ -732,6 +733,14 @@ An OSI layer 4 load balancer configured with a static private IP address on the 
 network, that can be used to round robin requests across Elasticsearch nodes. The
 private IP address is configured with `vNetLoadBalancerIp` parameter.
 
+The following settings apply to the internal load balancer
+
+`loadBalancerInternalSku`::
+Choose between `Basic` and `Standard` load balancer SKUs for the internal load balancer. An
+internal load balancer is always deployed, to balance internal traffic to the cluster.
+{loadbalancers}[Check the Azure documentation on Standard Load Balancers] to determine which
+options is best suited for your needs. Default is `Basic`.
+
 When coordinating nodes are deployed, they are attached to the internal load balancer
 backend pool. When no coordinating nodes are deployed, data nodes are attached to
 the backend pool. The load balancer receives incoming requests on port 9200 and
@@ -746,6 +755,14 @@ through the internal load balancer.
 ==== External load balancer
 An OSI layer 4 load balancer configured with a dynamically assigned public IP address
 that can be used to send requests to Elasticsearch from the public internet.
+
+The following settings are applicablt to the external load balancer
+
+`loadBalancerExternalSku`::
+Choose between `Basic` and `Standard` load balancer SKUs for the external load balancer. Only
+relevant when `loadBalancerType` is `external`.
+{loadbalancers}[Check the Azure documentation on Standard Load Balancers] to determine which
+options is best suited for your needs. Default is `Basic`.
 
 When choosing to deploy with an external load balancer, both an internal and
 external load balancer are deployed; when Kibana is deployed, it will be

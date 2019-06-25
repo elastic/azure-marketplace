@@ -130,6 +130,18 @@ value defined in the template.
     <a href="https://www.elastic.co/products/x-pack/security">Elastic Stack Security</a>, in addition to configuring SSL/TLS.</strong></p>
     </td><td><code>internal</code></td></tr>
 
+  <tr><td>loadBalancerInternalSku</td><td>string</td>
+    <td>The internal load balancer SKU. Can be <code>Basic</code> or <code>Standard</code>.</td>
+    </td><td><code>Basic</code></td>
+  </tr>
+
+  <tr><td>loadBalancerExternalSku</td><td>string</td>
+    <td>The external load balancer SKU. Can be <code>Basic</code> or <code>Standard</code>.
+      Only relevant when <code>loadBalancerType</code> is <code>external</code>.
+    </td>
+    </td><td><code>Basic</code></td>
+  </tr>
+
   <tr><td id="x-pack">xpackPlugins</td><td>string</td>
     <td>Either <code>Yes</code> or <code>No</code> to install a trial license of the <a href="https://www.elastic.co/products/x-pack">Elastic Stack features (formerly X-Pack)</a>
     such as <a href="https://www.elastic.co/products/stack/monitoring">Monitoring</a>, <a href="https://www.elastic.co/products/stack/security">Security</a>, <a href="https://www.elastic.co/products/stack/alerting">Alerting</a>, <a href="https://www.elastic.co/products/stack/graph">Graph</a>, <a href="https://www.elastic.co/products/stack/machine-learning">Machine Learning (5.5.0+)</a> and <a href="https://www.elastic.co/products/stack/elasticsearch-sql">SQL</a>. If also installing Kibana, it will have <a href="https://www.elastic.co/products/stack/reporting">Reporting</a> and Profiler installed.
