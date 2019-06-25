@@ -9,7 +9,8 @@
     "6.7.2",
     "6.8.0",
     "7.0.1",
-    "7.1.1"
+    "7.1.1",
+    "7.2.0"
   ],
   "numberOfDataNodes" : 50,
   "numberOfClientNodes" : 20,
