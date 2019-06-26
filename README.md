@@ -92,9 +92,14 @@ value defined in the template.
 <table>
   <tr><th>Parameter</td><th>Type</th><th>Description</th><th>Default Value</th></tr>
 
-  <tr><td>artifactsBaseUrl</td><td>string</td>
-    <td>The base url of the Elastic ARM template.
-    <strong>Required</strong></td><td>Raw content of the current branch</td></tr>
+  <tr><td>_artifactsLocation</td><td>string</td>
+    <td>The base URI where artifacts required by this template are located, including a trailing '/'.
+    <strong>Use to target a specific branch or release tag</strong></td><td>Raw content of the current branch</td></tr>
+
+  <tr><td>_artifactsLocationSasToken</td><td>securestring</td>
+    <td>The sasToken required to access <code>_artifactsLocation</code>. When the template is deployed using 
+    the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."</td>
+    <td><code>""</code></td></tr>
 
   <tr><td>location</td><td>string</td>
     <td>The location where to provision all the items in this template. Defaults to inheriting the location
@@ -629,8 +634,8 @@ where `<name>` refers to the resource group you just created.
 
   ```powershell
   $clusterParameters = @{
-      "artifactsBaseUrl"="https://raw.githubusercontent.com/elastic/azure-marketplace/7.2/src"
-      "esVersion" = "7.1.1"
+      "_artifactsLocation" = "https://raw.githubusercontent.com/elastic/azure-marketplace/7.2/src/"
+      "esVersion" = "7.2.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
@@ -661,7 +666,7 @@ where `<name>` refers to the resource group you just created.
 ## Targeting a specific template version
 
 You can target a specific version of the template by modifying the URI of the template and 
-the artifactsBaseUrl parameter of the template to point to a specific tagged release.
+the `_artifactsLocation` parameter of the template to point to a specific tagged release.
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
@@ -669,11 +674,11 @@ For example, to target the [`7.0.0` tag release with PowerShell](https://github.
 
 ```powershell
 $templateVersion = "7.0.0"
-$templateBaseUrl = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
+$_artifactsLocation = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src/"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
-  "artifactsBaseUrl" = $templateBaseUrl
+  "_artifactsLocation" = $_artifactsLocation
   "esVersion" = "7.0.0"
   "adminUsername" = "russ"
   "adminPassword" = "Password1234"
@@ -691,7 +696,7 @@ $location = "Australia Southeast"
 $name = "my-azure-cluster"
 
 New-AzureRmResourceGroup -Name $resourceGroup -Location $location
-New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup -TemplateUri "$templateBaseUrl/mainTemplate.json" -TemplateParameterObject $clusterParameters
+New-AzureRmResourceGroupDeployment -Name $name -ResourceGroupName $resourceGroup -TemplateUri "$_artifactsLocation/mainTemplate.json" -TemplateParameterObject $clusterParameters
 ```
 
 ## Configuring TLS

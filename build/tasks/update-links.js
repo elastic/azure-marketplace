@@ -16,11 +16,11 @@ gulp.task("links", (cb) => {
   function error(err) { }
 
   function replaceLinks(fileName, content, repo, branch) {
-    var link = /https:\/\/raw\.githubusercontent\.com\/.+?\/.+?\/(?!\$).+?\/src/g;
-    var escapedLink = /https%3A%2F%2Fraw\.githubusercontent\.com%2F.+?%2F.+?%2F(?!\$).+?%2Fsrc/g;
+    var link = /https:\/\/raw\.githubusercontent\.com\/.+?\/.+?\/(?!\$).+?\/src\//g;
+    var escapedLink = /https%3A%2F%2Fraw\.githubusercontent\.com%2F.+?%2F.+?%2F(?!\$).+?%2Fsrc%2F/g;
 
-    var newContent = content.replace(link, `https://raw.githubusercontent.com/${repo}/${branch}/src`);
-    newContent = newContent.replace(escapedLink, `https%3A%2F%2Fraw.githubusercontent.com%2F${repo.toString().replace("/", "%2F")}%2F${branch.toString().replace("/", "%2F")}%2Fsrc`);
+    var newContent = content.replace(link, `https://raw.githubusercontent.com/${repo}/${branch}/src/`);
+    newContent = newContent.replace(escapedLink, `https%3A%2F%2Fraw.githubusercontent.com%2F${repo.toString().replace("/", "%2F")}%2F${branch.toString().replace("/", "%2F")}%2Fsrc%2F`);
     fs.writeFile(fileName, newContent, error);
   }
 
