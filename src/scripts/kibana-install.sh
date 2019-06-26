@@ -223,8 +223,9 @@ configure_kibana_yaml()
     touch /var/log/kibana.log
     chown kibana: /var/log/kibana.log
 
-    # set logging to silent by default
-    echo "logging.silent: true" >> $KIBANA_CONF
+    # set logging to quiet by default. Note that kibana does not have
+    # a log file rotation policy, so the log file should be monitored
+    echo "logging.quiet: true" >> $KIBANA_CONF
 
     # configure security
     local ENCRYPTION_KEY
