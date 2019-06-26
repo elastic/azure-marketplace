@@ -1336,16 +1336,15 @@
   "variables": {
     "esVersionMajor": "[int(split(parameters('esVersion'), '.')[0])]",
     "esVersionMinor": "[int(split(parameters('esVersion'), '.')[1])]",
-    "_artifactsLocation": "[if(endsWith(parameters('_artifactsLocation'), '/'), parameters('_artifactsLocation'), concat(parameters('_artifactsLocation'), '/'))]",
-    "sharedTemplateUrl": "[uri(variables('_artifactsLocation'), concat('partials/shared-resources.json', parameters('_artifactsLocationSasToken')))]",
-    "networkTemplateUrl": "[uri(variables('_artifactsLocation'), concat('networks/virtual-network-resources.json', parameters('_artifactsLocationSasToken')))]",
+    "sharedTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('partials/shared-resources.json', parameters('_artifactsLocationSasToken')))]",
+    "networkTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('networks/virtual-network-resources.json', parameters('_artifactsLocationSasToken')))]",
     "loadBalancerOptions": {
       "internal": "internal-lb-resources",
       "external": "external-lb-resources",
       "gateway": "[concat(toLower(parameters('appGatewayTier')),'-application-gateway-resources')]"
     },
-    "loadBalancerTemplateUrl": "[uri(variables('_artifactsLocation'), concat('loadbalancers/', variables('loadBalancerOptions')[parameters('loadBalancerType')],'.json', parameters('_artifactsLocationSasToken')))]",
-    "osSettingsTemplateUrl": "[uri(variables('_artifactsLocation'), concat('settings/ubuntuSettings.json', parameters('_artifactsLocationSasToken')))]",
+    "loadBalancerTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('loadbalancers/', variables('loadBalancerOptions')[parameters('loadBalancerType')],'.json', parameters('_artifactsLocationSasToken')))]",
+    "osSettingsTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('settings/ubuntuSettings.json', parameters('_artifactsLocationSasToken')))]",
     "location": "[parameters('location')]",
     "azureCloudStorageAccount": {
       "name": "[parameters('azureCloudStorageAccountName')]",
@@ -2020,7 +2019,7 @@
       "No": "empty/empty-kibana-ip-resources.json",
       "Yes": "ips/kibana-ip-resources.json"
     },
-    "kibanaIpTemplateUrl": "[uri(variables('_artifactsLocation'), concat(variables('kibanaIpTemplates')[variables('topologySettings').kibana], parameters('_artifactsLocationSasToken')))]"
+    "kibanaIpTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('kibanaIpTemplates')[variables('topologySettings').kibana], parameters('_artifactsLocationSasToken')))]"
   },
   "resources": [
     {
@@ -2155,7 +2154,7 @@
         },
         "parameters": {
           "_artifactsLocation": {
-            "value": "[variables('_artifactsLocation')]"
+            "value": "[parameters('_artifactsLocation')]"
           },
           "_artifactsLocationSasToken": {
             "value": "[parameters('_artifactsLocationSasToken')]"
