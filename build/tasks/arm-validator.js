@@ -14,7 +14,7 @@ var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
 var az = require("./lib/az");
 var semver = require("semver");
-var artifactsBaseUrl = "";
+var _artifactsLocation = "";
 var templateUri = "";
 var armTests = {};
 var logDist = "../dist/test-runs";
@@ -65,7 +65,7 @@ var bootstrapTest = (t, defaultVersion) =>
 
   log(t, `parameters: ${JSON.stringify(test.parameters, null, 2)}`);
   var testParameters = merge.recursive(true, exampleParameters, test.parameters);
-  testParameters.artifactsBaseUrl.value = artifactsBaseUrl;
+  testParameters._artifactsLocation.value = _artifactsLocation;
   testParameters.adminUsername.value = config.deployments.username;
   testParameters.adminPassword.value = config.deployments.password;
   testParameters.sshPublicKey.value = config.deployments.ssh;
@@ -113,8 +113,8 @@ var bootstrap = (cb) => {
   var templateMatcher = new RegExp(argv.test || ".*");
 
   git.branch((branch) => {
-    artifactsBaseUrl = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src`;
-    templateUri = `${artifactsBaseUrl}/mainTemplate.json`;
+    _artifactsLocation = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src/`;
+    templateUri = `${_artifactsLocation}mainTemplate.json`;
     log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))
       .filter(t => templateMatcher.test(t))

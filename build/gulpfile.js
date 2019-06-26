@@ -22,7 +22,8 @@ gulp.task("default", gulp.series("sanity-checks", "patch", function() {
         if (path.basename(file.path) === "mainTemplate.json") {
           var allowedValues = require("./allowedValues.json");
           var mainTemplate = JSON.parse(content);
-          mainTemplate.parameters.elasticTags.defaultValue.tracking = allowedValues.trackingGuids.marketplace;
+          mainTemplate.parameters.elasticTags.defaultValue.tracking = allowedValues.marketplace.trackingGuids;
+          mainTemplate.parameters._artifactsLocation.defaultValue = allowedValues.marketplace._artifactsLocation;
           resolve(JSON.stringify(mainTemplate, null, 2) + "\n");
         }
 

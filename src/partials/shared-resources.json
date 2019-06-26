@@ -39,7 +39,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccountName')]",
-      "apiVersion": "2017-10-01",
+      "apiVersion": "2019-04-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -54,7 +54,7 @@
   ],
   "outputs": {
     "sharedStorageAccountKey": {
-      "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2017-10-01').keys[0].value]",
+      "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-04-01').keys[0].value]",
       "type": "string"
     },
     "sharedStorageAccountSuffix": {
@@ -62,11 +62,11 @@
       "type": "string"
     },
     "existingStorageAccountKey": {
-      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), listKeys(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2017-10-01').keys[0].value, '')]",
+      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), listKeys(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2019-04-01').keys[0].value, '')]",
       "type": "string"
     },
     "existingStorageAccountSuffix": {
-      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), replace(replace(reference(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2017-10-01').primaryEndpoints.blob, concat('https://', parameters('azureCloudStorageAccount').name, '.blob.'), ''), '/', ''), '')]",
+      "value": "[if(and(not(empty(parameters('azureCloudStorageAccount').name)), equals(parameters('azureCloudStorageAccount').install, 'Yes')), replace(replace(reference(resourceId(parameters('azureCloudStorageAccount').resourceGroup, 'Microsoft.Storage/storageAccounts', parameters('azureCloudStorageAccount').name), '2019-04-01').primaryEndpoints.blob, concat('https://', parameters('azureCloudStorageAccount').name, '.blob.'), ''), '/', ''), '')]",
       "type": "string"
     }
   }

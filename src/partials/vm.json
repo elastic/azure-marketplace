@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
-      "type": "string",
-      "metadata": {
-        "description": "Base uri of resources"
-      }
-    },
     "vm": {
       "type": "object",
       "metadata": {
@@ -72,7 +66,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2017-10-01",
+      "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('namespace'), parameters('index'), '-nic')]",
       "location": "[parameters('vm').shared.location]",
@@ -97,7 +91,7 @@
       }
     },
     {
-      "apiVersion": "2017-12-01",
+      "apiVersion": "2019-03-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('namespace'), parameters('index'))]",
       "location": "[parameters('vm').shared.location]",
@@ -139,7 +133,7 @@
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
           "name": "[concat(variables('namespace'), parameters('index'), '/script')]",
-          "apiVersion": "2017-12-01",
+          "apiVersion": "2019-03-01",
           "location": "[parameters('vm').shared.location]",
           "dependsOn": [
             "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"

@@ -1,5 +1,6 @@
 {
-  "artifactsBaseUrl":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/7.2/src"},
+  "_artifactsLocation":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/7.2/src/"},
+  "_artifactsLocationSasToken":{"value":""},
   "esVersion":{"value":"6.7.0"},
   "esClusterName":{"value":"my-azure-cluster"},
   "loadBalancerType":{"value":"internal"},

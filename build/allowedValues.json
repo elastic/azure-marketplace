@@ -253,7 +253,8 @@
     "northeurope": { "platformFaultDomainCount": 3 },
     "westeurope": { "platformFaultDomainCount": 3 }
   },
-  "trackingGuids": {
-    "marketplace": "pid-53DEEEE7-A572-4F07-99DC-151B67BB6F1F"
+  "marketplace": {
+    "trackingGuids": "pid-53DEEEE7-A572-4F07-99DC-151B67BB6F1F",
+    "_artifactsLocation": "[deployment().properties.templateLink.uri]"
   }
 }

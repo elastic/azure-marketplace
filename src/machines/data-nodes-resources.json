@@ -2,11 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
+    "_artifactsLocation": {
       "type": "string",
       "metadata": {
         "description": "Base uri of resources"
       }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+          "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
+      },
+      "defaultValue": ""
     },
     "vm": {
       "type": "object",
@@ -37,7 +44,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2017-12-01",
+      "apiVersion": "2019-03-01",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
       "location": "[parameters('vm').shared.location]",
@@ -60,7 +67,7 @@
       "condition": "[greater(parameters('storageSettings').dataDisks, 0)]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
       ],
@@ -71,13 +78,10 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'partials/vm.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('partials/vm.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
-          },
           "vm": {
             "value": "[parameters('vm')]"
           },
@@ -117,7 +121,7 @@
       "condition": "[equals(parameters('storageSettings').dataDisks, 0)]",
       "name": "[concat(variables('namespace'), copyindex(), '-vm-nodisks-creation')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [
         "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
       ],
@@ -128,13 +132,10 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'partials/vm.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('partials/vm.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
-          },
           "vm": {
             "value": "[parameters('vm')]"
           },
