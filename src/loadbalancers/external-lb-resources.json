@@ -26,8 +26,8 @@
   },
   "variables": {
     "httpsOpts": {
-      "Yes" : "https://",
-      "No" : "http://"
+      "Yes": "https://",
+      "No": "http://"
     },
     "https": "[variables('httpsOpts')[parameters('networkSettings').https]]",
     "internalLoadBalancerName": "[concat(parameters('networkSettings').namespacePrefix, 'internal-lb')]",
@@ -137,8 +137,8 @@
       "name": "[variables('externalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
-      "sku": { 
-        "name": "[parameters('networkSettings').externalSku]" 
+      "sku": {
+        "name": "[parameters('networkSettings').externalSku]"
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -197,7 +197,7 @@
       }
     }
   ],
-  "outputs" : {
+  "outputs": {
     "fqdn": {
       "value": "[concat(variables('https'), reference(variables('externalLoadBalancerIp')).dnsSettings.fqdn, ':9200')]",
       "type": "string"

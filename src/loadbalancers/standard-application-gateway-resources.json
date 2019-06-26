@@ -57,8 +57,8 @@
       "name": "[variables('internalLoadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('networkSettings').location]",
-      "sku": { 
-        "name": "[parameters('networkSettings').internalSku]" 
+      "sku": {
+        "name": "[parameters('networkSettings').internalSku]"
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -271,7 +271,10 @@
               "timeout": 30,
               "unhealthyThreshold": 3,
               "match": {
-                "statusCodes": ["200-399", "401"],
+                "statusCodes": [
+                  "200-399",
+                  "401"
+                ],
                 "body": ""
               }
             }
@@ -280,7 +283,7 @@
       }
     }
   ],
-  "outputs" : {
+  "outputs": {
     "fqdn": {
       "value": "N/A",
       "type": "string"
