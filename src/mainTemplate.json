@@ -204,6 +204,12 @@
         "Standard_A9",
         "Standard_A10",
         "Standard_A11",
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
+        "Standard_B8ms",
         "Standard_D1",
         "Standard_D2",
         "Standard_D3",
@@ -388,6 +394,12 @@
         "Standard_A9",
         "Standard_A10",
         "Standard_A11",
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
+        "Standard_B8ms",
         "Standard_D1",
         "Standard_D2",
         "Standard_D3",
@@ -587,6 +599,11 @@
         "Standard_A9",
         "Standard_A10",
         "Standard_A11",
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
         "Standard_B8ms",
         "Standard_D1",
         "Standard_D2",
@@ -791,6 +808,12 @@
         "Standard_A9",
         "Standard_A10",
         "Standard_A11",
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
+        "Standard_B8ms",
         "Standard_D1",
         "Standard_D2",
         "Standard_D3",
@@ -944,6 +967,12 @@
         "Standard_A9",
         "Standard_A10",
         "Standard_A11",
+        "Standard_B1s",
+        "Standard_B1ms",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
+        "Standard_B8ms",
         "Standard_D1",
         "Standard_D2",
         "Standard_D3",
@@ -1389,6 +1418,26 @@
         "storageAccountType": "Standard_LRS"
       },
       "Standard_A11": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_B1s": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_B1ms": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_B2s": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_B2ms": {
+        "dataDisks": 64,
+        "storageAccountType": "Standard_LRS"
+      },
+      "Standard_B4ms": {
         "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
       },
