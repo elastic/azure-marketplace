@@ -184,7 +184,7 @@
     {
       "name": "elasticsearch-nodes",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [ ],
       "properties": {
         "mode": "Incremental",

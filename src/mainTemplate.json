@@ -2026,7 +2026,7 @@
     {
       "name": "[parameters('elasticTags').tracking]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -2039,7 +2039,7 @@
     {
       "name": "shared",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -2066,7 +2066,7 @@
       "condition": "[equals(parameters('vNetNewOrExisting'), 'new')]",
       "name": "network",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -2089,7 +2089,7 @@
     {
       "name": "kibana-ip",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -2115,7 +2115,7 @@
     {
       "name": "loadbalancer",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [
         "[concat('Microsoft.Resources/deployments/', 'shared')]",
         "[concat('Microsoft.Resources/deployments/', 'network')]"
@@ -2142,7 +2142,7 @@
     {
       "name": "virtual-machines",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [
         "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
         "[concat('Microsoft.Resources/deployments/', 'kibana-ip')]"

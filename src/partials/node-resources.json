@@ -165,7 +165,7 @@
       "condition": "[equals(parameters('topologySettings').dataNodesAreMasterEligible, 'No')]",
       "name": "master-nodes",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -204,7 +204,7 @@
       "condition": "[greater(parameters('topologySettings').vmClientNodeCount, 0)]",
       "name": "client-nodes",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -242,7 +242,7 @@
     {
       "name": "data-nodes",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -283,7 +283,7 @@
     {
       "name": "jumpbox",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -316,7 +316,7 @@
     {
       "name": "kibana",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -356,7 +356,7 @@
       "condition": "[equals(parameters('topologySettings').logstash, 'Yes')]",
       "name": "logstash",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2019-05-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
