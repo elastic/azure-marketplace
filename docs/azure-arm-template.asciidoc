@@ -146,7 +146,7 @@ template_version={version}
 az group deployment create \
   --resource-group "<name>" \
   --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
-  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
+  --parameters _artifactsLocation=$template_base_uri/$template_version/src/ \
                esVersion={version} esClusterName=elasticsearch \
                vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
                adminUsername=russ adminPassword=Password1234 \
@@ -167,7 +167,7 @@ $templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
 $templateVersion = "{version}"
 
 $parameters = @{
-  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
+  "_artifactsLocation" = "$templateBaseUri/$templateVersion/src/"
   "esVersion" = "{version}"
   "esClusterName" = "elasticsearch"
   "vmDataDiskCount" = 1
@@ -276,12 +276,18 @@ different parameter and deployment options.
 The ARM template has some general parameters that control the operation of the
 template:
 
-`artifactsBaseUrl`::
+`_artifactsLocation`::
 The base public URI which informs the main template from where the other contents
 of the ARM template will be retrieved, such as linked templates and deployment scripts.
-Default is `https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src`
+Default is `https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src/`
 where `{branch}` is the git branch or tag to target, for
-<<azure-arm-template-repeatable-deployments, repeatable deployments>>
+<<azure-arm-template-repeatable-deployments, repeatable deployments>>. The value must end
+in a trailing `/`.
+
+`_artifactsLocationSasToken`::
+The sasToken required to access `_artifactsLocation`. The default value should be an empty 
+string `""`` for scenarios where the `_artifactsLocation` is not secured, such as the raw GitHub 
+URI for the Azure Marketplace public repo.
 
 `location`::
 The {azurelocations}[Azure location] in which to deploy the resources. Defaults to the same location
@@ -1255,7 +1261,7 @@ An example of a minimum deployment is
 .Azure CLI 2.0
 ----
 template_version={version}
-template_base_uri="https://raw.githubusercontent.com/elastic/azure-marketplace/$template_version/src"
+template_base_uri="https://raw.githubusercontent.com/elastic/azure-marketplace/$template_version/src/"
 
 # certificates for SSL/TLS
 http_cert=$(base64 /mnt/c/http.p12)
@@ -1273,7 +1279,7 @@ az group create --name $resource_group --location $location
 az group deployment create \
     --resource-group $resource_group \
     --template-uri $template_base_uri/mainTemplate.json \
-    --parameters artifactsBaseUrl=$template_base_uri \
+    --parameters _artifactsLocation=$template_base_uri \
         esClusterName=elasticsearch \
         esHttpCertBlob=$http_cert \
         adminUsername=russ \
@@ -1296,7 +1302,7 @@ az group deployment create \
 .Azure PowerShell
 ----
 $templateVersion = "{version}"
-$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src"
+$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src/"
 
 # certificates for SSL/TLS
 $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\http-cert.pfx"))
@@ -1310,7 +1316,7 @@ $location = "<location>"
 $metadataUri="https://login.microsoftonline.com/<guid>/federationmetadata/2007-06/federationmetadata.xml?appid=<guid>"
 
 $parameters = @{
-    "artifactsBaseUrl"= $templateBaseUri
+    "_artifactsLocation"= $templateBaseUri
     "esClusterName" = "elasticsearch"
     "esHttpCertBlob" = $httpCert
     "adminUsername" = "russ"

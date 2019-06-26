@@ -2,11 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
+    "_artifactsLocation": {
       "type": "string",
       "metadata": {
-        "description": "The base url for templates"
+        "description": "The base URI where artifacts required by this template are located including a trailing '/'"
       }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
+      },
+      "defaultValue": ""
     },
     "osSettings": {
       "type": "object",
@@ -47,13 +54,13 @@
       "No": "empty/empty-jumpbox-resources.json",
       "Yes": "machines/jumpbox-resources.json"
     },
-    "jumpboxTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('jumpboxTemplates')[parameters('topologySettings').jumpbox])]",
+    "jumpboxTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('jumpboxTemplates')[parameters('topologySettings').jumpbox], parameters('_artifactsLocationSasToken')))]",
     "kibanaTemplates": {
       "No": "empty/empty-kibana-resources.json",
       "Yes": "machines/kibana-resources.json"
     },
-    "kibanaTemplateUrl": "[concat(parameters('templateBaseUrl'), variables('kibanaTemplates')[parameters('topologySettings').kibana])]",
-    "dataTemplateUrl": "[concat(parameters('templateBaseUrl'), 'machines/data-nodes-resources.json')]",
+    "kibanaTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('kibanaTemplates')[parameters('topologySettings').kibana], parameters('_artifactsLocationSasToken')))]",
+    "dataTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('machines/data-nodes-resources.json', parameters('_artifactsLocationSasToken')))]",
     "locations": {
       "eastus": {
         "platformFaultDomainCount": 3
@@ -163,12 +170,15 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'machines/master-nodes-resources.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('machines/master-nodes-resources.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
           },
           "vm": {
             "value": {
@@ -199,12 +209,15 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'machines/client-nodes-resources.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('machines/client-nodes-resources.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
           },
           "vm": {
             "value": {
@@ -238,8 +251,11 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
           },
           "vm": {
             "value": {
@@ -276,9 +292,6 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
-          },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
           },
@@ -312,9 +325,6 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
-          },
           "credentials": {
             "value": "[parameters('commonVmSettings').credentials]"
           },
@@ -351,12 +361,15 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templateBaseUrl'), 'machines/logstash-resources.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('machines/logstash-resources.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
           },
           "vm": {
             "value": {

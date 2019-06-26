@@ -12,8 +12,8 @@ function checks(cb) {
     var difference = _.difference(mainTemplateParams, _.keys(uiTemplate.parameters.outputs));
     if (difference.length == 0) return;
     var excludingDefault = [];
-    difference.forEach(p=> {
-      if (mainTemplate.parameters[p] && mainTemplate.parameters[p].defaultValue) return;
+    difference.forEach(p => {
+      if (mainTemplate.parameters[p] && mainTemplate.parameters[p].hasOwnProperty('defaultValue')) return;
       excludingDefault.push(p);
     });
     if (excludingDefault.length == 0) return;

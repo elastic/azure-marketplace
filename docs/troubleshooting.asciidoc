@@ -153,7 +153,7 @@ template_version={version}
 az group deployment create \
   --resource-group "<name>" \
   --template-uri $template_base_uri/$template_version/src/mainTemplate.json \
-  --parameters artifactsBaseUrl=$template_base_uri/$template_version/src \
+  --parameters _artifactsLocation=$template_base_uri/$template_version/src/ \
                esVersion={version} esClusterName=elasticsearch \
                vmDataDiskCount=1 dataNodesAreMasterEligible=Yes \
                adminUsername=russ adminPassword=Password1234 \
@@ -174,7 +174,7 @@ $templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
 $templateVersion = "{version}"
 
 $parameters = @{
-  "artifactsBaseUrl" = "$templateBaseUri/$templateVersion/src"
+  "_artifactsLocation" = "$templateBaseUri/$templateVersion/src/"
   "esVersion" = "{version}"
   "esClusterName" = "elasticsearch"
   "vmDataDiskCount" = 1

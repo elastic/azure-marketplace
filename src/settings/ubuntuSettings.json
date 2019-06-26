@@ -2,11 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
-        "type": "string",
-        "metadata": {
-            "description": "The base url for templates"
-        }
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+          "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
+      },
+      "defaultValue": ""
     },
     "esSettings": {
         "type": "object",
@@ -65,7 +72,7 @@
     "doublequote": "\"",
     "backslash": "\\",
     "escapedQuote": "[concat(variables('quote'), variables('doublequote'), variables('quote'), variables('doublequote'), variables('quote'))]",
-    "nodesTemplateUrl": "[concat(parameters('templateBaseUrl'), 'partials/node-resources.json')]",
+    "nodesTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('partials/node-resources.json', parameters('_artifactsLocationSasToken')))]",
     "namespacePrefix": "[parameters('topologySettings').vmHostNamePrefix]",
     "kibanaDomainName": "[if(not(empty(parameters('esSettings').samlMetadataUri)),if(not(empty(parameters('esSettings').samlServiceProviderUri)),parameters('esSettings').samlServiceProviderUri,parameters('kibanaIp')),'')]",
     "loadBalancerIp": "[concat(if(equals(parameters('networkSettings').https, 'Yes'), 'https', 'http'), '://', parameters('topologySettings').vNetLoadBalancerIp, ':9200')]",
@@ -95,11 +102,11 @@
     "commonShortOpts": "[concat(variables('dedicatedMasterNodesShortOpt'),  variables('installPluginsShortOpt'), variables('installAzureCloudPluginShortOpt'), 'n ')]",
     "commonInstallParams": "[concat(variables('quote'), parameters('esSettings').clusterName, variables('quote'), ' -v ', variables('quote'), parameters('esSettings').version, variables('quote'), ' -m ', parameters('esSettings').heapSize, ' -A ', variables('quote'), replace(parameters('esSettings').securityAdminPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -R ', variables('quote'), replace(parameters('esSettings').securityRemoteMonitoringPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -K ', variables('quote'), replace(parameters('esSettings').securityKibanaPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -S ', variables('quote'), replace(parameters('esSettings').securityLogstashPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -F ', variables('quote'), replace(parameters('esSettings').securityBeatsPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -M ', variables('quote'), replace(parameters('esSettings').securityApmPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -B ', variables('quote'), replace(parameters('esSettings').securityBootstrapPwd, variables('quote'), variables('escapedQuote')), variables('quote'), ' -Z ', parameters('topologySettings').vmDataNodeCount,' -p ', variables('quote'), variables('namespacePrefix'), variables('quote'), ' -a ', variables('quote'), variables('azureCloudStorageName'), variables('quote'), ' -k ', variables('quote'), variables('azureCloudStorageKey'), variables('quote'), ' -E ', variables('quote'), variables('azureCloudStorageSuffix'), variables('quote'), ' -L ', variables('quote'), parameters('esSettings').installAdditionalPlugins, variables('quote'), ' -C ', variables('quote'), replace(replace(parameters('esSettings').yamlConfiguration, variables('quote'), variables('escapedQuote')), concat(variables('backslash'), variables('doublequote')), variables('doublequote')), variables('quote'), ' -D ', variables('quote'), parameters('topologySettings').vNetLoadBalancerIp, variables('quote'), ' -H ', variables('quote'), parameters('esSettings').httpCertBlob,variables('quote'), ' -G ', variables('quote'), replace(parameters('esSettings').httpCertPassword, variables('quote'), variables('escapedQuote')), variables('quote'), ' -V ', variables('quote'), parameters('esSettings').httpCaCertBlob, variables('quote'), ' -J ', variables('quote'), replace(parameters('esSettings').httpCaCertPassword, variables('quote'), variables('escapedQuote')), variables('quote'), ' -T ', variables('quote'), parameters('esSettings').transportCaCertBlob, variables('quote'), ' -W ', variables('quote'), replace(parameters('esSettings').transportCaCertPassword, variables('quote'), variables('escapedQuote')), variables('quote'), ' -N ', variables('quote'), replace(parameters('esSettings').transportCertPassword, variables('quote'), variables('escapedQuote')), variables('quote'), ' -O ', variables('quote'), parameters('esSettings').samlMetadataUri, variables('quote'), ' -P ', variables('quote'), variables('kibanaDomainName'), variables('quote'))]",
     "ubuntuScripts": [
-      "[concat(parameters('templateBaseUrl'), 'scripts/elasticsearch-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/kibana-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/logstash-install.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/vm-disk-utils-0.1.sh')]",
-      "[concat(parameters('templateBaseUrl'), 'scripts/java-install.sh')]"
+      "[uri(parameters('_artifactsLocation'), concat('scripts/elasticsearch-install.sh', parameters('_artifactsLocationSasToken')))]",
+      "[uri(parameters('_artifactsLocation'), concat('scripts/kibana-install.sh', parameters('_artifactsLocationSasToken')))]",
+      "[uri(parameters('_artifactsLocation'), concat('scripts/logstash-install.sh', parameters('_artifactsLocationSasToken')))]",
+      "[uri(parameters('_artifactsLocation'), concat('scripts/vm-disk-utils-0.1.sh', parameters('_artifactsLocationSasToken')))]",
+      "[uri(parameters('_artifactsLocation'), concat('scripts/java-install.sh', parameters('_artifactsLocationSasToken')))]"
     ],
     "ubuntuSettings": {
       "imageReference": {
@@ -186,8 +193,11 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "templateBaseUrl": {
-            "value": "[parameters('templateBaseUrl')]"
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
           },
           "osSettings": {
             "value": "[variables('ubuntuSettings')]"
