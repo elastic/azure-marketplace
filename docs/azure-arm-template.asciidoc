@@ -51,7 +51,7 @@ group, or as a full deployment, which will replace all resources within a resour
 group.
 
 [[azure-arm-template-getting-started]]
-=== Getting started
+=== Getting started with the ARM template
 
 The best way to work with Elastic's ARM template is using one of the official Azure
 command line interface (CLI) tools:
