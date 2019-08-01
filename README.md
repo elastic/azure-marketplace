@@ -635,7 +635,7 @@ where `<name>` refers to the resource group you just created.
   ```powershell
   $clusterParameters = @{
       "_artifactsLocation" = "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/7.3.0/src/"
-      "esVersion" = "7.2.0"
+      "esVersion" = "7.3.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
