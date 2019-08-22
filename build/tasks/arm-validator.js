@@ -17,6 +17,7 @@ var semver = require("semver");
 var _artifactsLocation = "";
 var templateUri = "";
 var armTests = {};
+var applicationGatewayPublicIp = "";
 var logDist = "../dist/test-runs";
 var logDistTmp = logDist + "/tmp";
 
@@ -34,6 +35,10 @@ var log = (f, data) =>
   fs.appendFileSync(logDistTmp + "/" + file, data + "\n")
 }
 
+var assert = (condition) => {
+  return condition ? colors.green("[PASS]") : colors.red("[FAIL]");
+}
+
 var exampleParameters = require("../../parameters/password.parameters.json");
 
 var bootstrapTest = (t, defaultVersion) =>
@@ -41,7 +46,7 @@ var bootstrapTest = (t, defaultVersion) =>
   var test = require("../arm-tests/" + t);
 
   if (test.condition && !semver.satisfies(defaultVersion, test.condition.range)) {
-    log(`Skipping ${t} because ${test.condition.reason}`.yellow);
+    log(colors.yellow(`Skipping ${t} because ${test.condition.reason}`));
     return null;
   }
 
@@ -333,10 +338,13 @@ var sanityCheckDeployment = (test, stdout, cb) => {
   var checked = 0;
   var allChecked = () => { if (++checked == checks.length) cb(); };
   var t = armTests[test];
+  var outputs;
+  var externalAccess = false;
 
   if (stdout) {
-    var outputs = JSON.parse(stdout).properties.outputs;
+    outputs = JSON.parse(stdout).properties.outputs;
     if (outputs.loadbalancer.value !== "N/A") {
+      externalAccess = true;
       checks.push(()=> sanityCheckExternalLoadBalancer(test, "external loadbalancer", outputs.loadbalancer.value, allChecked));
 
       // logstash can be checked with external loadbalancer
@@ -344,41 +352,96 @@ var sanityCheckDeployment = (test, stdout, cb) => {
       if (t.params.logstash.value === "Yes")
         checks.push(()=> sanityCheckLogstash(test, outputs.loadbalancer.value, allChecked));
     }
+
     if (outputs.kibana.value !== "N/A")
       checks.push(()=> sanityCheckKibana(test, outputs.kibana.value, allChecked));
   }
 
-  if (t.params.loadBalancerType.value === "gateway")
-    checks.push(()=> sanityCheckApplicationGateway(test, allChecked));
+  if (t.params.loadBalancerType.value === "gateway") {
+    externalAccess = true;
+    checks.push(() => sanityCheckApplicationGateway(test, allChecked));  
+  }
+    
+  // check the license when there's an external load balancer or application gateway
+  if (externalAccess && (semver.satisfies(t.params.esVersion.value, "<6.3.0") && t.params.xpackPlugins.value === "Yes" || semver.satisfies(t.params.esVersion.value, ">=6.3.0")))
+    checks.push(() => checkLicense(test, outputs, allChecked));
 
   //TODO check with ssh2 in case we are using internal loadbalancer
-  if (checks.length > 0) checks.forEach(check => check());
+  if (checks.length > 0) 
+    checks.forEach(check => check());
   else cb();
 }
 
-var sanityCheckApplicationGateway = (test, cb) => {
+var getApplicationGatewayPublicIp = (test) => {
+  // could use memoization for this, but KISS
+  if (applicationGatewayPublicIp)
+    return applicationGatewayPublicIp;
+
   var t = armTests[test];
   var rg = t.resourceGroup;
-  var appGateway = "application gateway";
-
   var operationList = [ 'network', 'public-ip', 'show',
     '--name', 'app-gateway-ip',
     '--resource-group', rg,
     '--out', 'json'
   ];
 
-  log(`getting the public IP for ${appGateway} in: ${rg}`);
+  log(`getting the public IP for application gateway in: ${rg}`);
   az(operationList, (error, stdout, stderr) => {
     log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
     if (error || stderr) {
-      log(`getting public ip for ${appGateway} in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
-      cb();
+      log(`getting public ip for application gateway in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
+      return null;
     }
 
     var result = JSON.parse(stdout);
-    var url = `https://${result.dnsSettings.fqdn}:9200`;
-    sanityCheckExternalLoadBalancer(test, appGateway, url, cb);
-  });
+    applicationGatewayPublicIp = `https://${result.dnsSettings.fqdn}:9200`;
+    return applicationGatewayPublicIp;
+  }); 
+}
+
+var checkLicense = (test, outputs, cb) => {
+  var t = armTests[test];
+  var rg = t.resourceGroup;
+
+  var licenseRequest = (url, opts) => {
+    var endpoint = semver.satisfies(t.params.esVersion.value, ">=7.0.0") ? "_license" : "_xpack/license";
+
+    request(`${url}/${endpoint}`, opts, (error, response, body) => {
+      if (!error && response.statusCode === 200 && body) {
+        var license = t.params.xpackPlugins.value === "Yes" ? "trial" : "basic";
+        log(`${assert(license === body.license.type)} expecting license in resource group ${rg} to be: ${license} and found: ${body.license.type}`);
+        log(test, `licenseResponse: ${JSON.stringify(body, null, 2)}`);
+        cb();
+      }
+      else {
+        log(`unable to check license in resource group: ${rg}. ${response ? "status:" + response.statusCode : ""} ${error}`);
+        log(test, `licenseResponse: ${body ? JSON.stringify(body, null, 2) : "<empty>"} error: ${error}, response: ${response}`);
+        //bailout(error || new error(m));
+        cb();
+      }
+    });    
+  }
+
+  if (outputs && outputs.loadbalancer.value !== "N/A") {
+    var url = outputs.loadbalancer.value;
+    var opts = createLoadBalancerRequestOptions(t, "external loadbalancer");
+    licenseRequest(url, opts);
+  } 
+  else if (t.params.loadBalancerType.value === "gateway") {
+    var url = getApplicationGatewayPublicIp(test);
+    var opts = createLoadBalancerRequestOptions(t, "application gateway");
+    licenseRequest(url, opts);
+  }
+  else 
+    cb();
+}
+
+var sanityCheckApplicationGateway = (test, cb) => {
+  var url = getApplicationGatewayPublicIp(test);
+  if (url)
+    sanityCheckExternalLoadBalancer(test, "application gateway", url, cb);
+  else
+    cb();
 }
 
 var createLoadBalancerRequestOptions = (t, loadbalancerType) => {
@@ -447,10 +510,10 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
           var expectedTotalNodes = 3 + t.params.vmDataNodeCount.value + t.params.vmClientNodeCount.value;
           if (t.params.dataNodesAreMasterEligible.value === "Yes") expectedTotalNodes -= 3;
 
-          log(`expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
+          log(`${assert(body.number_of_nodes === expectedTotalNodes)} expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
           //if (body.number_of_nodes != expectedTotalNodes) return bailOut(new Error(m));
 
-          log(`expecting ${t.params.vmDataNodeCount.value} data nodes in resource group: ${rg} and found: ${body.number_of_data_nodes}`);
+          log(`${assert(body.number_of_data_nodes === t.params.vmDataNodeCount.value)} expecting ${t.params.vmDataNodeCount.value} data nodes in resource group: ${rg} and found: ${body.number_of_data_nodes}`);
           //if (body.number_of_data_nodes != t.params.vmDataNodeCount.value) return bailOut(new Error(m));
           cb();
         }
@@ -470,10 +533,7 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
   });
 }
 
-var sanityCheckKibana = (test, url, cb) => {
-  var t = armTests[test];
-  var rg = t.resourceGroup;
-  log(`checking kibana at ${url} in resource group: ${rg}`);
+var createKibanaRequestOptions = (t) => {
   var opts = {
     json: true,
     auth: { username: "elastic", password: config.deployments.securityPassword },
@@ -486,62 +546,85 @@ var sanityCheckKibana = (test, url, cb) => {
       fs.readFileSync("certs/cert-no-password-ca.crt");
   }
 
-  request(`${url}/api/status`, opts, function (error, response, body) {
-    var state = (body)
-      ? body.status && body.status.overall
-        ? body.status.overall.state
-        : body.error
-            ? body.error
-            : "unknown"
-      : "unknown";
+  return opts;
+}
 
-    log(`kibana is running in resource group: ${rg} with state: ${state[state.toLowerCase()]}`);
-    log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
+var sanityCheckKibana = (test, url, cb) => {
+  var t = armTests[test];
+  var rg = t.resourceGroup;
+  log(`checking kibana at ${url} in resource group: ${rg}`);
+  var opts = createKibanaRequestOptions(t);
+  var attempts = 0;
+  var totalAttempts = 10;
 
-    //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
-    //There is no guarantee kibana is not provisioned before the cluster is up
-    if (state == "green") {
-      log(`checking kibana monitoring endpoint for rg: ${rg}`);
+  var checkStatus = () => { 
+    request(`${url}/api/status`, opts, function (error, response, body) {
+      var state = (body)
+        ? body.status && body.status.overall
+          ? body.status.overall.state
+          : body.error
+              ? body.error
+              : "unknown"
+        : "unknown";
+     
+      log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
 
-      opts.method = "POST";
-      opts.headers = opts.headers || {};
-      opts.headers["kbn-xsrf"] = "reporting";
-      var now = new Date();
-      now.setHours(now.getHours() - 1);
-      var plusAnHour = new Date();
-      plusAnHour.setHours(plusAnHour.getHours() + 1);
-      opts.body = JSON.stringify({
-        timeRange: {
-          min: dateFormat(now, "isoUtcDateTime"),
-          max: dateFormat(plusAnHour, "isoUtcDateTime")
-        }
-      });
+      // give Kibana some time to come up green by retrying
+      if (state !== "green" && attempts <= totalAttempts) {
+        log(`retrying ${++attempts}/${totalAttempts} kibana at ${url} in resource group: ${rg}`);   
+        setTimeout(checkStatus, 5000);
+        return;
+      }
 
-      request(`${url}/api/monitoring/v1/clusters`, opts, function (error, response, body) {
-        log(test, `monitoringResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
+      log(`${assert(state === "green")} kibana is running in resource group: ${rg} with state: ${state}`);
 
-        if (body && body.length) {
-          var kibana = body[0].kibana;
-          if (kibana) {
-            log ("kibana monitoring enabled");
+      //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
+      //There is no guarantee kibana is not provisioned before the cluster is up
+      if (state === "green") {
+        log(`checking kibana monitoring endpoint for rg: ${rg}`);
+
+        opts.method = "POST";
+        opts.headers = opts.headers || {};
+        opts.headers["kbn-xsrf"] = "reporting";
+        var now = new Date();
+        now.setHours(now.getHours() - 1);
+        var plusAnHour = new Date();
+        plusAnHour.setHours(plusAnHour.getHours() + 1);
+        opts.body = JSON.stringify({
+          timeRange: {
+            min: dateFormat(now, "isoUtcDateTime"),
+            max: dateFormat(plusAnHour, "isoUtcDateTime")
           }
+        });
 
-          if (t.params.logstash.value === "Yes") {
-            log("logstash enabled in the template. Checking monitoring");
-            var logstash = body[0].logstash;
-            if (logstash) {
-              log("logstash monitoring enabled");
+        request(`${url}/api/monitoring/v1/clusters`, opts, function (error, response, body) {
+          log(test, `monitoringResponse: ${JSON.stringify(body ? body : {}, null, 2)}`);
+
+          if (body && body.length) {
+            var kibana = body[0].kibana;
+            if (kibana) {
+              log ("kibana monitoring enabled");
+            }
+
+            if (t.params.logstash.value === "Yes") {
+              log("logstash enabled in the template. Checking monitoring");
+              var logstash = body[0].logstash;
+              if (logstash) {
+                log("logstash monitoring enabled");
+              }
             }
           }
-        }
 
+          cb();
+        });
+      }
+      else {
         cb();
-      });
-    }
-    else {
-      cb();
-    }
-  });
+      }
+    });
+  }
+
+  checkStatus();
 }
 
 var sanityCheckLogstash = (test, url, cb) => {
@@ -550,6 +633,7 @@ var sanityCheckLogstash = (test, url, cb) => {
   log(`checking logstash is sending events in resource group: ${rg}`);
   var opts = createLoadBalancerRequestOptions(t, "external");
   var attempts = 0;
+  var totalAttempts = 10;
   var countRequest = () => {
     request(`${url}/heartbeat/_count`, opts, (error, response, body) => {
       if (!error && response && response.statusCode == 200) {
@@ -563,8 +647,8 @@ var sanityCheckLogstash = (test, url, cb) => {
           cb();
         }
       }
-      else if (response && response.statusCode == 404 && attempts < 10) {
-        log(`logstash event index not found. retry attempt: ${++attempts} for resource group: ${rg}`);
+      else if (response && response.statusCode == 404 && attempts <= totalAttempts) {
+        log(`logstash event index not found. retry ${++attempts}/${totalAttempts} for resource group: ${rg}`);
         setTimeout(countRequest, 5000);
       }
       else {
