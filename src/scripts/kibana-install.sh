@@ -248,6 +248,7 @@ configure_kibana_yaml()
         log "[configure_kibana_yaml] Installed X-Pack plugin"
       fi
 
+      install_pwgen
       ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
@@ -439,6 +440,11 @@ fi
 
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update))
+$EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+  log "[apt-get] failed updating apt-get. exit code: $EXIT_CODE"
+  exit $EXIT_CODE
+fi
 log "[apt-get] updated apt-get"
 
 install_kibana
