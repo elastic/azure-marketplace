@@ -13,6 +13,7 @@ var request = require('request');
 var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
 var az = require("./lib/az");
+var timestamp = require("./lib/timestamp");
 var semver = require("semver");
 var exampleParameters = require("../../parameters/password.parameters.json");
 
@@ -106,7 +107,7 @@ var bootstrapTest = (t, defaultVersion) =>
   // Some parameters are longer than the max allowed characters for cmd on Windows.
   // Persist to file and pass the file path for parameters
   var name = t.replace(".json", "");
-  var resourceGroup = "test-" + hostname + "-" + name + dateFormat(new Date(), "-yyyymmdd-HHMMssl").replace("+","-")
+  var resourceGroup = "test-" + hostname + "-" + name + timestamp;
   var testParametersFile = path.resolve(logDistTmp + "/" + resourceGroup + ".json");
   fs.writeFileSync(testParametersFile, JSON.stringify(testParameters, null, 2));
 
