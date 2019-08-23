@@ -14,10 +14,11 @@ var hostname = require("os").hostname().toLowerCase();
 var argv = require('yargs').argv;
 var az = require("./lib/az");
 var semver = require("semver");
+var exampleParameters = require("../../parameters/password.parameters.json");
+
 var _artifactsLocation = "";
 var templateUri = "";
 var armTests = {};
-var applicationGatewayPublicIp = "";
 var logDist = "../dist/test-runs";
 var logDistTmp = logDist + "/tmp";
 
@@ -30,23 +31,42 @@ var log = (f, data) =>
     f = "test-run"
     if (logToConsole) console.log(`[${dateFormat(new Date(), "HH:MM:ss").grey}] ${data}`);
   }
-  if (!data) return;
+  else if (armTests.hasOwnProperty(f)) {
+    f = armTests[f].name;
+  }
+  
+  if (!data) 
+    return;
+
   var file = f + ".log";
   fs.appendFileSync(logDistTmp + "/" + file, data + "\n")
 }
 
+var assertions = {
+  total: 0,
+  pass: 0,
+  fail: 0,
+  increment: function(outcome) {
+    this.total++;
+    if (outcome) 
+      this.pass++; 
+    else 
+      this.fail++;
+  }
+};
+
 var assert = (condition) => {
+  assertions.increment(condition);
   return condition ? colors.green("[PASS]") : colors.red("[FAIL]");
 }
 
-var exampleParameters = require("../../parameters/password.parameters.json");
 
 var bootstrapTest = (t, defaultVersion) =>
 {
   var test = require("../arm-tests/" + t);
 
   if (test.condition && !semver.satisfies(defaultVersion, test.condition.range)) {
-    log(colors.yellow(`Skipping ${t} because ${test.condition.reason}`));
+    log(colors.yellow('[SKIP]') + ` Skipping ${t} because ${test.condition.reason}`);
     return null;
   }
 
@@ -160,8 +180,24 @@ var logout = (cb) => {
   var logout = [ 'logout',
     '--username', config.arm.clientId
   ];
-  log("logging out of azure cli tooling")
+  log("logging out of azure cli tooling");
   az(logout, cb);
+}
+
+var logTests = (cb) => {
+  if (assertions.total > 0) {
+    log("============================================");
+    log("Integration test results");
+    log("============================================");
+    log(`PASS : ${assertions.pass}                   `);
+    log(`FAIL : ${assertions.fail}                   `);
+    log(`TOTAL: ${assertions.total}                  `);
+    log("============================================");
+    cb();
+  }
+  else {
+    cb();
+  }  
 }
 
 var bailOutNoCleanUp = (error)  => {
@@ -364,7 +400,7 @@ var sanityCheckDeployment = (test, stdout, cb) => {
     
   // check the license when there's an external load balancer or application gateway
   if (externalAccess && (semver.satisfies(t.params.esVersion.value, "<6.3.0") && t.params.xpackPlugins.value === "Yes" || semver.satisfies(t.params.esVersion.value, ">=6.3.0")))
-    checks.push(() => checkLicense(test, outputs, allChecked));
+    checks.push(() => sanityCheckLicense(test, outputs, allChecked));
 
   //TODO check with ssh2 in case we are using internal loadbalancer
   if (checks.length > 0) 
@@ -372,40 +408,46 @@ var sanityCheckDeployment = (test, stdout, cb) => {
   else cb();
 }
 
-var getApplicationGatewayPublicIp = (test) => {
-  // could use memoization for this, but KISS
-  if (applicationGatewayPublicIp)
-    return applicationGatewayPublicIp;
+var getApplicationGatewayPublicIp = (() => {
+  var applicationGatewayPublicIp = "";
 
-  var t = armTests[test];
-  var rg = t.resourceGroup;
-  var operationList = [ 'network', 'public-ip', 'show',
-    '--name', 'app-gateway-ip',
-    '--resource-group', rg,
-    '--out', 'json'
-  ];
+  return (test, cb) => {
+    if (applicationGatewayPublicIp)
+      cb(applicationGatewayPublicIp);
+    else {
+      var t = armTests[test];
+      var rg = t.resourceGroup;
+      var operationList = [ 'network', 'public-ip', 'show',
+        '--name', 'app-gateway-ip',
+        '--resource-group', rg,
+        '--out', 'json'
+      ];
 
-  log(`getting the public IP for application gateway in: ${rg}`);
-  az(operationList, (error, stdout, stderr) => {
-    log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
-    if (error || stderr) {
-      log(`getting public ip for application gateway in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
-      return null;
+      log(`getting the public IP for application gateway in: ${rg}`);
+      az(operationList, (error, stdout, stderr) => {
+        log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
+        if (error || stderr) {
+          log(`getting public ip for application gateway in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
+          cb(applicationGatewayPublicIp);
+        }
+        else {
+          var result = JSON.parse(stdout);
+          applicationGatewayPublicIp = `https://${result.dnsSettings.fqdn}:9200`;
+          cb(applicationGatewayPublicIp);
+        }
+      }); 
     }
+  }
+})();
 
-    var result = JSON.parse(stdout);
-    applicationGatewayPublicIp = `https://${result.dnsSettings.fqdn}:9200`;
-    return applicationGatewayPublicIp;
-  }); 
-}
-
-var checkLicense = (test, outputs, cb) => {
+var sanityCheckLicense = (test, outputs, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
+  var attempts = 0;
+  var totalAttempts = 10;
 
-  var licenseRequest = (url, opts) => {
+  var checkLicense = (url, opts) => {
     var endpoint = semver.satisfies(t.params.esVersion.value, ">=7.0.0") ? "_license" : "_xpack/license";
-
     request(`${url}/${endpoint}`, opts, (error, response, body) => {
       if (!error && response.statusCode === 200 && body) {
         var license = t.params.xpackPlugins.value === "Yes" ? "trial" : "basic";
@@ -414,39 +456,51 @@ var checkLicense = (test, outputs, cb) => {
         cb();
       }
       else {
-        log(`unable to check license in resource group: ${rg}. ${response ? "status:" + response.statusCode : ""} ${error}`);
-        log(test, `licenseResponse: ${body ? JSON.stringify(body, null, 2) : "<empty>"} error: ${error}, response: ${response}`);
-        //bailout(error || new error(m));
-        cb();
+        if (attempts < totalAttempts) {
+          log(`retrying ${++attempts}/${totalAttempts} check license in resource group: ${rg}`);   
+          setTimeout(() => { checkLicense(url, opts); }, 5000);          
+        }
+        else {
+          log(`${assert(false)} unable to check license in resource group: ${rg}. ${response ? "status:" + response.statusCode : ""} ${error}`);
+          log(test, `licenseResponse: ${body ? JSON.stringify(body, null, 2) : "<empty>"} error: ${error}, response: ${response}`);
+          cb();
+        }
       }
-    });    
+    }); 
   }
 
   if (outputs && outputs.loadbalancer.value !== "N/A") {
     var url = outputs.loadbalancer.value;
     var opts = createLoadBalancerRequestOptions(t, "external loadbalancer");
-    licenseRequest(url, opts);
+    checkLicense(url, opts);
   } 
   else if (t.params.loadBalancerType.value === "gateway") {
-    var url = getApplicationGatewayPublicIp(test);
-    var opts = createLoadBalancerRequestOptions(t, "application gateway");
-    licenseRequest(url, opts);
+    getApplicationGatewayPublicIp(test, (url) => {
+      if (url) {
+        var opts = createLoadBalancerRequestOptions(t, "application gateway");
+        checkLicense(url, opts);
+      }
+      else 
+        cb();
+    });
   }
   else 
     cb();
 }
 
 var sanityCheckApplicationGateway = (test, cb) => {
-  var url = getApplicationGatewayPublicIp(test);
-  if (url)
-    sanityCheckExternalLoadBalancer(test, "application gateway", url, cb);
-  else
-    cb();
+  getApplicationGatewayPublicIp(test, (url) => {
+    if (url)
+      sanityCheckExternalLoadBalancer(test, "application gateway", url, cb);
+    else
+      cb();
+  });
 }
 
 var createLoadBalancerRequestOptions = (t, loadbalancerType) => {
   var opts = {
     json: true,
+    timeout: 60000,
     auth: { username: "elastic", password: config.deployments.securityPassword },
     // don't perform hostname validation as all tests use self-signed certs
     agentOptions: { checkServerIdentity: _.noop }
@@ -496,46 +550,59 @@ var sanityCheckExternalLoadBalancer = (test, loadbalancerType, url, cb) => {
   var rg = t.resourceGroup;
   log(`checking ${loadbalancerType} ${url} in resource group: ${rg}`);
   var opts = createLoadBalancerRequestOptions(t, loadbalancerType);
-  request(url, opts, (error, response, body) => {
-    if (!error && response.statusCode == 200) {
-      log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
-      request(`${url}/_cluster/health`, opts, (error, response, body) => {
-        var status = (body) ? body.status : "unknown";
-        if (!error && response.statusCode === 200 &&
-            // if logstash is deployed and successfully sending events, the logstash created
-            // index will be created with the default number of shards and replicas
-            (status === "green" || (status === "yellow" && t.params.logstash.value === "Yes"))) {
-          log(`cluster is up and running in resource group: ${rg}`);
-          log(test, `clusterHealthResponse: ${JSON.stringify(body, null, 2)}`);
-          var expectedTotalNodes = 3 + t.params.vmDataNodeCount.value + t.params.vmClientNodeCount.value;
-          if (t.params.dataNodesAreMasterEligible.value === "Yes") expectedTotalNodes -= 3;
+  var attempts = 0;
+  var totalAttempts = 10;
 
-          log(`${assert(body.number_of_nodes === expectedTotalNodes)} expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
-          //if (body.number_of_nodes != expectedTotalNodes) return bailOut(new Error(m));
+  var checkLoadBalancer = () => {
+    request(url, opts, (error, response, body) => {
+      if (!error && response.statusCode == 200) {
+        log(test, `loadBalancerResponse: ${JSON.stringify(body, null, 2)}`);
+        request(`${url}/_cluster/health`, opts, (error, response, body) => {
+          var status = (body) ? body.status : "unknown";
+          if (!error && response.statusCode === 200 &&
+              // indices be created with the default number of shards and replicas, but only 1 node
+              (status === "green" || (status === "yellow" && body.number_of_data_nodes === 1 && body.unassigned_shards > 0))) {
+            log(`${assert(true)} cluster is up and running in resource group: ${rg}`);
+            log(test, `clusterHealthResponse: ${JSON.stringify(body, null, 2)}`);
 
-          log(`${assert(body.number_of_data_nodes === t.params.vmDataNodeCount.value)} expecting ${t.params.vmDataNodeCount.value} data nodes in resource group: ${rg} and found: ${body.number_of_data_nodes}`);
-          //if (body.number_of_data_nodes != t.params.vmDataNodeCount.value) return bailOut(new Error(m));
-          cb();
+            var expectedTotalNodes = t.params.vmDataNodeCount.value + t.params.vmClientNodeCount.value;
+            
+            // running with dedicated master nodes?
+            if (t.params.dataNodesAreMasterEligible.value === "No") 
+              expectedTotalNodes += 3;
+
+            log(`${assert(body.number_of_nodes === expectedTotalNodes)} expecting ${expectedTotalNodes} total nodes in resource group: ${rg} and found: ${body.number_of_nodes}`);
+            log(`${assert(body.number_of_data_nodes === t.params.vmDataNodeCount.value)} expecting ${t.params.vmDataNodeCount.value} data nodes in resource group: ${rg} and found: ${body.number_of_data_nodes}`);
+            cb();
+          }
+          else {
+            log(`${assert(false)} cluster is NOT up and running in resource group: ${rg}`);
+            log(test, `clusterHealthResponse: status: ${body ? JSON.stringify(body, null, 2) : "<empty response>"} error: ${error}`);
+            cb();
+          }
+        });
+      }
+      else {
+        if (attempts < totalAttempts) {
+          log(`retrying ${++attempts}/${totalAttempts} ${loadbalancerType} at ${url} in resource group: ${rg}`);   
+          setTimeout(checkLoadBalancer, 5000);
         }
         else {
-          log(`cluster is NOT up and running in resource group: ${rg}`);
-          log(test, `clusterHealthResponse: status: ${status} error: ${error}`);
-          //bailout(error || new error(m));
+          log(`${assert(false)} cannot reach cluster in resource group: ${rg}`);
+          log(test, `loadbalancerResponse:  error: ${error}`);
           cb();
         }
-      });
-    }
-    else {
-      log(test, `loadbalancerResponse:  error: ${error}`);
-      //bailout(error || new error(m));
-      cb();
-    }
-  });
+      }
+    });
+  }
+
+  checkLoadBalancer();
 }
 
 var createKibanaRequestOptions = (t) => {
   var opts = {
     json: true,
+    timeout: 60000,
     auth: { username: "elastic", password: config.deployments.securityPassword },
     agentOptions: { checkServerIdentity: _.noop }
   };
@@ -569,17 +636,16 @@ var sanityCheckKibana = (test, url, cb) => {
      
       log(test, `kibanaResponse: ${JSON.stringify((body && body.status) ? body.status : {}, null, 2)}`);
 
-      // give Kibana some time to come up green by retrying
-      if (state !== "green" && attempts <= totalAttempts) {
+      // kibana may not have come up yet, or may be red straight after deployment while it retries the cluster,
+      // which may not have come up yet.
+      // give kibana some time to come up green, by retrying a number of times
+      if (state !== "green" && attempts < totalAttempts) {
         log(`retrying ${++attempts}/${totalAttempts} kibana at ${url} in resource group: ${rg}`);   
         setTimeout(checkStatus, 5000);
         return;
       }
 
       log(`${assert(state === "green")} kibana is running in resource group: ${rg} with state: ${state}`);
-
-      //no validation just yet, kibana is most likely red straight after deployment while it retries the cluster
-      //There is no guarantee kibana is not provisioned before the cluster is up
       if (state === "green") {
         log(`checking kibana monitoring endpoint for rg: ${rg}`);
 
@@ -647,7 +713,7 @@ var sanityCheckLogstash = (test, url, cb) => {
           cb();
         }
       }
-      else if (response && response.statusCode == 404 && attempts <= totalAttempts) {
+      else if (response && response.statusCode == 404 && attempts < totalAttempts) {
         log(`logstash event index not found. retry ${++attempts}/${totalAttempts} for resource group: ${rg}`);
         setTimeout(countRequest, 5000);
       }
@@ -702,7 +768,7 @@ gulp.task("test", gulp.series("clean", (cb) => {
 gulp.task("deploy", gulp.series("clean", (cb) => {
   bootstrap(() => {
     if (armTests.length) {
-      login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => deleteParametersFiles(cb))))));
+      login(() => validateTemplates(() => deployTemplates(() => deleteCurrentTestGroups(() => logout(() => logTests(() => deleteParametersFiles(cb)))))));
     } else {
       cb();
     }
