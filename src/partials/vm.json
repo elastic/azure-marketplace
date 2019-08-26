@@ -62,7 +62,12 @@
         }
       }
     },
-    "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]"
+    "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]",
+    "externalNsgs": [
+      {},
+      { "id": "[parameters('vm').externalNsg]" }
+    ],
+    "externalNsg": "[variables('externalNsgs')[if(empty(parameters('vm').externalNsg), 0, 1)]]"
   },
   "resources": [
     {
@@ -86,8 +91,9 @@
               },
               "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
             }
-          }
-        ]
+          }          
+        ],
+        "networkSecurityGroup": "[variables('externalNsg')]"
       }
     },
     {
