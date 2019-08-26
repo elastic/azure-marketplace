@@ -64,10 +64,26 @@
     },
     "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]",
     "externalNsgs": [
-      {},
-      { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').externalNsg)]" }
+      { },
+      { "networkSecurityGroup" : { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').externalNsg)]" } }
     ],
-    "externalNsg": "[variables('externalNsgs')[if(empty(parameters('vm').externalNsg), 0, 1)]]"
+    "externalNsg": "[variables('externalNsgs')[if(empty(parameters('vm').externalNsg), 0, 1)]]",
+    "nicProperties": {
+      "primary": true,
+      "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
+      "ipConfigurations": [
+        {
+          "name": "ipconfig1",
+          "properties": {
+            "privateIPAllocationMethod": "Dynamic",
+            "subnet": {
+              "id": "[parameters('vm').shared.subnetId]"
+            },
+            "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+          }
+        }
+      ]
+    }
   },
   "resources": [
     {
@@ -78,23 +94,7 @@
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "properties": {
-        "primary": true,
-        "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[parameters('vm').shared.subnetId]"
-              },
-              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
-            }
-          }
-        ],
-        "networkSecurityGroup": "[variables('externalNsg')]"
-      }
+      "properties": "[union(variables('nicProperties'), variables('externalNsg'))]"
     },
     {
       "apiVersion": "2019-03-01",

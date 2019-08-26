@@ -767,7 +767,8 @@ The following settings are applicablt to the external load balancer
 `loadBalancerExternalSku`::
 Choose between `Basic` and `Standard` load balancer SKUs for the external load balancer. Only
 relevant when `loadBalancerType` is `external`. When the `Standard` load balancer SKU is selected,
-the public IP address SKU attached to the external load balancer will also be `Standard`.
+the public IP address SKU attached to the external load balancer will also be `Standard`, and a
+Network Security Group will also be deployed to allow traffic to the VMs in the backend pool.
 {loadbalancers}[Check the Azure documentation on Standard Load Balancers] to determine which
 options is best suited for your needs. Default is `Basic`.
 
