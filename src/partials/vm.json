@@ -65,7 +65,7 @@
     "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]",
     "externalNsgs": [
       {},
-      { "id": "[parameters('vm').externalNsg]" }
+      { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').externalNsg)]" }
     ],
     "externalNsg": "[variables('externalNsgs')[if(empty(parameters('vm').externalNsg), 0, 1)]]"
   },
