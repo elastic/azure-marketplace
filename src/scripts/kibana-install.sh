@@ -393,7 +393,14 @@ install_apt_package()
   if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     log "[install_$PACKAGE] installing $PACKAGE"
     (apt-get -yq install $PACKAGE || (sleep 15; apt-get -yq install $PACKAGE))
+    local EXIT_CODE=$?
+    if [[ $EXIT_CODE -ne 0 ]]; then
+      "[install_$PACKAGE] installing $PACKAGE returned non-zero exit code: $EXIT_CODE"
+      exit $EXIT_CODE
+    fi
     log "[install_$PACKAGE] installed $PACKAGE"
+  else
+    log "[install_$PACKAGE] already installed $PACKAGE"
   fi
 }
 
