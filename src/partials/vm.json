@@ -91,7 +91,7 @@
               },
               "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
             }
-          }          
+          }
         ],
         "networkSecurityGroup": "[variables('externalNsg')]"
       }

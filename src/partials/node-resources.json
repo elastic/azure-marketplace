@@ -158,7 +158,8 @@
       "Standard_M64m",
       "Standard_M128",
       "Standard_M128m"
-    ]
+    ],
+    "externalNsgName": "[concat(parameters('commonVmSettings').namespacePrefix, 'external-lb-nsg')]"
   },
   "resources": [
     {
@@ -205,7 +206,7 @@
       "condition": "[equals(parameters('networkSettings').externalSku, 'Standard')]",
       "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "external-nsg",
+      "name": "[variables('externalNsgName')]",
       "location": "[parameters('commonVmSettings').location]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
@@ -215,7 +216,7 @@
           {
             "name": "External",
             "properties": {
-              "description": "Allows inbound traffic from standard external LB",
+              "description": "Allows inbound traffic from Standard External LB",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "9201",
@@ -235,7 +236,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-05-01",
       "dependsOn": [
-        "external-nsg"
+        "[variables('externalNsgName')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -262,7 +263,7 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmClientNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeClientNodes), 'Yes', 'No'), parameters('topologySettings').vmClientNodeAcceleratedNetworking)]",
-              "externalNsg": "[if(equals(parameters('networkSettings').externalSku, 'Standard'), 'external-nsg', '')]"
+              "externalNsg": "[if(equals(parameters('networkSettings').externalSku, 'Standard'), variables('externalNsgName'), '')]"
             }
           },
           "elasticTags": {
@@ -276,7 +277,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-05-01",
       "dependsOn": [
-        "external-nsg"
+        "[variables('externalNsgName')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -303,7 +304,7 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmDataNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeDataNodes), 'Yes', 'No'), parameters('topologySettings').vmDataNodeAcceleratedNetworking)]",
-              "externalNsg": "[if(and(equals(parameters('networkSettings').externalSku, 'Standard'), equals(parameters('topologySettings').vmClientNodeCount, 0)), 'external-nsg', '')]"
+              "externalNsg": "[if(and(equals(parameters('networkSettings').externalSku, 'Standard'), equals(parameters('topologySettings').vmClientNodeCount, 0)), variables('externalNsgName'), '')]"
             }
           },
           "storageSettings": {
