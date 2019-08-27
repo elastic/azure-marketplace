@@ -1,0 +1,23 @@
+{
+  "description": "1 data node / 1 client node cluster with Standard internal and external loadbalancers",
+	"isValid" : true,
+	"deploy" : true,
+	"why" : "",
+	"location" : "westeurope",
+	"parameters" : {
+      "vmHostNamePrefix":{"value":"p-"},
+      "loadBalancerType":{"value":"external"},
+      "loadBalancerInternalSku":{"value":"Standard"},
+      "loadBalancerExternalSku":{"value":"Standard"},
+      "kibana":{"value":"Yes"},
+      "vmSizeKibana":{"value":"Standard_DS1_v2"},
+      "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+      "vmDataNodeCount":{"value":1},
+      "vmDataDiskCount":{"value":0},
+      "vmDataDiskSize":{"value":"32GiB"},
+      "vmClientNodeCount": {"value":1},
+      "vmSizeClientNodes":{"value":"Standard_DS1_v2"},
+      "dataNodesAreMasterEligible":{"value":"Yes"},
+      "authenticationType":{"value":"password"}
+	}
+}
