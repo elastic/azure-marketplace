@@ -248,6 +248,7 @@ configure_kibana_yaml()
         log "[configure_kibana_yaml] Installed X-Pack plugin"
       fi
 
+      install_pwgen
       ENCRYPTION_KEY=$(pwgen 64 1)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
@@ -392,7 +393,14 @@ install_apt_package()
   if [ $(dpkg-query -W -f='${Status}' $PACKAGE 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     log "[install_$PACKAGE] installing $PACKAGE"
     (apt-get -yq install $PACKAGE || (sleep 15; apt-get -yq install $PACKAGE))
+    local EXIT_CODE=$?
+    if [[ $EXIT_CODE -ne 0 ]]; then
+      "[install_$PACKAGE] installing $PACKAGE returned non-zero exit code: $EXIT_CODE"
+      exit $EXIT_CODE
+    fi
     log "[install_$PACKAGE] installed $PACKAGE"
+  else
+    log "[install_$PACKAGE] already installed $PACKAGE"
   fi
 }
 
@@ -439,6 +447,11 @@ fi
 
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update))
+$EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+  log "[apt-get] failed updating apt-get. exit code: $EXIT_CODE"
+  exit $EXIT_CODE
+fi
 log "[apt-get] updated apt-get"
 
 install_kibana

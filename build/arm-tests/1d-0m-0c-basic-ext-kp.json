@@ -1,0 +1,25 @@
+{
+  "description": "1 data node cluster with basic license",
+  "condition" : {
+    "range": ">=6.3.0 <6.8.0",
+    "reason": "a basic license can only be applied with the default distribution from 6.3.0 onwards. 6.8.0 onwards requires TLS for Transport layer"
+  },
+  "isValid" : true,
+  "deploy" : true,
+  "why" : "",
+  "location" : "westeurope",
+  "parameters" : {
+    "loadBalancerType":{"value":"external"},
+    "esAdditionalYaml":{"value":""},
+    "xpackPlugins":{"value":"No"},
+    "kibana":{"value":"Yes"},
+    "vmSizeKibana":{"value":"Standard_DS1_v2"},
+    "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+    "vmDataNodeCount":{"value":1},
+    "vmDataDiskCount":{"value":1},
+    "vmDataDiskSize":{"value":"32GiB"},
+    "storageAccountType":{"value":"Default"},
+    "dataNodesAreMasterEligible":{"value":"Yes"},
+    "authenticationType":{"value":"password"}
+	}
+}
