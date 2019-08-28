@@ -1802,7 +1802,7 @@
       "vNetClusterSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
       "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress]",
       "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]",
-      "vNetNewAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefixes[0]]",
+      "vNetNewAddressPrefix": "[first(steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefixes)]",
       "vNetNewClusterSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",
       "vNetAppGatewaySubnetName": "es-gateway-subnet",
       "vNetNewAppGatewaySubnetAddressPrefix": "",
