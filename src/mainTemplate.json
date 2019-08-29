@@ -1255,7 +1255,7 @@
       "defaultValue": "10.0.0.128/28",
       "metadata": {
         "description": "The address space of the Application Gateway subnet. Required when creating a new Virtual Network and selecting Application Gateway for load balancing"
-      },
+      }
     },
     "appGatewayTier": {
       "type": "string",
