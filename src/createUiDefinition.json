@@ -1800,7 +1800,7 @@
       "vNetNewOrExisting": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.newOrExisting]",
       "vNetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
       "vNetClusterSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.name]",
-      "vNetLoadBalancerIp": "[concat(take(steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress, sub(length(steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress), 1)), string(add(int(last(steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress)),3)))]",
+      "vNetLoadBalancerIp": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.startAddress]",
       "vNetExistingResourceGroup": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]",
       "vNetNewAddressPrefix": "[first(steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefixes)]",
       "vNetNewClusterSubnetAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.subnet1.addressPrefix]",

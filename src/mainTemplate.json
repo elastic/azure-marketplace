@@ -1255,7 +1255,7 @@
       "defaultValue": "10.0.0.128/28",
       "metadata": {
         "description": "The address space of the Application Gateway subnet. Required when creating a new Virtual Network and selecting Application Gateway for load balancing"
-      }
+      },
     },
     "appGatewayTier": {
       "type": "string",
@@ -1933,6 +1933,16 @@
     ],
     "resolvedDataDiskCount": "[min(variables('dataDiskOptions'))]",
     "kibanaHttps": "[if(and(greater(length(parameters('kibanaKeyBlob')), 0), greater(length(parameters('kibanaCertBlob')), 0)), 'Yes', 'No')]",
+    "newSubNetStartAddress": "[if(equals('new', parameters('vNetNewOrExisting')), first(split(parameters('vNetNewClusterSubnetAddressPrefix'), '/')), '')]",
+    "newSubNetStartAddressLastOctet": "[if(equals('new', parameters('vNetNewOrExisting')), int(last(split(variables('newSubNetStartAddress'), '.'))), 0)]",
+    "newSubNetStartAddressFirstOctets": "[if(equals('new', parameters('vNetNewOrExisting')), substring(variables('newSubNetStartAddress'), 0, lastIndexOf(variables('newSubNetStartAddress'), '.')), '')]",
+    "newSubNetReservedStartAddresses": [
+      "[variables('newSubNetStartAddress')]",
+      "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 1)))]",
+      "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 2)))]"
+    ],
+    "newSubNetFirstAvailableAddress": "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 3)))]",
+    "vNetLoadBalancerIp": "[if(equals('existing', parameters('vNetNewOrExisting')), parameters('vNetLoadBalancerIp'), if(contains(variables('newSubNetReservedStartAddresses'), parameters('vNetLoadBalancerIp')), variables('newSubNetFirstAvailableAddress'), parameters('vNetLoadBalancerIp')))]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
       "vmDataNodeCount": "[parameters('vmDataNodeCount')]",
@@ -1943,7 +1953,7 @@
       "vmClientNodeCount": "[parameters('vmClientNodeCount')]",
       "vmSizeClientNodes": "[parameters('vmSizeClientNodes')]",
       "vmClientNodeAcceleratedNetworking": "[parameters('vmClientNodeAcceleratedNetworking')]",
-      "vNetLoadBalancerIp": "[parameters('vNetLoadBalancerIp')]",
+      "vNetLoadBalancerIp": "[variables('vNetLoadBalancerIp')]",
       "vmSizeMasterNodes": "[parameters('vmSizeMasterNodes')]",
       "vmMasterNodeAcceleratedNetworking": "[parameters('vmMasterNodeAcceleratedNetworking')]",
       "vmSizeKibana": "[parameters('vmSizeKibana')]",
@@ -1982,7 +1992,7 @@
       "subnet": {
         "name": "[parameters('vNetClusterSubnetName')]",
         "addressPrefix": "[parameters('vNetNewClusterSubnetAddressPrefix')]",
-        "loadbalancerIp": "[parameters('vNetLoadBalancerIp')]"
+        "loadbalancerIp": "[variables('vNetLoadBalancerIp')]"
       },
       "applicationGatewaySubnet": {
         "name": "[parameters('vNetAppGatewaySubnetName')]",
