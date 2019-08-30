@@ -1939,9 +1939,10 @@
     "newSubNetReservedStartAddresses": [
       "[variables('newSubNetStartAddress')]",
       "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 1)))]",
-      "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 2)))]"
+      "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 2)))]",
+      "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 3)))]"
     ],
-    "newSubNetFirstAvailableAddress": "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 3)))]",
+    "newSubNetFirstAvailableAddress": "[concat(variables('newSubNetStartAddressFirstOctets'), '.', string(add(variables('newSubNetStartAddressLastOctet'), 4)))]",
     "vNetLoadBalancerIp": "[if(equals('existing', parameters('vNetNewOrExisting')), parameters('vNetLoadBalancerIp'), if(contains(variables('newSubNetReservedStartAddresses'), parameters('vNetLoadBalancerIp')), variables('newSubNetFirstAvailableAddress'), parameters('vNetLoadBalancerIp')))]",
     "topologySettings": {
       "dataNodesAreMasterEligible": "[parameters('dataNodesAreMasterEligible')]",
