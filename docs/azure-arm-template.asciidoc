@@ -2,7 +2,7 @@
 :portal: https://portal.azure.com
 :github: https://github.com/elastic/azure-marketplace
 :current: 7.3
-:version: 7.3.0
+:version: 7.3.1
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
