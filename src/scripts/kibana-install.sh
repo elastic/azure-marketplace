@@ -170,14 +170,14 @@ install_kibana()
     log "[install_kibana] download Kibana $KIBANA_VERSION"
     wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_kibana] error downloading Kibana $KIBANA_VERSION sha$ALGORITHM checksum"
         exit $EXIT_CODE
     fi
     log "[install_kibana] download location $DOWNLOAD_URL"
     wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
     EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_kibana] error downloading Kibana $KIBANA_VERSION"
         exit $EXIT_CODE
     fi
@@ -188,7 +188,7 @@ install_kibana()
 
     shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_kibana] error validating checksum for Kibana $KIBANA_VERSION"
         exit $EXIT_CODE
     fi
@@ -380,7 +380,7 @@ configure_kibana_yaml()
         LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $KIBANA_CONF; exit ${PIPESTATUS[0]})
         EXIT_CODE=$?
         log "[configure_kibana_yaml] ran yaml lint (exit code $EXIT_CODE) $LINT"
-        if [ $EXIT_CODE -ne 0 ]; then
+        if [[ $EXIT_CODE -ne 0 ]]; then
             log "[configure_kibana_yaml] errors in yaml configuration. exiting"
             exit 11
         fi
@@ -447,8 +447,8 @@ fi
 
 log "[apt-get] updating apt-get"
 (apt-get -y update || (sleep 15; apt-get -y update))
-$EXIT_CODE=$?
-if [ $EXIT_CODE -ne 0 ]; then
+EXIT_CODE=$?
+if [[ $EXIT_CODE -ne 0 ]]; then
   log "[apt-get] failed updating apt-get. exit code: $EXIT_CODE"
   exit $EXIT_CODE
 fi
