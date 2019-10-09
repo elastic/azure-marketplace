@@ -635,7 +635,7 @@ where `<name>` refers to the resource group you just created.
   ```powershell
   $clusterParameters = @{
       "_artifactsLocation" = "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/"
-      "esVersion" = "7.3.1"
+      "esVersion" = "7.4.0"
       "esClusterName" = "elasticsearch"
       "loadBalancerType" = "internal"
       "vmDataDiskCount" = 1
@@ -731,11 +731,11 @@ passphrase can be passed with `esTransportCertPassword` to encrypt the generated
 on each node.
 
 One way to generate a PKCS#12 archive containing a CA certificate and key is using 
-[Elastic's certutil command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
+[Elastic's `elasticsearch-certutil` command](https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html).
 The simplest command to generate a CA certificate is
 
 ```sh
-./certutil ca
+./elasticsearch-certutil ca
 ```
 
 and follow the instructions.

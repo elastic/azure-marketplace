@@ -174,7 +174,7 @@ install_logstash()
   log "[install_logstash] download location - $DOWNLOAD_URL"
   wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
   EXIT_CODE=$?
-  if [ $EXIT_CODE -ne 0 ]; then
+  if [[ $EXIT_CODE -ne 0 ]]; then
       log "[install_logstash] error downloading Logstash $LOGSTASH_VERSION"
       exit $EXIT_CODE
   fi
@@ -185,7 +185,7 @@ install_logstash()
 
   shasum -a $ALGORITHM -c $SHASUM
   EXIT_CODE=$?
-  if [ $EXIT_CODE -ne 0 ]; then
+  if [[ $EXIT_CODE -ne 0 ]]; then
       log "[install_logstash] error validating checksum for Logstash $LOGSTASH_VERSION"
       exit $EXIT_CODE
   fi
@@ -423,7 +423,7 @@ configure_logstash_yaml()
         LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $LOGSTASH_CONF; exit ${PIPESTATUS[0]})
         EXIT_CODE=$?
         log "[configure_logstash] ran yaml lint (exit code $EXIT_CODE) $LINT"
-        if [ $EXIT_CODE -ne 0 ]; then
+        if [[ $EXIT_CODE -ne 0 ]]; then
             log "[configure_logstash] errors in yaml configuration. exiting"
             exit 11
         fi

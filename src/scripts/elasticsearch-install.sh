@@ -318,7 +318,7 @@ format_data_disks()
         # using the -s paramater causing disks under /datadisks/* to be raid0'ed
         bash vm-disk-utils-0.1.sh -s
         EXIT_CODE=$?
-        if [ $EXIT_CODE -ne 0 ]; then
+        if [[ $EXIT_CODE -ne 0 ]]; then
           log "[format_data_disks] returned non-zero exit code: $EXIT_CODE"
           exit $EXIT_CODE
         fi
@@ -395,14 +395,14 @@ install_es()
     log "[install_es] installing Elasticsearch $ES_VERSION"
     wget --retry-connrefused --waitretry=1 -q "$SHASUM_URL" -O $SHASUM
     local EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_es] error downloading Elasticsearch $ES_VERSION sha$ALGORITHM checksum"
         exit $EXIT_CODE
     fi
     log "[install_es] download location - $DOWNLOAD_URL"
     wget --retry-connrefused --waitretry=1 -q "$DOWNLOAD_URL" -O $PACKAGE
     EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_es] error downloading Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
@@ -413,7 +413,7 @@ install_es()
 
     shasum -a $ALGORITHM -c $SHASUM
     EXIT_CODE=$?
-    if [ $EXIT_CODE -ne 0 ]; then
+    if [[ $EXIT_CODE -ne 0 ]]; then
         log "[install_es] error validating checksum for Elasticsearch $ES_VERSION"
         exit $EXIT_CODE
     fi
@@ -1097,7 +1097,7 @@ configure_elasticsearch_yaml()
         LINT=$(yamllint -d "{extends: relaxed, rules: {key-duplicates: {level: error}}}" $ES_CONF; exit ${PIPESTATUS[0]})
         EXIT_CODE=$?
         log "[configure_elasticsearch_yaml] ran yaml lint (exit code $EXIT_CODE) $LINT"
-        if [ $EXIT_CODE -ne 0 ]; then
+        if [[ $EXIT_CODE -ne 0 ]]; then
             log "[configure_elasticsearch_yaml] errors in yaml configuration. exiting"
             exit 11
         fi
