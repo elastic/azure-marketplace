@@ -155,6 +155,12 @@ log "Kibana will talk to Elasticsearch over $ELASTICSEARCH_URL"
 # Installation steps as functions
 #########################
 
+random_password()
+{ 
+  < /dev/urandom tr -dc '!@#$%_A-Z-a-z-0-9' | head -c${1:-64}
+  echo
+}
+
 install_kibana()
 {
     local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
@@ -234,8 +240,7 @@ configure_kibana_yaml()
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
       echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
 
-      install_pwgen
-      ENCRYPTION_KEY=$(pwgen 64 1)
+      ENCRYPTION_KEY=$(random_password)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Security encryption key generated"
     fi
@@ -248,8 +253,7 @@ configure_kibana_yaml()
         log "[configure_kibana_yaml] Installed X-Pack plugin"
       fi
 
-      install_pwgen
-      ENCRYPTION_KEY=$(pwgen 64 1)
+      ENCRYPTION_KEY=$(random_password)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"
     fi
@@ -402,11 +406,6 @@ install_apt_package()
   else
     log "[install_$PACKAGE] already installed $PACKAGE"
   fi
-}
-
-install_pwgen()
-{
-    install_apt_package pwgen
 }
 
 install_yamllint()
