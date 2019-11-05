@@ -405,7 +405,7 @@
     },
     "vmSizeLogstash": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D1_v2",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -612,7 +612,7 @@
     },
     "vmSizeDataNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D1_v2",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -815,7 +815,7 @@
     },
     "vmSizeMasterNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D1_v2",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -968,7 +968,7 @@
     },
     "vmSizeClientNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D1_v2",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
