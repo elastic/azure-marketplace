@@ -670,16 +670,16 @@ the `_artifactsLocation` parameter of the template to point to a specific tagged
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`7.0.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.0.0)
+For example, to target the [`7.4.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.4.0)
 
 ```powershell
-$templateVersion = "7.0.0"
+$templateVersion = "7.4.0"
 $_artifactsLocation = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src/"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
   "_artifactsLocation" = $_artifactsLocation
-  "esVersion" = "7.0.0"
+  "esVersion" = "7.4.0"
   "adminUsername" = "russ"
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "Password1234"
