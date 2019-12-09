@@ -165,10 +165,6 @@ install_kibana()
 {
     local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
     local ALGORITHM="512"
-    if dpkg --compare-versions "$KIBANA_VERSION" "lt" "5.6.2"; then
-      ALGORITHM="1"
-    fi
-
     local SHASUM="$PACKAGE.sha$ALGORITHM"
     local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/kibana/$PACKAGE?ultron=msft&gambit=azure"
     local SHASUM_URL="https://artifacts.elastic.co/downloads/kibana/$SHASUM?ultron=msft&gambit=azure"
@@ -247,12 +243,6 @@ configure_kibana_yaml()
 
     # install x-pack
     if [ ${INSTALL_XPACK} -ne 0 ]; then
-      if dpkg --compare-versions "$KIBANA_VERSION" "lt" "6.3.0"; then
-        log "[configure_kibana_yaml] Installing X-Pack plugin"
-        /usr/share/kibana/bin/kibana-plugin install x-pack
-        log "[configure_kibana_yaml] Installed X-Pack plugin"
-      fi
-
       ENCRYPTION_KEY=$(random_password)
       echo "xpack.reporting.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
       log "[configure_kibana_yaml] X-Pack Reporting encryption key generated"

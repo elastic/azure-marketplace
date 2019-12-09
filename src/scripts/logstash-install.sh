@@ -156,10 +156,6 @@ install_logstash()
 {
   local PACKAGE="logstash-$LOGSTASH_VERSION.deb"
   local ALGORITHM="512"
-  if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "5.6.2"; then
-    ALGORITHM="1"
-  fi
-
   local SHASUM="$PACKAGE.sha$ALGORITHM"
   local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/logstash/$PACKAGE?ultron=msft&gambit=azure"
   local SHASUM_URL="https://artifacts.elastic.co/downloads/logstash/$SHASUM?ultron=msft&gambit=azure"
@@ -197,7 +193,7 @@ install_logstash()
 ## Security
 ##----------------------------------
 
-add_keystore_or_env_var()
+add_keystore()
 {
   local KEY=$1
   local VALUE="$2"
@@ -209,30 +205,21 @@ add_keystore_or_env_var()
     chmod 600 $SYS_CONFIG/logstash
   fi
 
-  if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
-    # create keystore if it doesn't exist
-    if [[ ! -f /etc/logstash/logstash.keystore ]]; then
-      set +o history
-      export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
-      echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG/logstash
-      set -o history
-
-      log "[add_keystore_or_env_var] creating logstash keystore"
-      /usr/share/logstash/bin/logstash-keystore create --path.settings /etc/logstash
-      log "[add_keystore_or_env_var] created logstash keystore"
-    fi
-
-    log "[add_keystore_or_env_var] adding $KEY to logstash keystore"
-    echo "$VALUE" | /usr/share/logstash/bin/logstash-keystore add $KEY --path.settings /etc/logstash
-    log "[add_keystore_or_env_var] added $KEY logstash keystore"
-  else
-    log "[add_keystore_or_env_var] adding environment variable for $KEY"
+  # create keystore if it doesn't exist
+  if [[ ! -f /etc/logstash/logstash.keystore ]]; then
     set +o history
-    export $KEY="$VALUE"
-    echo "$KEY=\"$VALUE\"" >> $SYS_CONFIG/logstash
+    export LOGSTASH_KEYSTORE_PASS="$LOGSTASH_KEYSTORE_PWD"
+    echo "LOGSTASH_KEYSTORE_PASS=\"$LOGSTASH_KEYSTORE_PWD\"" >> $SYS_CONFIG/logstash
     set -o history
-    log "[add_keystore_or_env_var] added environment variable for $KEY"
+
+    log "[add_keystore] creating logstash keystore"
+    /usr/share/logstash/bin/logstash-keystore create --path.settings /etc/logstash
+    log "[add_keystore] created logstash keystore"
   fi
+
+  log "[add_keystore] adding $KEY to logstash keystore"
+  echo "$VALUE" | /usr/share/logstash/bin/logstash-keystore add $KEY --path.settings /etc/logstash
+  log "[add_keystore] added $KEY logstash keystore"
 }
 
 configure_logstash_yaml()
@@ -240,7 +227,6 @@ configure_logstash_yaml()
     local LOGSTASH_CONF=/etc/logstash/logstash.yml
     local SSL_PATH=/etc/logstash/ssl
     local LOG_PATH=/var/log/logstash
-    local XPACK_BUNDLED=$(dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.3.0"; echo $?)
 
     # backup the current config
     if [[ -f $LOGSTASH_CONF ]]; then
@@ -266,19 +252,15 @@ configure_logstash_yaml()
     fi
 
     # allow values to be referenced in *.conf files
-    add_keystore_or_env_var 'LOGSTASH_SYSTEM_PASSWORD' "$USER_LOGSTASH_PWD"
-    add_keystore_or_env_var 'ELASTICSEARCH_URL' "$ELASTICSEARCH_URL"
+    add_keystore 'LOGSTASH_SYSTEM_PASSWORD' "$USER_LOGSTASH_PWD"
+    add_keystore 'ELASTICSEARCH_URL' "$ELASTICSEARCH_URL"
 
     # put data on the OS disk in a writable location
     # TODO: Consider allowing attached managed disk in future
     echo "path.data: /var/lib/logstash" >> $LOGSTASH_CONF
 
     # explicitly set the default conf file dir
-    if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.2.0"; then
-      echo "path.config: /etc/logstash/conf.d/*.conf" >> $LOGSTASH_CONF
-    else
-      echo "path.config: /etc/logstash/conf.d" >> $LOGSTASH_CONF
-    fi
+    echo "path.config: /etc/logstash/conf.d/*.conf" >> $LOGSTASH_CONF
 
     # TODO: make persistent queues configurable?
     # echo "queue.type: persisted" >> $LOGSTASH_CONF
@@ -291,12 +273,6 @@ configure_logstash_yaml()
 
     # install x-pack
     if [[ $INSTALL_XPACK -ne 0 ]]; then
-      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "6.3.0"; then
-        log "[configure_logstash_yaml] installing x-pack plugin"
-        /usr/share/logstash/bin/logstash-plugin install x-pack
-        log "[configure_logstash_yaml] installed x-pack plugin"
-      fi
-
       if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
         echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
       else
@@ -306,7 +282,7 @@ configure_logstash_yaml()
       # assumes Security is enabled, so configure monitoring credentials
       echo "xpack.monitoring.elasticsearch.username: logstash_system" >> $LOGSTASH_CONF
       echo 'xpack.monitoring.elasticsearch.password: "${LOGSTASH_SYSTEM_PASSWORD}"' >> $LOGSTASH_CONF
-    elif [[ $XPACK_BUNDLED -eq 0 ]]; then
+    else
       # configure monitoring for basic
       if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
         echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
@@ -342,7 +318,7 @@ configure_logstash_yaml()
             log "[configure_logstash_yaml] No CA cert extracted from HTTP cert. Cannot make ELASTICSEARCH_CACERT available to conf files"
         else
             log "[configure_logstash_yaml] CA cert extracted from HTTP PKCS#12 archive. Make ELASTICSEARCH_CACERT available to conf files"
-            add_keystore_or_env_var "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
+            add_keystore "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
 
             # logstash performs hostname verification for monitoring
             # which will not work for a HTTP cert provided by the user, where logstash communicates through internal loadbalancer.
@@ -371,7 +347,7 @@ configure_logstash_yaml()
             log "[configure_logstash_yaml] No CA cert extracted from HTTP CA PKCS#12 archive. Cannot make ELASTICSEARCH_CACERT available to conf files"
         else
             log "[configure_logstash_yaml] CA cert extracted from HTTP CA PKCS#12 archive. Make ELASTICSEARCH_CACERT available to conf files"
-            add_keystore_or_env_var "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
+            add_keystore "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
 
             # HTTP certs created from a HTTP CA provided by the user will include the
             # IP address of the internal loadbalancer, so hostname verification will pass.
@@ -389,9 +365,7 @@ configure_logstash_yaml()
       log "[configure_logstash_yaml] X-Pack monitoring for Logstash set to $MONITORING"
     fi
 
-    if [[ $XPACK_BUNDLED -eq 0 || $INSTALL_XPACK -ne 0 ]]; then
-      echo "xpack.monitoring.enabled: $MONITORING" >> $LOGSTASH_CONF
-    fi
+    echo "xpack.monitoring.enabled: $MONITORING" >> $LOGSTASH_CONF
 
     # TODO: Configure Centralized Pipeline Management?
     # https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html
