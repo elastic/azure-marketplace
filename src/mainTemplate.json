@@ -223,26 +223,14 @@
     },
     "vmSizeKibana": {
       "type": "string",
-      "defaultValue": "Standard_A2",
+      "defaultValue": "Standard_A2_v2",
       "allowedValues": [
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A9",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14",
+        "Standard_A2_v2",
+        "Standard_A4_v2",
+        "Standard_A8_v2",
+        "Standard_A2m_v2",
+        "Standard_A4m_v2",
+        "Standard_A8m_v2",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -253,20 +241,18 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2as_v4",
+        "Standard_D4as_v4",
+        "Standard_D8as_v4",
+        "Standard_D16as_v4",
+        "Standard_D32as_v4",
         "Standard_D2_v3",
         "Standard_D4_v3",
         "Standard_D8_v3",
         "Standard_D16_v3",
         "Standard_D32_v3",
+        "Standard_D48_v3",
         "Standard_D64_v3",
-        "Standard_DS1",
-        "Standard_DS2",
-        "Standard_DS3",
-        "Standard_DS4",
-        "Standard_DS11",
-        "Standard_DS12",
-        "Standard_DS13",
-        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
@@ -282,6 +268,7 @@
         "Standard_D8s_v3",
         "Standard_D16s_v3",
         "Standard_D32s_v3",
+        "Standard_D48s_v3",
         "Standard_D64s_v3",
         "Standard_E2_v3",
         "Standard_E4_v3",
@@ -297,6 +284,12 @@
         "Standard_E32s_v3",
         "Standard_E64s_v3",
         "Standard_E64is_v3",
+        "Standard_E2as_v4",
+        "Standard_E4as_v4",
+        "Standard_E8as_v4",
+        "Standard_E16as_v4",
+        "Standard_E20as_v4",
+        "Standard_E32as_v4",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -331,6 +324,7 @@
         "Standard_L8s_v2",
         "Standard_L16s_v2",
         "Standard_L32s_v2",
+        "Standard_L48s_v2",
         "Standard_L64s_v2",
         "Standard_L80s_v2",
         "Standard_M8ms",
@@ -405,28 +399,15 @@
     },
     "vmSizeLogstash": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_DS1_v2",
       "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A9",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14",
+        "Standard_A1_v2",
+        "Standard_A2_v2",
+        "Standard_A4_v2",
+        "Standard_A8_v2",
+        "Standard_A2m_v2",
+        "Standard_A4m_v2",
+        "Standard_A8m_v2",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -437,20 +418,18 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2as_v4",
+        "Standard_D4as_v4",
+        "Standard_D8as_v4",
+        "Standard_D16as_v4",
+        "Standard_D32as_v4",
         "Standard_D2_v3",
         "Standard_D4_v3",
         "Standard_D8_v3",
         "Standard_D16_v3",
         "Standard_D32_v3",
+        "Standard_D48_v3",
         "Standard_D64_v3",
-        "Standard_DS1",
-        "Standard_DS2",
-        "Standard_DS3",
-        "Standard_DS4",
-        "Standard_DS11",
-        "Standard_DS12",
-        "Standard_DS13",
-        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
@@ -466,6 +445,7 @@
         "Standard_D8s_v3",
         "Standard_D16s_v3",
         "Standard_D32s_v3",
+        "Standard_D48s_v3",
         "Standard_D64s_v3",
         "Standard_E2_v3",
         "Standard_E4_v3",
@@ -481,6 +461,12 @@
         "Standard_E32s_v3",
         "Standard_E64s_v3",
         "Standard_E64is_v3",
+        "Standard_E2as_v4",
+        "Standard_E4as_v4",
+        "Standard_E8as_v4",
+        "Standard_E16as_v4",
+        "Standard_E20as_v4",
+        "Standard_E32as_v4",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -515,6 +501,7 @@
         "Standard_L8s_v2",
         "Standard_L16s_v2",
         "Standard_L32s_v2",
+        "Standard_L48s_v2",
         "Standard_L64s_v2",
         "Standard_L80s_v2",
         "Standard_M8ms",
@@ -612,28 +599,15 @@
     },
     "vmSizeDataNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_DS1_v2",
       "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A9",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14",
+        "Standard_A1_v2",
+        "Standard_A2_v2",
+        "Standard_A4_v2",
+        "Standard_A8_v2",
+        "Standard_A2m_v2",
+        "Standard_A4m_v2",
+        "Standard_A8m_v2",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -644,20 +618,18 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2as_v4",
+        "Standard_D4as_v4",
+        "Standard_D8as_v4",
+        "Standard_D16as_v4",
+        "Standard_D32as_v4",
         "Standard_D2_v3",
         "Standard_D4_v3",
         "Standard_D8_v3",
         "Standard_D16_v3",
         "Standard_D32_v3",
+        "Standard_D48_v3",
         "Standard_D64_v3",
-        "Standard_DS1",
-        "Standard_DS2",
-        "Standard_DS3",
-        "Standard_DS4",
-        "Standard_DS11",
-        "Standard_DS12",
-        "Standard_DS13",
-        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
@@ -673,6 +645,7 @@
         "Standard_D8s_v3",
         "Standard_D16s_v3",
         "Standard_D32s_v3",
+        "Standard_D48s_v3",
         "Standard_D64s_v3",
         "Standard_E2_v3",
         "Standard_E4_v3",
@@ -688,6 +661,12 @@
         "Standard_E32s_v3",
         "Standard_E64s_v3",
         "Standard_E64is_v3",
+        "Standard_E2as_v4",
+        "Standard_E4as_v4",
+        "Standard_E8as_v4",
+        "Standard_E16as_v4",
+        "Standard_E20as_v4",
+        "Standard_E32as_v4",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -722,6 +701,7 @@
         "Standard_L8s_v2",
         "Standard_L16s_v2",
         "Standard_L32s_v2",
+        "Standard_L48s_v2",
         "Standard_L64s_v2",
         "Standard_L80s_v2",
         "Standard_M8ms",
@@ -815,28 +795,15 @@
     },
     "vmSizeMasterNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_DS1_v2",
       "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A9",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14",
+        "Standard_A1_v2",
+        "Standard_A2_v2",
+        "Standard_A4_v2",
+        "Standard_A8_v2",
+        "Standard_A2m_v2",
+        "Standard_A4m_v2",
+        "Standard_A8m_v2",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -847,20 +814,18 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2as_v4",
+        "Standard_D4as_v4",
+        "Standard_D8as_v4",
+        "Standard_D16as_v4",
+        "Standard_D32as_v4",
         "Standard_D2_v3",
         "Standard_D4_v3",
         "Standard_D8_v3",
         "Standard_D16_v3",
         "Standard_D32_v3",
+        "Standard_D48_v3",
         "Standard_D64_v3",
-        "Standard_DS1",
-        "Standard_DS2",
-        "Standard_DS3",
-        "Standard_DS4",
-        "Standard_DS11",
-        "Standard_DS12",
-        "Standard_DS13",
-        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
@@ -876,6 +841,7 @@
         "Standard_D8s_v3",
         "Standard_D16s_v3",
         "Standard_D32s_v3",
+        "Standard_D48s_v3",
         "Standard_D64s_v3",
         "Standard_E2_v3",
         "Standard_E4_v3",
@@ -891,6 +857,12 @@
         "Standard_E32s_v3",
         "Standard_E64s_v3",
         "Standard_E64is_v3",
+        "Standard_E2as_v4",
+        "Standard_E4as_v4",
+        "Standard_E8as_v4",
+        "Standard_E16as_v4",
+        "Standard_E20as_v4",
+        "Standard_E32as_v4",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -925,6 +897,7 @@
         "Standard_L8s_v2",
         "Standard_L16s_v2",
         "Standard_L32s_v2",
+        "Standard_L48s_v2",
         "Standard_L64s_v2",
         "Standard_L80s_v2",
         "Standard_M8ms",
@@ -968,28 +941,15 @@
     },
     "vmSizeClientNodes": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_DS1_v2",
       "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7",
-        "Standard_A8",
-        "Standard_A9",
-        "Standard_A10",
-        "Standard_A11",
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14",
+        "Standard_A1_v2",
+        "Standard_A2_v2",
+        "Standard_A4_v2",
+        "Standard_A8_v2",
+        "Standard_A2m_v2",
+        "Standard_A4m_v2",
+        "Standard_A8m_v2",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -1000,20 +960,18 @@
         "Standard_D13_v2",
         "Standard_D14_v2",
         "Standard_D15_v2",
+        "Standard_D2as_v4",
+        "Standard_D4as_v4",
+        "Standard_D8as_v4",
+        "Standard_D16as_v4",
+        "Standard_D32as_v4",
         "Standard_D2_v3",
         "Standard_D4_v3",
         "Standard_D8_v3",
         "Standard_D16_v3",
         "Standard_D32_v3",
+        "Standard_D48_v3",
         "Standard_D64_v3",
-        "Standard_DS1",
-        "Standard_DS2",
-        "Standard_DS3",
-        "Standard_DS4",
-        "Standard_DS11",
-        "Standard_DS12",
-        "Standard_DS13",
-        "Standard_DS14",
         "Standard_DS1_v2",
         "Standard_DS2_v2",
         "Standard_DS3_v2",
@@ -1029,6 +987,7 @@
         "Standard_D8s_v3",
         "Standard_D16s_v3",
         "Standard_D32s_v3",
+        "Standard_D48s_v3",
         "Standard_D64s_v3",
         "Standard_E2_v3",
         "Standard_E4_v3",
@@ -1044,6 +1003,12 @@
         "Standard_E32s_v3",
         "Standard_E64s_v3",
         "Standard_E64is_v3",
+        "Standard_E2as_v4",
+        "Standard_E4as_v4",
+        "Standard_E8as_v4",
+        "Standard_E16as_v4",
+        "Standard_E20as_v4",
+        "Standard_E32as_v4",
         "Standard_F1",
         "Standard_F2",
         "Standard_F4",
@@ -1078,6 +1043,7 @@
         "Standard_L8s_v2",
         "Standard_L16s_v2",
         "Standard_L32s_v2",
+        "Standard_L48s_v2",
         "Standard_L64s_v2",
         "Standard_L80s_v2",
         "Standard_M8ms",
@@ -1381,84 +1347,32 @@
       "existing": "[parameters('vNetExistingResourceGroup')]"
     },
     "dataSkuSettings": {
-      "Standard_A0": {
-        "dataDisks": 1,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_A1": {
+      "Standard_A1_v2": {
         "dataDisks": 2,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A2": {
+      "Standard_A2_v2": {
         "dataDisks": 4,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A3": {
+      "Standard_A4_v2": {
         "dataDisks": 8,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A4": {
+      "Standard_A8_v2": {
         "dataDisks": 16,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A5": {
+      "Standard_A2m_v2": {
         "dataDisks": 4,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A6": {
+      "Standard_A4m_v2": {
         "dataDisks": 8,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_A7": {
+      "Standard_A8m_v2": {
         "dataDisks": 16,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_A8": {
-        "dataDisks": 32,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_A9": {
-        "dataDisks": 64,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_A10": {
-        "dataDisks": 32,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_A11": {
-        "dataDisks": 64,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D1": {
-        "dataDisks": 4,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D2": {
-        "dataDisks": 8,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D3": {
-        "dataDisks": 16,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D4": {
-        "dataDisks": 32,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D11": {
-        "dataDisks": 8,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D12": {
-        "dataDisks": 16,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D13": {
-        "dataDisks": 32,
-        "storageAccountType": "Standard_LRS"
-      },
-      "Standard_D14": {
-        "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
       },
       "Standard_D1_v2": {
@@ -1501,6 +1415,26 @@
         "dataDisks": 64,
         "storageAccountType": "Standard_LRS"
       },
+      "Standard_D2as_v4": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D4as_v4": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D8as_v4": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D16as_v4": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_D32as_v4": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_D2_v3": {
         "dataDisks": 4,
         "storageAccountType": "Standard_LRS"
@@ -1521,41 +1455,13 @@
         "dataDisks": 32,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_D64_v3": {
+      "Standard_D48_v3": {
         "dataDisks": 32,
         "storageAccountType": "Standard_LRS"
       },
-      "Standard_DS1": {
-        "dataDisks": 4,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS2": {
-        "dataDisks": 8,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS3": {
-        "dataDisks": 16,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS4": {
+      "Standard_D64_v3": {
         "dataDisks": 32,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS11": {
-        "dataDisks": 8,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS12": {
-        "dataDisks": 16,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS13": {
-        "dataDisks": 32,
-        "storageAccountType": "Premium_LRS"
-      },
-      "Standard_DS14": {
-        "dataDisks": 64,
-        "storageAccountType": "Premium_LRS"
+        "storageAccountType": "Standard_LRS"
       },
       "Standard_DS1_v2": {
         "dataDisks": 4,
@@ -1617,6 +1523,10 @@
         "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
       },
+      "Standard_D48s_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
       "Standard_D64s_v3": {
         "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
@@ -1674,6 +1584,30 @@
         "storageAccountType": "Premium_LRS"
       },
       "Standard_E64is_v3": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E2as_v4": {
+        "dataDisks": 4,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E4as_v4": {
+        "dataDisks": 8,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E8as_v4": {
+        "dataDisks": 16,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E16as_v4": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E20as_v4": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_E32as_v4": {
         "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
       },
@@ -1810,6 +1744,10 @@
         "storageAccountType": "Premium_LRS"
       },
       "Standard_L32s_v2": {
+        "dataDisks": 32,
+        "storageAccountType": "Premium_LRS"
+      },
+      "Standard_L48s_v2": {
         "dataDisks": 32,
         "storageAccountType": "Premium_LRS"
       },

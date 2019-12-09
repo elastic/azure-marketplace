@@ -6,14 +6,13 @@ What resources does the Marketplace deploy?::
 The default configuration of the Marketplace deploys the following resources:
 +
 * 1 virtual network
-* 3 dedicated master node Standard D1 SKU VMs running Ubuntu 16.04 with OS disks
+* 3 dedicated master node Standard_DS1_v2 SKU VMs running Ubuntu 16.04 with OS disks
 and network interfaces
 * 1 availability set for master nodes
-* 3 data node Standard DS1 v2 SKU VMs running Ubuntu 16.04 with OS disks, network
-interfaces and one
-1TiB managed disk per data node
+* 3 data node Standard_DS1_v2 SKU VMs running Ubuntu 16.04 with OS disks, network
+interfaces and one 1TiB managed disk per data node
 * 1 availability set for data nodes
-* 1 Kibana Standard D1 SKU VM running Ubuntu 16.04 with OS disk, network interface,
+* 1 Kibana Standard_A2_v2 SKU VM running Ubuntu 16.04 with OS disk, network interface,
 network security group and public IP address
 * 1 internal load balancer
 +
@@ -33,13 +32,13 @@ The cost of deploying from the Marketplace will vary depending on the cluster
 topology that you decide to deploy and the VM SKUs that you choose for each of the
 VMs within the cluster. The cost will also vary depending on which Azure region
 you decide to deploy to. Because there are a number of variables involved, a cost
-needs to be calculated on a case-by-case basis. At a minimum, you will pay for
+needs to be calculated on a case-by-case basis. **At a minimum**, you will pay for
 all Azure resources deployed by the template. The
 {azurecalculator}[Azure pricing calculator] can help in providing a good estimate
 for this. In addition to the cost of Azure resources,
 {subscriptions}[Elastic Stack Gold, Platinum and Enterprise features] require a
 license to be purchased, the cost of which is dependent on a number of factors.
-Please get in touch with us to discuss.
+{contact}[Please get in touch with us to discuss].
 
 How do I connect to Elasticsearch?::
 
@@ -83,3 +82,12 @@ The Marketplace solution can also deploy multiple instances of Logstash, althoug
 To also deploy instances of Logstash, select `Yes` for `Install Logstash?` in the
 `Kibana & Logstash` section. You can also deploy additional plugins and provide a
 Logstash config file to use.
+
+Should I use the Azure Marketplace offering, or deploy from GitHub using an Azure CLI?::
+The Marketplace offering is intentionally simple to serve as a getting started experience for users new to the
+Elastic Stack. As such, it does not expose all of the features available within the ARM template, such as Application
+Gateway and Azure repository plugin configuration. Once you have had a chance to try out
+the Azure Marketplace offering, it is recommended to 
+<<azure-arm-template-getting-started, use an Azure CLI to deploy the ARM template>> from Elastic's
+GitHub repository directly, and 
+<<azure-arm-template-repeatable-deployments, target a specific tagged release for repeatable deployments>>.
