@@ -80,6 +80,9 @@
       "westus": {
         "platformFaultDomainCount": 3
       },
+      "canadacentral": {
+        "platformFaultDomainCount": 3
+      },
       "northeurope": {
         "platformFaultDomainCount": 3
       },
