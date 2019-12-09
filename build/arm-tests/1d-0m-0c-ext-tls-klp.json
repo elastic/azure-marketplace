@@ -27,6 +27,8 @@
     "vmDataNodeCount":{"value":1},
     "vmDataDiskCount":{"value":1},
     "vmDataDiskSize":{"value":"32GiB"},
+    "vmClientNodeCount":{"value":1},
+    "vmSizeClientNodes":{"value":"Standard_DS1_v2"},
     "storageAccountType":{"value":"Default"},
     "dataNodesAreMasterEligible":{"value":"Yes"},
     "authenticationType":{"value":"password"}
