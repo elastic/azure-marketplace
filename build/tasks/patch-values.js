@@ -26,6 +26,10 @@ var clientNodeValues = _.range(0, allowedValues.numberOfClientNodes + 1)
   .filter(function(i) { return i <= 12 || (i % 5) == 0; })
   .map(function (i) { return { "label" : i + "", value : i }});
 
+var recommendedMinClusterVmSize = "Standard_DS1_v2";
+var recommendedKibanaSizes = ["Standard_A2_v2", "Standard_A4_v2", "Standard_A8_v2"];
+var recommendedMinKibanaVmSize = recommendedKibanaSizes[0];
+
 gulp.task("patch", function(cb) {
 
   jsonfile.readFile(nodeResources, function(err, resources) {
@@ -53,13 +57,18 @@ gulp.task("patch", function(cb) {
         main.parameters.esVersion.allowedValues = versions;
         main.parameters.esVersion.defaultValue = _.last(versions);
         main.parameters.vmSizeDataNodes.allowedValues = vmSizes;
+        main.parameters.vmSizeDataNodes.defaultValue = recommendedMinClusterVmSize;
         main.parameters.vmDataDiskCount.defaultValue = _(allowedValues.vmSizes).map((vm) => vm[1]).max();
         main.parameters.vmDataDiskSize.allowedValues = diskSizes;
         main.parameters.vmDataDiskSize.defaultValue = allowedValues.defaultDiskSize;
         main.parameters.vmSizeMasterNodes.allowedValues = vmSizes;
+        main.parameters.vmSizeMasterNodes.defaultValue = recommendedMinClusterVmSize;
         main.parameters.vmSizeClientNodes.allowedValues = vmSizes;
+        main.parameters.vmSizeClientNodes.defaultValue = recommendedMinClusterVmSize;
         main.parameters.vmSizeKibana.allowedValues = kibanaVmSizes;
+        main.parameters.vmSizeKibana.defaultValue = recommendedMinKibanaVmSize;
         main.parameters.vmSizeLogstash.allowedValues = vmSizes;
+        main.parameters.vmSizeLogstash.defaultValue = recommendedMinClusterVmSize;
 
         jsonfile.writeFile(mainTemplate, main, function (err) {
           jsonfile.readFile(uiTemplate, function(err, ui) {
@@ -92,28 +101,23 @@ gulp.task("patch", function(cb) {
             var logstashSection = _.find(externalAccessStep.elements, function (el) { return el.name == "logstashSection"; });
             var logstashSizeControl = _.find(logstashSection.elements, function (el) { return el.name == "vmSizeLogstash"; });
 
-            var patchVmSizes = function(control, allowedSizes, patchRecommended, recommendedSize) {
-              delete control.constraints.allowedValues;
+            var patchVmSizes = function(control, allowedSizes, recommendedSizes, recommendedSize) {
+              delete control.constraints.allowedSizes;
               control.constraints.allowedSizes = allowedSizes;
-              if (patchRecommended) {
-                var sizes = recommendedSizes.slice();
-                if (recommendedSize) {
-                  var fromIndex = sizes.indexOf(recommendedSize);
-                  if (fromIndex == -1) {
-                    throw new Error(`recommendSize '${recommendedSize}' not found in recommendedSizes [${recommendedSizes.join("','")}]`);
-                  }
-                  sizes.splice(fromIndex);
-                  sizes.unshift(recommendedSize);
-                }
-
-                control.recommendedSizes = sizes;
+              var sizes = recommendedSizes.slice();
+              var fromIndex = sizes.indexOf(recommendedSize);
+              if (fromIndex == -1) {
+                throw new Error(`recommendSize '${recommendedSize}' not found in recommendedSizes ${recommendedSizes}`);
               }
+              sizes.splice(fromIndex, 1);
+              sizes.unshift(recommendedSize);
+              control.recommendedSizes = sizes;
             }
-            patchVmSizes(masterSizeControl, vmSizes);
-            patchVmSizes(dataSizeControl, vmSizes, true, "Standard_DS1_v2");
-            patchVmSizes(clientSizeControl, vmSizes);
-            patchVmSizes(kibanaSizeControl, kibanaVmSizes);
-            patchVmSizes(logstashSizeControl, vmSizes);
+            patchVmSizes(masterSizeControl, vmSizes, recommendedSizes, recommendedMinClusterVmSize);
+            patchVmSizes(dataSizeControl, vmSizes, recommendedSizes, recommendedMinClusterVmSize);
+            patchVmSizes(clientSizeControl, vmSizes, recommendedSizes, recommendedMinClusterVmSize);
+            patchVmSizes(kibanaSizeControl, kibanaVmSizes, recommendedKibanaSizes, recommendedMinKibanaVmSize);
+            patchVmSizes(logstashSizeControl, vmSizes, recommendedSizes, recommendedMinClusterVmSize);
 
             var dataNodeCountControl = _.find(dataNodesSection.elements, function (el) { return el.name == "vmDataNodeCount"; });
             dataNodeCountControl.constraints.allowedValues = dataNodeValues;

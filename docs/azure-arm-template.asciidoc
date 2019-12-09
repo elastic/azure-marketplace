@@ -421,7 +421,7 @@ dedicated master nodes will be provisioned.
 The {vms}[Azure VM SKU] to use for data nodes. Different VM SKUs have different CPU, RAM,
 temporary storage space and network bandwidth. Additionally, Different VM SKUs have
 different limits to the number of managed disks that can be attached. The default is
-`Standard_D1`.
+`Standard_DS1_v2`.
 
 `vmDataNodeCount`::
 The number of data nodes. Must be greater than 0. Defaults to 3.
@@ -441,7 +441,7 @@ will be deployed. Dedicated master nodes are **recommended** for larger clusters
 `vmSizeMasterNodes`::
 The {vms}[Azure VM SKU] to use for dedicated master nodes.
 Different VM SKUs have different CPU, RAM, temporary storage space and network
-bandwidth. The default is `Standard_D1`.
+bandwidth. The default is `Standard_DS1_v2`.
 
 `vmMasterNodeAcceleratedNetworking`::
 Whether to enable {acceleratednetworking}[accelerated networking] for dedicated master nodes,
@@ -468,7 +468,7 @@ balancers within the template, instead of data node VMs.
 `vmSizeClientNodes`::
 The {vms}[Azure VM SKU] to use for coordinating nodes.
 Different VM SKUs have different CPU, RAM, temporary storage space and network
-bandwidth. The default is `Standard_D1`.
+bandwidth. The default is `Standard_DS1_v2`.
 
 `vmClientNodeCount`::
 The number of coordinating nodes. Defaults to 0.
@@ -897,7 +897,7 @@ Whether to deploy Kibana in addition to Elasticsearch. A value of `Yes` will als
 
 `vmSizeKibana`::
 The {vms}[Azure VM SKU] to use for Kibana. Different VM SKUs have different CPU, RAM,
-temporary storage space and network bandwidth. The Kibana VM always uses standard storage for the OS disk. The default value is `Standard_A2`.
+temporary storage space and network bandwidth. The Kibana VM always uses standard storage for the OS disk. The default value is `Standard_A2_v2`.
 
 [NOTE]
 --
@@ -944,7 +944,7 @@ Whether to deploy Logstash in addition to Elasticsearch. A value of `Yes` will a
 
 `vmSizeLogstash`::
 The {vms}[Azure VM SKU] to use for Logstash. Different VM SKUs have different CPU, RAM,
-temporary storage space and network bandwidth. The Logstash VM always uses standard storage for the OS disk. The default value is `Standard_D1`.
+temporary storage space and network bandwidth. The Logstash VM always uses standard storage for the OS disk. The default value is `Standard_DS1_v2`.
 
 `vmLogstashCount`::
 The number of Logstash VMs to deploy. Defaults to `1`.
