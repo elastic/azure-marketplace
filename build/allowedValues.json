@@ -242,8 +242,9 @@
     "centralus": { "platformFaultDomainCount": 3 },
     "northcentralus": { "platformFaultDomainCount": 3 },
     "southcentralus": { "platformFaultDomainCount": 3 },
-
     "westus": { "platformFaultDomainCount": 3 },
+
+    "canadacentral": { "platformFaultDomainCount": 3 },
 
     "northeurope": { "platformFaultDomainCount": 3 },
     "westeurope": { "platformFaultDomainCount": 3 }
