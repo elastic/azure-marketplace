@@ -184,7 +184,9 @@
         ]
       }
     ],
-    "standardInternalOrExternalLoadBalancer": "[or(equals(parameters('networkSettings').externalSku, 'Standard'), equals(parameters('networkSettings').internalSku, 'Standard'))]"
+    "standardInternalLoadBalancer": "[equals(parameters('networkSettings').internalSku, 'Standard')]",
+    "standardExternalLoadBalancer": "[equals(parameters('networkSettings').externalSku, 'Standard')]",
+    "standardInternalOrExternalLoadBalancer": "[or(variables('standardInternalLoadBalancer'), variables('standardExternalLoadBalancer'))]"
   },
   "resources": [
     {
@@ -218,7 +220,8 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmMasterNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeMasterNodes), 'Yes', 'No'), parameters('topologySettings').vmMasterNodeAcceleratedNetworking)]",
-              "nsg": ""
+              "nsg": "",
+              "standardInternalLoadBalancer": false
             }
           },
           "elasticTags": {
@@ -236,7 +239,7 @@
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "properties": "[variables('vmNsgProperties')[if(equals(parameters('networkSettings').externalSku, 'Standard'), 1, 0)]]"
+      "properties": "[variables('vmNsgProperties')[if(variables('standardExternalLoadBalancer'), 1, 0)]]"
     },
     {
       "condition": "[greater(parameters('topologySettings').vmClientNodeCount, 0)]",
@@ -271,7 +274,8 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmClientNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeClientNodes), 'Yes', 'No'), parameters('topologySettings').vmClientNodeAcceleratedNetworking)]",
-              "nsg": "[if(variables('standardInternalOrExternalLoadBalancer'), variables('vmNsgName'), '')]"
+              "nsg": "[if(variables('standardInternalOrExternalLoadBalancer'), variables('vmNsgName'), '')]",
+              "standardInternalLoadBalancer": "[variables('standardInternalLoadBalancer')]"
             }
           },
           "elasticTags": {
@@ -312,7 +316,8 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmDataNodeAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeDataNodes), 'Yes', 'No'), parameters('topologySettings').vmDataNodeAcceleratedNetworking)]",
-              "nsg": "[if(and(variables('standardInternalOrExternalLoadBalancer'), equals(parameters('topologySettings').vmClientNodeCount, 0)), variables('vmNsgName'), '')]"
+              "nsg": "[if(and(variables('standardInternalOrExternalLoadBalancer'), equals(parameters('topologySettings').vmClientNodeCount, 0)), variables('vmNsgName'), '')]",
+              "standardInternalLoadBalancer": "[variables('standardInternalLoadBalancer')]"
             }
           },
           "storageSettings": {
@@ -427,7 +432,8 @@
               "imageReference": "[parameters('osSettings').imageReference]",
               "platformFaultDomainCount": "[variables('platformFaultDomainCount')]",
               "acceleratedNetworking": "[if(equals(parameters('topologySettings').vmLogstashAcceleratedNetworking, 'Default'), if(contains(variables('vmAcceleratedNetworking'), parameters('topologySettings').vmSizeLogstash), 'Yes', 'No'), parameters('topologySettings').vmLogstashAcceleratedNetworking)]",
-              "nsg": ""
+              "nsg": "",
+              "standardInternalLoadBalancer": false
             }
           },
           "elasticTags": {
