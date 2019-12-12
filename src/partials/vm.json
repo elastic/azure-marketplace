@@ -87,6 +87,7 @@
           {
             "name": "ipconfig1",
             "properties": {
+              "primary": true,
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[parameters('vm').shared.subnetId]"
@@ -139,6 +140,9 @@
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
+      "dependsOn": [
+        "[variables('publicIpName')]"
+      ],
       "properties": "[union(variables('nicProperties'), variables('nsgIpConfig'))]"
     },
     {
