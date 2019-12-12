@@ -92,12 +92,7 @@
               "subnet": {
                 "id": "[parameters('vm').shared.subnetId]"
               },
-              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
-            }
-          },
-          {
-            "name": "ipconfig2",
-            "properties": {
+              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]",
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
               }
