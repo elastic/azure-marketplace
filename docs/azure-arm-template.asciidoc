@@ -744,34 +744,36 @@ The following settings apply to the internal load balancer
 `loadBalancerInternalSku`::
 Choose between `Basic` and `Standard` load balancer SKUs for the internal load balancer. An
 internal load balancer is **always** deployed, to balance internal traffic to the cluster. When 
-the `Standard` load balancer SKU is selected, a Network Security Group will also be deployed 
-and each VM in the backend pool will be assigned a public IP address, to allow outbound 
-internet traffic from the VMs in the backend pool.
+the `Standard` load balancer SKU is selected and `loadBalancerType` is `internal`, a Network 
+Security Group will also be deployed, and each VM in the backend pool will be assigned 
+a `Standard` public IP address, to allow outbound internet traffic from the VMs in the backend 
+pool, which is required to install the Elastic Stack and dependencies.
 {loadbalancers}[Check the Azure documentation on Standard Load Balancers] to determine which
 options is best suited for your needs. Default is `Basic`.
 
 When coordinating nodes are deployed, they are attached to the internal load balancer
-backend pool. When no coordinating nodes are deployed, data nodes are attached to
+backend pool. When no coordinating nodes are deployed, the data nodes are attached to
 the backend pool. The load balancer receives incoming requests on port 9200 and
 round robins them across the backend pool over port 9200,
 with a TCP health probe that checks connectivity every 30 seconds, taking
-nodes out of the backend pool when health probes fail.
+nodes out of the backend pool when health probes fail. An idle timeout of 5 minutes
+is also configured.
 
 When Kibana is deployed, Kibana is configured to communicate with Elasticsearch
 through the internal load balancer.
 
 [[external-load-balancer]]
 ==== External load balancer
-An OSI layer 4 load balancer configured with a dynamically assigned public IP address
+An OSI layer 4 load balancer configured with a public IP address
 that can be used to send requests to Elasticsearch from the public internet.
 
-The following settings are applicablt to the external load balancer
+The following settings are applicable to the external load balancer
 
 `loadBalancerExternalSku`::
 Choose between `Basic` and `Standard` load balancer SKUs for the external load balancer. Only
 relevant when `loadBalancerType` is `external`. When the `Standard` load balancer SKU is selected,
 the public IP address SKU attached to the external load balancer will also be `Standard`, and a
-Network Security Group will also be deployed to allow inbound internet traffic to the VMs in the backend pool.
+Network Security Group will also be deployed, to allow inbound internet traffic to the VMs in the backend pool.
 {loadbalancers}[Check the Azure documentation on Standard Load Balancers] to determine which
 options is best suited for your needs. Default is `Basic`.
 
@@ -793,7 +795,8 @@ they are attached to the external load balancer backend pool.
 When no coordinating nodes are deployed, data nodes are attached to
 the backend pool. The load balancer round robins requests across the backend pool
 over port 9200, with a TCP health probe that checks connectivity every 30 seconds, taking
-nodes out of the backend pool when health probes fail.
+nodes out of the backend pool when health probes fail. An idle timeout of 5 minutes
+is also configured.
 
 [[application-gateway]]
 ==== Application Gateway
@@ -890,8 +893,9 @@ $gatewayIp = "https://$($gatewayIpResource.DnsSettings.Fqdn):9200"
 [[azure-arm-template-kibana]]
 === Kibana
 
-Kibana can be deployed in addition to Elasticsearch, providing a visual window and UI into the data within Elasticsearch. The version of Kibana deployed is always the same
-as the version of Elasticsearch, ensuring compatibility between the products.
+Kibana can be deployed in addition to Elasticsearch, providing a visual window and UI into the 
+data within Elasticsearch. The version of Kibana deployed is always the same as the version of 
+Elasticsearch, ensuring compatibility between the products.
 
 The following parameters can be used to deploy Kibana, and control additional configuration
 
@@ -917,7 +921,8 @@ networking performance. Valid values are `Default`, `Yes`, `No`. The default is 
 enables accelerated networking for the VM SKUs known to support it.
 
 `kibanaAdditionalYaml`::
-Additional configuration that will be applied to the kibana.yml configuration file before start up. Each line must be separated by a `\n` newline character, for example
+Additional configuration that will be applied to the kibana.yml configuration file before start up. 
+Each line must be separated by a `\n` newline character, for example
 +
 [source,text]
 ----
@@ -1026,7 +1031,7 @@ without the appropriate role required for authorization. In addition, securing
 the transport of data and communication between Elasticsearch, Kibana, the browser,
 or any other client by encrypting traffic is critical for data integrity.
 
-The ARM template exposes a number of features for securing a deployment to Azure.
+The ARM template exposes a number of features for securing a deployment in Azure.
 
 [[authentication-and-authorization]]
 ==== Authentication and Authorization
@@ -1047,8 +1052,7 @@ The following parameters are used to configure initial user accounts
 
 `securityBootstrapPassword`::
 Security password for {bootstrappassword}[`bootstrap.password` key] added to the Elasticsearch keystore.
-The bootstrap password is used to seed the built-in users and is necessary only for
-Elasticsearch 6.0 onwards.
+The bootstrap password is used to seed the built-in users.
 +
 If no value is supplied, a 13 character password will be generated using the
 ARM template `uniqueString()` function.
@@ -1089,8 +1093,8 @@ It has the `remote_monitoring_agent` and `remote_monitoring_collector` built-in 
 Valid only for Elasticsearch 6.5.0+
 
 It is recommended after deployment to use the `elastic` superuser account to create
-the individual user accounts that will be needed for the users and applications
-that will interact with Elasticsearch and Kibana, then to use these accounts going
+additional individual user accounts that will be needed for users and applications
+to interact with Elasticsearch and Kibana, and use these accounts going
 forward.
 
 [[saml-single-sign-on]]
