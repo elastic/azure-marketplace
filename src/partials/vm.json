@@ -63,15 +63,10 @@
       }
     },
     "osProfile": "[variables(concat(parameters('vm').shared.credentials.authenticationType, '_osProfile'))]",
-    "externalNsgs": [
-      { },
-      { "networkSecurityGroup" : { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').externalNsg)]" } }
-    ],
-    "externalNsg": "[variables('externalNsgs')[if(empty(parameters('vm').externalNsg), 0, 1)]]",
-    "nicProperties": {
-      "primary": true,
-      "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
-      "ipConfigurations": [
+    "publicIpName": "[concat(variables('namespace'), parameters('index'), '-ip')]",
+    "nsgIpConfigs": [
+      {
+        "ipConfigurations": [
         {
           "name": "ipconfig1",
           "properties": {
@@ -83,9 +78,59 @@
           }
         }
       ]
+      },
+      {
+        "networkSecurityGroup" : { 
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').nsg)]" 
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('vm').shared.subnetId]"
+              },
+              "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+            }
+          },
+          {
+            "name": "ipconfig2",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "nsgIpConfig": "[variables('nsgIpConfigs')[if(empty(parameters('vm').nsg), 0, 1)]]",
+    "nicProperties": {
+      "primary": true,
+      "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]"
     }
   },
   "resources": [
+    {
+      "condition": "[not(empty(parameters('vm').nsg))]",
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIpName')]",
+      "location": "[parameters('vm').shared.location]",
+      "sku": {
+        "name": "Basic"
+      },
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('namespace'), parameters('index'), uniqueString(resourceGroup().id, deployment().name))]"
+        }
+      }
+    },
     {
       "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/networkInterfaces",
@@ -94,7 +139,7 @@
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "properties": "[union(variables('nicProperties'), variables('externalNsg'))]"
+      "properties": "[union(variables('nicProperties'), variables('nsgIpConfig'))]"
     },
     {
       "apiVersion": "2019-03-01",
