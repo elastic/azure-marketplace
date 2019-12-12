@@ -119,13 +119,13 @@
       "name": "[variables('publicIpName')]",
       "location": "[parameters('vm').shared.location]",
       "sku": {
-        "name": "Basic"
+        "name": "Standard"
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[concat(variables('namespace'), parameters('index'), uniqueString(resourceGroup().id, deployment().name))]"
         }
