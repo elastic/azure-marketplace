@@ -1,0 +1,27 @@
+{
+  "description": "1 data node cluster with Standard loadbalancer and Application Gateway",
+    "isValid" : true,
+    "deploy" : true,
+    "why" : "",
+    "location" : "westeurope",
+    "parameters" : {
+      "loadBalancerType":{"value":"gateway"},
+      "loadBalancerInternalSku":{"value":"Standard"},
+      "kibana":{"value":"Yes"},
+      "vmSizeKibana":{"value":"Standard_DS1_v2"},
+      "vmSizeDataNodes":{"value":"Standard_DS1_v2"},
+      "vmDataNodeCount":{"value":1},
+      "vmDataDiskCount":{"value":0},
+      "vmDataDiskSize":{"value":"32GiB"},
+      "vmSizeClientNodes":{"value":"Standard_DS1_v2"},
+      "dataNodesAreMasterEligible":{"value":"Yes"},
+      "authenticationType":{"value":"password"},
+      "appGatewayTier": {"value":"Standard"},
+      "appGatewaySku": {"value":"Small"},
+      "appGatewayCount": {"value":1},
+      "appGatewayCertBlob": {"value":"certs/cert-with-password.pfx"},
+      "appGatewayCertPassword": {"value":"Password123"},
+      "appGatewayWafStatus": {"value":"Disabled"},
+      "appGatewayWafMode": {"value":"Detection"}
+    }
+}
