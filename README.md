@@ -137,14 +137,18 @@ value defined in the template.
 
   <tr><td>loadBalancerInternalSku</td><td>string</td>
     <td>The internal load balancer SKU. Can be <code>Basic</code> or <code>Standard</code>.</td>
-    </td><td><code>Basic</code></td>
+    </td><td><code>Basic</code></td>. When the <code>Standard</code> load balanacer is selected,
+    and the <code>loadBalancerType</code> is <code>internal</code>, A Network Security Group is also deployed
+    and a public IP address attached to each VM network interface card in the backend pool, to allow
+    outbound internet traffic to install the Elastic Stack and dependencies.
   </tr>
 
   <tr><td>loadBalancerExternalSku</td><td>string</td>
     <td>The external load balancer SKU. Can be <code>Basic</code> or <code>Standard</code>.
       Only relevant when <code>loadBalancerType</code> is <code>external</code>. When the <code>Standard</code> 
       load balancer SKU is selected, the public IP address SKU attached to the external load balancer 
-      will also be <code>Standard</code>.
+      will also be <code>Standard</code>. A Network Security Group is also deployed, to allow inbound internet traffic
+      to the load balancer backend pool.
     </td>
     </td><td><code>Basic</code></td>
   </tr>
