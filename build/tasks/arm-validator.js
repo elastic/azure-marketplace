@@ -410,14 +410,13 @@ var sanityCheckDeployment = (test, stdout, cb) => {
 }
 
 var getApplicationGatewayPublicIp = (() => {
-  var applicationGatewayPublicIp = "";
-
+  var applicationGatewayPublicIps = {};
   return (test, cb) => {
-    if (applicationGatewayPublicIp)
-      cb(applicationGatewayPublicIp);
-    else {
-      var t = armTests[test];
-      var rg = t.resourceGroup;
+    var t = armTests[test];
+    var rg = t.resourceGroup;
+    if (applicationGatewayPublicIps.hasOwnProperty(rg))
+      cb(applicationGatewayPublicIps[rg]);
+    else {  
       var operationList = [ 'network', 'public-ip', 'show',
         '--name', 'app-gateway-ip',
         '--resource-group', rg,
@@ -429,12 +428,12 @@ var getApplicationGatewayPublicIp = (() => {
         log(test, `operationPublicIpShowResult: ${stdout || stderr}`);
         if (error || stderr) {
           log(`getting public ip for application gateway in ${t.name} resulted in error: ${JSON.stringify(error, null, 2)}`);
-          cb(applicationGatewayPublicIp);
+          cb(applicationGatewayPublicIps[rg]);
         }
         else {
           var result = JSON.parse(stdout);
-          applicationGatewayPublicIp = `https://${result.dnsSettings.fqdn}:9200`;
-          cb(applicationGatewayPublicIp);
+          applicationGatewayPublicIps[rg] = `https://${result.dnsSettings.fqdn}:9200`;
+          cb(applicationGatewayPublicIps[rg]);
         }
       }); 
     }
