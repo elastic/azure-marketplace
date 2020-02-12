@@ -1356,14 +1356,14 @@ Identifier (EntityID) field for the Enterprise application within AAD>>. Also pa
 [[role-mappings]]
 ==== Role mappings
 
-With the cluster deployed, the {elasticdocs}/security-api-role-mapping.html[Role Mapping APIs] are used to configure rules to define how roles received in the SAML token map to roles within Elasticsearch. A SAML realm called `saml_aad` is configured when `samlMetadataUri` parameter is provided, and maps the SAML role claim to the `groups` attribute.
+With the cluster deployed, the {elasticdocs}/security-api-put-role-mapping.html[Role Mapping APIs] are used to configure rules to define how roles received in the SAML token map to roles within Elasticsearch. A SAML realm called `saml_aad` is configured when `samlMetadataUri` parameter is provided, and maps the SAML role claim to the `groups` attribute.
 
 Since SAML SSO integration also configures Basic Authentication access, role mappings
 can be added using the `elastic` superuser account. The role mappings that you define will vary depending on the roles that you defined in the `appRoles` array in the  <<application-manifest, Enterprise Application Manifest>>, but as two examples to demonstrate
 
 [source,sh]
 ----
-PUT /_xpack/security/role_mapping/saml-kibana-user
+PUT /_security/role_mapping/saml-kibana-user
 {
   "roles": [ "kibana_user" ],
   "enabled": true,
@@ -1380,7 +1380,7 @@ realm, and
 
 [source,sh]
 ----
-PUT /_xpack/security/role_mapping/saml-superuser
+PUT /_security/role_mapping/saml-superuser
 {
   "roles": [ "superuser" ],
   "enabled": true,
