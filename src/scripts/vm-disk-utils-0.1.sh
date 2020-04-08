@@ -120,16 +120,16 @@ has_filesystem() {
     grep filesystem <<< "${OUTPUT}" > /dev/null 2>&1
     return ${?}
 }
-
 scan_for_new_disks() {
-    # Looks for unpartitioned disks
+
+    # Looks for unpartitioned disks, including NVMe disks.
     declare -a RET
-    DEVS=($(ls -1 /dev/sd*|egrep -v "[0-9]$"))
+    DEVS=($(fdisk -l -o Device | egrep -o "Disk /dev/.*?:" | egrep -o "/dev/.*?[^:]"))
     for DEV in "${DEVS[@]}";
     do
         # The disk will be considered a candidate for partitioning
-        # and formatting if it does not have a sd?1 entry or
-        # if it does have an sd?1 entry and does not contain a filesystem
+        # and formatting if it does not have a sd?1 or nvme?p1 entry or
+        # if it does have an sd?1 or nvme?p1 entry and does not contain a filesystem
         is_partitioned "${DEV}"
         if [ ${?} -eq 0 ];
         then
