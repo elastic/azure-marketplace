@@ -175,7 +175,7 @@ add_to_fstab() {
     grep "${UUID}" /etc/fstab >/dev/null 2>&1
     if [ ${?} -eq 0 ];
     then
-        log "Not adding ${UUID} to fstab again (it's already there!)"
+        log "Not adding ${UUID} to fstab again (it's already there)"
     else
         LINE="UUID=\"${UUID}\"\t${MOUNTPOINT}\text4\t${MOUNT_OPTIONS}\t1 2"
         echo -e "${LINE}" >> /etc/fstab
@@ -294,6 +294,10 @@ create_striped_volume()
     MDDEVICE="${DISKS[0]}1"
     if [ "${#DISKS[@]}" -eq 1 ];
     then
+		# If there is only one attached disk, then the device to mount should be the partition, since we only created the one partition for the entire disk.
+		log "Only one disk found. Using the partition (${PARTITIONS[0]}) as the device."
+		MDDEVICE="${PARTITIONS[0]}"
+	
         log "only one disk (${DISKS[0]}) attached. mount it"
         mkfs.ext4 -b 4096 -E stride=${STRIDE},nodiscard "${MDDEVICE}"
 
