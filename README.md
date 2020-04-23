@@ -638,7 +638,7 @@ where `<name>` refers to the resource group you just created.
 
   ```powershell
   $branch = "master"
-  $esVersion = "7.6.0"
+  $esVersion = "7.6.2"
 
   $clusterParameters = @{
       "_artifactsLocation" = "https://raw.githubusercontent.com/elastic/azure-marketplace/$branch/src/"
@@ -677,16 +677,16 @@ the `_artifactsLocation` parameter of the template to point to a specific tagged
 
 **Targeting a specific template version is recommended for repeatable production deployments.**
 
-For example, to target the [`7.6.0` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.6.0)
+For example, to target the [`7.6.2` tag release with PowerShell](https://github.com/elastic/azure-marketplace/tree/7.6.2)
 
 ```powershell
-$templateVersion = "7.6.0"
+$templateVersion = "7.6.2"
 $_artifactsLocation = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src/"
 
 # minimum parameters required to deploy
 $clusterParameters = @{
   "_artifactsLocation" = $_artifactsLocation
-  "esVersion" = "7.6.0"
+  "esVersion" = "7.6.2"
   "adminUsername" = "russ"
   "adminPassword" = "Password1234"
   "securityBootstrapPassword" = "Password1234"
