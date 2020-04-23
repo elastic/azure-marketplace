@@ -22,6 +22,7 @@ var templateUri = "";
 var armTests = {};
 var logDist = "../dist/test-runs";
 var logDistTmp = logDist + "/tmp";
+var azVersion = "";
 
 var log = (f, data) =>
 {
@@ -160,7 +161,8 @@ var login = (cb) => {
       return bailOut(error || new Error(stderr));
     }
 
-    log(`Using ${stdout.split('\n')[0].replace('*', '').replace(/\s\s+/g, ' ')}` );
+    azVersion = stdout.split('\n')[0].replace('*', '').replace('azure-cli', '').replace(/\s+/g, '');
+    log(`Using azure-cli ${azVersion}` );
 
     var login = [ 'login',
       '--service-principal',
@@ -314,12 +316,15 @@ var validateTemplate = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
   createResourceGroup(test, () => {
-    var validateGroup = [ 'group', 'deployment', 'validate',
+    // using deprecated command writes message to stderr, so determine one to use based on version
+    // see: https://docs.microsoft.com/en-us/cli/azure/release-notes-azure-cli?view=azure-cli-latest#march-10-2020
+    var command = semver.satisfies(azVersion, ">=2.2.0") ? ['deployment', 'group'] : ['group', 'deployment'];
+    var validateGroup = command.concat([ 'validate',
       '--resource-group', rg,
       '--template-uri', templateUri,
       '--parameters', '@' + t.paramsFile,
       '--out', 'json'
-    ];
+    ]);
     log(`validating ${t.name} in resource group: ${rg}`);
     az(validateGroup, (error, stdout, stderr) => {
       log(test, `Expected result: ${t.isValid} because ${t.why}`);
@@ -350,15 +355,20 @@ var deployTemplates = (cb) => {
 var showOperationList = (test, cb) => {
   var t = armTests[test];
   var rg = t.resourceGroup;
-  var operationList = [ 'group', 'deployment', 'operation', 'list',
+  var command = semver.satisfies(azVersion, ">=2.2.0") ? ['deployment', 'operation', 'group'] : ['group', 'deployment', 'operation'];
+  var operationList = command.concat([ 'list',
     '--name', 'mainTemplate',
     '--resource-group', rg,
     '--out', 'json'
-  ];
+  ]);
   log(`getting operation list result for deployment in resource group: ${rg}`);
   az(operationList, (error, stdout, stderr) => {
     log(test, `operationListResult: ${stdout || stderr}`);
-    if (error || stderr) return bailOut(error || new Error(stderr), rg);
+    // check deprecation message as it seems it is returned for deployment operation group
+    // See: https://github.com/Azure/azure-cli/issues/13129
+    if (error || (stderr && !/command is implicitly deprecated/.test(stderr))) {
+      return bailOut(error || new Error(stderr), rg);
+    }
     var errors = _(JSON.parse(stdout))
       .filter(f=>f.properties.provisioningState !== "Succeeded")
       .map(f=>f.properties.statusMessage)
@@ -732,12 +742,13 @@ var deployTemplate = (test, cb) => {
   var t = armTests[test];
   if (!t.isValid || !t.deploy) return;
   var rg = t.resourceGroup;
-  var deployGroup = [ 'group', 'deployment', 'create',
+  var command = semver.satisfies(azVersion, ">=2.2.0") ? ['deployment', 'group'] : ['group', 'deployment'];
+  var deployGroup = command.concat([ 'create',
     '--resource-group', rg,
     '--template-uri', templateUri,
     '--parameters', '@' + t.paramsFile,
     '--out', 'json'
-  ];
+  ]);
   log(`deploying ${t.name} in resource group: ${rg}`);
   az(deployGroup, (error, stdout, stderr) => {
     log(test, `deployResult: ${stdout || stderr}`);
