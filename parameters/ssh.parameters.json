@@ -1,5 +1,5 @@
 {
-  "_artifactsLocation":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/"},
+  "_artifactsLocation":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/fix/334/src/"},
   "_artifactsLocationSasToken":{"value":""},
   "esVersion":{"value":"7.6.2"},
   "esClusterName":{"value":"my-azure-cluster"},
