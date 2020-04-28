@@ -124,7 +124,7 @@ image:images/marketplace_step3.png[]
 IMPORTANT: Elasticsearch nodes resolve other nodes on the network by their hostname,
 which Azure DNS supports. It is therefore critical that when deploying a cluster to
 an existing virtual network, the hostnames for Elasticsearch nodes are unique. The
-`Hostname prefix` input will be applied to the naming convention for master, data and client
+`Hostname prefix` input will be applied to the naming convention for master, data and coordinating
 nodes, allowing for unique hostnames when deploying multiple clusters to the same
 virtual network.
 
