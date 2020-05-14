@@ -17,7 +17,7 @@
 == Introduction
 
 The {marketplace}[Microsoft Azure Marketplace] solution is a preconfigured
-template to deploy an Elasticsearch cluster and Kibana to Azure.
+template to deploy an Elasticsearch cluster, Kibana, and Logstash to Azure.
 
 The solution provides a UI within the {portal}[Azure portal] that guides you through a
 series of steps in which you provide the minimum number of input parameters needed

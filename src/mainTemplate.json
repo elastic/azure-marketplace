@@ -28,7 +28,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "7.6.2",
+      "defaultValue": "7.7.0",
       "allowedValues": [
         "6.4.3",
         "6.5.4",
@@ -41,7 +41,8 @@
         "7.3.2",
         "7.4.2",
         "7.5.2",
-        "7.6.2"
+        "7.6.2",
+        "7.7.0"
       ],
       "metadata": {
         "description": "Elastic Stack version to install"
