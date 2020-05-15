@@ -157,7 +157,7 @@ var login = (cb) => {
   var version = [ '--version' ];
   az(version, (error, stdout, stderr) => {
     // ignore stderr if it's simply a warning about an older version of Azure CLI
-    if (error || (stderr && !/^WARNING: You have \d+ updates available/.test(stderr))) {
+    if (error || (stderr && !/^WARNING: You have \d+ updates available/.test(stderr) && !/Unable to check if your CLI is up-to-date. Check your internet connection./.test(stderr))) {
       return bailOut(error || new Error(stderr));
     }
 
