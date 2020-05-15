@@ -271,24 +271,17 @@ configure_logstash_yaml()
     echo "path.logs: $LOG_PATH" >> $LOGSTASH_CONF
     echo "log.level: error" >> $LOGSTASH_CONF
 
-    # install x-pack
-    if [[ $INSTALL_XPACK -ne 0 ]]; then
-      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
-        echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
-      else
-        echo 'xpack.monitoring.elasticsearch.hosts: ["${ELASTICSEARCH_URL}"]' >> $LOGSTASH_CONF
-      fi
+    # configure monitoring
+    if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
+      echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
+    else
+      echo 'xpack.monitoring.elasticsearch.hosts: ["${ELASTICSEARCH_URL}"]' >> $LOGSTASH_CONF
+    fi
 
-      # assumes Security is enabled, so configure monitoring credentials
+    # configure monitoring credentials
+    if [[ $INSTALL_XPACK -ne 0 || $BASIC_SECURITY -ne 0 ]]; then
       echo "xpack.monitoring.elasticsearch.username: logstash_system" >> $LOGSTASH_CONF
       echo 'xpack.monitoring.elasticsearch.password: "${LOGSTASH_SYSTEM_PASSWORD}"' >> $LOGSTASH_CONF
-    else
-      # configure monitoring for basic
-      if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
-        echo 'xpack.monitoring.elasticsearch.url: "${ELASTICSEARCH_URL}"' >> $LOGSTASH_CONF
-      else
-        echo 'xpack.monitoring.elasticsearch.hosts: ["${ELASTICSEARCH_URL}"]' >> $LOGSTASH_CONF
-      fi
     fi
 
     local MONITORING='true'
@@ -320,9 +313,9 @@ configure_logstash_yaml()
             log "[configure_logstash_yaml] CA cert extracted from HTTP PKCS#12 archive. Make ELASTICSEARCH_CACERT available to conf files"
             add_keystore "ELASTICSEARCH_CACERT" "$SSL_PATH/elasticsearch-http-ca.crt"
 
-            # logstash performs hostname verification for monitoring
+            # logstash performs hostname verification for monitoring when verification_mode:certificate is used,
             # which will not work for a HTTP cert provided by the user, where logstash communicates through internal loadbalancer.
-            # 6.4.0 exposes verification_mode, so set this to none and document.
+            # 6.4.0 exposes verification_mode, so set to none to allow monitoring, and document.
             if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "6.4.0"; then
               if dpkg --compare-versions "$LOGSTASH_VERSION" "lt" "7.0.0"; then
                 echo 'xpack.monitoring.elasticsearch.ssl.ca: "${ELASTICSEARCH_CACERT}"' >> $LOGSTASH_CONF
