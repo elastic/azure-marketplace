@@ -1,0 +1,19 @@
+{
+  "azure" : {
+    "username" : "",
+    "password" : ""
+  },
+  "arm" :{
+    "subscriptionId" : "",
+    "tenantId" : "",
+    "clientId" : "",
+    "clientSecret" : "",
+    "environment": "azurecloud"
+  },
+  "deployments" : {
+    "username" : "",
+    "password" : "",
+    "securityPassword" : "",
+    "ssh" : ""
+  }
+}
