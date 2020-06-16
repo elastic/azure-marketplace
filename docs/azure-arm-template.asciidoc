@@ -6,11 +6,11 @@
 :register: https://register.elastic.co
 :elasticguide: https://www.elastic.co/guide/en/elasticsearch
 :elasticdocs: {elasticguide}/reference/{current}
+:kibana-ref: https://www.elastic.co/guide/en/kibana/{current}
 :elasticstack: https://www.elastic.co/products/stack
-:stackdocs: https://www.elastic.co/guide/en/elastic-stack-overview/{current}
 :xpackenabled: {elasticdocs}/security-settings.html#general-security-settings
-:bootstrappassword: : {stackdocs}/built-in-users.html#bootstrap-elastic-passwords
-:licenseexpiration: {stackdocs}/license-expiration.html
+:bootstrappassword: : {elasticdocs}/built-in-users.html#bootstrap-elastic-passwords
+:licenseexpiration: {kibana-ref}/managing-licenses.html
 :microsoftdocs: https://docs.microsoft.com
 :azuredocs: https://azure.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest

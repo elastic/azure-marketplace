@@ -1,7 +1,7 @@
 :current: 7.6
 :register: https://register.elastic.co
 :elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/{current}
-:licenseexpiration: {stackdocs}/license-expiration.html
+:licenseexpiration: {kibana-ref}/managing-licenses.html#license-expiration
 
 [WARNING]
 --
