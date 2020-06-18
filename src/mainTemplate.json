@@ -4,7 +4,7 @@
   "parameters": {
     "_artifactsLocation": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/",
+      "defaultValue": "https://raw.githubusercontent.com/elastic/azure-marketplace/feature/7.8.0/src/",
       "metadata": {
         "description": "The base URI where artifacts required by this template are located, including a trailing '/'"
       }
@@ -28,7 +28,7 @@
     },
     "esVersion": {
       "type": "string",
-      "defaultValue": "7.7.0",
+      "defaultValue": "7.8.0",
       "allowedValues": [
         "6.6.2",
         "6.7.2",
@@ -40,7 +40,8 @@
         "7.4.2",
         "7.5.2",
         "7.6.2",
-        "7.7.0"
+        "7.7.1",
+        "7.8.0"
       ],
       "metadata": {
         "description": "Elastic Stack version to install"
