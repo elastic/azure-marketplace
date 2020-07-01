@@ -3,7 +3,6 @@
 :github: https://github.com/elastic/azure-marketplace
 :elasticdocs: https://www.elastic.co/guide/en/elasticsearch/reference/current
 :elasticstack: https://www.elastic.co/products/stack
-:xpackdocs: https://www.elastic.co/guide/en/x-pack/current
 :microsoftdocs: https://docs.microsoft.com
 :azurecli: {microsoftdocs}/cli/azure/?view=azure-cli-latest
 :azurepowershell: {microsoftdocs}/powershell/azure/overview?view=azurermps-6.4.0
@@ -172,7 +171,7 @@ to Elasticsearch from outside of Azure over port 9200.
 An Elasticsearch cluster deployed through the Azure Marketplace is always deployed
 with a 30 day trial license that enables all of {subscriptions}[the platinum features of the Elastic Stack]. 
 Security features allow Basic Authentication configuration for the cluster, setting up six
-{xpackdocs}/setting-up-authentication.html[built-in user accounts]
+{elasticdocs}/built-in-users.html[built-in user accounts]
 
 . The `elastic` user, a built-in superuser account
 . The `kibana` user, a built-in account that Kibana uses to connect and
