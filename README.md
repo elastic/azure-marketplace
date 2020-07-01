@@ -352,7 +352,7 @@ value defined in the template.
     </td><td><code>""</code></td></tr>
 
   <tr><td>securityBootstrapPassword</td><td>securestring</td>
-    <td>Security password for 6.x <a href="https://www.elastic.co/guide/en/x-pack/current/setting-up-authentication.html#bootstrap-elastic-passwords"><code>bootstrap.password</code> key</a> that is added to the keystore. If no value is supplied, a 13 character password
+    <td>Security password for 6.x <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html#bootstrap-elastic-passwords"><code>bootstrap.password</code> key</a> that is added to the keystore. If no value is supplied, a 13 character password
     will be generated using the ARM template <code>uniqueString()</code> function. The bootstrap password is used to seed the built-in
     users. Used only in 6.0.0+
     </td><td><code>""</code></td></tr>
