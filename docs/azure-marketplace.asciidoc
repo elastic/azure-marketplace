@@ -28,6 +28,19 @@ all {subscriptions}[the Platinum features of the Elastic Stack], to provide the 
 started experience. After the trial license expires, Elasticsearch operates
 in a degraded mode.
 
+[IMPORTANT]
+--
+
+The Marketplace solution template is a great starting place to try out the Elastic Stack on
+Azure. In the long run, it's recommended to deploy the Elastic Stack
+<<azure-arm-template, using the ARM template from our GitHub repository directly>>. 
+Doing so allows for targeting a specific template release for 
+<<azure-arm-template-repeatable-deployments, repeatable deployments>>, in addition to
+allowing <<azure-arm-template-scaling-nodes, scaling up the number of nodes under certain conditions>>, 
+a process that the Marketplace solution template is not designed for.
+
+--
+
 [[azure-marketplace-getting-started]]
 === Getting started with the Azure Marketplace
 
