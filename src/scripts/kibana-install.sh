@@ -320,27 +320,38 @@ configure_kibana_yaml()
     # Configure SAML Single-Sign-On
     if [[ -n "$SAML_SP_URI" && ${INSTALL_XPACK} -ne 0 ]]; then
       log "[configure_kibana_yaml] Configuring Kibana for SAML Single-Sign-On"
-      # Allow both saml and basic realms
-      echo "xpack.security.authProviders: [ saml, basic ]" >> $KIBANA_CONF
-      echo "server.xsrf.whitelist: [ /api/security/v1/saml ]" >> $KIBANA_CONF
 
-      local PROTOCOL="`echo $SAML_SP_URI | grep '://' | sed -e's,^\(.*://\).*,\1,g'`"
-      local HOSTNAME_AND_PORT=`echo $SAML_SP_URI | sed -e s,$PROTOCOL,,g`
-      local HOSTNAME=`echo $HOSTNAME_AND_PORT | sed -e s,.*@,,g | cut -d: -f1`
-      local PORT=`echo $HOSTNAME_AND_PORT | grep : | cut -d: -f2`
-      if [[ -z "$PORT" ]]; then
-        if [[ "$PROTOCOL" == "https://" ]]; then
-          PORT=443
-        else
-          PORT=80
+      if dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.7.0"; then
+        # Allow both saml and basic realms
+        echo "xpack.security.authProviders: [ saml, basic ]" >> $KIBANA_CONF
+        echo "server.xsrf.whitelist: [ /api/security/v1/saml ]" >> $KIBANA_CONF
+
+        local PROTOCOL="`echo $SAML_SP_URI | grep '://' | sed -e's,^\(.*://\).*,\1,g'`"
+        local HOSTNAME_AND_PORT=`echo $SAML_SP_URI | sed -e s,$PROTOCOL,,g`
+        local HOSTNAME=`echo $HOSTNAME_AND_PORT | sed -e s,.*@,,g | cut -d: -f1`
+        local PORT=`echo $HOSTNAME_AND_PORT | grep : | cut -d: -f2`
+        if [[ -z "$PORT" ]]; then
+          if [[ "$PROTOCOL" == "https://" ]]; then
+            PORT=443
+          else
+            PORT=80
+          fi
         fi
+
+        # Kibana is reached through a Public IP address (or a provided URI)
+        # so needs to be configured with this for SAML SSO
+        echo "xpack.security.public.protocol: ${PROTOCOL%://}" >> $KIBANA_CONF
+        echo "xpack.security.public.hostname: \"${HOSTNAME%/}\"" >> $KIBANA_CONF
+        echo "xpack.security.public.port: ${PORT%/}" >> $KIBANA_CONF
+      else
+        # Use simpler configuration for 7.7.0+
+        echo "xpack.security.authc.providers.saml.saml1.order: 0" >> $KIBANA_CONF
+        echo "xpack.security.authc.providers.saml.saml1.realm: \"saml_aad\"" >> $KIBANA_CONF
+        echo "xpack.security.authc.providers.saml.saml1.description: \"Log in with Azure\"" >> $KIBANA_CONF
+        echo "xpack.security.authc.providers.saml.saml1.icon: \"logoAzure\"" >> $KIBANA_CONF
+        echo "xpack.security.authc.providers.basic.basic1.order: 1" >> $KIBANA_CONF
       fi
 
-      # Kibana is reached through a Public IP address (or a provided URI)
-      # so needs to be configured with this for SAML SSO
-      echo "xpack.security.public.protocol: ${PROTOCOL%://}" >> $KIBANA_CONF
-      echo "xpack.security.public.hostname: \"${HOSTNAME%/}\"" >> $KIBANA_CONF
-      echo "xpack.security.public.port: ${PORT%/}" >> $KIBANA_CONF
       log "[configure_kibana_yaml] Configured Kibana for SAML Single-Sign-On"
     fi
 
@@ -355,6 +366,9 @@ configure_kibana_yaml()
         SKIP_LINES+="elasticsearch.ssl.ca elasticsearch.ssl.keyPassphrase elasticsearch.ssl.verify "
         SKIP_LINES+="xpack.security.authProviders server.xsrf.whitelist "
         SKIP_LINES+="xpack.security.public.protocol xpack.security.public.hostname xpack.security.public.port "
+        SKIP_LINES+="xpack.security.authc.providers.saml.saml1.order xpack.security.authc.providers.saml.saml1.realm "
+        SKIP_LINES+="xpack.security.authc.providers.saml.saml1.description xpack.security.authc.providers.basic.basic1.order "
+        SKIP_LINES+="xpack.security.authc.providers.saml.saml1.icon "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION"); do
