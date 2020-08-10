@@ -348,6 +348,7 @@ configure_kibana_yaml()
         echo "xpack.security.authc.providers.saml.saml1.order: 0" >> $KIBANA_CONF
         echo "xpack.security.authc.providers.saml.saml1.realm: \"saml_aad\"" >> $KIBANA_CONF
         echo "xpack.security.authc.providers.saml.saml1.description: \"Log in with Azure\"" >> $KIBANA_CONF
+        echo "xpack.security.authc.providers.saml.saml1.icon: \"logoAzure\"" >> $KIBANA_CONF
         echo "xpack.security.authc.providers.basic.basic1.order: 1" >> $KIBANA_CONF
       fi
 
@@ -367,6 +368,7 @@ configure_kibana_yaml()
         SKIP_LINES+="xpack.security.public.protocol xpack.security.public.hostname xpack.security.public.port "
         SKIP_LINES+="xpack.security.authc.providers.saml.saml1.order xpack.security.authc.providers.saml.saml1.realm "
         SKIP_LINES+="xpack.security.authc.providers.saml.saml1.description xpack.security.authc.providers.basic.basic1.order "
+        SKIP_LINES+="xpack.security.authc.providers.saml.saml1.icon "
         local SKIP_REGEX="^\s*("$(echo $SKIP_LINES | tr " " "|" | sed 's/\./\\\./g')")"
         IFS=$'\n'
         for LINE in $(echo -e "$YAML_CONFIGURATION"); do
