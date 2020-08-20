@@ -195,7 +195,7 @@ running version {version}
 * Kibana {version}.
 * The cluster has three master-eligible data nodes, each with a single 1024GB attached managed disk.
 * The cluster will have a trial license applied, providing access to Elastic Stack Platinum features for 30 days
-* Security feature is enabled, and the {elasticdocs}/built-in-users.html[built-in users] `elastic`, `kibana`,
+* Security feature is enabled, and the {elasticdocs}/built-in-users.html[built-in users] `elastic`, `kibana[_system]`,
 `logstash_system`, `apm_system` and `remote_monitoring_user` are configured.
 
 The ARM template accepts _many_ {github}#parameters[parameters], many of which are optional. When a value is not supplied for a parameter, a default value defined within the
@@ -1067,8 +1067,8 @@ Keep this password somewhere safe; You never know when you may need it!
 --
 
 `securityKibanaPassword`::
-Security password for the `kibana` built-in user account. This is the account that
-Kibana uses to communicate with Elasticsearch. Must be greater
+Security password for the `kibana` (`kibana_system` in 7.8.0+) built-in user account. 
+This is the account that Kibana uses to communicate with Elasticsearch. Must be greater
 than six characters in length.
 
 `securityLogstashPassword`::

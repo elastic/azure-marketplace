@@ -238,7 +238,11 @@ configure_kibana_yaml()
     local ENCRYPTION_KEY
 
     if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
-      echo "elasticsearch.username: kibana" >> $KIBANA_CONF
+      local KIBANA_USER="kibana"
+      if dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.8.0"; then
+        KIBANA_USER="kibana_system"
+      fi 
+      echo "elasticsearch.username: $KIBANA_USER" >> $KIBANA_CONF
 
       # store credentials in the keystore
       create_keystore_if_not_exists
