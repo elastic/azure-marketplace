@@ -30,7 +30,7 @@
       "type": "string",
       "defaultValue": "7.9.0",
       "allowedValues": [
-        "6.8.11",
+        "6.8.12",
         "7.0.1",
         "7.1.1",
         "7.2.1",

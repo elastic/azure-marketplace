@@ -59,8 +59,8 @@
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v6.8.11",
-                  "value": "6.8.11"
+                  "label": "v6.8.12",
+                  "value": "6.8.12"
                 },
                 {
                   "label": "v7.0.1",
