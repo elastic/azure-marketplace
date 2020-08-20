@@ -530,6 +530,11 @@ curl_ignore_409 () {
     fi
 }
 
+escape_pwd() 
+{
+  echo $1 | sed 's/"/\\"/g'
+}
+
 apply_security_settings()
 {
     # if the node is up, check that the elastic user exists in the .security index if
@@ -550,7 +555,8 @@ apply_security_settings()
       local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/role"
 
       #update builtin `elastic` account.
-      local ADMIN_JSON=$(printf '{"password":"%s"}\n' $USER_ADMIN_PWD)
+      local ESCAPED_USER_ADMIN_PWD=$(escape_pwd $USER_ADMIN_PWD)
+      local ADMIN_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_ADMIN_PWD)
       echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
         #Make sure another deploy did not already change the elastic password
@@ -563,7 +569,8 @@ apply_security_settings()
       log "[apply_security_settings] updated built-in elastic superuser password"
 
       #update builtin `kibana`/`kibana_system` account
-      local KIBANA_JSON=$(printf '{"password":"%s"}\n' $USER_KIBANA_PWD)
+      local ESCAPED_USER_KIBANA_PWD=$(escape_pwd $USER_KIBANA_PWD)
+      local KIBANA_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_KIBANA_PWD)
       local KIBANA_USER="kibana"
       if dpkg --compare-versions "$ES_VERSION" "ge" "7.8.0"; then
         KIBANA_USER="kibana_system"
@@ -577,7 +584,8 @@ apply_security_settings()
       log "[apply_security_settings] updated built-in $KIBANA_USER user password"
 
       #update builtin `logstash_system` account
-      local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
+      local ESCAPED_USER_LOGSTASH_PWD=$(escape_pwd $USER_LOGSTASH_PWD)
+      local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_LOGSTASH_PWD)
       echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the built-in logstash_system user"
@@ -586,7 +594,8 @@ apply_security_settings()
       log "[apply_security_settings] updated built-in logstash_system user password"
 
       #update builtin `beats_system` account
-      local BEATS_JSON=$(printf '{"password":"%s"}\n' $USER_BEATS_PWD)
+      local ESCAPED_USER_BEATS_PWD=$(escape_pwd $USER_BEATS_PWD)
+      local BEATS_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_BEATS_PWD)
       echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the built-in beats_system user"
@@ -595,7 +604,8 @@ apply_security_settings()
       log "[apply_security_settings] updated built-in beats_system user password"
 
       #update builtin `apm_system` account
-      local APM_JSON=$(printf '{"password":"%s"}\n' $USER_APM_PWD)
+      local ESCAPED_USER_APM_PWD=$(escape_pwd $USER_APM_PWD)
+      local APM_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_APM_PWD)
       echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the built-in apm_system user"
@@ -604,7 +614,8 @@ apply_security_settings()
       log "[apply_security_settings] updated built-in apm_system user password"
     
       #update builtin `remote_monitoring_user`
-      local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $USER_REMOTE_MONITORING_PWD)
+      local ESCAPED_USER_REMOTE_MONITORING_PWD=$(escape_pwd $USER_REMOTE_MONITORING_PWD)
+      local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_REMOTE_MONITORING_PWD)
       echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
       if [[ $? != 0 ]];  then
         log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
