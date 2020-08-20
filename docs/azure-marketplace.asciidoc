@@ -187,7 +187,7 @@ Security features allow Basic Authentication configuration for the cluster, sett
 {elasticdocs}/built-in-users.html[built-in user accounts]
 
 . The `elastic` user, a built-in superuser account
-. The `kibana` user, a built-in account that Kibana uses to connect and
+. The `kibana` user (`kibana_system` in 7.8.0+), a built-in account that Kibana uses to connect and
 communicate with Elasticsearch
 . The `logstash_system` user, a built-in account that can be used by Logstash
 when storing monitoring information in Elasticsearch.

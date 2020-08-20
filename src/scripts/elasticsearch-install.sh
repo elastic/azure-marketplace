@@ -562,14 +562,19 @@ apply_security_settings()
       fi
       log "[apply_security_settings] updated built-in elastic superuser password"
 
-      #update builtin `kibana` account
+      #update builtin `kibana`/`kibana_system` account
       local KIBANA_JSON=$(printf '{"password":"%s"}\n' $USER_KIBANA_PWD)
-      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/kibana/_password" -d @-
+      local KIBANA_USER="kibana"
+      if dpkg --compare-versions "$ES_VERSION" "ge" "7.8.0"; then
+        KIBANA_USER="kibana_system"
+      fi 
+
+      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/$KIBANA_USER/_password" -d @-
       if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in kibana user"
+        log "[apply_security_settings] could not update the built-in $KIBANA_USER user"
         exit 10
       fi
-      log "[apply_security_settings] updated built-in kibana user password"
+      log "[apply_security_settings] updated built-in $KIBANA_USER user password"
 
       #update builtin `logstash_system` account
       local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $USER_LOGSTASH_PWD)
@@ -580,37 +585,32 @@ apply_security_settings()
       fi
       log "[apply_security_settings] updated built-in logstash_system user password"
 
-      #update builtin `beats_system` account for Elasticsearch 6.3.0+
-      if dpkg --compare-versions "$ES_VERSION" "ge" "6.3.0"; then
-        local BEATS_JSON=$(printf '{"password":"%s"}\n' $USER_BEATS_PWD)
-        echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
-        if [[ $? != 0 ]];  then
-          log "[apply_security_settings] could not update the built-in beats_system user"
-          exit 10
-        fi
-        log "[apply_security_settings] updated built-in beats_system user password"
+      #update builtin `beats_system` account
+      local BEATS_JSON=$(printf '{"password":"%s"}\n' $USER_BEATS_PWD)
+      echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
+      if [[ $? != 0 ]];  then
+        log "[apply_security_settings] could not update the built-in beats_system user"
+        exit 10
       fi
+      log "[apply_security_settings] updated built-in beats_system user password"
 
-      
-      if dpkg --compare-versions "$ES_VERSION" "ge" "6.5.0"; then
-        #update builtin `apm_system` account for Elasticsearch 6.5.0+
-        local APM_JSON=$(printf '{"password":"%s"}\n' $USER_APM_PWD)
-        echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
-        if [[ $? != 0 ]];  then
-          log "[apply_security_settings] could not update the built-in apm_system user"
-          exit 10
-        fi
-        log "[apply_security_settings] updated built-in apm_system user password"
-      
-        #update builtin `remote_monitoring_user` account for Elasticsearch 6.5.0+
-        local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $USER_REMOTE_MONITORING_PWD)
-        echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
-        if [[ $? != 0 ]];  then
-          log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
-          exit 10
-        fi
-        log "[apply_security_settings] updated built-in remote_monitoring_user user password"     
-      fi   
+      #update builtin `apm_system` account
+      local APM_JSON=$(printf '{"password":"%s"}\n' $USER_APM_PWD)
+      echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
+      if [[ $? != 0 ]];  then
+        log "[apply_security_settings] could not update the built-in apm_system user"
+        exit 10
+      fi
+      log "[apply_security_settings] updated built-in apm_system user password"
+    
+      #update builtin `remote_monitoring_user`
+      local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $USER_REMOTE_MONITORING_PWD)
+      echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
+      if [[ $? != 0 ]];  then
+        log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
+        exit 10
+      fi
+      log "[apply_security_settings] updated built-in remote_monitoring_user user password" 
     fi
 }
 

@@ -1397,10 +1397,10 @@
                 "name": "securityKibanaPassword",
                 "type": "Microsoft.Common.PasswordBox",
                 "label": {
-                  "password": "'kibana' built-in user password",
+                  "password": "'kibana'/'kibana_system' built-in user password",
                   "confirmPassword": "Confirm password"
                 },
-                "toolTip": "Password for the built-in 'kibana' user. This is a built-in account that Kibana uses to communicate with Elasticsearch",
+                "toolTip": "Password for the built-in 'kibana' user (`kibana_system` in 7.8.0+). This is a built-in account that Kibana uses to communicate with Elasticsearch",
                 "constraints": {
                   "required": true,
                   "regex": "^.{12,}",
