@@ -513,10 +513,6 @@ wait_for_started()
 # since upserts of roles users CAN throw 409 conflicts we ignore these for now
 # opened an issue on x-pack repos to handle this more gracefully later
 curl_ignore_409 () {
-    _curl_with_error_code "$@" | sed '$d'
-}
-
-_curl_with_error_code () {
     local curl_error_code http_code
     exec 17>&1
     http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' "$@" $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
