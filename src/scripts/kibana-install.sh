@@ -161,6 +161,11 @@ random_password()
   echo
 }
 
+create_keystore_if_not_exists()
+{
+  [[ -f /var/lib/kibana/kibana.keystore ]] || (sudo -u kibana /usr/share/kibana/bin/kibana-keystore create)
+}
+
 install_kibana()
 {
     local PACKAGE="kibana-$KIBANA_VERSION-amd64.deb"
@@ -234,7 +239,12 @@ configure_kibana_yaml()
 
     if [[ ${INSTALL_XPACK} -ne 0 || ${BASIC_SECURITY} -ne 0 ]]; then
       echo "elasticsearch.username: kibana" >> $KIBANA_CONF
-      echo "elasticsearch.password: \"$USER_KIBANA_PWD\"" >> $KIBANA_CONF
+
+      # store credentials in the keystore
+      create_keystore_if_not_exists
+      log "[configure_kibana_yaml] Adding elasticsearch.password to kibana.keystore"
+      echo "# elasticsearch.password added to kibana.keystore" >> $KIBANA_CONF
+      echo "$USER_KIBANA_PWD" | sudo -u kibana /usr/share/kibana/bin/kibana-keystore add "elasticsearch.password" --stdin --force
 
       ENCRYPTION_KEY=$(random_password)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
@@ -261,7 +271,10 @@ configure_kibana_yaml()
       echo "server.ssl.key: $SSL_PATH/kibana.key" >> $KIBANA_CONF
       echo "server.ssl.certificate: $SSL_PATH/kibana.crt" >> $KIBANA_CONF
       if [[ -n "${SSL_PASSPHRASE}" ]]; then
-          echo "server.ssl.keyPassphrase: \"$SSL_PASSPHRASE\"" >> $KIBANA_CONF
+          log "[configure_kibana_yaml] Adding server.ssl.keyPassphrase to kibana.keystore"
+          create_keystore_if_not_exists
+          echo "# server.ssl.keyPassphrase added to kibana.keystore" >> $KIBANA_CONF
+          echo "$SSL_PASSPHRASE" | sudo -u kibana /usr/share/kibana/bin/kibana-keystore add "server.ssl.keyPassphrase" --stdin --force
       fi
       log "[configure_kibana_yaml] Configured SSL/TLS to Kibana"
     fi
