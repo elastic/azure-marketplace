@@ -482,13 +482,13 @@ elastic_user_exists()
   http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' $PROTOCOL://localhost:9200/.security/$USER_TYPENAME/$ELASTIC_USER_NAME -u "elastic:$1" $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
   curl_error_code=$?
   exec 17>&-
-  if [ $http_code -eq 200 ]; then
+  if [[ $http_code -eq 200 ]]; then
     return 0
   fi
-  if [ $curl_error_code -ne 0 ]; then
+  if [[ $curl_error_code -ne 0 ]]; then
       return $curl_error_code
   fi
-  if [ $http_code -ge 400 ] && [ $http_code -lt 600 ]; then
+  if [[ $http_code -ge 400 && $http_code -lt 600 ]]; then
       echo "HTTP $http_code" >&2
       return 127
   fi
@@ -518,13 +518,13 @@ curl_ignore_409 () {
     http_code=$(curl -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' "$@" $CURL_SWITCH | tee /dev/fd/17 | tail -n 1)
     curl_error_code=$?
     exec 17>&-
-    if [ $http_code -eq 409 ]; then
+    if [[ $http_code -eq 409 ]]; then
       return 0
     fi
-    if [ $curl_error_code -ne 0 ]; then
+    if [[ $curl_error_code -ne 0 ]]; then
         return $curl_error_code
     fi
-    if [ $http_code -ge 400 ] && [ $http_code -lt 600 ]; then
+    if [[ $http_code -ge 400 && $http_code -lt 600 ]]; then
         echo "HTTP $http_code" >&2
         return 127
     fi
@@ -536,11 +536,11 @@ wait_for_green_security_index()
 {
     exec 17>&1
     local response=$(curl -XGET -u "elastic:$USER_ADMIN_PWD" -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' \
-      "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=5m" $CURL_SWITCH | tee /dev/fd/17) 
-    local http_code=$($response | tail -n 1)   
+      "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=5m&filter_path=status" $CURL_SWITCH | tee /dev/fd/17) 
     local curl_error_code=$?
+    local http_code=$($response | tail -n 1)
     exec 17>&-
-    if [ $http_code -eq 200 ]; then
+    if [[ $http_code -eq 200 ]]; then
       local body=$($response | head -n -1)
       local status=$(jq -r .status <<< $body)
       if [[ $status -eq "green" ]]; then
@@ -549,10 +549,10 @@ wait_for_green_security_index()
         return 127
       fi
     fi
-    if [ $curl_error_code -ne 0 ]; then
+    if [[ $curl_error_code -ne 0 ]]; then
         return $curl_error_code
     fi
-    if [ $http_code -ge 400 ] && [ $http_code -lt 600 ]; then
+    if [[ $http_code -ge 400 && $http_code -lt 600 ]]; then
         echo "HTTP $http_code" >&2
         return 127
     fi
