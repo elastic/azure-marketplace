@@ -530,6 +530,34 @@ curl_ignore_409 () {
     fi
 }
 
+# waits up to 5 minutes for the .security alias/index to be green
+# and checks that the status is green
+wait_for_green_security_index() 
+{
+    exec 17>&1
+    local response=$(curl -XGET -u "elastic:$USER_ADMIN_PWD" -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' \
+      "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=5m" $CURL_SWITCH | tee /dev/fd/17) 
+    local http_code=$($response | tail -n 1)   
+    local curl_error_code=$?
+    exec 17>&-
+    if [ $http_code -eq 200 ]; then
+      local body=$($response | head -n -1)
+      local status=$(jq -r .status <<< $body)
+      if [[ $status -eq "green" ]]; then
+        return 0
+      else 
+        return 127
+      fi
+    fi
+    if [ $curl_error_code -ne 0 ]; then
+        return $curl_error_code
+    fi
+    if [ $http_code -ge 400 ] && [ $http_code -lt 600 ]; then
+        echo "HTTP $http_code" >&2
+        return 127
+    fi
+}
+
 escape_pwd() 
 {
   echo $1 | sed 's/"/\\"/g'
@@ -539,7 +567,7 @@ apply_security_settings()
 {
     # if the node is up, check that the elastic user exists in the .security index if
     # the elastic user password is the same as the bootstrap password.
-    if [[ $(node_is_up "$USER_ADMIN_PWD") && ("$USER_ADMIN_PWD" != "$SEED_PASSWORD" || $(elastic_user_exists "$USER_ADMIN_PWD")) ]]; then
+    if [[ $(node_is_up "$USER_ADMIN_PWD") && ("$USER_ADMIN_PWD" -ne "$SEED_PASSWORD" || $(elastic_user_exists "$USER_ADMIN_PWD")) ]]; then
       log "[apply_security_settings] can already ping node using user provided credentials, exiting early!"
     else
       log "[apply_security_settings] start updating roles and users"
@@ -567,6 +595,11 @@ apply_security_settings()
         fi
       fi
       log "[apply_security_settings] updated built-in elastic superuser password"
+
+      wait_for_green_security_index
+      if [[ $? != 0 ]]; then
+        "[apply_security_settings] timeout waiting for the cluster to be ready to update other built-in user passwords"
+      fi
 
       #update builtin `kibana`/`kibana_system` account
       local ESCAPED_USER_KIBANA_PWD=$(escape_pwd $USER_KIBANA_PWD)
