@@ -161,9 +161,25 @@ random_password()
   echo
 }
 
+keystore_cmd()
+{
+  # keystore is created in /etc/kibana/kibana.keystore in 7.9.0+
+  # but need to create with root due to permissions
+  if dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.9.0"; then
+    /usr/share/kibana/bin/kibana-keystore "$@" --allow-root
+  else
+    sudo -u kibana /usr/share/kibana/bin/kibana-keystore "$@"
+  fi
+}
+
 create_keystore_if_not_exists()
 {
-  [[ -f /var/lib/kibana/kibana.keystore ]] || (sudo -u kibana /usr/share/kibana/bin/kibana-keystore create)
+  local KEYSTORE_FILE=/var/lib/kibana/kibana.keystore
+  if dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.9.0"; then
+    KEYSTORE_FILE=/etc/kibana/kibana.keystore
+  fi
+    
+  [[ -f $KEYSTORE_FILE ]] || (keystore_cmd create)
 }
 
 install_kibana()
@@ -248,7 +264,7 @@ configure_kibana_yaml()
       create_keystore_if_not_exists
       log "[configure_kibana_yaml] Adding elasticsearch.password to kibana.keystore"
       echo "# elasticsearch.password added to kibana.keystore" >> $KIBANA_CONF
-      echo "$USER_KIBANA_PWD" | sudo -u kibana /usr/share/kibana/bin/kibana-keystore add "elasticsearch.password" --stdin --force
+      echo "$USER_KIBANA_PWD" | keystore_cmd add "elasticsearch.password" --stdin --force
 
       ENCRYPTION_KEY=$(random_password)
       echo "xpack.security.encryptionKey: \"$ENCRYPTION_KEY\"" >> $KIBANA_CONF
@@ -278,7 +294,7 @@ configure_kibana_yaml()
           log "[configure_kibana_yaml] Adding server.ssl.keyPassphrase to kibana.keystore"
           create_keystore_if_not_exists
           echo "# server.ssl.keyPassphrase added to kibana.keystore" >> $KIBANA_CONF
-          echo "$SSL_PASSPHRASE" | sudo -u kibana /usr/share/kibana/bin/kibana-keystore add "server.ssl.keyPassphrase" --stdin --force
+          echo "$SSL_PASSPHRASE" | keystore_cmd add "server.ssl.keyPassphrase" --stdin --force
       fi
       log "[configure_kibana_yaml] Configured SSL/TLS to Kibana"
     fi
