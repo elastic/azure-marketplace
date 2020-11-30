@@ -587,6 +587,11 @@ apply_security_settings()
       local ADMIN_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_ADMIN_PWD)
       echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
+        wait_for_green_security_index
+        if [[ $? != 0 ]]; then
+          "[apply_security_settings] timeout waiting for the cluster to be ready to check the elastic built-in user password"
+        fi
+
         #Make sure another deploy did not already change the elastic password
         curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
         if [[ $? != 0 ]]; then
