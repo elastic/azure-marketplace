@@ -538,10 +538,10 @@ wait_for_green_security_index()
     local response=$(curl -XGET -u "elastic:$USER_ADMIN_PWD" -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' \
       "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=5m&filter_path=status" $CURL_SWITCH | tee /dev/fd/17) 
     local curl_error_code=$?
-    local http_code=$($response | tail -n 1)
+    local http_code=$(echo "$response" | tail -n 1)
     exec 17>&-
     if [[ $http_code -eq 200 ]]; then
-      local body=$($response | head -n -1)
+      local body=$(echo "$response" | head -n -1)
       local status=$(jq -r .status <<< $body)
       if [[ $status -eq "green" ]]; then
         return 0
