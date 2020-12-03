@@ -154,7 +154,12 @@ install_java()
 # Install Logstash
 install_logstash()
 {
-  local PACKAGE="logstash-$LOGSTASH_VERSION.deb"
+  local OS_SUFFIX=""
+  if dpkg --compare-versions "$LOGSTASH_VERSION" "ge" "7.10.0"; then
+    OS_SUFFIX="-amd64"
+  fi
+
+  local PACKAGE="logstash-${LOGSTASH_VERSION}${OS_SUFFIX}.deb"
   local ALGORITHM="512"
   local SHASUM="$PACKAGE.sha$ALGORITHM"
   local DOWNLOAD_URL="https://artifacts.elastic.co/downloads/logstash/$PACKAGE?ultron=msft&gambit=azure"
