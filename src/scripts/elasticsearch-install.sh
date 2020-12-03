@@ -530,32 +530,40 @@ curl_ignore_409 () {
     fi
 }
 
-# waits up to 5 minutes for the .security alias/index to be green
-# and checks that the status is green
+# waits for the .security alias/index to be green
 wait_for_green_security_index() 
 {
+  local retries=0
+  until [ "$retries" -ge 12 ]
+  do
     exec 17>&1
     local response=$(curl -XGET -u "elastic:$USER_ADMIN_PWD" -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' \
-      "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=5m&filter_path=status" $CURL_SWITCH | tee /dev/fd/17) 
+      "$PROTOCOL://localhost:9200/_cluster/health/.security?wait_for_status=green&timeout=30s&filter_path=status" $CURL_SWITCH | tee /dev/fd/17) 
     local curl_error_code=$?
     local http_code=$(echo "$response" | tail -n 1)
     exec 17>&-
+    if [[ $curl_error_code -ne 0 ]]; then
+      log "[wait_for_green_security_index] curl exit code $curl_error_code waiting for security index to be green"
+      return $curl_error_code
+    fi
     if [[ $http_code -eq 200 ]]; then
       local body=$(echo "$response" | head -n -1)
       local status=$(jq -r .status <<< $body)
+      log "[wait_for_green_security_index] security index is $status"
       if [[ $status -eq "green" ]]; then
         return 0
-      else 
+      else
         return 127
       fi
     fi
-    if [[ $curl_error_code -ne 0 ]]; then
-        return $curl_error_code
-    fi
     if [[ $http_code -ge 400 && $http_code -lt 600 ]]; then
+        log "[wait_for_green_security_index] status code $http_code waiting for security index to be green"
         echo "HTTP $http_code" >&2
-        return 127
+        retries=$((retries+1))
+        sleep 10
     fi
+  done
+  return 127
 }
 
 escape_pwd() 
@@ -587,6 +595,11 @@ apply_security_settings()
       local ADMIN_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_ADMIN_PWD)
       echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
       if [[ $? != 0 ]]; then
+        wait_for_green_security_index
+        if [[ $? != 0 ]]; then
+          log "[apply_security_settings] did not see green security index"
+        fi
+
         #Make sure another deploy did not already change the elastic password
         curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
         if [[ $? != 0 ]]; then
@@ -598,7 +611,7 @@ apply_security_settings()
 
       wait_for_green_security_index
       if [[ $? != 0 ]]; then
-        "[apply_security_settings] timeout waiting for the cluster to be ready to update other built-in user passwords"
+        log "[apply_security_settings] did not see green security index"
       fi
 
       #update builtin `kibana`/`kibana_system` account
