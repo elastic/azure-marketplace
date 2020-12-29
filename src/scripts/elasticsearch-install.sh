@@ -462,8 +462,25 @@ install_additional_plugins()
 
 node_is_up()
 {
-  curl --output /dev/null --silent --head --fail $PROTOCOL://localhost:9200 -u "elastic:$1" -H 'Content-Type: application/json' $CURL_SWITCH
-  return $?
+  exec 17>&1
+  local response=$(curl -XGET -u "elastic:$1" -H 'Content-Type: application/json' --write-out '\n%{http_code}\n' \
+    "$PROTOCOL://localhost:9200/_cluster/health?wait_for_status=green&timeout=30s&filter_path=status" $CURL_SWITCH | tee /dev/fd/17) 
+  local curl_error_code=$?
+  local http_code=$(echo "$response" | tail -n 1)
+  exec 17>&-
+  if [[ $curl_error_code -ne 0 ]]; then
+    return $curl_error_code
+  fi
+  
+  if [[ $http_code -eq 200 ]]; then
+    local body=$(echo "$response" | head -n -1)
+    local status=$(jq -r .status <<< $body)
+    log "[node_is_up] cluster health is $status"
+    if [[ "$status" -eq "green" ]]; then
+      return 0
+    fi
+  fi
+  return 127
 }
 
 elastic_user_exists()
@@ -498,12 +515,19 @@ wait_for_started()
 {
   local TOTAL_RETRIES=60
   for i in $(seq $TOTAL_RETRIES); do
-    if $(node_is_up "$SEED_PASSWORD" || node_is_up "$USER_ADMIN_PWD"); then
+    node_is_up "$SEED_PASSWORD"
+    if [[ $? != 0 ]]; then
+      node_is_up "$USER_ADMIN_PWD"
+      if [[ $? != 0 ]]; then
+        sleep 5
+        log "[wait_for_started] seeing if node is up after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
+      else
+        log "[wait_for_started] node is up!"
+        return
+      fi
+    else
       log "[wait_for_started] node is up!"
       return
-    else
-      sleep 5
-      log "[wait_for_started] seeing if node is up after sleeping 5 seconds, retry ${i}/$TOTAL_RETRIES"
     fi
   done
   log "[wait_for_started] never saw elasticsearch go up locally"
@@ -575,100 +599,111 @@ apply_security_settings()
 {
     # if the node is up, check that the elastic user exists in the .security index if
     # the elastic user password is the same as the bootstrap password.
-    if [[ $(node_is_up "$USER_ADMIN_PWD") && ("$USER_ADMIN_PWD" -ne "$SEED_PASSWORD" || $(elastic_user_exists "$USER_ADMIN_PWD")) ]]; then
-      log "[apply_security_settings] can already ping node using user provided credentials, exiting early!"
+    node_is_up "$USER_ADMIN_PWD"
+    if [[ $? -eq 0 ]]; then
+      log "[apply_security_settings] can ping node using user provided credentials"
+      if [[ "$USER_ADMIN_PWD" -ne "$SEED_PASSWORD" ]]; then
+        log "[apply_security_settings] elastic user password already changed, exiting early!"
+        return
+      fi
+
+      elastic_user_exists "$USER_ADMIN_PWD"
+      if [[ $? -eq 0 ]]; then
+        log "[apply_security_settings] elastic user exists, exiting early!"
+        return
+      fi
+    fi
+
+    log "[apply_security_settings] start updating roles and users"
+
+    local XPACK_SECURITY_PATH
+    if dpkg --compare-versions "$ES_VERSION" "ge" "7.0.0"; then
+      XPACK_SECURITY_PATH="_security"
     else
-      log "[apply_security_settings] start updating roles and users"
+      XPACK_SECURITY_PATH="_xpack/security"
+    fi
 
-      local XPACK_SECURITY_PATH
-      if dpkg --compare-versions "$ES_VERSION" "ge" "7.0.0"; then
-        XPACK_SECURITY_PATH="_security"
-      else
-        XPACK_SECURITY_PATH="_xpack/security"
-      fi
+    local XPACK_USER_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/user"
+    local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/role"
 
-      local XPACK_USER_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/user"
-      local XPACK_ROLE_ENDPOINT="$PROTOCOL://localhost:9200/$XPACK_SECURITY_PATH/role"
-
-      #update builtin `elastic` account.
-      local ESCAPED_USER_ADMIN_PWD=$(escape_pwd $USER_ADMIN_PWD)
-      local ADMIN_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_ADMIN_PWD)
-      echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
-      if [[ $? != 0 ]]; then
-        wait_for_green_security_index
-        if [[ $? != 0 ]]; then
-          log "[apply_security_settings] did not see green security index"
-        fi
-
-        #Make sure another deploy did not already change the elastic password
-        curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
-        if [[ $? != 0 ]]; then
-          log "[apply_security_settings] could not update the built-in elastic user"
-          exit 10
-        fi
-      fi
-      log "[apply_security_settings] updated built-in elastic superuser password"
-
+    #update builtin `elastic` account.
+    local ESCAPED_USER_ADMIN_PWD=$(escape_pwd $USER_ADMIN_PWD)
+    local ADMIN_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_ADMIN_PWD)
+    echo $ADMIN_JSON | curl_ignore_409 -XPUT -u "elastic:$SEED_PASSWORD" "$XPACK_USER_ENDPOINT/elastic/_password" -d @-
+    if [[ $? != 0 ]]; then
       wait_for_green_security_index
       if [[ $? != 0 ]]; then
         log "[apply_security_settings] did not see green security index"
       fi
 
-      #update builtin `kibana`/`kibana_system` account
-      local ESCAPED_USER_KIBANA_PWD=$(escape_pwd $USER_KIBANA_PWD)
-      local KIBANA_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_KIBANA_PWD)
-      local KIBANA_USER="kibana"
-      if dpkg --compare-versions "$ES_VERSION" "ge" "7.8.0"; then
-        KIBANA_USER="kibana_system"
-      fi 
-
-      echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/$KIBANA_USER/_password" -d @-
-      if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in $KIBANA_USER user"
+      #Make sure another deploy did not already change the elastic password
+      curl_ignore_409 -XGET -u "elastic:$USER_ADMIN_PWD" "$PROTOCOL://localhost:9200/"
+      if [[ $? != 0 ]]; then
+        log "[apply_security_settings] could not update the built-in elastic user"
         exit 10
       fi
-      log "[apply_security_settings] updated built-in $KIBANA_USER user password"
-
-      #update builtin `logstash_system` account
-      local ESCAPED_USER_LOGSTASH_PWD=$(escape_pwd $USER_LOGSTASH_PWD)
-      local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_LOGSTASH_PWD)
-      echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
-      if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in logstash_system user"
-        exit 10
-      fi
-      log "[apply_security_settings] updated built-in logstash_system user password"
-
-      #update builtin `beats_system` account
-      local ESCAPED_USER_BEATS_PWD=$(escape_pwd $USER_BEATS_PWD)
-      local BEATS_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_BEATS_PWD)
-      echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
-      if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in beats_system user"
-        exit 10
-      fi
-      log "[apply_security_settings] updated built-in beats_system user password"
-
-      #update builtin `apm_system` account
-      local ESCAPED_USER_APM_PWD=$(escape_pwd $USER_APM_PWD)
-      local APM_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_APM_PWD)
-      echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
-      if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in apm_system user"
-        exit 10
-      fi
-      log "[apply_security_settings] updated built-in apm_system user password"
-    
-      #update builtin `remote_monitoring_user`
-      local ESCAPED_USER_REMOTE_MONITORING_PWD=$(escape_pwd $USER_REMOTE_MONITORING_PWD)
-      local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_REMOTE_MONITORING_PWD)
-      echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
-      if [[ $? != 0 ]];  then
-        log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
-        exit 10
-      fi
-      log "[apply_security_settings] updated built-in remote_monitoring_user user password" 
     fi
+    log "[apply_security_settings] updated built-in elastic superuser password"
+
+    wait_for_green_security_index
+    if [[ $? != 0 ]]; then
+      log "[apply_security_settings] did not see green security index"
+    fi
+
+    #update builtin `kibana`/`kibana_system` account
+    local ESCAPED_USER_KIBANA_PWD=$(escape_pwd $USER_KIBANA_PWD)
+    local KIBANA_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_KIBANA_PWD)
+    local KIBANA_USER="kibana"
+    if dpkg --compare-versions "$ES_VERSION" "ge" "7.8.0"; then
+      KIBANA_USER="kibana_system"
+    fi 
+
+    echo $KIBANA_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/$KIBANA_USER/_password" -d @-
+    if [[ $? != 0 ]];  then
+      log "[apply_security_settings] could not update the built-in $KIBANA_USER user"
+      exit 10
+    fi
+    log "[apply_security_settings] updated built-in $KIBANA_USER user password"
+
+    #update builtin `logstash_system` account
+    local ESCAPED_USER_LOGSTASH_PWD=$(escape_pwd $USER_LOGSTASH_PWD)
+    local LOGSTASH_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_LOGSTASH_PWD)
+    echo $LOGSTASH_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/logstash_system/_password" -d @-
+    if [[ $? != 0 ]];  then
+      log "[apply_security_settings] could not update the built-in logstash_system user"
+      exit 10
+    fi
+    log "[apply_security_settings] updated built-in logstash_system user password"
+
+    #update builtin `beats_system` account
+    local ESCAPED_USER_BEATS_PWD=$(escape_pwd $USER_BEATS_PWD)
+    local BEATS_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_BEATS_PWD)
+    echo $BEATS_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/beats_system/_password" -d @-
+    if [[ $? != 0 ]];  then
+      log "[apply_security_settings] could not update the built-in beats_system user"
+      exit 10
+    fi
+    log "[apply_security_settings] updated built-in beats_system user password"
+
+    #update builtin `apm_system` account
+    local ESCAPED_USER_APM_PWD=$(escape_pwd $USER_APM_PWD)
+    local APM_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_APM_PWD)
+    echo $APM_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/apm_system/_password" -d @-
+    if [[ $? != 0 ]];  then
+      log "[apply_security_settings] could not update the built-in apm_system user"
+      exit 10
+    fi
+    log "[apply_security_settings] updated built-in apm_system user password"
+  
+    #update builtin `remote_monitoring_user`
+    local ESCAPED_USER_REMOTE_MONITORING_PWD=$(escape_pwd $USER_REMOTE_MONITORING_PWD)
+    local REMOTE_MONITORING_JSON=$(printf '{"password":"%s"}\n' $ESCAPED_USER_REMOTE_MONITORING_PWD)
+    echo $REMOTE_MONITORING_JSON | curl_ignore_409 -XPUT -u "elastic:$USER_ADMIN_PWD" "$XPACK_USER_ENDPOINT/remote_monitoring_user/_password" -d @-
+    if [[ $? != 0 ]];  then
+      log "[apply_security_settings] could not update the built-in remote_monitoring_user user"
+      exit 10
+    fi
+    log "[apply_security_settings] updated built-in remote_monitoring_user user password" 
 }
 
 create_keystore_if_not_exists()
