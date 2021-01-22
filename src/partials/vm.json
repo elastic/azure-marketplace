@@ -153,7 +153,7 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('namespace'), parameters('index'), '-nic')]"
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('namespace'), parameters('index'), '-nic'))]"
       ],
       "properties": {
         "availabilitySet": {
@@ -190,7 +190,7 @@
           "apiVersion": "2019-03-01",
           "location": "[parameters('vm').shared.location]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('namespace'), parameters('index'))]"
+            "[resourceId('Microsoft.Compute/virtualMachines', concat(variables('namespace'), parameters('index')))]"
           ],
           "properties": "[parameters('vm').installScript]"
         }
