@@ -54,21 +54,13 @@
             "name": "esVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Elasticsearch version",
-            "defaultValue": "v7.10.0",
+            "defaultValue": "v7.10.2",
             "toolTip": "Choose a version of Elasticsearch.",
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "v6.8.14",
-                  "value": "6.8.14"
-                },
-                {
-                  "label": "v7.2.1",
-                  "value": "7.2.1"
-                },
-                {
-                  "label": "v7.3.2",
-                  "value": "7.3.2"
+                  "label": "v6.8.13",
+                  "value": "6.8.13"
                 },
                 {
                   "label": "v7.4.2",
@@ -95,8 +87,8 @@
                   "value": "7.9.3"
                 },
                 {
-                  "label": "v7.10.0",
-                  "value": "7.10.0"
+                  "label": "v7.10.2",
+                  "value": "7.10.2"
                 }
               ]
             }
