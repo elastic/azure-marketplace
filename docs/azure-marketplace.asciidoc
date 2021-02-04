@@ -242,15 +242,15 @@ image:images/marketplace_step6_2.png[]
 **It is highly recommended that you configure TLS, to encrypt communications.** 
 
 TLS is **required** for the Elasticsearch Transport layer with the Security features 
-available at the basic license tier in 6.8.0 and 7.1.0+, so if you are intending on using the 
-{basicsecurity}[basic license with Security for versions that support it], 
+available at the basic license tier, so if you are intending on using the 
+{basicsecurity}[basic license with Security], 
 providing certificates as part of a Marketplace deployment will be
 easier than not doing so, and then needing to connect to each Elasticsearch node _after_ 
 deployment to configure TLS, when activating a basic license.
 --
 
 {elasticdocs}/certutil.html[`elasticsearch-certutil`] command tool bundled with 
-Elasticsearch can be used to simplify the creations of certificates for use with Transport Layer Security (TLS).
+Elasticsearch can be used to simplify the creation of certificates for use with TLS.
 
 [[azure-marketplace-summary]]
 ==== Summary
