@@ -163,7 +163,7 @@ random_password()
 
 keystore_cmd()
 {
-  if [[ $(dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.11.0"; echo $?) -eq 0 || $(dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.9.0"; echo $?) -eq 0 ]] then
+  if [[ $(dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.11.0"; echo $?) -eq 0 || $(dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.9.0"; echo $?) -eq 0 ]]; then
     sudo -u kibana /usr/share/kibana/bin/kibana-keystore "$@"
   else
     # keystore is created in /etc/kibana/kibana.keystore in 7.9.x and 7.10.x
