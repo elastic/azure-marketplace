@@ -163,12 +163,12 @@ random_password()
 
 keystore_cmd()
 {
-  # keystore is created in /etc/kibana/kibana.keystore in 7.9.0+
-  # but need to create with root due to permissions
-  if dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.9.0"; then
-    /usr/share/kibana/bin/kibana-keystore "$@" --allow-root
-  else
+  if [[ $(dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.11.0"; echo $?) -eq 0 || $(dpkg --compare-versions "$KIBANA_VERSION" "lt" "7.9.0"; echo $?) -eq 0 ]] then
     sudo -u kibana /usr/share/kibana/bin/kibana-keystore "$@"
+  else
+    # keystore is created in /etc/kibana/kibana.keystore in 7.9.x and 7.10.x
+    # but need to create with root due to permissions
+    /usr/share/kibana/bin/kibana-keystore "$@" --allow-root
   fi
 }
 
@@ -178,8 +178,13 @@ create_keystore_if_not_exists()
   if dpkg --compare-versions "$KIBANA_VERSION" "ge" "7.9.0"; then
     KEYSTORE_FILE=/etc/kibana/kibana.keystore
   fi
-    
-  [[ -f $KEYSTORE_FILE ]] || (keystore_cmd create)
+
+  if [[ -f $KEYSTORE_FILE ]]; then 
+    log "[create_keystore_if_not_exists] kibana.keystore exists at $KEYSTORE_FILE"
+  else
+    log "[create_keystore_if_not_exists] create kibana.keystore"
+    keystore_cmd create
+  fi
 }
 
 install_kibana()
