@@ -764,51 +764,8 @@ configure_http_tls()
               $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --ip $INTERNAL_LOADBALANCER_IP \
                   --out $HTTP_CERT_PATH --pass "$HTTP_CERT_PASSWORD" --ca $HTTP_CACERT_PATH --ca-pass "$HTTP_CACERT_PASSWORD"
               log "[configure_http_tls] generated HTTP cert for node"
-
-          elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
-              local CERTGEN=$BIN_DIR/elasticsearch-certgen
-              if [[ ! -f $CERTGEN ]]; then
-                  CERTGEN=$BIN_DIR/x-pack/certgen
-              fi
-              {
-                  echo -e "instances:"
-                  echo -e "  - name: \"$HOSTNAME\""
-                  echo -e "    dns:"
-                  echo -e "      - \"$HOSTNAME\""
-                  echo -e "    ip:"
-                  echo -e "      - \"$(hostname -I | xargs)\""
-                  # include the load balancer IP within the certificate, allowing
-                  # full verification mode in Kibana when accessing cluster through
-                  # internal loadbalancer
-                  echo -e "      - \"$INTERNAL_LOADBALANCER_IP\""
-                  echo -e "    filename: \"elasticsearch-http\""
-              } >> $SSL_PATH/elasticsearch-http.yml
-
-              log "[configure_http_tls] converting PKCS#12 HTTP CA to PEM"
-              echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.key -nocerts -nodes -passin stdin
-              echo "$HTTP_CACERT_PASSWORD" | openssl pkcs12 -in $HTTP_CACERT_PATH -out $SSL_PATH/elasticsearch-http-ca.crt -clcerts -nokeys -passin stdin
-
-              log "[configure_http_tls] generate HTTP cert using $CERTGEN"
-              $CERTGEN --in $SSL_PATH/elasticsearch-http.yml --out $SSL_PATH/elasticsearch-http.zip \
-                  --cert $SSL_PATH/elasticsearch-http-ca.crt --key $SSL_PATH/elasticsearch-http-ca.key --pass "$HTTP_CACERT_PASSWORD"
-              log "[configure_http_tls] generated HTTP cert"
-
-              install_unzip
-              log "[configure_http_tls] unzip HTTP cert"
-              unzip $SSL_PATH/elasticsearch-http.zip -d $SSL_PATH
-              log "[configure_http_tls] move HTTP cert"
-              mv $SSL_PATH/elasticsearch-http/elasticsearch-http.crt $SSL_PATH/elasticsearch-http.crt
-              log "[configure_http_tls] move HTTP private key"
-              mv $SSL_PATH/elasticsearch-http/elasticsearch-http.key $SSL_PATH/elasticsearch-http.key
-
-              # Encrypt the private key if there's a password
-              if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-                log "[configure_http_tls] encrypt HTTP private key"
-                echo "$HTTP_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-http.key -out $SSL_PATH/elasticsearch-http-encrypted.key -passout stdin
-                mv $SSL_PATH/elasticsearch-http-encrypted.key $SSL_PATH/elasticsearch-http.key
-              fi
           else
-              log "[configure_http_tls] no certutil or certgen tool could be found to generate a HTTP cert"
+              log "[configure_http_tls] no certutil tool could be found to generate a HTTP cert"
               exit 12
           fi
         fi
@@ -826,19 +783,6 @@ configure_http_tls()
           create_keystore_if_not_exists
           echo "$HTTP_CERT_PASSWORD" | $KEY_STORE add xpack.security.http.ssl.keystore.secure_password -xf
           echo "$HTTP_CERT_PASSWORD" | $KEY_STORE add xpack.security.http.ssl.truststore.secure_password -xf
-        fi
-    else
-        # dealing with PEM certs
-        echo "xpack.security.http.ssl.certificate: $SSL_PATH/elasticsearch-http.crt" >> $ES_CONF
-        echo "xpack.security.http.ssl.key: $SSL_PATH/elasticsearch-http.key" >> $ES_CONF
-        if [[ $(stat -c %s $SSL_PATH/elasticsearch-http-ca.crt 2>/dev/null) -ne 0 ]]; then
-            echo "xpack.security.http.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-http-ca.crt ]" >> $ES_CONF
-        fi
-
-        if [[ -n "$HTTP_CERT_PASSWORD" ]]; then
-            log "[configure_http_tls] configure HTTP key password in keystore"
-            create_keystore_if_not_exists
-            echo "$HTTP_CERT_PASSWORD" | $KEY_STORE add xpack.security.http.ssl.secure_key_passphrase -xf
         fi
     fi
 
@@ -880,7 +824,7 @@ configure_transport_tls()
             exit 12
         fi
 
-        # Generate certs with certutil or certgen
+        # Generate certs with certutil
         if [[ -f $BIN_DIR/elasticsearch-certutil || -f $BIN_DIR/x-pack/certutil ]]; then
             local CERTUTIL=$BIN_DIR/elasticsearch-certutil
             if [[ ! -f $CERTUTIL ]]; then
@@ -891,44 +835,8 @@ configure_transport_tls()
             $CERTUTIL cert --name "$HOSTNAME" --dns "$HOSTNAME" --ip $(hostname -I) --out $TRANSPORT_CERT_PATH --pass "$TRANSPORT_CERT_PASSWORD" --ca $TRANSPORT_CACERT_PATH --ca-pass "$TRANSPORT_CACERT_PASSWORD"
             log "[configure_transport_tls] generated Transport cert"
 
-        elif [[ -f $BIN_DIR/elasticsearch-certgen || -f $BIN_DIR/x-pack/certgen ]]; then
-            local CERTGEN=$BIN_DIR/elasticsearch-certgen
-            if [[ -f $BIN_DIR/x-pack/certgen ]]; then
-                CERTGEN=$BIN_DIR/x-pack/certgen
-            fi
-            {
-                echo -e "instances:"
-                echo -e "  - name: \"$HOSTNAME\""
-                echo -e "    dns:"
-                echo -e "      - \"$HOSTNAME\""
-                echo -e "    ip:"
-                echo -e "      - \"$(hostname -I | xargs)\""
-                echo -e "    filename: \"elasticsearch-transport\""
-            } >> $SSL_PATH/elasticsearch-transport.yml
-
-            log "[configure_transport_tls] convert PKCS#12 Transport CA to PEM"
-            echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.key -nocerts -nodes -passin stdin
-            echo "$TRANSPORT_CACERT_PASSWORD" | openssl pkcs12 -in $TRANSPORT_CACERT_PATH -out $SSL_PATH/elasticsearch-transport-ca.crt -clcerts -nokeys -chain -passin stdin
-
-            log "[configure_transport_tls] generate Transport cert using $CERTGEN"
-            $CERTGEN --in $SSL_PATH/elasticsearch-transport.yml --out $SSL_PATH/elasticsearch-transport.zip --cert $SSL_PATH/elasticsearch-transport-ca.crt --key $SSL_PATH/elasticsearch-transport-ca.key --pass "$TRANSPORT_CACERT_PASSWORD"
-
-            install_unzip
-            log "[configure_transport_tls] unzip Transport cert"
-            unzip $SSL_PATH/elasticsearch-transport.zip -d $SSL_PATH
-            log "[configure_transport_tls] move Transport cert"
-            mv $SSL_PATH/elasticsearch-transport/elasticsearch-transport.crt $SSL_PATH/elasticsearch-transport.crt
-            log "[configure_transport_tls] move Transport private key"
-            mv $SSL_PATH/elasticsearch-transport/elasticsearch-transport.key $SSL_PATH/elasticsearch-transport.key
-
-            # Encrypt the private key if there's a password
-            if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
-              log "[configure_transport_tls] encrypt Transport key"
-              echo "$TRANSPORT_CERT_PASSWORD" | openssl rsa -aes256 -in $SSL_PATH/elasticsearch-transport.key -out $SSL_PATH/elasticsearch-transport-encrypted.key -passout stdin
-              mv $SSL_PATH/elasticsearch-transport-encrypted.key $SSL_PATH/elasticsearch-transport.key
-            fi
         else
-            log "[configure_transport_tls] no certutil or certgen tool could be found to generate a Transport cert"
+            log "[configure_transport_tls] no certutil tool could be found to generate a Transport cert"
             exit 12
         fi
     fi
@@ -944,16 +852,6 @@ configure_transport_tls()
             log "[configure_transport_tls] configure Transport key password in keystore"
             echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.keystore.secure_password -xf
             echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.truststore.secure_password -xf
-        fi
-    else
-        # dealing with PEM certs
-        echo "xpack.security.transport.ssl.certificate: $SSL_PATH/elasticsearch-transport.crt" >> $ES_CONF
-        echo "xpack.security.transport.ssl.key: $SSL_PATH/elasticsearch-transport.key" >> $ES_CONF
-        echo "xpack.security.transport.ssl.certificate_authorities: [ $SSL_PATH/elasticsearch-transport-ca.crt ]" >> $ES_CONF
-        if [[ -n "$TRANSPORT_CERT_PASSWORD" ]]; then
-            log "[configure_transport_tls] configure Transport key password in keystore"
-            create_keystore_if_not_exists
-            echo "$TRANSPORT_CERT_PASSWORD" | $KEY_STORE add xpack.security.transport.ssl.secure_key_passphrase -xf
         fi
     fi
 
