@@ -1,7 +1,7 @@
 {
   "_artifactsLocation":{"value":"https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/"},
   "_artifactsLocationSasToken":{"value":""},
-  "esVersion":{"value":"7.10.0"},
+  "esVersion":{"value":"7.11.1"},
   "esClusterName":{"value":"my-azure-cluster"},
   "loadBalancerType":{"value":"internal"},
   "loadBalancerInternalSku":{"value":"Basic"},
