@@ -987,8 +987,7 @@ using the CA certificate used to secure the Elasticsearch HTTP layer.
 
 Logstash communicates with Elasticsearch through the IP address of the internal load balancer, which means
 that a certificate provided with `esHttpCertBlob` is unlikely to pass hostname
-verification. In Logstash 6.4.0+, `xpack.monitoring.elasticsearch.ssl.verification_mode` is set to `none`.
-For prior versions of Logstash, monitoring is not enabled when a certificate has been provided with `esHttpCertBlob`.
+verification. For this reason, `xpack.monitoring.elasticsearch.ssl.verification_mode` is set to `none`.
 
 When a CA certificate is provided with `esHttpCaCertBlob`, the generated certificates used to
 secure the Elasticsearch HTTP layer include the internal load balancer IP address, meaning
@@ -997,7 +996,7 @@ for the Elasticsearch HTTP layer.
 --
 
 `logstashKeystorePassword`::
-Security password for Logstash keystore, used to store values in Logstash 6.2.0 onwards.
+Security password for Logstash keystore.
 +
 If no value is supplied, a password will be generated using the
 ARM template `uniqueString()` function.
@@ -1079,18 +1078,17 @@ than six characters in length.
 `securityBeatsPassword`::
 Security password for the `beats_system` built-in user account. This is the account that
 Beats can use to communicate with Elasticsearch. Must be greater
-than six characters in length. Valid only for Elasticsearch 6.3.0+
+than six characters in length.
 
 `securityApmPassword`::
 Security password for the `apm_system` built-in user account. This is the account that the 
 APM server can use to communicate with Elasticsearch. Must be greater
-than six characters in length. Valid only for Elasticsearch 6.5.0+
+than six characters in length.
 
 `securityRemoteMonitoringPassword`::
 Security password for the `remote_monitoring_user` built-in user account. This is the account that 
 Metricbeat uses when collecting and storing monitoring information in Elasticsearch. 
 It has the `remote_monitoring_agent` and `remote_monitoring_collector` built-in roles.
-Valid only for Elasticsearch 6.5.0+
 
 It is recommended after deployment to use the `elastic` superuser account to create
 additional individual user accounts that will be needed for users and applications
@@ -1107,7 +1105,6 @@ response to successful authentication to determine identity and privileges.
 
 To integrate SAML SSO, the following conditions must be satisfied:
 
-* `esVersion` **must** be one that supports the SAML realm i.e. Elasticsearch 6.2.0 or later
 * `xpackPlugins` **must** be `Yes` to install a trial license of Elastic Stack platinum features
 * `kibana` **must** be `Yes` to deploy an instance of Kibana
 * `esHttpCertBlob` _or_ `esHttpCaCertBlob` **must** be provided to configure SSL/TLS for the HTTP layer of Elasticsearch.
@@ -1410,10 +1407,6 @@ typically want to do this when also deploying an external loadbalancer or Applic
 do this when deploying only Kibana, to secure internal traffic
 between Kibana and Elasticsearch through the internal load balancer.
 
-Configuring TLS for the HTTP layer requires `xPackPlugins` be set to `Yes` for 5.x versions, 
-6.x versions less than 6.8.0 and 7.x versions less than 7.1.0. With `xPackPlugins` set to `Yes`, a trial
-license will be applied to the cluster, which allows TLS to be configured on these versions.
-
 The following parameters can be used
 
 `esHttpCertBlob`::
@@ -1469,9 +1462,6 @@ The certificate to secure the HTTP layer *must* include a Subject Alternative Na
 ==== Transport layer
 
 You can secure communication between nodes in the cluster with TLS on the Transport layer of Elasticsearch.
-Configuring TLS for the Transport layer requires `xPackPlugins` be set to `Yes` for 5.x versions, 
-6.x versions less than 6.8.0 and 7.x versions less than 7.1.0. With `xPackPlugins` set to `Yes`, a trial
-license will be applied to the cluster, which allows TLS to be configured on these versions.
 
 The following parameters can be used
 
@@ -1552,14 +1542,9 @@ Elasticsearch, and Kibana and Logstash if also deployed, using the following par
 `xPackPlugins`::
 Select `Yes` to install a trial license of the Elastic Stack platinum features. A trial license
 provides access to {subscriptions}[platinum features] for 30 days. a value of `No`
-+
-. for Elasticsearch and Kibana 6.3.0+ will deploy with a free perpetual basic license
-providing access to the {subscriptions}[basic features]. These versions use a distribution with
-Elastic Stack features included in the installation, and the license applied determines which
-features are activated.
-. for Elasticsearch and Kibana prior to 6.3.0, the X-Pack plugin will not be
-installed when a value of `No` is passed. These versions require the X-Pack plugin to
-be installed to be able to apply a license and access features related to that license.
+deploys a free perpetual basic license, providing access to the {subscriptions}[basic features]. 
+These versions use a distribution with Elastic Stack features included in the installation, 
+and the license applied determines which features are activated.
 +
 The default is `Yes`.
 
