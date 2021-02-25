@@ -2063,8 +2063,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-05-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'shared')]",
-        "[concat('Microsoft.Resources/deployments/', 'network')]"
+        "[resourceId('Microsoft.Resources/deployments', 'shared')]",
+        "[resourceId('Microsoft.Resources/deployments', 'network')]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -2090,8 +2090,8 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-05-01",
       "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/', 'loadbalancer')]",
-        "[concat('Microsoft.Resources/deployments/', 'kibana-ip')]"
+        "[resourceId('Microsoft.Resources/deployments', 'loadbalancer')]",
+        "[resourceId('Microsoft.Resources/deployments', 'kibana-ip')]"
       ],
       "properties": {
         "mode": "Incremental",

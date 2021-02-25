@@ -144,7 +144,7 @@
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('externalLoadBalancerIp'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('externalLoadBalancerIp'))]"
       ],
       "properties": {
         "frontendIPConfigurations": [

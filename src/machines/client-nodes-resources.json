@@ -56,7 +56,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-05-01",
       "dependsOn": [
-        "[concat('Microsoft.Compute/availabilitySets/', variables('namespace'), 'av-set')]"
+        "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), 'av-set'))]"
       ],
       "copy": {
         "name": "[concat(variables('namespace'),'vm-creation-loop')]",
