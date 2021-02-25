@@ -43,9 +43,12 @@
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
+        "tier": "Standard"
       },
-      "kind": "Storage",
+      "kind": "StorageV2",
       "properties": {
+        "accessTier": "Hot",
+        "allowBlobPublicAccess": false
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
