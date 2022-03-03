@@ -8,6 +8,12 @@ param _artifactsLocationSasToken string = ''
 @description('The Elasticsearch settings')
 param esSettings object
 
+@description('Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this.')
+param elasticTags object
+
+@description('Shared VM settings')
+param commonVmSettings object
+
 @description('Aggregate for topology variable')
 param topologySettings object
 
@@ -65,7 +71,7 @@ var ubuntuScripts = [
   uri(_artifactsLocation, 'scripts/java-install.sh${_artifactsLocationSasToken}')
 ]
 
-output ubuntuSettings object = {
+var ubuntuSettings = {
   imageReference: {
     publisher: 'Canonical'
     offer: 'UbuntuServer'
@@ -136,3 +142,16 @@ output ubuntuSettings object = {
     }
   }
 }
+
+module elasticSearchNodes '../partials/node-resources.bicep' = {
+  name: 'elasticsearch-nodes'
+  params: {
+    osSettings: ubuntuSettings
+    commonVmSettings: commonVmSettings
+    topologySettings: topologySettings
+    networkSettings: networkSettings
+    elasticTags: elasticTags
+  }
+}
+
+output jumpboxFqdn string = elasticSearchNodes.outputs.jumpboxFqdn

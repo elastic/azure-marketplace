@@ -1,3 +1,10 @@
+@description('Choose to create a new Virtual Network or use an existing one. If choosing an existing network, the subnet also needs to exist.')
+@allowed([
+  'new'
+  'existing'
+])
+param vNetNewOrExisting string
+
 @description('Network settings object')
 param networkSettings object
 
@@ -14,7 +21,7 @@ param elasticTags object = {
   provider: '648D2193-0CE0-4EFB-8A82-AF9792184FD9'
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-04-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-04-01' = if (vNetNewOrExisting == 'New') {
   name: networkSettings.name
   location: networkSettings.location
   tags: {
@@ -26,14 +33,13 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-04-01' = {
         networkSettings.addressPrefix
       ]
     }
-    subnets: [
-      {
-        name: networkSettings.subnet.name
-        properties: {
-          addressPrefix: networkSettings.subnet.addressPrefix
-        }
-      }
-    ]
+  }
+}
+
+resource esSubnet 'Microsoft.Network/virtualNetworks/subnets@2019-04-01' = {
+  name: '${networkSettings.name}/${networkSettings.subnet.name}'
+  properties: {
+    addressPrefix: networkSettings.subnet.addressPrefix
   }
 }
 

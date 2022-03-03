@@ -586,6 +586,8 @@ param vmDataDiskSize string = '1TiB'
 @minValue(1)
 param vmDataNodeCount int = 3
 
+param vmStorageAccountName string = 'elastic${uniqueString(resourceGroup().id, deployment().name)}'
+
 @description('The storage account type of the attached managed disks and OS disks (Default or Standard). The Default storage account type will be Premium Storage for VMs that support Premium Storage and Standard HDD Storage for those that do not.')
 @allowed([
   'Default'
@@ -1621,7 +1623,7 @@ var networkSettings = {
 }
 var commonVmSettings = {
   namespacePrefix: vmHostNamePrefix
-  storageAccountName: 'elastic${uniqueString(resourceGroup().id, deployment().name)}'
+  storageAccountName: vmStorageAccountName
   location: resourceGroupLocation
   subnet: networkSettings.subnet
   subnetId: resourceId(networkSettings.resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', networkSettings.name, networkSettings.subnet.name)
@@ -1655,23 +1657,28 @@ module shared './partials/shared-resources.bicep' = {
   }
 }
 
-module network './networks/virtual-network-resources.bicep' = if (vNetNewOrExisting == 'new') {
+module network './networks/virtual-network-resources.bicep' = {
   name: 'network'
   params: {
+    vNetNewOrExisting: vNetNewOrExisting
     networkSettings: networkSettings
     loadBalancerType: loadBalancerType
     elasticTags: elasticTags
   }
 }
 
-module kibanaIp './ips/kibana-ip-resources.bicep' = if (kibana == 'Yes') {
+module kibanaIp './ips/kibana-ip-resources.bicep' = {
   name: 'kibana-ip'
   params: {
     location: commonVmSettings.location
     namespace: '${commonVmSettings.namespacePrefix}kibana'
     https: topologySettings.kibanaHttps
     elasticTags: elasticTags
+    kibana: kibana
   }
+  dependsOn: [
+    network
+  ]
 }
 
 module loadBalancer './loadbalancers/load-balancer-resources.bicep' = {
@@ -1693,17 +1700,22 @@ module loadBalancer './loadbalancers/load-balancer-resources.bicep' = {
     networkSettings: networkSettings
     elasticTags: elasticTags
   }
+  dependsOn: [
+    network
+  ]
 }
 
 var existingStorageAccountResourceId = ((!empty(azureCloudStorageAccount.name)) && (azureCloudStorageAccount.install == 'Yes')) ? resourceId(azureCloudStorageAccount.resourceGroup, 'Microsoft.Storage/storageAccounts', azureCloudStorageAccount.name) : ''
-var sharedStorageAccountResourceId = resourceId(resourceGroupLocation, 'Microsoft.Storage/storageAccounts', commonVmSettings.storageAccountName)
+var sharedStorageAccountResourceId = resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', commonVmSettings.storageAccountName)
 
 module ubuntuSettings './settings/ubuntuSettings.bicep' = {
-  name: 'virtual-machines'
+  name: 'ubuntu-settings'
   params: {
     '_artifactsLocation': _artifactsLocation
     '_artifactsLocationSasToken': _artifactsLocationSasToken
     esSettings: esSettings
+    elasticTags: elasticTags
+    commonVmSettings: commonVmSettings
     topologySettings: topologySettings
     networkSettings: networkSettings
     azureCloudStorageAccount: {
@@ -1721,22 +1733,10 @@ module ubuntuSettings './settings/ubuntuSettings.bicep' = {
     }
   }
   dependsOn: [
-    network
+    loadBalancer
   ]
-}
-
-module elasticSearchNodes './partials/node-resources.bicep' = {
-  name: 'elasticsearch-nodes'
-  params: {
-    osSettings: ubuntuSettings.outputs.ubuntuSettings
-    commonVmSettings: commonVmSettings
-    topologySettings: topologySettings
-    networkSettings: networkSettings
-    elasticTags: elasticTags
-  }
-  dependsOn: []
 }
 
 output loadbalancer string = loadBalancer.outputs.fqdn
 output kibana string = kibana == 'Yes' ? kibanaIp.outputs.fqdn : ''
-output jumpboxssh string = '${adminUsername}@${elasticSearchNodes.outputs.jumpboxFqdn}'
+output jumpboxssh string = '${adminUsername}@${ubuntuSettings.outputs.jumpboxFqdn}'

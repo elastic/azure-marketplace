@@ -117,27 +117,6 @@ var vmAcceleratedNetworking = [
   'Standard_M128m'
 ]
 var networkSecurityGroupName = '${commonVmSettings.namespacePrefix}standard-lb-nsg'
-var vmNsgProperties = [
-  {}
-  {
-    securityRules: [
-      {
-        name: 'External'
-        properties: {
-          description: 'Allows inbound traffic from Standard External LB'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '9201'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 100
-          direction: 'Inbound'
-        }
-      }
-    ]
-  }
-]
 var standardInternalLoadBalancer = (networkSettings.internalSku == 'Standard')
 var standardExternalLoadBalancer = (networkSettings.externalSku == 'Standard')
 var standardInternalOrExternalLoadBalancer = (standardInternalLoadBalancer || standardExternalLoadBalancer)
@@ -161,16 +140,17 @@ module masterNodes '../machines/master-nodes-resources.bicep' = if (topologySett
     }
     elasticTags: elasticTags
   }
-  dependsOn: []
 }
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-04-01' = if (standardInternalOrExternalLoadBalancer) {
-  name: networkSecurityGroupName
-  location: commonVmSettings.location
-  tags: {
-    provider: toUpper(elasticTags.provider)
+module networkSecurityGroup '../networks/network-security-group-resources.bicep' = {
+  name: 'network-security-group'
+  params: {
+    resourceGroupLocation: commonVmSettings.location
+    nsgName: networkSecurityGroupName
+    elasticTags: elasticTags
+    standardInternalOrExternalLoadBalancer: standardInternalOrExternalLoadBalancer
+    standardExternalLoadBalancer: standardExternalLoadBalancer
   }
-  properties: vmNsgProperties[(standardExternalLoadBalancer ? 1 : 0)]
 }
 
 module clientNodes '../machines/client-nodes-resources.bicep' = if (topologySettings.vmClientNodeCount > 0) {
@@ -192,9 +172,6 @@ module clientNodes '../machines/client-nodes-resources.bicep' = if (topologySett
     }
     elasticTags: elasticTags
   }
-  dependsOn: [
-    networkSecurityGroup
-  ]
 }
 
 module dataNodes '../machines/data-nodes-resources.bicep' = {
@@ -217,12 +194,9 @@ module dataNodes '../machines/data-nodes-resources.bicep' = {
     storageSettings: topologySettings.dataNodeStorageSettings
     elasticTags: elasticTags
   }
-  dependsOn: [
-    networkSecurityGroup
-  ]
 }
 
-module jumpbox '../machines/jumpbox-resources.bicep' = if (topologySettings.jumpbox == 'yes' ) {
+module jumpbox '../machines/jumpbox-resources.bicep' = if (toLower(topologySettings.jumpbox) == 'yes') {
   name: 'jumpbox'
   params: {
     credentials: commonVmSettings.credentials
@@ -232,7 +206,6 @@ module jumpbox '../machines/jumpbox-resources.bicep' = if (topologySettings.jump
     osSettings: osSettings
     elasticTags: elasticTags
   }
-  dependsOn: []
 }
 
 module kibana '../machines/kibana-resources.bicep' = if (topologySettings.kibana == 'Yes') {
@@ -247,7 +220,6 @@ module kibana '../machines/kibana-resources.bicep' = if (topologySettings.kibana
     acceleratedNetworking: ((topologySettings.vmKibanaAcceleratedNetworking == 'Default') ? (contains(vmAcceleratedNetworking, topologySettings.vmSizeKibana) ? 'Yes' : 'No') : topologySettings.vmKibanaAcceleratedNetworking)
     elasticTags: elasticTags
   }
-  dependsOn: [] 
 }
 
 module logstash '../machines/logstash-resources.bicep' = if (topologySettings.logstash == 'Yes') {
@@ -269,7 +241,6 @@ module logstash '../machines/logstash-resources.bicep' = if (topologySettings.lo
     }
     elasticTags: elasticTags
   }
-  dependsOn: []
 }
 
-output jumpboxFqdn string = jumpbox.outputs.fqdn
+output jumpboxFqdn string = topologySettings.jumpbox == 'yes' ? jumpbox.outputs.fqdn : ''
