@@ -1133,6 +1133,9 @@ configure_elasticsearch()
     log "[configure_elasticsearch] configure elasticsearch heap size - $ES_HEAP megabytes"
     sed -i -e "s/^\-Xmx.*/-Xmx${ES_HEAP}m/" /etc/elasticsearch/jvm.options
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
+
+    log "[configure_elasticsearch] configure elasticsearch log4j options"
+    sed  "/-Dlog4j2.disable.jmx=true/a -Dlog4j2.formatMsgNoLookups=true" /etc/elasticsearch/jvm.options
 }
 
 configure_os_properties()
