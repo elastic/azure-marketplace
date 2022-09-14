@@ -73,7 +73,7 @@ log "Installing DataDog plugin onto this machine using API Key [$API_KEY]"
 
 wget -q https://raw.githubusercontent.com/DataDog/datadog-agent/master/cmd/agent/install_script.sh -O $DD_AGENT
 chmod +x $DD_AGENT
-DD_API_KEY=$API_KEY $DD_AGENT
+DD_API_KEY=$API_KEY DD_AGENT_MAJOR_VERSION=7 $DD_AGENT
 rm /etc/datadog-agent/conf.d/elastic.d/auto_conf.yaml
 
 echo "instances:
