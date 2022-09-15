@@ -1135,7 +1135,7 @@ configure_elasticsearch()
     sed -i -e "s/^\-Xms.*/-Xms${ES_HEAP}m/" /etc/elasticsearch/jvm.options
 
     log "[configure_elasticsearch] configure elasticsearch log4j options"
-    sed  "/-Dlog4j2.disable.jmx=true/a -Dlog4j2.formatMsgNoLookups=true" /etc/elasticsearch/jvm.options
+    sed -i -e "/-Dlog4j2.disable.jmx=true/a -Dlog4j2.formatMsgNoLookups=true" /etc/elasticsearch/jvm.options
 }
 
 configure_os_properties()
