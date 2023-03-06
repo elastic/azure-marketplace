@@ -17,6 +17,8 @@
 [[azure-marketplace]]
 == Azure Marketplace solution
 
+IMPORTANT: The Azure Marketplace and Resource Manager (ARM) template has reached its end of life. Instead, customers are strongly advised to use our newer link:https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.ec-azure-pp?exp=ubp8&tab=Overview[Elastic Cloud (Elasticsearch Service)] offering in the Azure Marketplace. To learn more, refer to the link:https://www.elastic.co/guide/en/cloud/current/ec-azure-marketplace-native.html[Native Azure integration documentation].
+
 The Azure Marketplace solution offering is a preconfigured
 template to deploy an Elasticsearch cluster, Kibana and Logstash to Azure. It's available
 on {marketplace}[Microsoft's Azure Marketplace], making it easy to find and
@@ -28,21 +30,10 @@ all {subscriptions}[the Platinum features of the Elastic Stack], to provide the 
 started experience. After the trial license expires, Elasticsearch operates
 in a degraded mode.
 
-[IMPORTANT]
---
-
-The Marketplace solution template is a great starting place to try out the Elastic Stack on
-Azure. In the long run, it's recommended to deploy the Elastic Stack
-<<azure-arm-template, using the ARM template from our GitHub repository directly>>. 
-Doing so allows for targeting a specific template release for 
-<<azure-arm-template-repeatable-deployments, repeatable deployments>>, in addition to
-allowing <<azure-arm-template-scaling-nodes, scaling up the number of nodes under certain conditions>>, 
-a process that the Marketplace solution template is not designed for.
-
---
-
 [[azure-marketplace-getting-started]]
 === Getting started with the Azure Marketplace
+
+IMPORTANT: The Azure Marketplace and Resource Manager (ARM) template has reached its end of life. Instead, customers are strongly advised to use our newer link:https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.ec-azure-pp?exp=ubp8&tab=Overview[Elastic Cloud (Elasticsearch Service)] offering in the Azure Marketplace. To learn more, refer to the link:https://www.elastic.co/guide/en/cloud/current/ec-azure-marketplace-native.html[Native Azure integration documentation].
 
 Navigate to the {marketplace}[Azure Marketplace] offering, and click the "Get it Now"
 button:
