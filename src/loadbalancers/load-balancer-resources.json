@@ -1,0 +1,1074 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "6563559338123433706"
+    }
+  },
+  "parameters": {
+    "loadBalancerType": {
+      "type": "string",
+      "defaultValue": "internal",
+      "allowedValues": [
+        "internal",
+        "external",
+        "gateway"
+      ],
+      "metadata": {
+        "description": "Set up an internal or external load balancer, or use Application Gateway (gateway) for load balancing and SSL offload. If you are setting up Elasticsearch on a publicly available endpoint, it is *strongly recommended* to secure your nodes with a product like the Elastic Stack's Security features"
+      }
+    },
+    "appGatewayTier": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "WAF"
+      ],
+      "metadata": {
+        "description": "The tier of the Application Gateway. Required when selecting Application Gateway for load balancing"
+      }
+    },
+    "applicationGatewaySettings": {
+      "type": "object"
+    },
+    "networkSettings": {
+      "type": "object"
+    },
+    "elasticTags": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "loadBalancer": "[if(equals(parameters('loadBalancerType'), 'gateway'), format('{0}-gateway', toLower(parameters('appGatewayTier'))), parameters('loadBalancerType'))]"
+  },
+  "resources": [
+    {
+      "condition": "[equals(variables('loadBalancer'), 'internal')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "internal-load-balancer",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "5027151778175012704"
+            }
+          },
+          "parameters": {
+            "networkSettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Network settings object"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "internalLoadBalancerName": "[format('{0}internal-lb', parameters('networkSettings').namespacePrefix)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('internalLoadBalancerName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').internalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "LBFE",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]"
+                      },
+                      "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
+                      "privateIPAllocationMethod": "Static"
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE"
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "es-http-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9200,
+                      "backendPort": 9200,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('internalLoadBalancerName'), 'es-probe-internal-http')]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "es-transport-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9300,
+                      "backendPort": 9300,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-probe-internal-http",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "port": 9200,
+                      "intervalInSeconds": 30,
+                      "numberOfProbes": 3
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "N/A"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[equals(variables('loadBalancer'), 'external')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "external-load-balancer",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "4432293945858250033"
+            }
+          },
+          "parameters": {
+            "networkSettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Network settings object"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "httpsOpts": {
+              "Yes": "https://",
+              "No": "http://"
+            },
+            "https": "[variables('httpsOpts')[parameters('networkSettings').https]]",
+            "internalLoadBalancerName": "[format('{0}internal-lb', parameters('networkSettings').namespacePrefix)]",
+            "externalLoadBalancerName": "[format('{0}external-lb', parameters('networkSettings').namespacePrefix)]",
+            "externalLoadBalancerIpName": "[format('{0}external-lb-ip', parameters('networkSettings').namespacePrefix)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('internalLoadBalancerName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').internalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "LBFE",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]"
+                      },
+                      "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
+                      "privateIPAllocationMethod": "Static"
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE"
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "es-http-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9200,
+                      "backendPort": 9200,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('internalLoadBalancerName'), 'es-probe-internal-http')]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "es-transport-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9300,
+                      "backendPort": 9300,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-probe-internal-http",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "port": 9200,
+                      "intervalInSeconds": 30,
+                      "numberOfProbes": 3
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('externalLoadBalancerIpName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').externalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "[if(equals(parameters('networkSettings').externalSku, 'Standard'), 'Static', 'Dynamic')]",
+                "dnsSettings": {
+                  "domainNameLabel": "[format('lb-{0}', uniqueString(resourceGroup().id, deployment().name))]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('externalLoadBalancerName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').externalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "LBFE",
+                    "properties": {
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('externalLoadBalancerIpName'))]"
+                      }
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE"
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "es-http-external",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('externalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('externalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9200,
+                      "backendPort": 9201,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('externalLoadBalancerName'), 'es-http-external-probe')]"
+                      }
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-http-external-probe",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "port": 9201,
+                      "intervalInSeconds": 30,
+                      "numberOfProbes": 3
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('externalLoadBalancerIpName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "[format('{0}{1}:9200', variables('https'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('externalLoadBalancerIpName'))).dnsSettings.fqdn)]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[equals(variables('loadBalancer'), 'standard-gateway')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "standard-appgw-load-balancer",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "applicationGatewaySettings": {
+            "value": "[parameters('applicationGatewaySettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "12591339045523719843"
+            }
+          },
+          "parameters": {
+            "networkSettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Network settings object"
+              }
+            },
+            "applicationGatewaySettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Application Gateway settings"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "applicationGatewayName": "[format('{0}app-gateway', parameters('networkSettings').namespacePrefix)]",
+            "applicationGatewayIpName": "[format('{0}app-gateway-ip', parameters('networkSettings').namespacePrefix)]",
+            "internalLoadBalancerName": "[format('{0}internal-lb', parameters('networkSettings').namespacePrefix)]",
+            "authenticationCertsOpts": {
+              "Yes": [
+                {
+                  "properties": {
+                    "data": "[parameters('applicationGatewaySettings').backendCert]"
+                  },
+                  "name": "esHttpCert"
+                }
+              ],
+              "No": []
+            },
+            "authenticationCerts": "[variables('authenticationCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
+            "backendCertsOpts": {
+              "Yes": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationGateways/authenticationCertificates', variables('applicationGatewayName'), 'esHttpCert')]"
+                }
+              ],
+              "No": []
+            },
+            "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('internalLoadBalancerName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').internalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "LBFE",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]"
+                      },
+                      "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
+                      "privateIPAllocationMethod": "Static"
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE"
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "es-http-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9200,
+                      "backendPort": 9200,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('internalLoadBalancerName'), 'es-probe-internal-http')]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "es-transport-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9300,
+                      "backendPort": 9300,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-probe-internal-http",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "port": 9200,
+                      "intervalInSeconds": 30,
+                      "numberOfProbes": 3
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('applicationGatewayIpName')]",
+              "location": "[parameters('networkSettings').location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+              }
+            },
+            {
+              "type": "Microsoft.Network/applicationGateways",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('applicationGatewayName')]",
+              "location": "[parameters('networkSettings').location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "sku": {
+                  "name": "[parameters('applicationGatewaySettings').skuName]",
+                  "tier": "[parameters('applicationGatewaySettings').tier]",
+                  "capacity": "[parameters('applicationGatewaySettings').instanceCount]"
+                },
+                "sslCertificates": [
+                  {
+                    "name": "es-app-gateway-sslcert",
+                    "properties": {
+                      "data": "[parameters('applicationGatewaySettings').certBlob]",
+                      "password": "[parameters('applicationGatewaySettings').certPassword]"
+                    }
+                  }
+                ],
+                "authenticationCertificates": "[variables('authenticationCerts')]",
+                "gatewayIPConfigurations": [
+                  {
+                    "name": "es-app-gateway-ip",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').applicationGatewaySubnet.name)]"
+                      }
+                    }
+                  }
+                ],
+                "frontendIPConfigurations": [
+                  {
+                    "name": "es-app-gateway-fip",
+                    "properties": {
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('applicationGatewayIpName'))]"
+                      }
+                    }
+                  }
+                ],
+                "frontendPorts": [
+                  {
+                    "name": "es-app-gateway-fport",
+                    "properties": {
+                      "port": 9200
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE",
+                    "properties": {
+                      "backendAddresses": [
+                        {
+                          "ipAddress": "[parameters('networkSettings').subnet.loadBalancerIp]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "backendHttpSettingsCollection": [
+                  {
+                    "name": "es-app-gateway-httpsettings",
+                    "properties": {
+                      "port": 9200,
+                      "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+                      "cookieBasedAffinity": "Disabled",
+                      "authenticationCertificates": "[variables('backendCerts')]",
+                      "probeEnabled": true,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('applicationGatewayName'), 'es-app-gateway-probe')]"
+                      },
+                      "requestTimeout": 86400
+                    }
+                  }
+                ],
+                "httpListeners": [
+                  {
+                    "name": "es-app-gateway-httplistener",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', variables('applicationGatewayName'), 'es-app-gateway-fip')]"
+                      },
+                      "frontendPort": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', variables('applicationGatewayName'), 'es-app-gateway-fport')]"
+                      },
+                      "protocol": "Https",
+                      "sslCertificate": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('applicationGatewayName'), 'es-app-gateway-sslcert')]"
+                      }
+                    }
+                  }
+                ],
+                "requestRoutingRules": [
+                  {
+                    "name": "rule1",
+                    "properties": {
+                      "ruleType": "Basic",
+                      "httpListener": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('applicationGatewayName'), 'es-app-gateway-httplistener')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('applicationGatewayName'), 'LBBE')]"
+                      },
+                      "backendHttpSettings": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('applicationGatewayName'), 'es-app-gateway-httpsettings')]"
+                      }
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-app-gateway-probe",
+                    "properties": {
+                      "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+                      "path": "/",
+                      "host": "127.0.0.1",
+                      "interval": 30,
+                      "timeout": 30,
+                      "unhealthyThreshold": 3,
+                      "match": {
+                        "statusCodes": [
+                          "200-399",
+                          "401"
+                        ],
+                        "body": ""
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('applicationGatewayIpName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "N/A"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[equals(variables('loadBalancer'), 'waf-gateway')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "waf-appgw-load-balancer",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "networkSettings": {
+            "value": "[parameters('networkSettings')]"
+          },
+          "applicationGatewaySettings": {
+            "value": "[parameters('applicationGatewaySettings')]"
+          },
+          "elasticTags": {
+            "value": "[parameters('elasticTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "9044561681697257426"
+            }
+          },
+          "parameters": {
+            "networkSettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Network settings object"
+              }
+            },
+            "applicationGatewaySettings": {
+              "type": "object",
+              "metadata": {
+                "description": "Application Gateway settings"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "applicationGatewayName": "[format('{0}app-gateway', parameters('networkSettings').namespacePrefix)]",
+            "applicationGatewayIpName": "[format('{0}app-gateway-ip', parameters('networkSettings').namespacePrefix)]",
+            "internalLoadBalancerName": "[format('{0}internal-lb', parameters('networkSettings').namespacePrefix)]",
+            "authenticationCertsOpts": {
+              "Yes": [
+                {
+                  "properties": {
+                    "data": "[parameters('applicationGatewaySettings').backendCert]"
+                  },
+                  "name": "esHttpCert"
+                }
+              ],
+              "No": []
+            },
+            "authenticationCerts": "[variables('authenticationCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
+            "backendCertsOpts": {
+              "Yes": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationGateways/authenticationCertificates', variables('applicationGatewayName'), 'esHttpCert')]"
+                }
+              ],
+              "No": []
+            },
+            "backendCerts": "[variables('backendCertsOpts')[if(empty(parameters('applicationGatewaySettings').backendCert), 'No', 'Yes')]]",
+            "wafEnabledOpts": {
+              "Enabled": true,
+              "Disabled": false
+            },
+            "wafEnabled": "[variables('wafEnabledOpts')[parameters('applicationGatewaySettings').firewallStatus]]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('internalLoadBalancerName')]",
+              "location": "[parameters('networkSettings').location]",
+              "sku": {
+                "name": "[parameters('networkSettings').internalSku]"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "LBFE",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]"
+                      },
+                      "privateIPAddress": "[parameters('networkSettings').subnet.loadBalancerIp]",
+                      "privateIPAllocationMethod": "Static"
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE"
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "es-http-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9200,
+                      "backendPort": 9200,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('internalLoadBalancerName'), 'es-probe-internal-http')]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "es-transport-internal",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('internalLoadBalancerName'), 'LBFE')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('internalLoadBalancerName'), 'LBBE')]"
+                      },
+                      "protocol": "Tcp",
+                      "frontendPort": 9300,
+                      "backendPort": 9300,
+                      "enableFloatingIP": false,
+                      "idleTimeoutInMinutes": 5
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "name": "es-probe-internal-http",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "port": 9200,
+                      "intervalInSeconds": 30,
+                      "numberOfProbes": 3
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('applicationGatewayIpName')]",
+              "location": "[parameters('networkSettings').location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+              }
+            },
+            {
+              "type": "Microsoft.Network/applicationGateways",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('applicationGatewayName')]",
+              "location": "[parameters('networkSettings').location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "sku": {
+                  "name": "[parameters('applicationGatewaySettings').skuName]",
+                  "tier": "[parameters('applicationGatewaySettings').tier]",
+                  "capacity": "[parameters('applicationGatewaySettings').instanceCount]"
+                },
+                "sslCertificates": [
+                  {
+                    "name": "es-app-gateway-sslcert",
+                    "properties": {
+                      "data": "[parameters('applicationGatewaySettings').certBlob]",
+                      "password": "[parameters('applicationGatewaySettings').certPassword]"
+                    }
+                  }
+                ],
+                "authenticationCertificates": "[variables('authenticationCerts')]",
+                "gatewayIPConfigurations": [
+                  {
+                    "name": "es-app-gateway-ip",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').applicationGatewaySubnet.name)]"
+                      }
+                    }
+                  }
+                ],
+                "frontendIPConfigurations": [
+                  {
+                    "name": "es-app-gateway-fip",
+                    "properties": {
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('applicationGatewayIpName'))]"
+                      }
+                    }
+                  }
+                ],
+                "frontendPorts": [
+                  {
+                    "name": "es-app-gateway-fport",
+                    "properties": {
+                      "port": 9200
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "LBBE",
+                    "properties": {
+                      "backendAddresses": [
+                        {
+                          "ipAddress": "[parameters('networkSettings').subnet.loadBalancerIp]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "backendHttpSettingsCollection": [
+                  {
+                    "name": "es-app-gateway-httpsettings",
+                    "properties": {
+                      "port": 9200,
+                      "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+                      "cookieBasedAffinity": "Disabled",
+                      "authenticationCertificates": "[variables('backendCerts')]",
+                      "probeEnabled": true,
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('applicationGatewayName'), 'es-app-gateway-probe')]"
+                      },
+                      "requestTimeout": 86400
+                    }
+                  }
+                ],
+                "httpListeners": [
+                  {
+                    "name": "es-app-gateway-httplistener",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', variables('applicationGatewayName'), 'es-app-gateway-fip')]"
+                      },
+                      "frontendPort": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', variables('applicationGatewayName'), 'es-app-gateway-fport')]"
+                      },
+                      "protocol": "Https",
+                      "sslCertificate": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('applicationGatewayName'), 'es-app-gateway-sslcert')]"
+                      }
+                    }
+                  }
+                ],
+                "requestRoutingRules": [
+                  {
+                    "name": "rule1",
+                    "properties": {
+                      "ruleType": "Basic",
+                      "httpListener": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('applicationGatewayName'), 'es-app-gateway-httplistener')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('applicationGatewayName'), 'LBBE')]"
+                      },
+                      "backendHttpSettings": {
+                        "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('applicationGatewayName'), 'es-app-gateway-httpsettings')]"
+                      }
+                    }
+                  }
+                ],
+                "webApplicationFirewallConfiguration": {
+                  "ruleSetType": "OWASP",
+                  "ruleSetVersion": "3.0",
+                  "enabled": "[variables('wafEnabled')]",
+                  "firewallMode": "[parameters('applicationGatewaySettings').firewallMode]"
+                },
+                "probes": [
+                  {
+                    "name": "es-app-gateway-probe",
+                    "properties": {
+                      "protocol": "[parameters('applicationGatewaySettings').backendProtocol]",
+                      "path": "/",
+                      "host": "127.0.0.1",
+                      "interval": 30,
+                      "timeout": 30,
+                      "unhealthyThreshold": 3,
+                      "match": {
+                        "statusCodes": [
+                          "200-399",
+                          "401"
+                        ],
+                        "body": ""
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('applicationGatewayIpName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "fqdn": {
+              "type": "string",
+              "value": "N/A"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "fqdn": {
+      "type": "string",
+      "value": "[if(equals(variables('loadBalancer'), 'internal'), reference(resourceId('Microsoft.Resources/deployments', 'internal-load-balancer')).outputs.fqdn.value, if(equals(variables('loadBalancer'), 'external'), reference(resourceId('Microsoft.Resources/deployments', 'external-load-balancer')).outputs.fqdn.value, if(equals(variables('loadBalancer'), 'standard-gateway'), reference(resourceId('Microsoft.Resources/deployments', 'standard-appgw-load-balancer')).outputs.fqdn.value, reference(resourceId('Microsoft.Resources/deployments', 'waf-appgw-load-balancer')).outputs.fqdn.value)))]"
+    }
+  }
+}

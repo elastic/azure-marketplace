@@ -1,7 +1,24 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "13904709499150329571"
+    }
+  },
   "parameters": {
+    "vNetNewOrExisting": {
+      "type": "string",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Choose to create a new Virtual Network or use an existing one. If choosing an existing network, the subnet also needs to exist."
+      }
+    },
     "networkSettings": {
       "type": "object",
       "metadata": {
@@ -30,37 +47,11 @@
       }
     }
   },
-  "variables": {
-    "subnetsOpts": [
-      [
-        {
-          "name": "[parameters('networkSettings').subnet.name]",
-          "properties": {
-            "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
-          }
-        },
-        {
-          "name": "[parameters('networkSettings').applicationGatewaySubnet.name]",
-          "properties": {
-            "addressPrefix": "[parameters('networkSettings').applicationGatewaySubnet.addressPrefix]"
-          }
-        }
-      ],
-      [
-        {
-          "name": "[parameters('networkSettings').subnet.name]",
-          "properties": {
-            "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
-          }
-        }
-      ]
-    ],
-    "subnets": "[variables('subnetsOpts')[if(equals(parameters('loadBalancerType'), 'gateway'), 0, 1)]]"
-  },
   "resources": [
     {
-      "apiVersion": "2019-04-01",
+      "condition": "[equals(parameters('vNetNewOrExisting'), 'New')]",
       "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2019-04-01",
       "name": "[parameters('networkSettings').name]",
       "location": "[parameters('networkSettings').location]",
       "tags": {
@@ -71,9 +62,28 @@
           "addressPrefixes": [
             "[parameters('networkSettings').addressPrefix]"
           ]
-        },
-        "subnets": "[variables('subnets')]"
+        }
       }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2019-04-01",
+      "name": "[format('{0}/{1}', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]",
+      "properties": {
+        "addressPrefix": "[parameters('networkSettings').subnet.addressPrefix]"
+      }
+    },
+    {
+      "condition": "[equals(parameters('loadBalancerType'), 'gateway')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2019-04-01",
+      "name": "[format('{0}/{1}', parameters('networkSettings').name, parameters('networkSettings').applicationGatewaySubnet.name)]",
+      "properties": {
+        "addressPrefix": "[parameters('networkSettings').applicationGatewaySubnet.addressPrefix]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('networkSettings').name)]"
+      ]
     }
   ]
 }

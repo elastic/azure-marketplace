@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "7272365375184994060"
+    }
+  },
   "parameters": {
     "location": {
       "type": "string",
@@ -8,7 +15,7 @@
         "description": "Location where resources will be provisioned"
       }
     },
-    "namespace": {
+    "vmName": {
       "type": "string",
       "metadata": {
         "description": "The unique namespace for jumpbox nodes"
@@ -43,36 +50,36 @@
     }
   },
   "variables": {
-    "namespace": "[parameters('namespace')]",
     "vmSize": "Standard_A0",
     "subnetId": "[resourceId(parameters('networkSettings').resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', parameters('networkSettings').name, parameters('networkSettings').subnet.name)]",
-    "publicIpName": "[concat(variables('namespace'), '-ip')]",
-    "securityGroupName": "[concat(variables('namespace'), '-nsg')]",
-    "nicName": "[concat(variables('namespace'), '-nic')]",
+    "publicIpName": "[format('{0}-ip', parameters('vmName'))]",
+    "securityGroupName": "[format('{0}-nsg', parameters('vmName'))]",
+    "vmNetworkInterfaceName": "[format('{0}-nic', parameters('vmName'))]",
     "password_osProfile": {
-      "computername": "[variables('namespace')]",
+      "computername": "[parameters('vmName')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "adminPassword": "[parameters('credentials').password]"
     },
     "sshPublicKey_osProfile": {
-      "computername": "[variables('namespace')]",
+      "computername": "[parameters('vmName')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
       "linuxConfiguration": {
         "disablePasswordAuthentication": "true",
         "ssh": {
-          "publicKeys": [ {
-            "path": "[concat('/home/', parameters('credentials').adminUsername, '/.ssh/authorized_keys')]",
-            "keyData": "[parameters('credentials').sshPublicKey]"
-          } ]
+          "publicKeys": [
+            {
+              "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('credentials').adminUsername)]",
+              "keyData": "[parameters('credentials').sshPublicKey]"
+            }
+          ]
         }
       }
-    },
-    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
+    }
   },
   "resources": [
     {
-      "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-04-01",
       "name": "[variables('securityGroupName')]",
       "location": "[parameters('location')]",
       "tags": {
@@ -98,8 +105,8 @@
       }
     },
     {
-      "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2019-04-01",
       "name": "[variables('publicIpName')]",
       "location": "[parameters('location')]",
       "tags": {
@@ -108,22 +115,18 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[concat('jump-', uniqueString(resourceGroup().id, deployment().name))]"
+          "domainNameLabel": "[format('jump-{0}', uniqueString(resourceGroup().id, deployment().name))]"
         }
       }
     },
     {
-      "apiVersion": "2019-04-01",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
+      "apiVersion": "2019-04-01",
+      "name": "[variables('vmNetworkInterfaceName')]",
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
-      ],
       "properties": {
         "ipConfigurations": [
           {
@@ -142,28 +145,29 @@
         "networkSecurityGroup": {
           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
+      ]
     },
     {
-      "apiVersion": "2019-03-01",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('namespace')]",
+      "apiVersion": "2019-03-01",
+      "name": "[parameters('vmName')]",
       "location": "[parameters('location')]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
       },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-      ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
-        "osProfile": "[variables('osProfile')]",
+        "osProfile": "[if(equals(parameters('credentials').authenticationType, 'password'), variables('password_osProfile'), variables('sshPublicKey_osProfile'))]",
         "storageProfile": {
           "imageReference": "[parameters('osSettings').imageReference]",
           "osDisk": {
-            "name": "[concat(variables('namespace'), '-osdisk')]",
+            "name": "[format('{0}-osdisk', parameters('vmName'))]",
             "managedDisk": {
               "storageAccountType": "Standard_LRS"
             },
@@ -174,17 +178,20 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNetworkInterfaceName'))]"
             }
           ]
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNetworkInterfaceName'))]"
+      ]
     }
   ],
   "outputs": {
-    "ssh": {
-      "value": "[concat(parameters('credentials').adminUsername, '@', reference(variables('publicIpName')).dnsSettings.fqdn)]",
-      "type": "string"
+    "fqdn": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))).dnsSettings.fqdn]"
     }
   }
 }

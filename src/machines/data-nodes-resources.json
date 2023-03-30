@@ -1,20 +1,14 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "2896084932501386182"
+    }
+  },
   "parameters": {
-    "_artifactsLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "Base uri of resources"
-      }
-    },
-    "_artifactsLocationSasToken": {
-      "type": "securestring",
-      "metadata": {
-          "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
-      },
-      "defaultValue": ""
-    },
     "vm": {
       "type": "object",
       "metadata": {
@@ -44,16 +38,16 @@
   },
   "resources": [
     {
-      "apiVersion": "2019-03-01",
+      "copy": {
+        "name": "availabilitySets",
+        "count": "[length(range(0, variables('avSetCount')))]"
+      },
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[concat(variables('namespace'), copyindex(), '-av-set')]",
+      "apiVersion": "2019-03-01",
+      "name": "[format('{0}{1}-av-set', variables('namespace'), range(0, variables('avSetCount'))[copyIndex()])]",
       "location": "[parameters('vm').shared.location]",
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
-      },
-      "copy": {
-        "name": "[concat(variables('namespace'),'av-loop')]",
-        "count": "[variables('avSetCount')]"
       },
       "properties": {
         "platformUpdateDomainCount": 20,
@@ -64,43 +58,39 @@
       }
     },
     {
-      "condition": "[greater(parameters('storageSettings').dataDisks, 0)]",
-      "name": "[concat(variables('namespace'), copyindex(), '-vm-creation')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-05-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set'))]"
-      ],
+      "condition": "[greater(variables('diskCount'), 0)]",
       "copy": {
-        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
-        "count": "[parameters('vm').count]"
+        "name": "virtualMachinesWithDisks",
+        "count": "[length(range(0, parameters('vm').count))]"
       },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}{1}-vm-creation', variables('namespace'), range(0, parameters('vm').count)[copyIndex()])]",
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('partials/vm.json', parameters('_artifactsLocationSasToken')))]",
-          "contentVersion": "1.0.0.0"
+        "expressionEvaluationOptions": {
+          "scope": "inner"
         },
+        "mode": "Incremental",
         "parameters": {
           "vm": {
             "value": "[parameters('vm')]"
           },
           "index": {
-            "value": "[copyindex()]"
+            "value": "[range(0, parameters('vm').count)[copyIndex()]]"
           },
           "availabilitySet": {
-            "value": "[concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+            "value": "[format('{0}{1}-av-set', variables('namespace'), mod(range(0, parameters('vm').count)[copyIndex()], variables('avSetCount')))]"
           },
           "dataDisks": {
             "value": {
               "copy": [
                 {
                   "name": "disks",
-                  "count": "[variables('diskCount')]",
+                  "count": "[length(range(0, variables('diskCount')))]",
                   "input": {
-                    "name": "[concat(variables('namespace'), copyindex(), '-datadisk', copyIndex('disks', 1))]",
+                    "name": "[format('{0}{1}-datadisk{2}', variables('namespace'), range(0, parameters('vm').count)[copyIndex()], add(range(0, variables('diskCount'))[copyIndex('disks')], 1))]",
                     "diskSizeGB": "[parameters('storageSettings').diskSize]",
-                    "lun": "[copyIndex('disks')]",
+                    "lun": "[range(0, variables('diskCount'))[copyIndex('disks')]]",
                     "managedDisk": {
                       "storageAccountType": "[parameters('storageSettings').accountType]"
                     },
@@ -114,42 +104,450 @@
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "9194726631229920325"
+            }
+          },
+          "parameters": {
+            "vm": {
+              "type": "object",
+              "metadata": {
+                "description": "vm configuration"
+              }
+            },
+            "index": {
+              "type": "int",
+              "metadata": {
+                "description": "the outer loop index"
+              }
+            },
+            "availabilitySet": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the availability set"
+              }
+            },
+            "dataDisks": {
+              "type": "object",
+              "defaultValue": {
+                "disks": []
+              },
+              "metadata": {
+                "description": "additional data disks to attach"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "vmName": "[format('{0}{1}', parameters('vm').namespace, parameters('index'))]",
+            "password_osProfile": {
+              "computername": "[variables('vmName')]",
+              "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+              "adminPassword": "[parameters('vm').shared.credentials.password]"
+            },
+            "sshPublicKey_osProfile": {
+              "computername": "[variables('vmName')]",
+              "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+              "linuxConfiguration": {
+                "disablePasswordAuthentication": "true",
+                "ssh": {
+                  "publicKeys": [
+                    {
+                      "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('vm').shared.credentials.adminUsername)]",
+                      "keyData": "[parameters('vm').shared.credentials.sshPublicKey]"
+                    }
+                  ]
+                }
+              }
+            },
+            "publicIpName": "[format('{0}-ip', variables('vmName'))]",
+            "nsgIpConfigs": [
+              {},
+              {
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').nsg)]"
+                }
+              },
+              {
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').nsg)]"
+                },
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "primary": true,
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('vm').shared.subnetId]"
+                      },
+                      "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]",
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "nsgIpConfig": "[variables('nsgIpConfigs')[if(empty(parameters('vm').nsg), 0, if(parameters('vm').standardInternalLoadBalancer, 2, 1))]]",
+            "nicProperties": {
+              "primary": true,
+              "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[parameters('vm').shared.subnetId]"
+                    },
+                    "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+                  }
+                }
+              ]
+            }
+          },
+          "resources": [
+            {
+              "condition": "[and(not(empty(parameters('vm').nsg)), parameters('vm').standardInternalLoadBalancer)]",
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('publicIpName')]",
+              "location": "[parameters('vm').shared.location]",
+              "sku": {
+                "name": "Standard"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                  "domainNameLabel": "[format('{0}{1}', variables('vmName'), uniqueString(resourceGroup().id, deployment().name))]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2019-04-01",
+              "name": "[format('{0}-nic', variables('vmName'))]",
+              "location": "[parameters('vm').shared.location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": "[union(variables('nicProperties'), variables('nsgIpConfig'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2019-03-01",
+              "name": "[variables('vmName')]",
+              "location": "[parameters('vm').shared.location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "availabilitySet": {
+                  "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySet'))]"
+                },
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vm').size]"
+                },
+                "osProfile": "[if(equals(parameters('vm').shared.credentials.authenticationType, 'password'), variables('password_osProfile'), variables('sshPublicKey_osProfile'))]",
+                "storageProfile": {
+                  "imageReference": "[parameters('vm').imageReference]",
+                  "osDisk": {
+                    "name": "[format('{0}-osdisk', variables('vmName'))]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('vm').storageAccountType]"
+                    },
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                  },
+                  "dataDisks": "[parameters('dataDisks').disks]"
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmName')))]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2019-03-01",
+              "name": "[format('{0}/script', variables('vmName'))]",
+              "location": "[parameters('vm').shared.location]",
+              "properties": "[parameters('vm').installScript]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+              ]
+            }
+          ]
         }
-      }
+      },
+      "dependsOn": [
+        "availabilitySets"
+      ]
     },
     {
-      "condition": "[equals(parameters('storageSettings').dataDisks, 0)]",
-      "name": "[concat(variables('namespace'), copyindex(), '-vm-nodisks-creation')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-05-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/availabilitySets', concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set'))]"
-      ],
+      "condition": "[equals(variables('diskCount'), 0)]",
       "copy": {
-        "name": "[concat(variables('namespace'),'vm-creation-loop')]",
-        "count": "[parameters('vm').count]"
+        "name": "virtualMachinesWithoutDisks",
+        "count": "[length(range(0, parameters('vm').count))]"
       },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}{1}-vm-nodisks-creation', variables('namespace'), range(0, parameters('vm').count)[copyIndex()])]",
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('partials/vm.json', parameters('_artifactsLocationSasToken')))]",
-          "contentVersion": "1.0.0.0"
+        "expressionEvaluationOptions": {
+          "scope": "inner"
         },
+        "mode": "Incremental",
         "parameters": {
           "vm": {
             "value": "[parameters('vm')]"
           },
           "index": {
-            "value": "[copyindex()]"
+            "value": "[range(0, parameters('vm').count)[copyIndex()]]"
           },
           "availabilitySet": {
-            "value": "[concat(variables('namespace'), mod(copyindex(),variables('avSetCount')), '-av-set')]"
+            "value": "[format('{0}{1}-av-set', variables('namespace'), mod(range(0, parameters('vm').count)[copyIndex()], variables('avSetCount')))]"
           },
           "elasticTags": {
             "value": "[parameters('elasticTags')]"
           }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.4.1272.37030",
+              "templateHash": "9194726631229920325"
+            }
+          },
+          "parameters": {
+            "vm": {
+              "type": "object",
+              "metadata": {
+                "description": "vm configuration"
+              }
+            },
+            "index": {
+              "type": "int",
+              "metadata": {
+                "description": "the outer loop index"
+              }
+            },
+            "availabilitySet": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the availability set"
+              }
+            },
+            "dataDisks": {
+              "type": "object",
+              "defaultValue": {
+                "disks": []
+              },
+              "metadata": {
+                "description": "additional data disks to attach"
+              }
+            },
+            "elasticTags": {
+              "type": "object",
+              "defaultValue": {
+                "provider": "648D2193-0CE0-4EFB-8A82-AF9792184FD9"
+              },
+              "metadata": {
+                "description": "Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this."
+              }
+            }
+          },
+          "variables": {
+            "vmName": "[format('{0}{1}', parameters('vm').namespace, parameters('index'))]",
+            "password_osProfile": {
+              "computername": "[variables('vmName')]",
+              "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+              "adminPassword": "[parameters('vm').shared.credentials.password]"
+            },
+            "sshPublicKey_osProfile": {
+              "computername": "[variables('vmName')]",
+              "adminUsername": "[parameters('vm').shared.credentials.adminUsername]",
+              "linuxConfiguration": {
+                "disablePasswordAuthentication": "true",
+                "ssh": {
+                  "publicKeys": [
+                    {
+                      "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('vm').shared.credentials.adminUsername)]",
+                      "keyData": "[parameters('vm').shared.credentials.sshPublicKey]"
+                    }
+                  ]
+                }
+              }
+            },
+            "publicIpName": "[format('{0}-ip', variables('vmName'))]",
+            "nsgIpConfigs": [
+              {},
+              {
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').nsg)]"
+                }
+              },
+              {
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vm').nsg)]"
+                },
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "primary": true,
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('vm').shared.subnetId]"
+                      },
+                      "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]",
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "nsgIpConfig": "[variables('nsgIpConfigs')[if(empty(parameters('vm').nsg), 0, if(parameters('vm').standardInternalLoadBalancer, 2, 1))]]",
+            "nicProperties": {
+              "primary": true,
+              "enableAcceleratedNetworking": "[equals(parameters('vm').acceleratedNetworking, 'Yes')]",
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[parameters('vm').shared.subnetId]"
+                    },
+                    "loadBalancerBackendAddressPools": "[parameters('vm').backendPools]"
+                  }
+                }
+              ]
+            }
+          },
+          "resources": [
+            {
+              "condition": "[and(not(empty(parameters('vm').nsg)), parameters('vm').standardInternalLoadBalancer)]",
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2019-04-01",
+              "name": "[variables('publicIpName')]",
+              "location": "[parameters('vm').shared.location]",
+              "sku": {
+                "name": "Standard"
+              },
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                  "domainNameLabel": "[format('{0}{1}', variables('vmName'), uniqueString(resourceGroup().id, deployment().name))]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2019-04-01",
+              "name": "[format('{0}-nic', variables('vmName'))]",
+              "location": "[parameters('vm').shared.location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": "[union(variables('nicProperties'), variables('nsgIpConfig'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2019-03-01",
+              "name": "[variables('vmName')]",
+              "location": "[parameters('vm').shared.location]",
+              "tags": {
+                "provider": "[toUpper(parameters('elasticTags').provider)]"
+              },
+              "properties": {
+                "availabilitySet": {
+                  "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySet'))]"
+                },
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vm').size]"
+                },
+                "osProfile": "[if(equals(parameters('vm').shared.credentials.authenticationType, 'password'), variables('password_osProfile'), variables('sshPublicKey_osProfile'))]",
+                "storageProfile": {
+                  "imageReference": "[parameters('vm').imageReference]",
+                  "osDisk": {
+                    "name": "[format('{0}-osdisk', variables('vmName'))]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('vm').storageAccountType]"
+                    },
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage"
+                  },
+                  "dataDisks": "[parameters('dataDisks').disks]"
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmName')))]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2019-03-01",
+              "name": "[format('{0}/script', variables('vmName'))]",
+              "location": "[parameters('vm').shared.location]",
+              "properties": "[parameters('vm').installScript]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+              ]
+            }
+          ]
         }
-      }
+      },
+      "dependsOn": [
+        "availabilitySets"
+      ]
     }
   ]
 }

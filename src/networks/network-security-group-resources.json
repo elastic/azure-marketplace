@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1272.37030",
+      "templateHash": "6549720521694104035"
+    }
+  },
+  "parameters": {
+    "resourceGroupLocation": {
+      "type": "string"
+    },
+    "nsgName": {
+      "type": "string"
+    },
+    "elasticTags": {
+      "type": "object"
+    },
+    "standardInternalOrExternalLoadBalancer": {
+      "type": "bool"
+    },
+    "standardExternalLoadBalancer": {
+      "type": "bool"
+    }
+  },
+  "variables": {
+    "vmNsgProperties": [
+      {},
+      {
+        "securityRules": [
+          {
+            "name": "External",
+            "properties": {
+              "description": "Allows inbound traffic from Standard External LB",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9201",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "resources": [
+    {
+      "condition": "[parameters('standardInternalOrExternalLoadBalancer')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('nsgName')]",
+      "location": "[parameters('resourceGroupLocation')]",
+      "tags": {
+        "provider": "[toUpper(parameters('elasticTags').provider)]"
+      },
+      "properties": "[variables('vmNsgProperties')[if(parameters('standardExternalLoadBalancer'), 1, 0)]]"
+    }
+  ]
+}
