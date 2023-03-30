@@ -2,6 +2,8 @@
 
 Easily deploy the Elastic Stack of Elasticsearch, Kibana and Logstash to Azure.
 
+**IMPORTANT:** As a prefered solution, we recommend using our newer [Elastic Cloud (Elasticsearch Service)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.ec-azure-pp?exp=ubp8&tab=Overview) offering in the Azure Marketplace. To learn more, refer to the [Native Azure integration documentation](https://www.elastic.co/guide/en/cloud/current/ec-azure-marketplace-native.html).
+
 This readme provides an overview of usage and features. For more comprehensive documentation, 
 please refer to the [**Azure Marketplace and ARM template documentation**](https://www.elastic.co/guide/en/elastic-stack-deploy/current/index.html)
 
