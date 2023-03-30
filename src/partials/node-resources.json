@@ -57,7 +57,8 @@
     "jumpboxTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('jumpboxTemplates')[parameters('topologySettings').jumpbox], parameters('_artifactsLocationSasToken')))]",
     "kibanaTemplates": {
       "No": "empty/empty-kibana-resources.json",
-      "Yes": "machines/kibana-resources.json"
+      "Yes": "machines/kibana-resources.json",
+      "Private": "machines/kibana-resources-private.json"
     },
     "kibanaTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('kibanaTemplates')[parameters('topologySettings').kibana], parameters('_artifactsLocationSasToken')))]",
     "dataTemplateUrl": "[uri(parameters('_artifactsLocation'), concat('machines/data-nodes-resources.json', parameters('_artifactsLocationSasToken')))]",

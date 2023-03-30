@@ -212,7 +212,8 @@
       "defaultValue": "Yes",
       "allowedValues": [
         "Yes",
-        "No"
+        "No",
+        "Private"
       ],
       "metadata": {
         "description": "Provision a machine with Kibana on it"
@@ -1964,7 +1965,8 @@
     },
     "kibanaIpTemplates": {
       "No": "empty/empty-kibana-ip-resources.json",
-      "Yes": "ips/kibana-ip-resources.json"
+      "Yes": "ips/kibana-ip-resources.json",
+      "Private": "empty/empty-kibana-ip-resources.json"
     },
     "kibanaIpTemplateUrl": "[uri(parameters('_artifactsLocation'), concat(variables('kibanaIpTemplates')[variables('topologySettings').kibana], parameters('_artifactsLocationSasToken')))]"
   },

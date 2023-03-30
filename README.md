@@ -402,7 +402,10 @@ value defined in the template.
   <tr><td colspan="4" style="font-size:120%"><strong>Kibana related settings</strong></td></tr>
 
   <tr><td>kibana</td><td>string</td>
-    <td>Either <code>Yes</code> or <code>No</code> to provision a machine with Kibana installed and a public IP address to access it.
+    <td><ul>
+      <li><code>Yes</code>: Provision a machine with Kibana installed and a public IP address to access it</li>
+      <li><code>No</code>: Does not provision Kibana resources.</li>
+      <li><code>Private</code>: provision a machine with Kibana installed and only a private IP address to access it</li>
     </td><td><code>Yes</code></td></tr>
 
   <tr><td>vmSizeKibana</td><td>string</td>
