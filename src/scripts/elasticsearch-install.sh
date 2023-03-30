@@ -870,8 +870,8 @@ configure_awareness_attributes()
   local METADATA=$(curl -sH Metadata:true "http://169.254.169.254/metadata/instance?api-version=2018-10-01")
   local FAULT_DOMAIN=$(jq -r .compute.platformFaultDomain <<< $METADATA)
   local UPDATE_DOMAIN=$(jq -r .compute.platformUpdateDomain <<< $METADATA)
-  echo "node.attr.fault_domain: $FAULT_DOMAIN" >> $ES_CONF
-  echo "node.attr.update_domain: $UPDATE_DOMAIN" >> $ES_CONF
+  echo "#node.attr.fault_domain: $FAULT_DOMAIN" >> $ES_CONF
+  echo "#node.attr.update_domain: $UPDATE_DOMAIN" >> $ES_CONF
   log "[configure_awareness_attributes] configure shard allocation awareness using fault_domain and update_domain"
   echo "cluster.routing.allocation.awareness.attributes: fault_domain,update_domain" >> $ES_CONF
 }
